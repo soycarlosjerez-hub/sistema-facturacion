@@ -1,0 +1,178 @@
+/* ============================================
+   Accessibility Styles
+   ============================================ */
+
+/* Skip link - visible solo con foco */
+.skip-to-main {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #0d6efd;
+    color: white;
+    padding: 8px 16px;
+    z-index: 10000;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    font-weight: 600;
+    transition: top 0.2s;
+}
+
+.skip-to-main:focus {
+    top: 0;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Visually hidden - accesible para screen readers */
+.visually-hidden,
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Focus visible mejorado - WCAG 2.1 AA */
+*:focus {
+    outline: none;
+}
+
+*:focus-visible {
+    outline: 3px solid #0d6efd;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+    outline: 3px solid #0d6efd;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+}
+
+/* En modo dark, focus con mejor contraste */
+[data-bs-theme="dark"] *:focus-visible,
+[data-theme="dark"] *:focus-visible,
+body.theme-dark *:focus-visible {
+    outline-color: #6ea8fe;
+    box-shadow: 0 0 0 4px rgba(110, 168, 254, 0.3);
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    *:focus-visible {
+        outline-width: 4px;
+        outline-color: currentColor;
+    }
+}
+
+/* Reduced motion - respetar preferencias */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Indicador de required */
+.required-indicator {
+    color: #dc3545;
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+.required-indicator::after {
+    content: " (requerido)";
+    position: absolute;
+    left: -9999px;
+}
+
+/* Form fields con mejor contraste para errores */
+.is-invalid:focus-visible {
+    outline-color: #dc3545;
+    box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.25);
+}
+
+/* Botones con estados ARIA */
+[aria-busy="true"] {
+    cursor: wait;
+    position: relative;
+}
+
+[aria-busy="true"]::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    margin-left: -8px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Live region - anunciada a screen readers */
+#a11y-live-region[aria-live="assertive"] {
+    /* Alert urgente */
+}
+
+#a11y-live-region:empty {
+    display: none;
+}
+
+/* Better target size for touch (WCAG 2.5.5) */
+@media (pointer: coarse) {
+    .btn,
+    .form-control,
+    .form-select,
+    button,
+    [role="button"] {
+        min-height: 44px;
+    }
+}
+
+/* Tooltip con role para screen readers */
+[role="tooltip"] {
+    position: absolute;
+    z-index: 1080;
+    padding: 4px 8px;
+    background: #212529;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    pointer-events: none;
+}
+
+/* Cards interactivas con role button */
+[role="button"]:not(button):not(a) {
+    cursor: pointer;
+    user-select: none;
+}
+
+[role="button"]:not(button):not(a):hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+[role="button"]:not(button):not(a):focus-visible {
+    outline: 3px solid #0d6efd;
+}

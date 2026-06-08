@@ -1,0 +1,489 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use App\Models\User;
+
+class PermissionSeeder extends Seeder
+{
+    public function run(): void
+    {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $permissionsByModule = [
+            'dashboard' => [
+                'dashboard.view',
+            ],
+            'reportes' => [
+                'reportes.view',
+                'reportes.export',
+                'reportes.restaurante',
+            ],
+            'ventas' => [
+                'ventas.view',
+                'ventas.create',
+                'ventas.view.own',
+                'ventas.anular',
+                'ventas.export',
+            ],
+            'cotizaciones' => [
+                'cotizaciones.view',
+                'cotizaciones.create',
+                'cotizaciones.edit',
+                'cotizaciones.delete',
+                'cotizaciones.export',
+                'cotizaciones.convertir',
+                'cotizaciones.enviar',
+            ],
+            'conduces' => [
+                'conduces.view',
+                'conduces.create',
+                'conduces.edit',
+                'conduces.delete',
+                'conduces.print',
+                'conduces.deliver',
+            ],
+            'restaurante' => [
+                'restaurante.view',
+                'restaurante.cobrar',
+                'restaurante.anular',
+                'restaurante.descuento',
+                'restaurante.categorias',
+                'restaurante.reservaciones',
+                'restaurante.cajas',
+                'restaurante.mesas.manage',
+            ],
+            'cajas' => [
+                'cajas.view',
+                'cajas.create',
+                'cajas.edit',
+                'cajas.delete',
+                'cajas.open',
+                'cajas.close',
+                'cajas.view.report',
+            ],
+            'clientes' => [
+                'clientes.view',
+                'clientes.create',
+                'clientes.edit',
+                'clientes.delete',
+            ],
+            'cobros' => [
+                'cobros.view',
+                'cobros.create',
+                'cobros.export',
+            ],
+            'productos' => [
+                'productos.view',
+                'productos.create',
+                'productos.edit',
+                'productos.delete',
+                'productos.import',
+                'productos.export',
+            ],
+            'compras' => [
+                'compras.view',
+                'compras.create',
+                'compras.edit',
+                'compras.delete',
+                'compras.export',
+            ],
+            'proveedores' => [
+                'proveedores.view',
+                'proveedores.create',
+                'proveedores.edit',
+                'proveedores.delete',
+            ],
+            'almacenes' => [
+                'almacenes.view',
+                'almacenes.create',
+                'almacenes.edit',
+                'almacenes.delete',
+                'almacenes.movements',
+            ],
+            'kardex' => [
+                'kardex.view',
+                'kardex.export',
+            ],
+            'ncf' => [
+                'ncf.view',
+                'ncf.manage',
+            ],
+            'ecf' => [
+                'ecf.view',
+                'ecf.manage',
+                'ecf.send',
+                'ecf.certificados',
+            ],
+            'impresoras' => [
+                'impresoras.view',
+                'impresoras.create',
+                'impresoras.edit',
+                'impresoras.delete',
+                'impresoras.print',
+            ],
+            'gastos' => [
+                'gastos.view',
+                'gastos.create',
+                'gastos.edit',
+                'gastos.delete',
+            ],
+            'auditoria' => [
+                'auditoria.view',
+            ],
+            'sucursales' => [
+                'sucursales.view',
+                'sucursales.create',
+                'sucursales.edit',
+                'sucursales.delete',
+            ],
+            'devoluciones' => [
+                'devoluciones.view',
+                'devoluciones.create',
+                'devoluciones.confirmar',
+                'devoluciones.delete',
+            ],
+            'listas-precio' => [
+                'listas-precio.view',
+                'listas-precio.create',
+                'listas-precio.edit',
+                'listas-precio.delete',
+            ],
+            'retail' => [
+                'retail.terminal',
+                'retail.inventario',
+                'retail.compras',
+                'retail.devoluciones',
+            ],
+            'mayorista' => [
+                'mayorista.precios_volumen',
+                'mayorista.conduces',
+                'mayorista.listado_precios',
+            ],
+            'servicios' => [
+                'servicios.cotizaciones',
+                'servicios.facturacion_horas',
+                'servicios.gastos',
+            ],
+            'payment-processors' => [
+                'payment-processors.view',
+                'payment-processors.create',
+                'payment-processors.edit',
+                'payment-processors.delete',
+            ],
+            'backups' => [
+                'backups.view',
+                'backups.create',
+                'backups.delete',
+            ],
+            'configuracion' => [
+                'configuracion.view',
+                'configuracion.edit',
+            ],
+            'usuarios' => [
+                'usuarios.view',
+                'usuarios.manage',
+            ],
+            'roles' => [
+                'roles.view',
+                'roles.manage',
+            ],
+        ];
+
+        $allPermissions = [];
+        foreach ($permissionsByModule as $module => $perms) {
+            foreach ($perms as $p) {
+                $perm = Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
+                $allPermissions[] = $perm->name;
+            }
+        }
+
+        $rolePermissions = [
+            'admin' => $allPermissions,
+
+            'gerente' => [
+                'dashboard.view',
+                'reportes.view',
+                'reportes.export',
+                'reportes.restaurante',
+
+                'ventas.view',
+                'ventas.create',
+                'ventas.anular',
+                'ventas.export',
+
+                'cotizaciones.view',
+                'cotizaciones.create',
+                'cotizaciones.edit',
+                'cotizaciones.delete',
+                'cotizaciones.export',
+                'cotizaciones.convertir',
+
+                'conduces.view',
+                'conduces.create',
+                'conduces.edit',
+                'conduces.print',
+                'conduces.deliver',
+
+                'devoluciones.view',
+                'devoluciones.create',
+                'devoluciones.confirmar',
+
+                'listas-precio.view',
+                'listas-precio.create',
+                'listas-precio.edit',
+
+                'gastos.view',
+                'gastos.create',
+                'gastos.edit',
+
+                'auditoria.view',
+                'backups.view',
+                'backups.create',
+
+                'payment-processors.view',
+                'payment-processors.create',
+                'payment-processors.edit',
+
+                'restaurante.view',
+                'restaurante.cobrar',
+                'restaurante.anular',
+                'restaurante.descuento',
+                'restaurante.categorias',
+                'restaurante.reservaciones',
+                'restaurante.cajas',
+                'restaurante.mesas.manage',
+
+                'cajas.view',
+                'cajas.create',
+                'cajas.edit',
+                'cajas.open',
+                'cajas.close',
+                'cajas.view.report',
+
+                'clientes.view',
+                'clientes.create',
+                'clientes.edit',
+
+                'cobros.view',
+                'cobros.create',
+                'cobros.export',
+
+                'productos.view',
+                'productos.create',
+                'productos.edit',
+                'productos.import',
+                'productos.export',
+
+                'compras.view',
+                'compras.create',
+                'compras.edit',
+                'compras.export',
+
+                'proveedores.view',
+                'proveedores.create',
+                'proveedores.edit',
+
+                'almacenes.view',
+                'almacenes.create',
+                'almacenes.edit',
+                'almacenes.movements',
+
+                'kardex.view',
+                'kardex.export',
+
+                'ncf.view',
+                'ncf.manage',
+
+                'ecf.view',
+                'ecf.manage',
+                'ecf.send',
+                'ecf.certificados',
+
+                'sucursales.view',
+                'sucursales.create',
+                'sucursales.edit',
+
+                'configuracion.view',
+
+                'usuarios.view',
+                'roles.view',
+            ],
+
+            'vendedor' => [
+                'dashboard.view',
+
+                'reportes.view',
+                'reportes.restaurante',
+
+                'ventas.view.own',
+                'ventas.create',
+
+                'cotizaciones.view',
+                'cotizaciones.create',
+                'cotizaciones.edit',
+                'cotizaciones.convertir',
+                'conduces.view',
+                'conduces.create',
+                'conduces.edit',
+                'conduces.print',
+                'conduces.deliver',
+
+                'devoluciones.view',
+                'devoluciones.create',
+
+                'listas-precio.view',
+
+                'restaurante.view',
+                'restaurante.cobrar',
+                'restaurante.anular',
+                'restaurante.descuento',
+                'restaurante.mesas.manage',
+                'restaurante.cajas',
+                'restaurante.categorias',
+                'restaurante.reservaciones',
+
+                'retail.terminal',
+                'retail.inventario',
+                'retail.compras',
+                'retail.devoluciones',
+
+                'mayorista.precios_volumen',
+                'mayorista.conduces',
+                'mayorista.listado_precios',
+
+                'servicios.cotizaciones',
+                'servicios.facturacion_horas',
+                'servicios.gastos',
+
+                'cajas.view',
+                'cajas.open',
+                'cajas.close',
+
+                'clientes.view',
+                'clientes.create',
+                'clientes.edit',
+
+                'cobros.create',
+
+                'productos.view',
+                'productos.create',
+                'productos.edit',
+                'productos.export',
+
+                'compras.view',
+                'compras.create',
+                'compras.edit',
+                'compras.export',
+
+                'proveedores.view',
+                'proveedores.create',
+                'proveedores.edit',
+
+                'almacenes.view',
+                'almacenes.create',
+                'almacenes.edit',
+                'almacenes.movements',
+
+                'kardex.view',
+                'kardex.export',
+
+                'gastos.view',
+                'gastos.create',
+                'gastos.edit',
+            ],
+
+            'almacen' => [
+                'dashboard.view',
+                'reportes.view',
+
+                'productos.view',
+                'productos.create',
+                'productos.edit',
+                'productos.import',
+                'productos.export',
+
+                'compras.view',
+                'compras.create',
+                'compras.edit',
+                'compras.export',
+
+                'proveedores.view',
+                'proveedores.create',
+                'proveedores.edit',
+
+                'almacenes.view',
+                'almacenes.create',
+                'almacenes.edit',
+                'almacenes.movements',
+
+                'kardex.view',
+                'kardex.export',
+            ],
+
+            'contador' => [
+                'dashboard.view',
+                'reportes.view',
+                'reportes.export',
+
+                'ventas.view',
+                'ventas.export',
+
+                'cotizaciones.view',
+                'cotizaciones.export',
+
+                'cajas.view',
+                'cajas.view.report',
+
+                'clientes.view',
+
+                'cobros.view',
+                'cobros.export',
+
+                'productos.view',
+                'productos.export',
+
+                'compras.view',
+                'compras.export',
+
+                'proveedores.view',
+
+                'kardex.view',
+                'kardex.export',
+
+                'ncf.view',
+            ],
+        ];
+
+        foreach ($rolePermissions as $roleName => $perms) {
+            $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+            $role->syncPermissions($perms);
+        }
+
+        $admin = User::where('email', 'admin@test.com')->first();
+        if ($admin) {
+            $admin->syncRoles(['admin']);
+            $admin->role = 'admin';
+            $admin->save();
+        }
+
+        $vendedor = User::where('email', 'vendedor@test.com')->first();
+        if ($vendedor) {
+            $vendedor->syncRoles(['vendedor']);
+            $vendedor->role = 'vendedor';
+            $vendedor->save();
+        }
+
+        $juanCarlos = User::where('email', 'jcjerez@gmail.com')->first();
+        if ($juanCarlos) {
+            $juanCarlos->syncRoles(['vendedor']);
+            $juanCarlos->role = 'vendedor';
+            $juanCarlos->save();
+        }
+
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+    }
+}

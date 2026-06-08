@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#bg)"/>
+
+  <g transform="translate(100,80)">
+    <rect width="200" height="200" rx="20" fill="url(#iconBg)"/>
+    <g transform="translate(40,40)" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="0" y="0" width="120" height="120" rx="8" fill="#ffffff" fill-opacity="0.15"/>
+      <circle cx="30" cy="30" r="10" fill="#ffffff"/>
+      <path d="M 0 90 L 40 60 L 70 80 L 100 50 L 120 70"/>
+    </g>
+  </g>
+
+  <text x="200" y="320" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#64748b">
+    Sin imagen
+  </text>
+  <text x="200" y="348" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="500" fill="#94a3b8">
+    Producto sin imagen disponible
+  </text>
+</svg>
