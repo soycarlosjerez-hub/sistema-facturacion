@@ -12,9 +12,6 @@
         <button class="btn btn-light btn-sm rounded-pill shadow-sm" onclick="toggleMapa()" id="btn-toggle-mapa">
             <i class="bi bi-map"></i> Mapa
         </button>
-        <button class="btn btn-light btn-sm rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#mesaModal">
-            <i class="bi bi-plus-lg"></i> Mesa
-        </button>
     </div>
 @endsection
 
@@ -262,65 +259,6 @@
             <div class="modal-body p-0" id="historial-content">
                 <div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</div>
             </div>
-        </div>
-    </div>
-</div>
-
-{{-- Modal Mesa --}}
-<div class="modal fade" id="mesaModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <form id="mesa-form" method="POST">
-                @csrf
-                <div class="modal-header border-0">
-                    <h6 class="modal-title fw-bold" id="mesa-modal-title">Nueva Mesa</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="_method" id="mesa-method" value="POST">
-                    <input type="hidden" name="mesa_id" id="mesa-id">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Número <span class="text-danger">*</span></label>
-                        <input type="text" name="numero" id="mesa-numero" class="form-control rounded-3" required placeholder="01">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Nombre</label>
-                        <input type="text" name="nombre" id="mesa-nombre" class="form-control rounded-3" placeholder="Ej. Terraza, VIP">
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold">Capacidad</label>
-                            <input type="number" name="capacidad" id="mesa-capacidad" class="form-control rounded-3" value="4" min="1">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small fw-bold">Ubicación</label>
-                            <input type="text" name="ubicacion" id="mesa-ubicacion" class="form-control rounded-3" placeholder="Interior, terraza">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Categoría</label>
-                        <select name="categoria_id" id="mesa-categoria" class="form-select rounded-3">
-                            <option value="">Sin categoría</option>
-                            @foreach(\App\Models\MesaCategoria::orderBy('nombre')->get() as $cat)
-                                <option value="{{ $cat->id }}" data-color="{{ $cat->color }}">{{ $cat->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3 d-none" id="mesa-estado-group">
-                        <label class="form-label small fw-bold">Estado</label>
-                        <select name="estado" id="mesa-estado" class="form-select rounded-3">
-                            <option value="disponible">Disponible</option>
-                            <option value="ocupada">Ocupada</option>
-                            <option value="reservada">Reservada</option>
-                            <option value="inactiva">Inactiva</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">Guardar</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -641,17 +579,6 @@ function renderizarFiltroCategorias() {
     container.innerHTML = html;
 }
 
-// Auto-abrir modal crear mesa si viene desde sidebar
-document.addEventListener('DOMContentLoaded', function () {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('action') === 'crear-mesa') {
-        const modal = new bootstrap.Modal(document.getElementById('mesaModal'));
-        modal.show();
-        // Limpiar URL sin recargar
-        history.replaceState(null, '', window.location.pathname);
-    }
-});
-
 // Inicializar caja status
 document.addEventListener('DOMContentLoaded', renderCajaStatus);
 
@@ -757,7 +684,11 @@ function cargarMesa(mesaId) {
                 ? ` <span class="badge bg-info rounded-pill">${orden.tipo_orden.replace('_', ' ')}</span>`
                 : '';
             document.getElementById('orden-subtitulo').innerHTML = '# Cap. ' + mesa.capacidad + ' · ' + (mesa.ubicacion || '') + tipoBadge;
-
+            
+            if (!orden && mesa.estado === 'reservada') {
+                document.getElementById('orden-subtitulo').innerHTML += ' <span class="badge bg-warning text-dark">Reserva Pendiente</span>';
+            }
+            
             document.getElementById('orden-actions').classList.remove('d-none');
 
             const searchBar = document.getElementById('productos-search-bar');
@@ -771,6 +702,34 @@ function cargarMesa(mesaId) {
                 document.getElementById('cliente-nombre').textContent = orden.cliente?.nombre || 'Consumidor Final';
                 document.getElementById('buscar-producto').value = '';
                 document.getElementById('productos-resultados').style.display = 'none';
+            } else if (mesa.estado === 'reservada' && data.reservacion) {
+                ordenActual = null;
+                searchBar.classList.add('d-none');
+                clienteSelector.classList.add('d-none');
+                document.getElementById('orden-footer').classList.add('d-none');
+                const r = data.reservacion;
+                const fechaHora = r.fecha_hora ? new Date(r.fecha_hora + 'Z').toLocaleString('es-DO', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
+                document.getElementById('orden-items').innerHTML = `
+                    <div class="text-center mt-3">
+                        <i class="bi bi-bookmark-check fs-1 d-block mb-2 text-info"></i>
+                        <h6 class="fw-bold">Reserva para:</h6>
+                        <p class="mb-1"><strong>${escapeHtml(r.cliente_nombre)}</strong></p>
+                        <div class="d-flex justify-content-center gap-3 small text-muted mb-2">
+                            <span><i class="bi bi-people me-1"></i>${r.personas} personas</span>
+                            <span><i class="bi bi-clock me-1"></i>${fechaHora}</span>
+                        </div>
+                        ${r.cliente_telefono ? `<small class="text-muted d-block"><i class="bi bi-telephone me-1"></i>${escapeHtml(r.cliente_telefono)}</small>` : ''}
+                        ${r.notas ? `<div class="alert alert-light border mt-2 small py-1 px-2">📝 ${escapeHtml(r.notas)}</div>` : ''}
+                        <div class="d-flex gap-2 justify-content-center mt-3">
+                            <button class="btn btn-success rounded-pill" onclick="confirmarReserva(${mesaId}, ${r.id})">
+                                <i class="bi bi-check-circle me-1"></i> Confirmar llegada
+                            </button>
+                            <button class="btn btn-outline-danger rounded-pill" onclick="liberarMesa(${mesaId})">
+                                <i class="bi bi-x-circle me-1"></i> Liberar mesa
+                            </button>
+                        </div>
+                    </div>
+                `;
             } else {
                 ordenActual = null;
                 searchBar.classList.add('d-none');
@@ -861,6 +820,46 @@ function abrirMesa(mesaId, clienteId, tipoOrden) {
     })
     .catch(err => {
         Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
+    });
+}
+
+function confirmarReserva(mesaId, reservacionId) {
+    fetch(`/restaurante/mesa/${mesaId}/abrir`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(r => {
+        if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error del servidor'); });
+        return r.json();
+    })
+    .then(data => {
+        if (data.error) { Swal.fire({icon:'error', title:'No se pudo abrir', text: data.error}); return; }
+        fetch(`/restaurante/reservaciones/${reservacionId}/estado`, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: 'cumplida' })
+        }).catch(() => {});
+        cargarMesa(mesaId);
+        actualizarGridMesa(mesaId, 'ocupada');
+    })
+    .catch(err => {
+        Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
+    });
+}
+
+function liberarMesa(mesaId) {
+    if (!confirm('¿Liberar esta mesa? La reservación será cancelada.')) return;
+    fetch(`/restaurante/mesa/${mesaId}/estado`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: 'disponible' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+        cargarMesa(mesaId);
+        actualizarGridMesa(mesaId, 'disponible');
     });
 }
 
@@ -1526,26 +1525,6 @@ function actualizarGridMesa(mesaId, estado) {
     const montoBadge = btn.querySelector('.badge.bg-dark');
     if (estado === 'disponible' && montoBadge) montoBadge.remove();
 }
-
-document.getElementById('mesa-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const form = this;
-    const method = document.getElementById('mesa-method').value;
-    const mesaId = document.getElementById('mesa-id').value;
-    let url = '{{ route("restaurante.mesa.store") }}';
-    if (method === 'PUT') {
-        url = `/restaurante/mesa/${mesaId}/update`;
-    }
-    fetch(url, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: new FormData(form)
-    })
-    .then(r => {
-        if (r.ok) { location.reload(); }
-        else { alert('Error al guardar'); }
-    });
-});
 
 document.getElementById('mesas-count').textContent = document.querySelectorAll('.mesa-btn').length;
 

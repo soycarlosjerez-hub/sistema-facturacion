@@ -33,6 +33,8 @@ class RestauranteController extends Controller
 
     public function index()
     {
+        $this->autoOcuparMesasReservadas();
+
         $mesas = Mesa::deSucursal()->with('ordenActiva')->orderBy('numero')->get();
         $cajas = Caja::where('activo', true)->orderBy('nombre')->get();
         $sesionActiva = SesionCaja::with('caja')
@@ -44,15 +46,67 @@ class RestauranteController extends Controller
         return view('restaurante.index', compact('mesas', 'cajas', 'sesionActiva'));
     }
 
+    private function autoOcuparMesasReservadas()
+    {
+        $reservaciones = Reservacion::whereIn('estado', ['pendiente', 'confirmada'])
+            ->where('fecha_hora', '<=', now())
+            ->whereHas('mesa', fn($q) => $q->where('estado', 'reservada')->whereDoesntHave('ordenActiva'))
+            ->get();
+
+        foreach ($reservaciones as $reservacion) {
+            DB::beginTransaction();
+            try {
+                $mesa = $reservacion->mesa;
+
+                $cliente = $reservacion->cliente ?? Cliente::firstOrCreate(
+                    ['nombre' => $reservacion->cliente_nombre],
+                    ['telefono' => $reservacion->cliente_telefono, 'email' => $reservacion->cliente_email]
+                );
+
+                $sesion = SesionCaja::where('user_id', Auth::id())
+                    ->where('estado', 'abierta')
+                    ->latest('fecha_apertura')
+                    ->first();
+
+                Venta::create([
+                    'user_id'        => Auth::id(),
+                    'sucursal_id'    => session('sucursal_id'),
+                    'mesa_id'        => $mesa->id,
+                    'caja_id'        => $sesion?->caja_id,
+                    'sesion_caja_id' => $sesion?->id,
+                    'cliente_id'     => $cliente->id,
+                    'tipo_venta_id'  => 1,
+                    'fecha'          => now(),
+                    'subtotal'       => 0,
+                    'impuestos'      => 0,
+                    'total'          => 0,
+                    'estado'         => 'abierta',
+                    'tipo_orden'     => 'mesa',
+                    'notas'          => 'Reservación automática - ' . $reservacion->cliente_nombre,
+                ]);
+
+                $mesa->update(['estado' => 'ocupada']);
+                $reservacion->update(['estado' => 'cumplida']);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error auto-ocupando mesa reservada: ' . $e->getMessage());
+            }
+        }
+    }
+
     public function getMesa(Mesa $mesa)
     {
         $orden = $mesa->ordenActiva;
         if ($orden) {
             $orden->load('detalles.producto', 'cliente', 'usuario');
         }
+        $reservacion = $mesa->reservacion;
         return response()->json([
-            'mesa'  => $mesa,
-            'orden' => $orden,
+            'mesa'        => $mesa,
+            'orden'       => $orden,
+            'reservacion' => $reservacion,
         ]);
     }
 
@@ -91,7 +145,7 @@ class RestauranteController extends Controller
             'tipo_orden' => 'nullable|in:mesa,delivery,para_llevar',
         ]);
 
-        if ($mesa->estado !== 'disponible') {
+        if ($mesa->estado !== 'disponible' && $mesa->estado !== 'reservada') {
             return response()->json(['error' => 'La mesa no está disponible'], 422);
         }
 
@@ -535,6 +589,19 @@ class RestauranteController extends Controller
         return response()->json(['success' => true, 'mesa' => $mesa]);
     }
 
+    public function mesasIndex()
+    {
+        $mesas = Mesa::deSucursal()->with('categoria')->orderBy('numero')->get();
+        $categorias = MesaCategoria::orderBy('nombre')->get();
+
+        return view('restaurante.mesas', compact('mesas', 'categorias'));
+    }
+
+    public function mesaShow(Mesa $mesa)
+    {
+        return response()->json($mesa->load('categoria'));
+    }
+
     public function storeMesa(Request $request)
     {
         $data = $request->validate([
@@ -550,7 +617,7 @@ class RestauranteController extends Controller
 
         Mesa::create($data);
 
-        return redirect()->route('restaurante.index')->with('success', 'Mesa agregada correctamente.');
+        return redirect()->route('restaurante.mesas.index')->with('success', 'Mesa agregada correctamente.');
     }
 
     public function updateMesa(Request $request, Mesa $mesa)
@@ -566,15 +633,16 @@ class RestauranteController extends Controller
 
         $mesa->update($data);
 
-        return redirect()->route('restaurante.index')->with('success', 'Mesa actualizada.');
+        return redirect()->route('restaurante.mesas.index')->with('success', 'Mesa actualizada.');
     }
+
     public function destroyMesa(Mesa $mesa)
     {
         if ($mesa->estado === 'ocupada') {
             return back()->with('error', 'No se puede eliminar una mesa ocupada.');
         }
         $mesa->delete();
-        return redirect()->route('restaurante.index')->with('success', 'Mesa eliminada.');
+        return redirect()->route('restaurante.mesas.index')->with('success', 'Mesa eliminada.');
     }
 
     public function anularOrden(Request $request, Mesa $mesa)
@@ -706,10 +774,24 @@ class RestauranteController extends Controller
     // Reservaciones
     public function reservacionesIndex()
     {
-        $reservaciones = Reservacion::with('mesa', 'user')
-            ->deSucursal()
-            ->orderBy('fecha_hora')
-            ->paginate(20);
+        $query = Reservacion::with('mesa', 'user')->deSucursal();
+
+        if ($busqueda = request('busqueda')) {
+            $query->where(function ($q) use ($busqueda) {
+                $q->where('cliente_nombre', 'like', "%{$busqueda}%")
+                  ->orWhere('cliente_telefono', 'like', "%{$busqueda}%")
+                  ->orWhereHas('mesa', function ($q2) use ($busqueda) {
+                      $q2->where('nombre', 'like', "%{$busqueda}%")
+                         ->orWhere('numero', 'like', "%{$busqueda}%");
+                  });
+            });
+        }
+
+        if ($estado = request('estado')) {
+            $query->where('estado', $estado);
+        }
+
+        $reservaciones = $query->orderBy('fecha_hora')->paginate(20);
         $mesas = Mesa::deSucursal()->orderBy('numero')->get();
         return view('restaurante.reservaciones', compact('reservaciones', 'mesas'));
     }
@@ -726,9 +808,22 @@ class RestauranteController extends Controller
             'notas'            => 'nullable|string|max:500',
         ]);
 
+        $mesa = Mesa::findOrFail($data['mesa_id']);
+        if ($mesa->estado !== 'disponible') {
+            return back()->with('error', 'La mesa seleccionada no está disponible.');
+        }
+
         $data['user_id'] = Auth::id();
 
-        Reservacion::create($data);
+        DB::beginTransaction();
+        try {
+            Reservacion::create($data);
+            $mesa->update(['estado' => 'reservada']);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error al crear la reservación: ' . $e->getMessage());
+        }
 
         return redirect()->route('restaurante.reservaciones.index')->with('success', 'Reservación creada.');
     }
@@ -745,7 +840,34 @@ class RestauranteController extends Controller
             'notas'            => 'nullable|string|max:500',
         ]);
 
-        $reservacion->update($data);
+        DB::beginTransaction();
+        try {
+            $mesaAnterior = $reservacion->mesa;
+            $nuevaMesa = Mesa::findOrFail($data['mesa_id']);
+
+            if ($nuevaMesa->id !== $mesaAnterior->id && $nuevaMesa->estado !== 'disponible') {
+                return back()->with('error', 'La mesa seleccionada no está disponible.');
+            }
+
+            $reservacion->update($data);
+
+            // Liberar mesa anterior si no tiene más reservas activas
+            if ($nuevaMesa->id !== $mesaAnterior->id) {
+                $otrasReservas = Reservacion::where('mesa_id', $mesaAnterior->id)
+                    ->where('id', '!=', $reservacion->id)
+                    ->whereIn('estado', ['pendiente', 'confirmada'])
+                    ->exists();
+                if (!$otrasReservas && $mesaAnterior->estado === 'reservada') {
+                    $mesaAnterior->update(['estado' => 'disponible']);
+                }
+                $nuevaMesa->update(['estado' => 'reservada']);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error al actualizar la reservación: ' . $e->getMessage());
+        }
 
         return redirect()->route('restaurante.reservaciones.index')->with('success', 'Reservación actualizada.');
     }
@@ -753,13 +875,55 @@ class RestauranteController extends Controller
     public function reservacionesEstado(Request $request, Reservacion $reservacion)
     {
         $request->validate(['estado' => 'required|in:pendiente,confirmada,cancelada,cumplida']);
-        $reservacion->update(['estado' => $request->estado]);
+        $nuevoEstado = $request->estado;
+
+        DB::beginTransaction();
+        try {
+            $reservacion->update(['estado' => $nuevoEstado]);
+
+            $mesa = $reservacion->mesa;
+            // Si se cancela, liberar la mesa si no tiene otras reservas activas
+            if (in_array($nuevoEstado, ['cancelada', 'cumplida'])) {
+                $otrasReservas = Reservacion::where('mesa_id', $mesa->id)
+                    ->where('id', '!=', $reservacion->id)
+                    ->whereIn('estado', ['pendiente', 'confirmada'])
+                    ->exists();
+                // Solo cambiar a disponible si no hay orden activa y la mesa sigue reservada
+                if (!$otrasReservas && !$mesa->ordenActiva && $mesa->estado === 'reservada') {
+                    $mesa->update(['estado' => 'disponible']);
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error al actualizar estado: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'Estado actualizado.');
     }
 
     public function reservacionesDestroy(Reservacion $reservacion)
     {
-        $reservacion->delete();
+        DB::beginTransaction();
+        try {
+            $mesa = $reservacion->mesa;
+            $reservacion->delete();
+
+            // Liberar mesa si no tiene más reservas activas ni orden activa
+            $otrasReservas = Reservacion::where('mesa_id', $mesa->id)
+                ->whereIn('estado', ['pendiente', 'confirmada'])
+                ->exists();
+            if (!$otrasReservas && !$mesa->ordenActiva && $mesa->estado === 'reservada') {
+                $mesa->update(['estado' => 'disponible']);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('restaurante.reservaciones.index')->with('error', 'Error al eliminar: ' . $e->getMessage());
+        }
+
         return redirect()->route('restaurante.reservaciones.index')->with('success', 'Reservación eliminada.');
     }
 

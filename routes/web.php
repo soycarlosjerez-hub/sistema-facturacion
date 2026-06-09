@@ -581,9 +581,11 @@ Route::middleware(['auth'])->group(function () {
     // Estado
     Route::post('/restaurante/mesa/{mesa}/estado', [RestauranteController::class, 'cambiarEstado'])->name('restaurante.mesa.estado')->middleware('permission:restaurante.mesas.manage');
 
-    // CRUD Mesas
+    // Gestión de Mesas
+    Route::get('/restaurante/mesas', [RestauranteController::class, 'mesasIndex'])->name('restaurante.mesas.index')->middleware('permission:restaurante.mesas.manage');
+    Route::get('/restaurante/mesas/{mesa}', [RestauranteController::class, 'mesaShow'])->name('restaurante.mesas.show')->middleware('permission:restaurante.mesas.manage');
     Route::post('/restaurante/mesa', [RestauranteController::class, 'storeMesa'])->name('restaurante.mesa.store')->middleware('permission:restaurante.mesas.manage');
-    Route::post('/restaurante/mesa/{mesa}/update', [RestauranteController::class, 'updateMesa'])->name('restaurante.mesa.update')->middleware('permission:restaurante.mesas.manage');
+    Route::put('/restaurante/mesa/{mesa}/update', [RestauranteController::class, 'updateMesa'])->name('restaurante.mesa.update')->middleware('permission:restaurante.mesas.manage');
     Route::delete('/restaurante/mesa/{mesa}', [RestauranteController::class, 'destroyMesa'])->name('restaurante.mesa.destroy')->middleware('permission:restaurante.mesas.manage');
 
     // Cajas desde restaurante

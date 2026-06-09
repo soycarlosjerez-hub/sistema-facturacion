@@ -124,12 +124,11 @@ class Sidebar
             ];
             if ($can('restaurante.mesas.manage')) {
                 $items[] = [
-                    'route' => 'restaurante.index',
-                    'url'   => route('restaurante.index') . '?action=crear-mesa',
-                    'icon'  => 'bi-plus-square',
-                    'label' => 'Crear Mesa',
-                    'is_route' => 'restaurante.index',
-                    'exact_route' => 'restaurante.index',
+                    'route' => 'restaurante.mesas.index',
+                    'icon'  => 'bi-grid-3x3-gap',
+                    'label' => 'Gestión de Mesas',
+                    'is_route' => 'restaurante.mesas.*',
+                    'exact_route' => 'restaurante.mesas.index',
                 ];
             }
             if ($mod('restaurante-reservaciones') && $can('restaurante.reservaciones')) {

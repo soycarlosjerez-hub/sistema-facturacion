@@ -20,6 +20,11 @@ class Mesa extends Model
         'pos_y'     => 'integer',
     ];
 
+    public function categoria()
+    {
+        return $this->belongsTo(MesaCategoria::class, 'categoria_id');
+    }
+
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class);
@@ -40,9 +45,9 @@ class Mesa extends Model
         return $query->where('activa', true);
     }
 
-    public function categoria()
+    public function reservacion()
     {
-        return $this->belongsTo(MesaCategoria::class, 'categoria_id');
+        return $this->hasOne(Reservacion::class)->where('estado', '!=', 'cancelada');
     }
 
     public function scopeDeSucursal($query)

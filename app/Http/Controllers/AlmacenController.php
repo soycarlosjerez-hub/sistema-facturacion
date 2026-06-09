@@ -140,9 +140,25 @@ class AlmacenController extends Controller
 
     public function createMovimiento()
     {
+        $almacenes = $this->almacenesSegunSucursal();
+
+        $stocks = AlmacenMovimiento::query()
+            ->selectRaw('producto_id, almacen_id, GREATEST(SUM(CASE WHEN tipo="entrada" THEN cantidad ELSE -cantidad END), 0) as stock')
+            ->groupBy('producto_id', 'almacen_id')
+            ->get()
+            ->groupBy('producto_id');
+
+        $stocksData = [];
+        foreach ($stocks as $productoId => $items) {
+            foreach ($items as $item) {
+                $stocksData[$productoId][$item->almacen_id] = (int) $item->stock;
+            }
+        }
+
         return view('almacenes.movimientos-create', [
-            'almacenes' => $this->almacenesSegunSucursal(),
-            'productos' => Producto::all(),
+            'almacenes'  => $almacenes,
+            'productos'  => Producto::all(),
+            'stocksData' => $stocksData,
         ]);
     }
 
@@ -159,6 +175,69 @@ class AlmacenController extends Controller
 
     public function storeMovimiento(Request $request)
     {
+        $isAdmin = Auth::user()?->hasRole('admin');
+
+        if ($request->tipo === 'traslado') {
+            $data = $request->validate([
+                'producto_id'         => 'required|exists:productos,id',
+                'almacen_origen_id'   => 'required|exists:almacenes,id',
+                'almacen_destino_id'  => 'required|exists:almacenes,id|different:almacen_origen_id',
+                'cantidad'            => 'required|integer|min:1',
+                'nota'                => 'nullable|string|max:255',
+            ]);
+
+            $almacenOrigen = Almacen::findOrFail($data['almacen_origen_id']);
+
+            if (!$isAdmin) {
+                $sucursalId = session('sucursal_id');
+                if (!$sucursalId || $almacenOrigen->sucursal_id !== (int)$sucursalId) {
+                    return redirect()->back()
+                        ->withErrors(['error' => 'Solo puedes gestionar movimientos en almacenes de tu sucursal.'])
+                        ->withInput();
+                }
+            }
+
+            $stockActual = AlmacenMovimiento::where('producto_id', $data['producto_id'])
+                ->where('almacen_id', $data['almacen_origen_id'])
+                ->selectRaw('GREATEST(SUM(CASE WHEN tipo="entrada" THEN cantidad ELSE -cantidad END), 0) as stock')
+                ->value('stock');
+
+            if ($stockActual < $data['cantidad']) {
+                return redirect()->back()
+                    ->withErrors(['error' => "Stock insuficiente en el almacén de origen. Disponible: {$stockActual}, solicitado: {$data['cantidad']}."])
+                    ->withInput();
+            }
+
+            DB::beginTransaction();
+            try {
+                AlmacenMovimiento::create([
+                    'producto_id' => $data['producto_id'],
+                    'almacen_id'  => $data['almacen_origen_id'],
+                    'user_id'     => Auth::id(),
+                    'tipo'        => 'salida',
+                    'cantidad'    => $data['cantidad'],
+                    'nota'        => $data['nota'] ?: 'Traslado a ' . Almacen::find($data['almacen_destino_id'])->nombre,
+                ]);
+
+                AlmacenMovimiento::create([
+                    'producto_id' => $data['producto_id'],
+                    'almacen_id'  => $data['almacen_destino_id'],
+                    'user_id'     => Auth::id(),
+                    'tipo'        => 'entrada',
+                    'cantidad'    => $data['cantidad'],
+                    'nota'        => $data['nota'] ?: 'Traslado desde ' . $almacenOrigen->nombre,
+                ]);
+
+                DB::commit();
+
+                return redirect()->route('almacenes.movimientos')
+                    ->with('success', 'Traslado registrado correctamente.');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->withErrors(['error' => $e->getMessage()]);
+            }
+        }
+
         $data = $request->validate([
             'producto_id' => 'required|exists:productos,id',
             'almacen_id'  => 'required|exists:almacenes,id',
@@ -167,7 +246,6 @@ class AlmacenController extends Controller
             'nota'        => 'nullable|string|max:255',
         ]);
 
-        $isAdmin = Auth::user()?->hasRole('admin');
         $almacen = Almacen::findOrFail($data['almacen_id']);
 
         if (!$isAdmin) {
