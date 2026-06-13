@@ -112,6 +112,54 @@ class Sidebar
             }
         }
 
+        // Lavadero
+        if ($mod('lavadero') && $can('lavadero.view')) {
+            $items[] = ['section' => 'Lavadero'];
+            $items[] = [
+                'route' => 'lavadero.index',
+                'icon'  => 'bi-droplet',
+                'label' => 'Terminal de Lavado',
+                'is_route' => 'lavadero.*',
+                'exact_route' => 'lavadero.index',
+            ];
+            if ($mod('lavadero-servicios') && $can('lavadero.servicios')) {
+                $items[] = [
+                    'route' => 'lavadero.servicios.index',
+                    'icon'  => 'bi-card-checklist',
+                    'label' => 'Servicios',
+                    'is_route' => 'lavadero.servicios.*',
+                    'exact_route' => 'lavadero.servicios.index',
+                ];
+            }
+            if ($mod('lavadero-vehiculos') && $can('lavadero.vehiculos')) {
+                $items[] = [
+                    'route' => 'lavadero.vehiculos.index',
+                    'icon'  => 'bi-car-front',
+                    'label' => 'Vehículos',
+                    'is_route' => 'lavadero.vehiculos.*',
+                    'exact_route' => 'lavadero.vehiculos.index',
+                ];
+            }
+            if ($mod('lavadero-citas') && $can('lavadero.citas')) {
+                $items[] = [
+                    'route' => 'lavadero.citas.index',
+                    'icon'  => 'bi-calendar-event',
+                    'label' => 'Citas / Turnos',
+                    'is_route' => 'lavadero.citas.*',
+                    'exact_route' => 'lavadero.citas.index',
+                ];
+            }
+            if ($mod('lavadero-lavadores') && $can('lavadero.lavadores')) {
+                $items[] = [
+                    'route' => 'lavadero.lavadores.index',
+                    'icon'  => 'bi-people',
+                    'label' => 'Lavadores',
+                    'is_route' => 'lavadero.lavadores.*',
+                    'exact_route' => 'lavadero.lavadores.index',
+                ];
+            }
+        }
+
         // Restaurante
         if ($mod('restaurante') && $can('restaurante.view')) {
             $items[] = ['section' => 'Restaurante'];
@@ -188,6 +236,8 @@ class Sidebar
             }
             if ($mod('reportes-restaurante')) {
                 $items[] = ['route' => 'reportes.restaurante', 'icon' => 'bi-cup-straw', 'label' => 'Restaurante', 'is_route' => 'reportes.restaurante*', 'exact_route' => 'reportes.restaurante'];
+                $items[] = ['route' => 'reportes.propinas', 'icon' => 'bi-cash-coin', 'label' => 'Propinas', 'is_route' => 'reportes.propinas*', 'exact_route' => 'reportes.propinas'];
+                $items[] = ['route' => 'reportes.delivery-comisiones', 'icon' => 'bi-truck', 'label' => 'Delivery Comisiones', 'is_route' => 'reportes.delivery-comisiones*', 'exact_route' => 'reportes.delivery-comisiones'];
             }
             if ($mod('reportes-retenciones')) {
                 $items[] = ['route' => 'reportes.retenciones', 'icon' => 'bi-percent', 'label' => 'Retenciones', 'is_route' => 'reportes.retenciones*', 'exact_route' => 'reportes.retenciones'];
@@ -228,6 +278,9 @@ class Sidebar
             }
             if ($can('payment-processors.view')) {
                 $items[] = ['route' => 'payment-processors.index', 'icon' => 'bi-credit-card', 'label' => 'Procesadores de Pago', 'is_route' => 'payment-processors.*', 'exact_route' => 'payment-processors.index'];
+            }
+            if ($can('delivery-companies.view')) {
+                $items[] = ['route' => 'delivery-companies.index', 'icon' => 'bi-truck', 'label' => 'Delivery Companies', 'is_route' => 'delivery-companies.*', 'exact_route' => 'delivery-companies.index'];
             }
             if ($can('impresoras.view')) {
                 $items[] = ['route' => 'impresoras.index', 'icon' => 'bi-printer', 'label' => 'Impresoras', 'is_route' => 'impresoras.*', 'exact_route' => 'impresoras.index'];

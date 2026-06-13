@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\Auditable;
 
 class Pago extends Model
 {
+    use Auditable;
     protected $fillable = [
         'venta_id',
         'caja_id',

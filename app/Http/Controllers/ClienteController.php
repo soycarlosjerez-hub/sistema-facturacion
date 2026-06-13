@@ -3,27 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
-use App\Support\RncValidator;
+use App\Services\ClienteService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class ClienteController extends Controller
 {
+    public function __construct(
+        protected ClienteService $clienteService
+    ) {}
+
     public function index(Request $request)
     {
-        $nombre = $request->input('nombre');
-        
-        $clientes = Cliente::when($nombre, function ($q) use ($nombre) {
-            $q->where('nombre', 'like', '%' . $nombre . '%')
-              ->orWhere('email', 'like', '%' . $nombre . '%')
-              ->orWhere('rnc_cedula', 'like', '%' . $nombre . '%')
-              ->orWhere('telefono', 'like', '%' . $nombre . '%');
-        })
-        ->latest()
-        ->paginate(10)
-        ->appends($request->query());
-
+        $clientes = $this->clienteService->list($request->all());
         return view('clientes.index', compact('clientes'));
     }
 
@@ -32,39 +23,26 @@ class ClienteController extends Controller
         return view('clientes.create');
     }
 
-    public function show($id)
-    {
-        $cliente = Cliente::with('ventas')->findOrFail($id);
-
-        return view('clientes.show', compact('cliente'));
-    }
-
     public function store(Request $request)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'rnc_cedula' => 'nullable|digits_between:9,11',
+        $data = $request->validate([
+            'nombre'        => 'required|string|max:255',
+            'rnc_cedula'    => 'nullable|digits_between:9,11',
             'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte',
-            'email' => 'nullable|email',
-            'telefono' => 'nullable',
-            'direccion' => 'nullable',
+            'email'         => 'nullable|email',
+            'telefono'      => 'nullable',
+            'direccion'     => 'nullable',
         ]);
 
-        $data = $request->all();
-
-        if (!empty($data['rnc_cedula'])) {
-            $tipoDoc = $data['tipo_documento'] ?? RncValidator::inferirTipo($data['rnc_cedula']);
-            if (!RncValidator::validar($data['rnc_cedula'], $tipoDoc)) {
-                throw ValidationException::withMessages([
-                    'rnc_cedula' => "El {$tipoDoc} ingresado no es válido (dígito verificador incorrecto).",
-                ]);
-            }
-            $data['tipo_documento'] = $tipoDoc;
-        }
-
-        Cliente::create($data);
+        $this->clienteService->create($data);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente creado correctamente');
+    }
+
+    public function show(Cliente $cliente)
+    {
+        $cliente->load('ventas');
+        return view('clientes.show', compact('cliente'));
     }
 
     public function edit(Cliente $cliente)
@@ -74,71 +52,34 @@ class ClienteController extends Controller
 
     public function update(Request $request, Cliente $cliente)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'rnc_cedula' => 'nullable|digits_between:9,11',
+        $data = $request->validate([
+            'nombre'        => 'required|string|max:255',
+            'rnc_cedula'    => 'nullable|digits_between:9,11',
             'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte',
-            'email' => 'nullable|email',
-            'telefono' => 'nullable',
-            'direccion' => 'nullable',
+            'email'         => 'nullable|email',
+            'telefono'      => 'nullable',
+            'direccion'     => 'nullable',
         ]);
 
-        $data = $request->all();
-
-        if (!empty($data['rnc_cedula'])) {
-            $tipoDoc = $data['tipo_documento'] ?? RncValidator::inferirTipo($data['rnc_cedula']);
-            if (!RncValidator::validar($data['rnc_cedula'], $tipoDoc)) {
-                throw ValidationException::withMessages([
-                    'rnc_cedula' => "El {$tipoDoc} ingresado no es válido (dígito verificador incorrecto).",
-                ]);
-            }
-            $data['tipo_documento'] = $tipoDoc;
-        }
-
-        $cliente->update($data);
+        $this->clienteService->update($cliente, $data);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente actualizado correctamente');
     }
 
     public function destroy(Cliente $cliente)
     {
-        $cliente->delete();
+        $this->clienteService->delete($cliente);
         return redirect()->route('clientes.index')->with('success', 'Cliente eliminado');
     }
 
     public function pdf(Request $request)
     {
-        $query = Cliente::query();
-
-        if ($request->filled('busqueda')) {
-            $query->where('nombre', 'like', '%' . $request->busqueda . '%')
-                ->orWhere('email', 'like', '%' . $request->busqueda . '%');
-        }
-
-        $clientes = $query->latest()->get();
-
-        $pdf = Pdf::loadView('clientes.pdf', compact('clientes'));
-        return $pdf->stream('clientes.pdf');
+        return $this->clienteService->pdf($request->all());
     }
 
     public function cuentas(Request $request)
     {
-        $nombre = $request->input('buscar');
-        
-        $clientes = Cliente::where('balance_pendiente', '>', 0)
-            ->where('nombre', '!=', 'Consumidor Final')
-            ->when($nombre, function ($q) use ($nombre) {
-                $q->where(function($sub) use ($nombre) {
-                    $sub->where('nombre', 'like', '%' . $nombre . '%')
-                        ->orWhere('rnc_cedula', 'like', '%' . $nombre . '%');
-                });
-            })
-            ->with(['ventas' => function($q) {
-                $q->whereIn('estado', ['pendiente', 'cuenta_abierta'])->latest();
-            }])
-            ->latest()
-            ->paginate(10);
-
+        $clientes = $this->clienteService->cuentasPendientes($request->input('buscar'));
         return view('clientes.cuentas', compact('clientes'));
     }
 }

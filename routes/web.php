@@ -30,13 +30,21 @@ use App\Http\Controllers\ReporteFiscalController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ImpresoraController;
 use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\DeliveryCompanyController;
 use App\Http\Controllers\DevolucionController;
 use App\Http\Controllers\ListaPrecioController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\RestauranteController;
+use App\Http\Controllers\OrdenController;
+use App\Http\Controllers\MesaController;
+use App\Http\Controllers\MesaCategoriaController;
+use App\Http\Controllers\ReservacionController;
+use App\Http\Controllers\WaitlistController;
+use App\Http\Controllers\KdsController;
 use App\Http\Controllers\RetencionExportController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ModuloController;
+use App\Http\Controllers\LavadorController;
 use App\Http\Middleware\RoleMiddleware;
 
 // Home / Welcome
@@ -58,9 +66,11 @@ Route::pattern('detalle', '[0-9]+');
 Route::pattern('movimiento', '[0-9]+');
 Route::pattern('sesion', '[0-9]+');
 Route::pattern('gasto', '[0-9]+');
+Route::pattern('deliveryCompany', '[0-9]+');
 Route::pattern('auditLog', '[0-9]+');
 Route::pattern('backup', '[0-9]+');
 Route::pattern('paymentProcessor', '[0-9]+');
+Route::pattern('lavador', '[0-9]+');
 
 // Dashboard
 Route::middleware('auth')->group(function () {
@@ -413,6 +423,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reportes/resumen', [ReporteFiscalController::class, 'resumen'])->name('reportes.resumen');
         // Restaurante
         Route::get('/reportes/restaurante', [ReporteController::class, 'restaurante'])->name('reportes.restaurante');
+        Route::get('/reportes/propinas', [ReporteController::class, 'propinas'])->name('reportes.propinas');
+        Route::get('/reportes/delivery-comisiones', [ReporteController::class, 'comisionesDelivery'])->name('reportes.delivery-comisiones');
     });
 
     // Configuración
@@ -541,6 +553,7 @@ Route::middleware(['auth', 'permission:listas-precio.delete'])->group(function (
 // Sucursales
 Route::middleware(['auth', 'permission:sucursales.view'])->group(function () {
     Route::get('sucursales', [SucursalController::class, 'index'])->name('sucursales.index');
+    Route::get('sucursales/{sucursal}', [SucursalController::class, 'show'])->name('sucursales.show');
 });
 Route::middleware(['auth', 'permission:sucursales.create'])->group(function () {
     Route::get('sucursales/create', [SucursalController::class, 'create'])->name('sucursales.create');
@@ -554,74 +567,124 @@ Route::middleware(['auth', 'permission:sucursales.delete'])->group(function () {
     Route::delete('sucursales/{sucursal}', [SucursalController::class, 'destroy'])->name('sucursales.destroy');
 });
 
+// Delivery Companies
+Route::middleware(['auth', 'permission:delivery-companies.view'])->group(function () {
+    Route::get('delivery-companies', [DeliveryCompanyController::class, 'index'])->name('delivery-companies.index');
+    Route::get('delivery-companies/listar-activas', [DeliveryCompanyController::class, 'listarActivas'])->name('delivery-companies.listar-activas');
+});
+Route::middleware(['auth', 'permission:delivery-companies.create'])->group(function () {
+    Route::get('delivery-companies/create', [DeliveryCompanyController::class, 'create'])->name('delivery-companies.create');
+    Route::post('delivery-companies', [DeliveryCompanyController::class, 'store'])->name('delivery-companies.store');
+});
+Route::middleware(['auth', 'permission:delivery-companies.edit'])->group(function () {
+    Route::get('delivery-companies/{deliveryCompany}/edit', [DeliveryCompanyController::class, 'edit'])->name('delivery-companies.edit');
+    Route::put('delivery-companies/{deliveryCompany}', [DeliveryCompanyController::class, 'update'])->name('delivery-companies.update');
+});
+Route::middleware(['auth', 'permission:delivery-companies.delete'])->group(function () {
+    Route::delete('delivery-companies/{deliveryCompany}', [DeliveryCompanyController::class, 'destroy'])->name('delivery-companies.destroy');
+});
+
 // Restaurante (Terminal de Mesas)
 Route::middleware(['auth'])->group(function () {
-    // Vista general — acceso base
     Route::get('/restaurante', [RestauranteController::class, 'index'])->name('restaurante.index')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/mesa/{mesa}', [RestauranteController::class, 'getMesa'])->name('restaurante.mesa')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/productos', [RestauranteController::class, 'buscarProducto'])->name('restaurante.productos')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/catalogo', [RestauranteController::class, 'catalogo'])->name('restaurante.catalogo')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/sesion-activa', [RestauranteController::class, 'sesionActiva'])->name('restaurante.sesion-activa')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/mesa/{mesa}/ticket', [RestauranteController::class, 'ticket'])->name('restaurante.mesa.ticket')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/mesa/{mesa}/ticket-text', [RestauranteController::class, 'ticketText'])->name('restaurante.mesa.ticket-text')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/mesa/{mesa}/historial', [RestauranteController::class, 'historialMesa'])->name('restaurante.mesa.historial')->middleware('permission:restaurante.view');
 
-    // Operaciones de orden (cobrar, agregar, abrir, trasladar)
-    Route::post('/restaurante/mesa/{mesa}/abrir', [RestauranteController::class, 'abrirMesa'])->name('restaurante.mesa.abrir')->middleware('permission:restaurante.cobrar');
-    Route::post('/restaurante/mesa/{mesa}/agregar', [RestauranteController::class, 'agregarItem'])->name('restaurante.mesa.agregar')->middleware('permission:restaurante.cobrar');
-    Route::delete('/restaurante/mesa/{mesa}/quitar/{detalle}', [RestauranteController::class, 'quitarItem'])->name('restaurante.mesa.quitar')->middleware('permission:restaurante.cobrar');
-    Route::post('/restaurante/mesa/{mesa}/cobrar', [RestauranteController::class, 'cobrar'])->name('restaurante.mesa.cobrar')->middleware('permission:restaurante.cobrar');
-    Route::post('/restaurante/mesa/{mesa}/facturar', [RestauranteController::class, 'facturar'])->name('restaurante.mesa.facturar')->middleware('permission:restaurante.cobrar');
-    Route::post('/restaurante/mesa/{mesa}/trasladar', [RestauranteController::class, 'trasladarMesa'])->name('restaurante.mesa.trasladar')->middleware('permission:restaurante.cobrar');
-
-    // Anular
-    Route::post('/restaurante/mesa/{mesa}/anular', [RestauranteController::class, 'anularOrden'])->name('restaurante.mesa.anular')->middleware('permission:restaurante.anular');
-    // Descuento
-    Route::post('/restaurante/mesa/{mesa}/descuento', [RestauranteController::class, 'aplicarDescuento'])->name('restaurante.mesa.descuento')->middleware('permission:restaurante.descuento');
-    // Estado
-    Route::post('/restaurante/mesa/{mesa}/estado', [RestauranteController::class, 'cambiarEstado'])->name('restaurante.mesa.estado')->middleware('permission:restaurante.mesas.manage');
-
-    // Gestión de Mesas
-    Route::get('/restaurante/mesas', [RestauranteController::class, 'mesasIndex'])->name('restaurante.mesas.index')->middleware('permission:restaurante.mesas.manage');
-    Route::get('/restaurante/mesas/{mesa}', [RestauranteController::class, 'mesaShow'])->name('restaurante.mesas.show')->middleware('permission:restaurante.mesas.manage');
-    Route::post('/restaurante/mesa', [RestauranteController::class, 'storeMesa'])->name('restaurante.mesa.store')->middleware('permission:restaurante.mesas.manage');
-    Route::put('/restaurante/mesa/{mesa}/update', [RestauranteController::class, 'updateMesa'])->name('restaurante.mesa.update')->middleware('permission:restaurante.mesas.manage');
-    Route::delete('/restaurante/mesa/{mesa}', [RestauranteController::class, 'destroyMesa'])->name('restaurante.mesa.destroy')->middleware('permission:restaurante.mesas.manage');
+    // POS — Ordenes
+    Route::get('/restaurante/mesa/{mesa}', [OrdenController::class, 'getMesa'])->name('restaurante.mesa')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/productos', [OrdenController::class, 'buscarProducto'])->name('restaurante.productos')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/catalogo', [OrdenController::class, 'catalogo'])->name('restaurante.catalogo')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/sesion-activa', [OrdenController::class, 'sesionActiva'])->name('restaurante.sesion-activa')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/productos/populares', [OrdenController::class, 'populares'])->name('restaurante.productos.populares')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/mesa/{mesa}/ticket', [OrdenController::class, 'ticket'])->name('restaurante.mesa.ticket')->middleware('permission:restaurante.view');
+    Route::post('/restaurante/mesa/{mesa}/ticket/print', [OrdenController::class, 'imprimirTicket'])->name('restaurante.mesa.ticket.print')->middleware('permission:restaurante.cobrar');
+    Route::get('/restaurante/mesa/{mesa}/ticket-text', [OrdenController::class, 'ticketText'])->name('restaurante.mesa.ticket-text')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/mesa/{mesa}/historial', [OrdenController::class, 'historialMesa'])->name('restaurante.mesa.historial')->middleware('permission:restaurante.view');
+    Route::post('/restaurante/mesa/{mesa}/abrir', [OrdenController::class, 'abrirMesa'])->name('restaurante.mesa.abrir')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/agregar', [OrdenController::class, 'agregarItem'])->name('restaurante.mesa.agregar')->middleware('permission:restaurante.cobrar');
+    Route::delete('/restaurante/mesa/{mesa}/quitar/{detalle}', [OrdenController::class, 'quitarItem'])->name('restaurante.mesa.quitar')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/cobrar', [OrdenController::class, 'cobrar'])->name('restaurante.mesa.cobrar')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/facturar', [OrdenController::class, 'facturar'])->name('restaurante.mesa.facturar')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/trasladar', [OrdenController::class, 'trasladarMesa'])->name('restaurante.mesa.trasladar')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/anular', [OrdenController::class, 'anularOrden'])->name('restaurante.mesa.anular')->middleware('permission:restaurante.anular');
+    Route::post('/restaurante/mesa/{mesa}/descuento', [OrdenController::class, 'aplicarDescuento'])->name('restaurante.mesa.descuento')->middleware('permission:restaurante.descuento');
+    Route::post('/restaurante/mesa/{mesa}/estado', [OrdenController::class, 'cambiarEstado'])->name('restaurante.mesa.estado')->middleware('permission:restaurante.mesas.manage');
+    Route::post('/restaurante/mesa/{mesa}/posicion', [OrdenController::class, 'savePosicion'])->name('restaurante.mesa.posicion')->middleware('permission:restaurante.mesas.manage');
+    Route::post('/restaurante/mesas/posiciones', [OrdenController::class, 'saveAllPosiciones'])->name('restaurante.mesas.posiciones')->middleware('permission:restaurante.mesas.manage');
 
     // Cajas desde restaurante
-    Route::post('/restaurante/abrir-caja', [RestauranteController::class, 'abrirCaja'])->name('restaurante.abrir-caja')->middleware('permission:restaurante.cajas');
-    Route::post('/restaurante/crear-caja', [RestauranteController::class, 'crearCaja'])->name('restaurante.crear-caja')->middleware('permission:restaurante.cajas');
-    Route::get('/restaurante/cajas', [RestauranteController::class, 'cajasDisponibles'])->name('restaurante.cajas')->middleware('permission:restaurante.cajas');
+    Route::post('/restaurante/abrir-caja', [OrdenController::class, 'abrirCaja'])->name('restaurante.abrir-caja')->middleware('permission:restaurante.cajas');
+    Route::post('/restaurante/crear-caja', [OrdenController::class, 'crearCaja'])->name('restaurante.crear-caja')->middleware('permission:restaurante.cajas');
+    Route::get('/restaurante/cajas', [OrdenController::class, 'cajasDisponibles'])->name('restaurante.cajas')->middleware('permission:restaurante.cajas');
+    Route::get('/restaurante/caja/resumen', [OrdenController::class, 'resumenCierre'])->name('restaurante.caja.resumen')->middleware('permission:restaurante.cajas');
+    Route::post('/restaurante/caja/cerrar', [OrdenController::class, 'cerrarCaja'])->name('restaurante.caja.cerrar')->middleware('permission:restaurante.cajas');
+
+    // Gestión de Mesas
+    Route::get('/restaurante/mesas', [MesaController::class, 'index'])->name('restaurante.mesas.index')->middleware('permission:restaurante.mesas.manage');
+    Route::get('/restaurante/mesas/{mesa}', [MesaController::class, 'show'])->name('restaurante.mesas.show')->middleware('permission:restaurante.mesas.manage');
+    Route::post('/restaurante/mesa', [MesaController::class, 'store'])->name('restaurante.mesa.store')->middleware('permission:restaurante.mesas.manage');
+    Route::put('/restaurante/mesa/{mesa}/update', [MesaController::class, 'update'])->name('restaurante.mesa.update')->middleware('permission:restaurante.mesas.manage');
+    Route::delete('/restaurante/mesa/{mesa}', [MesaController::class, 'destroy'])->name('restaurante.mesa.destroy')->middleware('permission:restaurante.mesas.manage');
 
     // Categorías de mesa
-    Route::get('/restaurante/categorias', [RestauranteController::class, 'categoriasIndex'])->name('restaurante.categorias.index')->middleware('permission:restaurante.categorias');
-    Route::get('/restaurante/categorias/{categoria}', [RestauranteController::class, 'categoriasShow'])->name('restaurante.categorias.show')->middleware('permission:restaurante.categorias');
-    Route::post('/restaurante/categorias', [RestauranteController::class, 'categoriasStore'])->name('restaurante.categorias.store')->middleware('permission:restaurante.categorias');
-    Route::put('/restaurante/categorias/{categoria}', [RestauranteController::class, 'categoriasUpdate'])->name('restaurante.categorias.update')->middleware('permission:restaurante.categorias');
-    Route::delete('/restaurante/categorias/{categoria}', [RestauranteController::class, 'categoriasDestroy'])->name('restaurante.categorias.destroy')->middleware('permission:restaurante.categorias');
+    Route::get('/restaurante/categorias', [MesaCategoriaController::class, 'index'])->name('restaurante.categorias.index')->middleware('permission:restaurante.categorias');
+    Route::get('/restaurante/categorias/{categoria}', [MesaCategoriaController::class, 'show'])->name('restaurante.categorias.show')->middleware('permission:restaurante.categorias');
+    Route::post('/restaurante/categorias', [MesaCategoriaController::class, 'store'])->name('restaurante.categorias.store')->middleware('permission:restaurante.categorias');
+    Route::put('/restaurante/categorias/{categoria}', [MesaCategoriaController::class, 'update'])->name('restaurante.categorias.update')->middleware('permission:restaurante.categorias');
+    Route::delete('/restaurante/categorias/{categoria}', [MesaCategoriaController::class, 'destroy'])->name('restaurante.categorias.destroy')->middleware('permission:restaurante.categorias');
 
     // Reservaciones
-    Route::get('/restaurante/reservaciones', [RestauranteController::class, 'reservacionesIndex'])->name('restaurante.reservaciones.index')->middleware('permission:restaurante.reservaciones');
-    Route::post('/restaurante/reservaciones', [RestauranteController::class, 'reservacionesStore'])->name('restaurante.reservaciones.store')->middleware('permission:restaurante.reservaciones');
-    Route::put('/restaurante/reservaciones/{reservacion}', [RestauranteController::class, 'reservacionesUpdate'])->name('restaurante.reservaciones.update')->middleware('permission:restaurante.reservaciones');
-    Route::patch('/restaurante/reservaciones/{reservacion}/estado', [RestauranteController::class, 'reservacionesEstado'])->name('restaurante.reservaciones.estado')->middleware('permission:restaurante.reservaciones');
-    Route::delete('/restaurante/reservaciones/{reservacion}', [RestauranteController::class, 'reservacionesDestroy'])->name('restaurante.reservaciones.destroy')->middleware('permission:restaurante.reservaciones');
+    Route::get('/restaurante/reservaciones', [ReservacionController::class, 'index'])->name('restaurante.reservaciones.index')->middleware('permission:restaurante.reservaciones');
+    Route::post('/restaurante/reservaciones', [ReservacionController::class, 'store'])->name('restaurante.reservaciones.store')->middleware('permission:restaurante.reservaciones');
+    Route::put('/restaurante/reservaciones/{reservacion}', [ReservacionController::class, 'update'])->name('restaurante.reservaciones.update')->middleware('permission:restaurante.reservaciones');
+    Route::patch('/restaurante/reservaciones/{reservacion}/estado', [ReservacionController::class, 'estado'])->name('restaurante.reservaciones.estado')->middleware('permission:restaurante.reservaciones');
+    Route::delete('/restaurante/reservaciones/{reservacion}', [ReservacionController::class, 'destroy'])->name('restaurante.reservaciones.destroy')->middleware('permission:restaurante.reservaciones');
 
     // Waitlist
-    Route::get('/restaurante/waitlist', [RestauranteController::class, 'waitlistIndex'])->name('restaurante.waitlist.index')->middleware('permission:restaurante.view');
-    Route::post('/restaurante/waitlist', [RestauranteController::class, 'waitlistStore'])->name('restaurante.waitlist.store')->middleware('permission:restaurante.cobrar');
-    Route::patch('/restaurante/waitlist/{entry}/estado', [RestauranteController::class, 'waitlistUpdateEstado'])->name('restaurante.waitlist.estado')->middleware('permission:restaurante.cobrar');
-    Route::delete('/restaurante/waitlist/{entry}', [RestauranteController::class, 'waitlistDestroy'])->name('restaurante.waitlist.destroy')->middleware('permission:restaurante.cobrar');
+    Route::get('/restaurante/waitlist', [WaitlistController::class, 'index'])->name('restaurante.waitlist.index')->middleware('permission:restaurante.view');
+    Route::post('/restaurante/waitlist', [WaitlistController::class, 'store'])->name('restaurante.waitlist.store')->middleware('permission:restaurante.cobrar');
+    Route::patch('/restaurante/waitlist/{entry}/estado', [WaitlistController::class, 'updateEstado'])->name('restaurante.waitlist.estado')->middleware('permission:restaurante.cobrar');
+    Route::delete('/restaurante/waitlist/{entry}', [WaitlistController::class, 'destroy'])->name('restaurante.waitlist.destroy')->middleware('permission:restaurante.cobrar');
 
     // KDS (Kitchen Display System)
-    Route::get('/restaurante/kds', [RestauranteController::class, 'kdsIndex'])->name('restaurante.kds.index')->middleware('permission:restaurante.view');
-    Route::get('/restaurante/kds/orders', [RestauranteController::class, 'kdsOrders'])->name('restaurante.kds.orders')->middleware('permission:restaurante.view');
-    Route::post('/restaurante/kds/update/{detalle}', [RestauranteController::class, 'kdsUpdateEstado'])->name('restaurante.kds.update')->middleware('permission:restaurante.cobrar');
-    Route::get('/restaurante/kds/audio', [RestauranteController::class, 'kdsAudio'])->name('restaurante.kds.audio')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/kds', [KdsController::class, 'index'])->name('restaurante.kds.index')->middleware('permission:restaurante.view');
+    Route::get('/restaurante/kds/orders', [KdsController::class, 'orders'])->name('restaurante.kds.orders')->middleware('permission:restaurante.view');
+    Route::post('/restaurante/kds/update/{detalle}', [KdsController::class, 'updateEstado'])->name('restaurante.kds.update')->middleware('permission:restaurante.cobrar');
+    Route::get('/restaurante/kds/audio', [KdsController::class, 'audio'])->name('restaurante.kds.audio')->middleware('permission:restaurante.view');
+});
 
-    // Mapa de mesas — guardar posición
-    Route::post('/restaurante/mesa/{mesa}/posicion', [RestauranteController::class, 'savePosicion'])->name('restaurante.mesa.posicion')->middleware('permission:restaurante.mesas.manage');
-    Route::post('/restaurante/mesas/posiciones', [RestauranteController::class, 'saveAllPosiciones'])->name('restaurante.mesas.posiciones')->middleware('permission:restaurante.mesas.manage');
+// Lavadero (Car Wash)
+Route::middleware(['auth'])->group(function () {
+    // Terminal POS
+    Route::get('/lavadero', [\App\Http\Controllers\LavaderoController::class, 'index'])->name('lavadero.index')->middleware('permission:lavadero.view');
+    Route::get('/lavadero/servicios', [\App\Http\Controllers\LavaderoServicioController::class, 'index'])->name('lavadero.servicios.index')->middleware('permission:lavadero.servicios');
+    Route::post('/lavadero/servicios', [\App\Http\Controllers\LavaderoServicioController::class, 'store'])->name('lavadero.servicios.store')->middleware('permission:lavadero.servicios');
+    Route::put('/lavadero/servicios/{servicio}', [\App\Http\Controllers\LavaderoServicioController::class, 'update'])->name('lavadero.servicios.update')->middleware('permission:lavadero.servicios');
+    Route::delete('/lavadero/servicios/{servicio}', [\App\Http\Controllers\LavaderoServicioController::class, 'destroy'])->name('lavadero.servicios.destroy')->middleware('permission:lavadero.servicios');
+
+    Route::get('/lavadero/vehiculos', [\App\Http\Controllers\VehiculoController::class, 'index'])->name('lavadero.vehiculos.index')->middleware('permission:lavadero.vehiculos');
+    Route::get('/lavadero/vehiculos/{vehiculo}', [\App\Http\Controllers\VehiculoController::class, 'show'])->name('lavadero.vehiculos.show')->middleware('permission:lavadero.vehiculos');
+    Route::put('/lavadero/vehiculos/{vehiculo}', [\App\Http\Controllers\VehiculoController::class, 'update'])->name('lavadero.vehiculos.update')->middleware('permission:lavadero.vehiculos');
+
+    Route::get('/lavadero/citas', [\App\Http\Controllers\LavaderoCitaController::class, 'index'])->name('lavadero.citas.index')->middleware('permission:lavadero.citas');
+    Route::post('/lavadero/citas', [\App\Http\Controllers\LavaderoCitaController::class, 'store'])->name('lavadero.citas.store')->middleware('permission:lavadero.citas');
+    Route::put('/lavadero/citas/{cita}', [\App\Http\Controllers\LavaderoCitaController::class, 'update'])->name('lavadero.citas.update')->middleware('permission:lavadero.citas');
+    Route::delete('/lavadero/citas/{cita}', [\App\Http\Controllers\LavaderoCitaController::class, 'destroy'])->name('lavadero.citas.destroy')->middleware('permission:lavadero.citas');
+
+    // API endpoints (used by POS JS)
+    Route::get('/lavadero/clientes', [\App\Http\Controllers\LavaderoController::class, 'buscarCliente'])->name('lavadero.clientes.buscar')->middleware('permission:lavadero.view');
+    Route::post('/lavadero/clientes/crear', [\App\Http\Controllers\LavaderoController::class, 'createCliente'])->name('lavadero.clientes.crear')->middleware('permission:lavadero.view');
+    Route::post('/lavadero/vehiculos/crear', [\App\Http\Controllers\LavaderoController::class, 'createVehiculo'])->name('lavadero.vehiculos.crear')->middleware('permission:lavadero.view');
+    Route::get('/lavadero/vehiculos/{vehiculo}/historial', [\App\Http\Controllers\LavaderoController::class, 'historialVehiculo'])->name('lavadero.vehiculos.historial')->middleware('permission:lavadero.view');
+    Route::get('/lavadero/servicios-json', [\App\Http\Controllers\LavaderoController::class, 'servicios'])->name('lavadero.servicios.json')->middleware('permission:lavadero.view');
+    Route::post('/lavadero/cobrar', [\App\Http\Controllers\LavaderoController::class, 'cobrar'])->name('lavadero.cobrar')->middleware('permission:lavadero.view');
+    Route::get('/lavadero/citas/hoy', [\App\Http\Controllers\LavaderoCitaController::class, 'hoy'])->name('lavadero.citas.hoy')->middleware('permission:lavadero.view');
+
+    // Lavadores
+    Route::get('/lavadero/lavadores', [\App\Http\Controllers\LavadorController::class, 'index'])->name('lavadero.lavadores.index')->middleware('permission:lavadero.lavadores');
+    Route::post('/lavadero/lavadores', [\App\Http\Controllers\LavadorController::class, 'store'])->name('lavadero.lavadores.store')->middleware('permission:lavadero.lavadores');
+    Route::put('/lavadero/lavadores/{lavador}', [\App\Http\Controllers\LavadorController::class, 'update'])->name('lavadero.lavadores.update')->middleware('permission:lavadero.lavadores');
+    Route::delete('/lavadero/lavadores/{lavador}', [\App\Http\Controllers\LavadorController::class, 'destroy'])->name('lavadero.lavadores.destroy')->middleware('permission:lavadero.lavadores');
+    Route::get('/lavadero/lavadores/activos', [\App\Http\Controllers\LavadorController::class, 'activos'])->name('lavadero.lavadores.activos')->middleware('permission:lavadero.view');
+    Route::post('/lavadero/ventas/{venta}/lavadores', [\App\Http\Controllers\LavaderoController::class, 'asignarLavadores'])->name('lavadero.ventas.lavadores')->middleware('permission:lavadero.view');
 });
 
 require __DIR__ . '/auth.php';

@@ -1,0 +1,49 @@
+# IA AUDIT LOG - SISTEMA DE FACTURACIÓN
+# Fecha de inicio: 2026-06-09
+
+## Fase 1: Auditoría y Análisis (Completada)
+### Hallazgos clave en Ventas:
+- Identificada complejidad excesiva en `VentaController` debido a la mezcla de lógica de presentación con lógica de negocio.
+- Se detectó necesidad de refactorizar el manejo de estados de venta y validaciones de stock.
+
+### Hallazgos en Compras y Productos:
+- El sistema de inventario está bien estructurado pero requiere mejor centralización de las reglas de actualización de stock.
+- La relación entre `CompraDetalle` y `AlmacenMovimiento` es sólida pero puede optimizarse para evitar consultas repetitivas.
+
+## Fase 2: Ejecución de Refactorización (En curso)
+### Acciones realizadas:
+1. Creación del servicio `SaleDataService` para limpiar el controlador de ventas.
+2. Optimización de la carga de datos en `VentaController`.
+3. Definición del plan maestro de mejoras basado en los hallazgos detectados.
+
+## Registro de Cambios Técnicos:
+- **Archivo:** `app/Services/SaleDataService.php` -> Creado para manejar preparación de datos de venta.
+- **Archivo:** `app/Http/Controllers/VentaController.php` -> Refactorado para delegar lógica a servicios externos.
+\n
+---
+*Registro generado automáticamente por opencode.*
+[2026-06-09] === REFACTOR: Módulo Sucursales ===
+- Model: agregadas 8 relaciones faltantes (ventas, compras, cajas, gastos, conduces, cotizaciones, mesas, waitlistEntries)
+- Form Requests: StoreSucursalRequest + UpdateSucursalRequest creados con validación y mensajes
+- Service: SucursalService creado (list, create, update, delete, getStats, getRecentActivity)
+- Controller: refactorizado a 80 líneas (antes ~100), delega en service + form requests
+- Views: show.blade.php creada (KPIs, info, activity, almacenes, cajas)
+- Views: index.blade.php mejorada (paginación, almacenes_count, cajas_count, link a show)
+- Views: create.blade.php - bugfix: submit button movido DENTRO del form
+- Routes: agregada ruta GET /sucursales/{sucursal} -> show
+[2026-06-09] === FASE 1: BUGFIXES SUCURSALES-RESTAURANTE ===
+- Venta model: agregado scopeDeSucursal() + ecfDocumento()
+- WaitlistEntry: scopeDeSucursal() ahora respeta null (Todas las sucursales)
+- RestauranteController: kdsOrders/kdsAudio filtran por sucursal
+- RestauranteController: historialMesa() filtrado por sucursal
+- RestauranteController: autoOcuparMesasReservadas() usa deSucursal()
+- RestauranteController: updateMesa() ahora acepta campo activa
+- mesas.blade.php: toggleActiva() JS ahora env�a _method: PUT
+- SaleDataService: typos corregidos (unidad_medura -> unidad_medida, precio_compura -> precio_compra, \ -> \)
+
+[2026-06-09] === FASE 2: REFACTOR CONTROLADORES CORE ===
+- SaleService (NUEVO): createSale, cancelSale, getCreationData, checkStock
+- VentaController: refactorizado (559 -> 225 l�neas), usa SaleService + StoreVentaRequest
+- Form Requests (NUEVOS): StoreVentaRequest, StoreCompraRequest, UpdateCompraRequest, StoreProductoRequest, UpdateProductoRequest, StoreCotizacionRequest, UpdateCotizacionRequest
+- CompraController: migrado a Form Requests, removed validateCompra inline
+- CotizacionController: store/update migrados a Form Requests

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use App\Traits\Auditable;
 
 class Conduce extends Model
 {
     use SoftDeletes;
+    use Auditable;
 
     protected $fillable = [
         'numero', 'fecha', 'fecha_entrega', 'fecha_recibido',

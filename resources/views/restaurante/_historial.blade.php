@@ -33,10 +33,13 @@
                 </small>
             </div>
             @endif
-            <div class="mt-2">
+            <div class="mt-2 d-flex gap-1">
                 <a href="{{ route('restaurante.mesa.ticket', ['mesa' => $mesa, 'venta_id' => $orden->id]) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill">
                     <i class="bi bi-receipt"></i> Ticket
                 </a>
+                <button class="btn btn-sm btn-outline-dark rounded-pill" onclick="reimprimirTicket({{ $mesa->id }}, {{ $orden->id }})">
+                    <i class="bi bi-printer"></i> Reimprimir
+                </button>
             </div>
         </div>
     </div>

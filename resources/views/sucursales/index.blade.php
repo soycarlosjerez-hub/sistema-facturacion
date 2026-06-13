@@ -16,7 +16,6 @@
         @endcan
     </div>
 
-    {{-- Search/Filter --}}
     <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
         <div class="card-body p-3 bg-light bg-opacity-50">
             <form method="GET" action="{{ route('sucursales.index') }}" class="row g-2 align-items-center">
@@ -41,8 +40,9 @@
                     <tr>
                         <th class="ps-4">C&oacute;digo</th>
                         <th>Nombre</th>
+                        <th class="text-center">Almacenes</th>
+                        <th class="text-center">Cajas</th>
                         <th>Tel&eacute;fono</th>
-                        <th>RNC</th>
                         <th class="text-center">Matriz</th>
                         <th class="text-center">Activa</th>
                         <th class="text-end pe-4">Acciones</th>
@@ -52,9 +52,12 @@
                     @forelse($sucursales as $s)
                     <tr>
                         <td class="ps-4"><span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">{{ $s->codigo }}</span></td>
-                        <td class="fw-bold">{{ $s->nombre }}</td>
+                        <td class="fw-bold">
+                            <a href="{{ route('sucursales.show', $s) }}" class="text-decoration-none">{{ $s->nombre }}</a>
+                        </td>
+                        <td class="text-center"><span class="badge bg-info bg-opacity-10 text-info rounded-pill">{{ $s->almacenes_count }}</span></td>
+                        <td class="text-center"><span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">{{ $s->cajas_count }}</span></td>
                         <td>{{ $s->telefono ?? '—' }}</td>
-                        <td>{{ $s->rnc ?? '—' }}</td>
                         <td class="text-center">
                             @if($s->es_matriz)
                                 <span class="badge bg-primary rounded-pill px-3"><i class="bi bi-star-fill me-1"></i>Matriz</span>
@@ -70,6 +73,9 @@
                             @endif
                         </td>
                         <td class="text-end pe-4">
+                            <a href="{{ route('sucursales.show', $s) }}" class="btn btn-sm btn-outline-info rounded-pill me-1" title="Ver detalles">
+                                <i class="bi bi-eye"></i>
+                            </a>
                             @can('sucursales.edit')
                             <a href="{{ route('sucursales.edit', $s) }}" class="btn btn-sm btn-outline-primary rounded-pill me-1" title="Editar">
                                 <i class="bi bi-pencil"></i>
@@ -87,12 +93,17 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No hay sucursales registradas.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No hay sucursales registradas.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+        @if($sucursales->hasPages())
+        <div class="card-footer bg-transparent border-0 py-3 px-4">
+            {{ $sucursales->links() }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection

@@ -32,6 +32,31 @@
 .kds-btn-group .btn { font-size: .7rem; padding: 2px 8px; }
 </style>
 <script>
+let kdsUltimoConteo = 0;
+
+function kdsBeep() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const g = ctx.createGain();
+        g.connect(ctx.destination);
+        g.gain.value = 0.12;
+        const o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = 880;
+        o.connect(g);
+        o.start();
+        o.stop(ctx.currentTime + 0.15);
+        setTimeout(() => {
+            const o2 = ctx.createOscillator();
+            o2.type = 'sine';
+            o2.frequency.value = 1100;
+            o2.connect(g);
+            o2.start();
+            o2.stop(ctx.currentTime + 0.2);
+        }, 200);
+    } catch(e) {}
+}
+
 function actualizarReloj() {
     document.getElementById('kds-clock').textContent = new Date().toLocaleString('es-DO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
 }
@@ -44,6 +69,11 @@ function cargarKds() {
             const container = document.getElementById('kds-orders');
             const ordenes = data.ordenes || [];
             document.getElementById('kds-count').textContent = ordenes.length + ' pendientes';
+
+            if (ordenes.length > kdsUltimoConteo && kdsUltimoConteo > 0) {
+                kdsBeep();
+            }
+            kdsUltimoConteo = ordenes.length;
 
             if (ordenes.length === 0) {
                 container.innerHTML = '<div class="text-center text-muted py-5"><i class="bi bi-check2-circle fs-1 d-block mb-2 text-success"></i><h5>Todas las órdenes están listas</h5></div>';

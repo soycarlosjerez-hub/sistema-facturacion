@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Almacen extends Model
 {
     use HasFactory;
+    use Auditable;
 
     protected $table = 'almacenes'; // o el nombre que usaste en la base de datos
 

@@ -30,8 +30,10 @@ class DatabaseSeeder extends Seeder
         $this->call(ClientesSeeder::class);
         $this->call(TipoCompraSeeder::class);
         $this->call(SystemSettingsSeeder::class);
+        $this->call(ModuloSeeder::class);
         $this->call(NcfSeeder::class);
         $this->call(SecuenciaEcfSeeder::class);
         $this->call(BusinessTypeSeeder::class);
+        $this->call(DeliveryCompanySeeder::class);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\SystemSetting;
+use App\View\Composers\DashboardComposer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Schema;
@@ -74,5 +75,7 @@ class AppServiceProvider extends ServiceProvider
                 'sucursalActiva'  => $sucursalActiva,
             ]);
         });
+
+        View::composer('dashboard', DashboardComposer::class);
     }
 }

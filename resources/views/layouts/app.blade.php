@@ -610,9 +610,10 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         $tipoNegocio = \App\Models\SystemSetting::tipoNegocio();
                         $colores = [
                             'restaurante' => 'info',
-                            'retail' => 'success', 
+                            'retail' => 'success',
                             'mayorista' => 'warning',
                             'servicios' => 'primary',
+                            'lavadero' => 'primary',
                             'mixto' => 'secondary'
                         ];
                         $iconos = [
@@ -620,6 +621,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             'retail' => 'cart-plus',
                             'mayorista' => 'truck',
                             'servicios' => 'briefcase',
+                            'lavadero' => 'droplet',
                             'mixto' => 'grid'
                         ];
                         $color = $colores[$tipoNegocio] ?? 'secondary';

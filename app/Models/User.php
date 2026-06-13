@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,7 +12,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, Notifiable, Auditable;
 
     /**
      * The attributes that are mass assignable.
@@ -51,5 +52,10 @@ class User extends Authenticatable
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class);
+    }
+
+    protected function getAuditableIgnored(): array
+    {
+        return ['password', 'remember_token', 'updated_at'];
     }
 }

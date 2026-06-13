@@ -18,7 +18,7 @@
 @section('content')
 <div class="restaurant-pos d-flex" style="height: calc(100vh - 70px);">
     {{-- Panel izquierdo: Grid de mesas --}}
-    <div class="mesas-panel p-3 overflow-auto" style="width: 380px; min-width: 380px; background: #f8fafc;">
+    <div class="mesas-panel p-3 overflow-auto" style="width: 420px; min-width: 420px; background: #f8fafc;">
         {{-- Caja status bar --}}
         <div id="caja-status-bar" class="mb-3"></div>
 
@@ -28,19 +28,42 @@
         </div>
         <div class="row g-2" id="mesas-grid">
             @foreach($mesas as $mesa)
-            @php $catColor = $mesa->categoria->color ?? null; @endphp
+            @php
+                $catColor = $mesa->categoria->color ?? null;
+                $reservacion = $mesa->reservacion;
+                $reservaInfo = $reservacion ? $reservacion : null;
+                $estadoIcono = match($mesa->estado) {
+                    'disponible' => 'verde',
+                    'ocupada' => 'amarillo',
+                    'reservada' => 'azul',
+                    default => 'gris',
+                };
+                $tooltipParts = [];
+                if ($reservaInfo) {
+                    $tooltipParts[] = 'Reserva: ' . $reservaInfo->cliente_nombre;
+                    $tooltipParts[] = $reservaInfo->personas . ' pers';
+                    if ($reservaInfo->cliente_telefono) $tooltipParts[] = $reservaInfo->cliente_telefono;
+                    if ($reservaInfo->notas) $tooltipParts[] = '"' . $reservaInfo->notas . '"';
+                }
+            @endphp
             <div class="col-6">
                 <button class="mesa-btn w-100 text-start p-3 rounded-4 border-0 shadow-sm position-relative
-                    {{ $mesa->estado === 'disponible' ? 'bg-white mesa-libre' : '' }}
-                    {{ $mesa->estado === 'ocupada' ? 'bg-warning bg-opacity-10 mesa-ocupada' : '' }}
-                    {{ $mesa->estado === 'reservada' ? 'bg-info bg-opacity-10 mesa-reservada' : '' }}
-                    {{ $mesa->estado === 'inactiva' ? 'bg-secondary bg-opacity-10 mesa-inactiva opacity-50' : '' }}
+                    {{ $mesa->estado === 'disponible' ? 'mesa-libre' : '' }}
+                    {{ $mesa->estado === 'ocupada' ? 'mesa-ocupada' : '' }}
+                    {{ $mesa->estado === 'reservada' ? 'mesa-reservada' : '' }}
+                    {{ $mesa->estado === 'inactiva' ? 'mesa-inactiva' : '' }}
                 " data-mesa-id="{{ $mesa->id }}" data-estado="{{ $mesa->estado }}" data-pos-x="{{ $mesa->pos_x ?? 0 }}" data-pos-y="{{ $mesa->pos_y ?? 0 }}"
-                    @if($catColor) style="border-left: 4px solid {{ $catColor }} !important;" @endif>
+                    @if($catColor) style="border-left-color: {{ $catColor }} !important;" @endif
+                    @if($tooltipParts) title="{{ implode(' | ', $tooltipParts) }}" @endif>
+                    @if($reservaInfo)
+                    <span class="reserva-ribbon"><i class="bi bi-bookmark-check-fill"></i> {{ \Carbon\Carbon::parse($reservaInfo->fecha_hora)->format('H:i') }}</span>
+                    @endif
                     <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="fw-bold fs-5">{{ $mesa->nombre ?? 'Mesa ' . $mesa->numero }}
-                                @if($catColor) <span class="d-inline-block rounded-circle ms-1" style="width:10px;height:10px;background:{{ $catColor }};"></span> @endif
+                        <div style="min-width:0;">
+                            <div class="fw-bold fs-5 text-truncate d-flex align-items-center gap-2">
+                                <span class="estado-icon {{ $estadoIcono }}"></span>
+                                {{ $mesa->nombre ?? 'Mesa ' . $mesa->numero }}
+                                @if($catColor) <span class="d-inline-block rounded-circle" style="width:10px;height:10px;background:{{ $catColor }};flex-shrink:0;"></span> @endif
                             </div>
                             <small class="text-muted d-block">#{{ $mesa->numero }} · Cap. {{ $mesa->capacidad }}</small>
                             <span class="badge rounded-pill mt-1
@@ -49,9 +72,21 @@
                                 {{ $mesa->estado === 'reservada' ? 'bg-info' : '' }}
                                 {{ $mesa->estado === 'inactiva' ? 'bg-secondary' : '' }}
                             ">{{ ucfirst($mesa->estado) }}</span>
+                            @if($reservaInfo)
+                                <div class="mt-1 p-1 rounded-2" style="font-size:.9rem;line-height:1.4;background:rgba(255,255,255,.7);">
+                                    <div class="fw-semibold text-dark"><i class="bi bi-person-fill me-1"></i>{{ Str::limit($reservaInfo->cliente_nombre, 14) }}</div>
+                                    <div class="d-flex gap-2 flex-wrap text-dark">
+                                        <span><i class="bi bi-people me-1"></i>{{ $reservaInfo->personas }} pers</span>
+                                        @if($reservaInfo->cliente_telefono)
+                                        <span><i class="bi bi-telephone me-1"></i>{{ $reservaInfo->cliente_telefono }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="reserva-timer" data-fecha="{{ $reservaInfo->fecha_hora instanceof \Carbon\Carbon ? $reservaInfo->fecha_hora->toIso8601String() : $reservaInfo->fecha_hora }}"></div>
+                                </div>
+                            @endif
                         </div>
                         @if($mesa->ordenActiva)
-                            <span class="badge bg-dark rounded-pill">RD$ {{ number_format($mesa->ordenActiva->total, 0) }}</span>
+                            <span class="badge bg-dark rounded-pill flex-shrink-0 mt-1">RD$ {{ number_format($mesa->ordenActiva->total, 0) }}</span>
                         @endif
                     </div>
                 </button>
@@ -134,6 +169,15 @@
             <div id="productos-resultados" class="mt-2" style="display:none; max-height: 250px; overflow-y: auto;"></div>
         </div>
 
+        {{-- Menú rápido / Populares --}}
+        <div class="p-2 border-bottom d-none" id="quick-menu">
+            <div class="d-flex align-items-center mb-1">
+                <small class="text-muted fw-semibold me-2"><i class="bi bi-fire me-1"></i>Más vendidos</small>
+                <button class="btn btn-sm p-0 text-muted" onclick="toggleQuickMenu()" type="button"><i class="bi bi-chevron-up" id="quick-menu-toggle-icon"></i></button>
+            </div>
+            <div id="quick-menu-items" class="d-flex gap-1 flex-wrap overflow-auto" style="max-height:80px;"></div>
+        </div>
+
         {{-- Items de la orden --}}
         <div class="orden-items flex-grow-1 overflow-auto p-3" id="orden-items">
             <div class="text-center text-muted mt-5">
@@ -155,6 +199,9 @@
                 </div>
                 <div class="col-12">
                     <small class="text-muted d-none" id="orden-descuento">Descuento</small>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between small d-none" id="orden-delivery-fee"></div>
                 </div>
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center bg-primary bg-opacity-10 rounded-3 p-2">
@@ -351,6 +398,16 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <div class="form-check" id="cargo-servicio-row" style="display:none;">
+                                <input class="form-check-input" type="checkbox" id="cargo-servicio-check" onchange="actualizarTotalPago()">
+                                <label class="form-check-label small" for="cargo-servicio-check">
+                                    Aplicar cargo por servicio (<span id="cargo-servicio-pct">0</span>%)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0">
@@ -381,10 +438,13 @@
                     <span class="fs-2 fw-bold text-success" id="post-total">RD$ 0.00</span>
                     <small class="text-muted d-block mt-1" id="post-metodo">Efectivo</small>
                 </div>
-                <div class="d-flex gap-2 justify-content-center">
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
                     <a href="#" class="btn btn-outline-primary rounded-pill" id="btn-ticket" target="_blank">
                         <i class="bi bi-receipt me-1"></i> Ticket
                     </a>
+                    <button class="btn btn-outline-dark rounded-pill" id="btn-imprimir" onclick="imprimirTicket()">
+                        <i class="bi bi-printer me-1"></i> Imprimir
+                    </button>
                     <button class="btn btn-primary rounded-pill" id="btn-facturar" onclick="facturarMesa()">
                         <i class="bi bi-shield-check me-1"></i> Facturar (e-CF)
                     </button>
@@ -486,6 +546,46 @@
     </div>
 </div>
 
+{{-- Modal Tipo Orden (Delivery / Para llevar) --}}
+<div class="modal fade" id="tipoOrdenModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-cup-straw me-2"></i>Abrir Mesa</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Tipo de Orden</label>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary flex-fill rounded-pill tipo-orden-btn active" data-value="mesa" onclick="seleccionarTipoOrden('mesa')">
+                            <i class="bi bi-shop me-1"></i> Mesa
+                        </button>
+                        <button type="button" class="btn btn-outline-primary flex-fill rounded-pill tipo-orden-btn" data-value="delivery" onclick="seleccionarTipoOrden('delivery')">
+                            <i class="bi bi-truck me-1"></i> Delivery
+                        </button>
+                        <button type="button" class="btn btn-outline-primary flex-fill rounded-pill tipo-orden-btn" data-value="para_llevar" onclick="seleccionarTipoOrden('para_llevar')">
+                            <i class="bi bi-box-seam me-1"></i> Llevar
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3" id="delivery-company-group" style="display:none;">
+                    <label class="form-label small fw-bold">Empresa de Delivery</label>
+                    <select id="delivery-company-select" class="form-select rounded-3">
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="confirmarAbrirMesa()">
+                    <i class="bi bi-check-lg me-1"></i> Abrir Mesa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Modal Abrir Caja --}}
 <div class="modal fade" id="abrirCajaModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -524,13 +624,107 @@
     </div>
 </div>
 
+{{-- Modal Cerrar Caja --}}
+<div class="modal fade" id="cerrarCajaModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-cash-stack me-2"></i>Cerrar Caja</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cerrar-caja-resumen" class="mb-3 small"></div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Total Declarado (RD$) <span class="text-danger">*</span></label>
+                    <input type="number" id="cierre-monto-declarado" class="form-control rounded-3" step="0.01" min="0">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Cobros Efectivo (RD$) <span class="text-danger">*</span></label>
+                    <input type="number" id="cierre-cobros-efectivo" class="form-control rounded-3" step="0.01" min="0" value="0">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Cobros Tarjeta (RD$) <span class="text-danger">*</span></label>
+                    <input type="number" id="cierre-cobros-tarjeta" class="form-control rounded-3" step="0.01" min="0" value="0">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Cobros Transferencia (RD$) <span class="text-danger">*</span></label>
+                    <input type="number" id="cierre-cobros-transferencia" class="form-control rounded-3" step="0.01" min="0" value="0">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Notas</label>
+                    <input type="text" id="cierre-notas" class="form-control rounded-3" maxlength="500" placeholder="Opcional">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" onclick="cerrarCaja()">
+                    <i class="bi bi-check-lg me-1"></i> Cerrar Caja
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-.restaurant-pos .mesa-btn { transition: all .2s ease; cursor: pointer; }
-.restaurant-pos .mesa-btn:hover { transform: translateY(-2px); box-shadow: 0 .25rem .5rem rgba(0,0,0,.1) !important; }
-.restaurant-pos .mesa-btn.mesa-libre { border-left: 4px solid #198754 !important; }
-.restaurant-pos .mesa-btn.mesa-ocupada { border-left: 4px solid #ffc107 !important; }
-.restaurant-pos .mesa-btn.mesa-reservada { border-left: 4px solid #0dcaf0 !important; }
-.restaurant-pos .mesa-btn.mesa-inactiva { border-left: 4px solid #6c757d !important; }
+.restaurant-pos .mesa-btn {
+    transition: all .25s ease, border-width 0s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.restaurant-pos .mesa-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.12) !important;
+    z-index: 2;
+}
+.restaurant-pos .mesa-btn:active { transform: translateY(0) scale(0.98); }
+.restaurant-pos .mesa-btn.mesa-libre {
+    border-left: 5px solid #198754 !important;
+    background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%) !important;
+}
+.restaurant-pos .mesa-btn.mesa-ocupada {
+    border-left: 5px solid #f59e0b !important;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+}
+.restaurant-pos .mesa-btn.mesa-reservada {
+    border-left: 5px solid #06b6d4 !important;
+    background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%) !important;
+    box-shadow: 0 0 0 2px rgba(6,182,212,.15), 0 .125rem .25rem rgba(0,0,0,.05) !important;
+    animation: reserva-pulse 2s ease-in-out infinite;
+}
+@keyframes reserva-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(6,182,212,.15), 0 .125rem .25rem rgba(0,0,0,.05); }
+    50% { box-shadow: 0 0 0 4px rgba(6,182,212,.25), 0 .125rem .5rem rgba(0,0,0,.08); }
+}
+.restaurant-pos .mesa-btn.mesa-inactiva {
+    border-left: 5px solid #6c757d !important;
+    opacity: .55;
+}
+.restaurant-pos .mesa-btn .estado-icon {
+    width: 10px; height: 10px; border-radius: 50%;
+    display: inline-block; flex-shrink: 0;
+}
+.restaurant-pos .mesa-btn .estado-icon.verde { background: #198754; box-shadow: 0 0 0 2px rgba(25,135,84,.2); }
+.restaurant-pos .mesa-btn .estado-icon.amarillo { background: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,.2); }
+.restaurant-pos .mesa-btn .estado-icon.azul { background: #06b6d4; box-shadow: 0 0 0 2px rgba(6,182,212,.2); }
+.restaurant-pos .mesa-btn .estado-icon.gris { background: #6c757d; box-shadow: 0 0 0 2px rgba(108,117,125,.2); }
+
+.restaurant-pos .reserva-ribbon {
+    position: absolute; top: 10px; right: 10px;
+    background: #06b6d4; color: #fff;
+    font-size: .6rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(6,182,212,.3);
+    z-index: 2;
+    display: flex; align-items: center; gap: 3px;
+}
+.restaurant-pos .reserva-timer {
+    font-size: .6rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 3px;
+}
+.restaurant-pos .reserva-timer.pon-vencida { color: #dc2626; }
+.restaurant-pos .reserva-timer.pon-proximo { color: #d97706; }
+
 .orden-items .item-qty { min-width: 28px; text-align: center; }
 .pago-metodo.active { transform: scale(1.05); box-shadow: 0 .15rem .3rem rgba(0,0,0,.15); }
 #caja-status-bar .caja-activa { background: linear-gradient(135deg, #059669, #10b981); }
@@ -594,9 +788,12 @@ function renderCajaStatus() {
                             <i class="bi bi-cash-stack"></i>
                             <span class="fw-bold small">${data.sesion.caja.nombre}</span>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-white text-success">Caja Activa</span>
                             <small class="ms-2 opacity-75">RD$ ${Number(data.sesion.monto_inicial).toFixed(0)}</small>
+                            <button class="btn btn-sm btn-light rounded-pill text-danger fw-bold ms-2" onclick="mostrarCerrarCaja(${data.sesion.caja_id})" title="Cerrar Caja">
+                                <i class="bi bi-x-circle me-1"></i> Cerrar
+                            </button>
                         </div>
                     </div>
                 `;
@@ -660,6 +857,136 @@ function crearCaja() {
     });
 }
 
+let cerrarCajaId = null;
+
+function mostrarCerrarCaja(cajaId) {
+    cerrarCajaId = cajaId;
+    fetch(`{{ url("restaurante/caja/resumen") }}?caja_id=${cajaId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { alert(data.error); return; }
+            document.getElementById('cerrar-caja-resumen').innerHTML = `
+                <div class="bg-light rounded-3 p-2">
+                    <div class="d-flex justify-content-between"><span>Ventas:</span><span class="fw-bold">${data.total_ventas}</span></div>
+                    <div class="d-flex justify-content-between"><span>Efectivo:</span><span class="fw-bold">RD$ ${Number(data.efectivo).toFixed(2)}</span></div>
+                    <div class="d-flex justify-content-between"><span>Tarjeta:</span><span class="fw-bold">RD$ ${Number(data.tarjeta).toFixed(2)}</span></div>
+                    <div class="d-flex justify-content-between"><span>Transferencia:</span><span class="fw-bold">RD$ ${Number(data.transferencia).toFixed(2)}</span></div>
+                    <hr class="my-1">
+                    <div class="d-flex justify-content-between"><span>Total cobrado:</span><span class="fw-bold text-primary">RD$ ${Number(data.total).toFixed(2)}</span></div>
+                </div>
+            `;
+            document.getElementById('cierre-cobros-efectivo').value = data.efectivo.toFixed(2);
+            document.getElementById('cierre-cobros-tarjeta').value = data.tarjeta.toFixed(2);
+            document.getElementById('cierre-cobros-transferencia').value = data.transferencia.toFixed(2);
+        });
+    new bootstrap.Modal(document.getElementById('cerrarCajaModal')).show();
+}
+
+function cerrarCaja() {
+    const montoDeclarado = document.getElementById('cierre-monto-declarado').value;
+    const efectivo = document.getElementById('cierre-cobros-efectivo').value;
+    const tarjeta = document.getElementById('cierre-cobros-tarjeta').value;
+    const transferencia = document.getElementById('cierre-cobros-transferencia').value;
+    const notas = document.getElementById('cierre-notas').value.trim();
+
+    if (!montoDeclarado || parseFloat(montoDeclarado) < 0) {
+        alert('Ingresa el monto declarado');
+        return;
+    }
+
+    fetch('{{ route("restaurante.caja.cerrar") }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            caja_id: cerrarCajaId,
+            monto_declarado: montoDeclarado,
+            cobros_efectivo: efectivo,
+            cobros_tarjeta: tarjeta,
+            cobros_transferencia: transferencia,
+            notas: notas
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { alert(data.error); return; }
+        bootstrap.Modal.getInstance(document.getElementById('cerrarCajaModal')).hide();
+        renderCajaStatus();
+        Swal.fire({
+            icon: data.descuadre === 0 ? 'success' : 'warning',
+            title: 'Caja Cerrada',
+            text: data.message,
+        });
+    });
+}
+
+let quickMenuVisible = true;
+function toggleQuickMenu() {
+    quickMenuVisible = !quickMenuVisible;
+    document.getElementById('quick-menu-items').style.display = quickMenuVisible ? '' : 'none';
+    document.getElementById('quick-menu-toggle-icon').className = quickMenuVisible ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+}
+
+function cargarPopulares() {
+    fetch('/restaurante/productos/populares')
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('quick-menu-items');
+            if (!data || data.length === 0) {
+                container.innerHTML = '<small class="text-muted">Sin productos populares</small>';
+                return;
+            }
+            container.innerHTML = data.map(p => `
+                <button class="btn btn-sm btn-outline-danger rounded-pill d-inline-flex align-items-center gap-1 flex-shrink-0"
+                    onclick="agregarProductoQuick(${p.id}, '${escapeHtml(p.nombre)}', ${p.precio}, ${p.stock})"
+                    title="${escapeHtml(p.nombre)} - RD$ ${p.precio.toFixed(2)} · Stock: ${p.stock}">
+                    <span class="badge bg-danger rounded-circle p-1" style="width:18px;height:18px;font-size:10px;">${p.iniciales}</span>
+                    <span class="small">${escapeHtml(p.nombre)}</span>
+                    <small class="text-muted">RD$${p.precio.toFixed(0)}</small>
+                </button>
+            `).join('');
+        });
+}
+
+function agregarProductoQuick(productoId, nombre, precio, stock) {
+    if (!ordenActual) return;
+    if (stock !== undefined && stock <= 0) {
+        Swal.fire({icon:'error', title:'Sin stock', text:'Este producto no tiene disponible'});
+        return;
+    }
+    if (stock !== undefined && stock <= 3) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Stock bajo',
+            text: `Solo quedan ${stock} unidades de "${nombre}". ¿Agregar de todas formas?`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, agregar',
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) {
+                enviarAgregarProductoQuick(productoId);
+            }
+        });
+        return;
+    }
+    enviarAgregarProductoQuick(productoId);
+}
+
+function enviarAgregarProductoQuick(productoId) {
+    const curso = 'fuerte';
+    const notas = '';
+    fetch(`/restaurante/mesa/${mesaActual}/agregar`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ producto_id: productoId, cantidad: 1, curso: curso, notas: notas })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { alert(data.error); return; }
+        ordenActual = data.orden;
+        renderOrden(data.orden);
+    });
+}
+
 // Click en mesa
 document.querySelectorAll('.mesa-btn').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -683,10 +1010,20 @@ function cargarMesa(mesaId) {
             const tipoBadge = orden && orden.tipo_orden && orden.tipo_orden !== 'mesa'
                 ? ` <span class="badge bg-info rounded-pill">${orden.tipo_orden.replace('_', ' ')}</span>`
                 : '';
-            document.getElementById('orden-subtitulo').innerHTML = '# Cap. ' + mesa.capacidad + ' · ' + (mesa.ubicacion || '') + tipoBadge;
+            let deliveryBadge = '';
+            if (orden && orden.delivery_company_id) {
+                const dc = deliveryCompanies.find(d => d.id === orden.delivery_company_id);
+                if (dc) deliveryBadge = ` <span class="badge bg-dark rounded-pill"><i class="bi bi-truck me-1"></i>${dc.nombre}</span>`;
+            }
+            document.getElementById('orden-subtitulo').innerHTML = '# Cap. ' + mesa.capacidad + ' · ' + (mesa.ubicacion || '') + tipoBadge + deliveryBadge;
             
             if (!orden && mesa.estado === 'reservada') {
-                document.getElementById('orden-subtitulo').innerHTML += ' <span class="badge bg-warning text-dark">Reserva Pendiente</span>';
+                const diffMs = data.reservacion ? new Date(data.reservacion.fecha_hora + 'Z') - new Date() : 0;
+                const atrasada = diffMs < 0;
+                document.getElementById('orden-subtitulo').innerHTML +=
+                    atrasada
+                        ? ' <span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>Atrasada</span>'
+                        : ' <span class="badge bg-warning text-dark">Reserva Pendiente</span>';
             }
             
             document.getElementById('orden-actions').classList.remove('d-none');
@@ -701,31 +1038,48 @@ function cargarMesa(mesaId) {
                 clienteSelector.classList.remove('d-none');
                 document.getElementById('cliente-nombre').textContent = orden.cliente?.nombre || 'Consumidor Final';
                 document.getElementById('buscar-producto').value = '';
-                document.getElementById('productos-resultados').style.display = 'none';
+                                    document.getElementById('productos-resultados').style.display = 'none';
+                    document.getElementById('quick-menu').classList.remove('d-none');
+                    cargarPopulares();
             } else if (mesa.estado === 'reservada' && data.reservacion) {
                 ordenActual = null;
                 searchBar.classList.add('d-none');
                 clienteSelector.classList.add('d-none');
                 document.getElementById('orden-footer').classList.add('d-none');
                 const r = data.reservacion;
-                const fechaHora = r.fecha_hora ? new Date(r.fecha_hora + 'Z').toLocaleString('es-DO', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
+                const reservaDate = r.fecha_hora ? new Date(r.fecha_hora + 'Z') : null;
+                const now = new Date();
+                const diffMs = reservaDate ? reservaDate - now : 0;
+                const diffMin = Math.round(diffMs / 60000);
+                const atrasada = diffMs < 0;
+                const fechaHora = reservaDate ? reservaDate.toLocaleString('es-DO', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
+                const timerHtml = atrasada
+                    ? `<div class="alert alert-danger py-1 px-2 small fw-bold rounded-3 mt-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>Reserva atrasada ${Math.abs(diffMin)} min</div>`
+                    : diffMin <= 30
+                        ? `<div class="alert alert-warning py-1 px-2 small fw-bold rounded-3 mt-2"><i class="bi bi-hourglass-split me-1"></i>Próxima reserva — Dentro de ${diffMin} min</div>`
+                        : '';
                 document.getElementById('orden-items').innerHTML = `
                     <div class="text-center mt-3">
-                        <i class="bi bi-bookmark-check fs-1 d-block mb-2 text-info"></i>
-                        <h6 class="fw-bold">Reserva para:</h6>
-                        <p class="mb-1"><strong>${escapeHtml(r.cliente_nombre)}</strong></p>
-                        <div class="d-flex justify-content-center gap-3 small text-muted mb-2">
-                            <span><i class="bi bi-people me-1"></i>${r.personas} personas</span>
-                            <span><i class="bi bi-clock me-1"></i>${fechaHora}</span>
+                        <div class="bg-info bg-opacity-10 rounded-4 p-4 mx-2">
+                            <i class="bi bi-bookmark-check-fill fs-1 d-block mb-2 text-info"></i>
+                            <h6 class="fw-bold mb-3">Reserva</h6>
+                            <div class="mb-2">
+                                <span class="fw-bold fs-5">${escapeHtml(r.cliente_nombre)}</span>
+                            </div>
+                            <div class="d-flex justify-content-center gap-3 small text-muted mb-2 flex-wrap">
+                                <span class="bg-white rounded-3 px-3 py-1 shadow-sm"><i class="bi bi-people me-1"></i>${r.personas} pers</span>
+                                <span class="bg-white rounded-3 px-3 py-1 shadow-sm"><i class="bi bi-clock me-1"></i>${fechaHora}</span>
+                            </div>
+                            ${r.cliente_telefono ? `<div class="small mb-1"><i class="bi bi-telephone me-1 text-muted"></i>${escapeHtml(r.cliente_telefono)}</div>` : ''}
+                            ${r.notas ? `<div class="alert alert-light border mt-2 small py-1 px-2 rounded-3">📝 ${escapeHtml(r.notas)}</div>` : ''}
+                            ${timerHtml}
                         </div>
-                        ${r.cliente_telefono ? `<small class="text-muted d-block"><i class="bi bi-telephone me-1"></i>${escapeHtml(r.cliente_telefono)}</small>` : ''}
-                        ${r.notas ? `<div class="alert alert-light border mt-2 small py-1 px-2">📝 ${escapeHtml(r.notas)}</div>` : ''}
-                        <div class="d-flex gap-2 justify-content-center mt-3">
-                            <button class="btn btn-success rounded-pill" onclick="confirmarReserva(${mesaId}, ${r.id})">
-                                <i class="bi bi-check-circle me-1"></i> Confirmar llegada
+                        <div class="d-flex gap-2 justify-content-center mt-3 px-3">
+                            <button class="btn btn-success rounded-pill flex-fill py-2 fw-bold" onclick="confirmarReserva(${mesaId}, ${r.id})">
+                                <i class="bi bi-play-circle-fill me-1"></i> Ocupar ahora
                             </button>
                             <button class="btn btn-outline-danger rounded-pill" onclick="liberarMesa(${mesaId})">
-                                <i class="bi bi-x-circle me-1"></i> Liberar mesa
+                                <i class="bi bi-x-circle me-1"></i> Liberar
                             </button>
                         </div>
                     </div>
@@ -738,7 +1092,7 @@ function cargarMesa(mesaId) {
                     <div class="text-center text-muted mt-5">
                         <i class="bi bi-cup-straw fs-1 d-block mb-2"></i>
                         <p>Mesa vacía</p>
-                        <button class="btn btn-primary rounded-pill mt-2" onclick="abrirMesa(${mesaId})">
+                        <button class="btn btn-primary rounded-pill mt-2" onclick="mostrarAbrirMesa(${mesaId})">
                             <i class="bi bi-plus-circle me-1"></i> Abrir Mesa
                         </button>
                     </div>
@@ -800,10 +1154,56 @@ function mostrarBuscarCliente() {
     document.getElementById('buscar-cliente').focus();
 }
 
-function abrirMesa(mesaId, clienteId, tipoOrden) {
+let mesaAbrirId = null;
+let ordenTipoSeleccionado = 'mesa';
+let deliveryCompanies = [];
+let servicioPorcentaje = {{ $servicioPorcentaje ?? 0 }};
+let servicioMinPersonas = {{ $servicioMinPersonas ?? 8 }};
+
+function mostrarAbrirMesa(mesaId) {
+    mesaAbrirId = mesaId;
+    ordenTipoSeleccionado = 'mesa';
+    document.getElementById('delivery-company-group').style.display = 'none';
+    document.querySelectorAll('.tipo-orden-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.tipo-orden-btn[data-value="mesa"]').classList.add('active');
+    if (deliveryCompanies.length === 0) {
+        fetch('/delivery-companies/listar-activas')
+            .then(r => r.json())
+            .then(data => {
+                deliveryCompanies = data;
+                const sel = document.getElementById('delivery-company-select');
+                sel.innerHTML = '<option value="">Seleccionar...</option>'
+                    + data.map(d => `<option value="${d.id}" data-comision="${d.comision_porcentaje}">${d.nombre}</option>`).join('');
+            }).catch(() => {});
+    }
+    new bootstrap.Modal(document.getElementById('tipoOrdenModal')).show();
+}
+
+function seleccionarTipoOrden(tipo) {
+    ordenTipoSeleccionado = tipo;
+    document.querySelectorAll('.tipo-orden-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.tipo-orden-btn[data-value="${tipo}"]`).classList.add('active');
+    document.getElementById('delivery-company-group').style.display = tipo === 'delivery' ? 'block' : 'none';
+}
+
+function confirmarAbrirMesa() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('tipoOrdenModal'));
+    modal.hide();
+    const deliveryCompanyId = ordenTipoSeleccionado === 'delivery'
+        ? document.getElementById('delivery-company-select').value
+        : null;
+    if (ordenTipoSeleccionado === 'delivery' && !deliveryCompanyId) {
+        Swal.fire({icon:'error', title:'Selecciona empresa', text:'Debes elegir una empresa de delivery'});
+        return;
+    }
+    abrirMesa(mesaAbrirId, null, ordenTipoSeleccionado, deliveryCompanyId);
+}
+
+function abrirMesa(mesaId, clienteId, tipoOrden, deliveryCompanyId) {
     const payload = {};
     if (clienteId) payload.cliente_id = clienteId;
     if (tipoOrden) payload.tipo_orden = tipoOrden;
+    if (deliveryCompanyId) payload.delivery_company_id = deliveryCompanyId;
     fetch(`/restaurante/mesa/${mesaId}/abrir`, {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
@@ -824,28 +1224,46 @@ function abrirMesa(mesaId, clienteId, tipoOrden) {
 }
 
 function confirmarReserva(mesaId, reservacionId) {
-    fetch(`/restaurante/mesa/${mesaId}/abrir`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-    })
-    .then(r => {
-        if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error del servidor'); });
-        return r.json();
-    })
-    .then(data => {
-        if (data.error) { Swal.fire({icon:'error', title:'No se pudo abrir', text: data.error}); return; }
-        fetch(`/restaurante/reservaciones/${reservacionId}/estado`, {
-            method: 'PATCH',
+    mostrarAbrirMesa(mesaId);
+    document.getElementById('tipoOrdenModal').dataset.reservacionId = reservacionId;
+    document.querySelector('#tipoOrdenModal .btn-primary').onclick = function() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('tipoOrdenModal'));
+        modal.hide();
+        const deliveryCompanyId = ordenTipoSeleccionado === 'delivery'
+            ? document.getElementById('delivery-company-select').value
+            : null;
+        if (ordenTipoSeleccionado === 'delivery' && !deliveryCompanyId) {
+            Swal.fire({icon:'error', title:'Selecciona empresa', text:'Debes elegir una empresa de delivery'});
+            return;
+        }
+        fetch(`/restaurante/mesa/${mesaId}/abrir`, {
+            method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ estado: 'cumplida' })
-        }).catch(() => {});
-        cargarMesa(mesaId);
-        actualizarGridMesa(mesaId, 'ocupada');
-    })
-    .catch(err => {
-        Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
-    });
+            body: JSON.stringify({
+                tipo_orden: ordenTipoSeleccionado,
+                delivery_company_id: deliveryCompanyId || null
+            })
+        })
+        .then(r => {
+            if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error del servidor'); });
+            return r.json();
+        })
+        .then(data => {
+            if (data.error) { Swal.fire({icon:'error', title:'No se pudo abrir', text: data.error}); return; }
+            fetch(`/restaurante/reservaciones/${reservacionId}/estado`, {
+                method: 'PATCH',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: 'cumplida' })
+            }).catch(() => {});
+            cargarMesa(mesaId);
+            actualizarGridMesa(mesaId, 'ocupada');
+            document.querySelector('#tipoOrdenModal .btn-primary').onclick = confirmarAbrirMesa;
+        })
+        .catch(err => {
+            Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
+            document.querySelector('#tipoOrdenModal .btn-primary').onclick = confirmarAbrirMesa;
+        });
+    };
 }
 
 function liberarMesa(mesaId) {
@@ -903,6 +1321,16 @@ function renderOrden(orden) {
     } else {
         descLabel.classList.add('d-none');
     }
+
+    const deliveryFeeLabel = document.getElementById('orden-delivery-fee');
+    if (orden.delivery_fee && orden.delivery_fee > 0) {
+        const dc = deliveryCompanies.find(d => d.id === orden.delivery_company_id);
+        const name = dc ? dc.nombre : 'Delivery';
+        deliveryFeeLabel.innerHTML = `<span class="text-muted"><i class="bi bi-truck me-1"></i>${name}</span> <span class="text-danger">-RD$ ${Number(orden.delivery_fee).toFixed(2)}</span>`;
+        deliveryFeeLabel.classList.remove('d-none');
+    } else {
+        deliveryFeeLabel.classList.add('d-none');
+    }
 }
 
 function limpiarBusqueda() {
@@ -913,7 +1341,28 @@ function limpiarBusqueda() {
     ultimosResultados = [];
 }
 
-function agregarProductoCantidad(productoId, cantidad) {
+function agregarProductoCantidad(productoId, cantidad, stock) {
+    if (stock !== undefined && stock <= 0) {
+        Swal.fire({icon:'error', title:'Sin stock', text:'Este producto no tiene disponible'});
+        return;
+    }
+    if (stock !== undefined && stock <= 3) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Stock bajo',
+            text: `Solo quedan ${stock} unidades. ¿Agregar de todas formas?`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, agregar',
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) enviarAgregarProducto(productoId, cantidad);
+        });
+        return;
+    }
+    enviarAgregarProducto(productoId, cantidad);
+}
+
+function enviarAgregarProducto(productoId, cantidad) {
     document.getElementById('productos-resultados').style.display = 'none';
     document.getElementById('buscar-producto').value = '';
     document.getElementById('btn-limpiar-busqueda').style.display = 'none';
@@ -970,7 +1419,7 @@ function buscarProductosLocal() {
     results.forEach(p => {
         html += `
         <div class="list-group-item px-3 py-2 border-start-0 border-end-0 producto-item cursor-pointer" 
-             onclick="agregarProductoCantidad(${p.id}, 1)"
+             onclick="agregarProductoCantidad(${p.id}, 1, ${p.stock})"
              style="transition: background 0.1s;">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="flex-grow-1 min-w-0 me-2">
@@ -990,7 +1439,7 @@ document.getElementById('buscar-producto').addEventListener('keydown', function 
     if (e.key === 'Enter' && ultimosResultados.length > 0) {
         e.preventDefault();
         const first = ultimosResultados[0];
-        agregarProductoCantidad(first.id, parseInt(document.getElementById('qty-' + first.id).value) || 1);
+        agregarProductoCantidad(first.id, parseInt(document.getElementById('qty-' + first.id).value) || 1, first.stock);
     }
 });
 document.getElementById('buscar-producto').addEventListener('input', function () {
@@ -1114,24 +1563,19 @@ function confirmarSplitBill() {
 
     bootstrap.Modal.getInstance(document.getElementById('splitBillModal')).hide();
 
-    // Mostrar mini payment flow por persona
-    let msg = 'Dividir cuenta confirmado:\n';
-    for (let p = 1; p <= splitPersonas; p++) {
-        msg += `Persona ${p}: RD$ ${totales[p-1].toFixed(2)}\n`;
-    }
-    msg += '\n¿Cómo desea proceder?';
-    // Para simplificar, abrimos pago normal con el método mixto auto-llenado
-    document.querySelector('.pago-metodo[data-metodo="mixto"]')?.click();
-    // Dividir el total entre las personas en el mixto
-    const propina = parseFloat(document.getElementById('propina-input').value) || 0;
-    const totalConPropina = suma + propina;
-    const porPersona = totalConPropina / splitPersonas;
-    document.getElementById('mixto-efectivo').value = porPersona.toFixed(2);
-
     // Guardar datos del split para el backend
     window.splitData = { activo: true, personas: splitPersonas, totales, itemsPorPersona };
 
-    alert(msg);
+    // Abrir modal de pago si está cerrado
+    const pagoModal = document.getElementById('pagoModal');
+    if (!pagoModal.classList.contains('show')) {
+        document.querySelector('.pago-metodo[data-metodo="mixto"]')?.click();
+        const propina = parseFloat(document.getElementById('propina-input').value) || 0;
+        const totalConPropina = suma + propina;
+        const porPersona = totalConPropina / splitPersonas;
+        document.getElementById('mixto-efectivo').value = porPersona.toFixed(2);
+        new bootstrap.Modal(pagoModal).show();
+    }
 }
 
 function mostrarDescuento() {
@@ -1251,15 +1695,34 @@ function mostrarPago() {
     document.getElementById('pago-mixto').style.display = 'none';
     document.querySelectorAll('.pago-metodo').forEach(b => b.classList.remove('active'));
     document.querySelector('.pago-metodo[data-metodo="efectivo"]').classList.add('active');
+    // Cargo por servicio
+    const mesaBtn = document.querySelector(`.mesa-btn[data-mesa-id="${mesaActual}"]`);
+    const capacidadTexto = mesaBtn?.querySelector('small')?.textContent || '';
+    const capMatch = capacidadTexto.match(/Cap\.\s*(\d+)/);
+    const capacidad = capMatch ? parseInt(capMatch[1]) : 0;
+    const row = document.getElementById('cargo-servicio-row');
+    const pctEl = document.getElementById('cargo-servicio-pct');
+    if (servicioPorcentaje > 0 && capacidad >= servicioMinPersonas) {
+        pctEl.textContent = servicioPorcentaje;
+        document.getElementById('cargo-servicio-check').checked = true;
+        row.style.display = 'block';
+    } else {
+        document.getElementById('cargo-servicio-check').checked = false;
+        row.style.display = 'none';
+    }
     new bootstrap.Modal(document.getElementById('pagoModal')).show();
+    actualizarTotalPago();
 }
 
 function actualizarTotalPago() {
     const totalBase = parseFloat(ordenActual?.total || 0);
     const propina = parseFloat(document.getElementById('propina-input').value) || 0;
-    const totalConPropina = totalBase + propina;
-    document.getElementById('pago-total').textContent = 'RD$ ' + totalConPropina.toFixed(2);
-    document.getElementById('monto-recibido').value = totalConPropina;
+    const cargoServicio = document.getElementById('cargo-servicio-check')?.checked
+        ? totalBase * (parseFloat(document.getElementById('cargo-servicio-pct').textContent) || 0) / 100
+        : 0;
+    const totalFinal = totalBase + propina + cargoServicio;
+    document.getElementById('pago-total').textContent = 'RD$ ' + totalFinal.toFixed(2);
+    document.getElementById('monto-recibido').value = totalFinal;
 }
 
 document.querySelectorAll('.pago-metodo').forEach(btn => {
@@ -1303,14 +1766,24 @@ document.querySelectorAll('#mixto-efectivo, #mixto-tarjeta, #mixto-transferencia
 function procesarPago() {
     const metodo = document.querySelector('.pago-metodo.active').dataset.metodo;
     const propina = parseFloat(document.getElementById('propina-input').value) || 0;
-    let payload = { metodo_pago: metodo, propina: propina };
+    let payload = { metodo_pago: metodo, propina: propina, cargo_servicio: document.getElementById('cargo-servicio-check')?.checked || false };
 
     // Split bill data
     if (window.splitData?.activo) {
         payload.split = true;
         payload.personas = window.splitData.personas;
         payload.totales = window.splitData.totales;
-        payload.items_por_persona = window.splitData.itemsPorPersona;
+        // Build split_persons array for backend (SplitBillPerson records)
+        const persons = [];
+        for (let p = 1; p <= window.splitData.personas; p++) {
+            persons.push({
+                num: p,
+                nombre: '',
+                items: window.splitData.itemsPorPersona[p] || [],
+                subtotal: window.splitData.totales[p - 1] || 0,
+            });
+        }
+        payload.split_persons = persons;
     }
 
     if (metodo === 'efectivo') {
@@ -1384,6 +1857,61 @@ function facturarMesa() {
         document.getElementById('factura-status').innerHTML = '<div class="alert alert-danger rounded-3 py-1 small mb-0">Error de conexión</div>';
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Facturar (e-CF)';
+    });
+}
+
+function imprimirTicket() {
+    if (!postPagoData || !mesaActual) return;
+    const btn = document.getElementById('btn-imprimir');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Imprimiendo...';
+
+    fetch(`/restaurante/mesa/${mesaActual}/ticket/print`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ venta_id: postPagoData.id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            Swal.fire({icon:'error', title:'Error de impresión', text: data.error});
+        } else {
+            Swal.fire({icon:'success', title:'Impreso', text: data.message, timer: 1500, showConfirmButton: false});
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-printer me-1"></i> Imprimir';
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-printer me-1"></i> Imprimir';
+        Swal.fire({icon:'error', title:'Error', text:'No se pudo conectar con el servidor'});
+    });
+}
+
+function reimprimirTicket(mesaId, ventaId) {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    fetch(`/restaurante/mesa/${mesaId}/ticket/print`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ venta_id: ventaId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            Swal.fire({icon:'error', title:'Error de impresión', text: data.error});
+        } else {
+            Swal.fire({icon:'success', title:'Impreso', text: data.message, timer: 1500, showConfirmButton: false});
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-printer"></i> Reimprimir';
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-printer"></i> Reimprimir';
+        Swal.fire({icon:'error', title:'Error', text:'No se pudo conectar con el servidor'});
     });
 }
 
@@ -1509,11 +2037,11 @@ function actualizarGridMesa(mesaId, estado) {
     if (!btn) return;
     btn.dataset.estado = estado;
     btn.className = 'mesa-btn w-100 text-start p-3 rounded-4 border-0 shadow-sm position-relative ' +
-        (estado === 'disponible' ? 'bg-white mesa-libre' : '') +
-        (estado === 'ocupada' ? 'bg-warning bg-opacity-10 mesa-ocupada' : '') +
-        (estado === 'reservada' ? 'bg-info bg-opacity-10 mesa-reservada' : '') +
-        (estado === 'inactiva' ? 'bg-secondary bg-opacity-10 mesa-inactiva opacity-50' : '');
-    const badge = btn.querySelector('.badge');
+        (estado === 'disponible' ? 'mesa-libre' : '') +
+        (estado === 'ocupada' ? 'mesa-ocupada' : '') +
+        (estado === 'reservada' ? 'mesa-reservada' : '') +
+        (estado === 'inactiva' ? 'mesa-inactiva' : '');
+    const badge = btn.querySelector('.badge.rounded-pill.mt-1');
     if (badge) {
         badge.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
         badge.className = 'badge rounded-pill mt-1 ' +
@@ -1522,11 +2050,45 @@ function actualizarGridMesa(mesaId, estado) {
             (estado === 'reservada' ? 'bg-info' : '') +
             (estado === 'inactiva' ? 'bg-secondary' : '');
     }
+    const estadoIcon = btn.querySelector('.estado-icon');
+    if (estadoIcon) {
+        estadoIcon.className = 'estado-icon ' +
+            (estado === 'disponible' ? 'verde' : '') +
+            (estado === 'ocupada' ? 'amarillo' : '') +
+            (estado === 'reservada' ? 'azul' : '') +
+            (estado === 'inactiva' ? 'gris' : '');
+    }
     const montoBadge = btn.querySelector('.badge.bg-dark');
     if (estado === 'disponible' && montoBadge) montoBadge.remove();
+    const reservaRibbon = btn.querySelector('.reserva-ribbon');
+    if (reservaRibbon && estado !== 'reservada') reservaRibbon.remove();
+    const reservaInfoDiv = btn.querySelector('[style*="background:rgba(255,255,255,.7)"]');
+    if (reservaInfoDiv && estado !== 'reservada') reservaInfoDiv.remove();
 }
 
 document.getElementById('mesas-count').textContent = document.querySelectorAll('.mesa-btn').length;
+
+// Timer de reservas — actualiza cada 30s
+function actualizarTimersReservas() {
+    document.querySelectorAll('.reserva-timer[data-fecha]').forEach(el => {
+        const fechaHora = el.dataset.fecha;
+        if (!fechaHora) return;
+        const reserva = new Date(fechaHora.replace(' ', 'T').replace(/\/$/, ''));
+        if (isNaN(reserva.getTime())) return;
+        const now = new Date();
+        const diffMs = reserva - now;
+        const diffMin = Math.round(diffMs / 60000);
+        if (diffMin > 30) {
+            el.innerHTML = '';
+        } else if (diffMin >= 0) {
+            el.innerHTML = `<span class="reserva-timer pon-proximo"><i class="bi bi-hourglass-split"></i> en ${diffMin} min</span>`;
+        } else {
+            el.innerHTML = `<span class="reserva-timer pon-vencida"><i class="bi bi-exclamation-triangle-fill"></i> Atrasada ${Math.abs(diffMin)} min</span>`;
+        }
+    });
+}
+setInterval(actualizarTimersReservas, 30000);
+actualizarTimersReservas();
 
 // Atajos de teclado
 document.addEventListener('keydown', function (e) {

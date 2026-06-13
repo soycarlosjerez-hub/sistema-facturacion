@@ -13,7 +13,9 @@ class Venta extends Model
         'impuestos' => 'decimal:2',
         'descuento' => 'decimal:2',
         'propina' => 'decimal:2',
+        'cargo_servicio' => 'decimal:2',
         'total' => 'decimal:2',
+        'delivery_fee' => 'decimal:2',
         'fecha' => 'datetime',
     ];
 
@@ -24,6 +26,7 @@ class Venta extends Model
         'cliente_id', 'tipo_venta_id', 'sucursal_id', 'mesa_id',
         'fecha', 'subtotal', 'impuestos', 'descuento', 'total', 'estado',
         'descuento_tipo', 'descuento_motivo', 'notas', 'tipo_orden', 'propina',
+        'delivery_company_id', 'delivery_fee', 'cargo_servicio', 'vehiculo_id',
     ];
 
     public function sucursal()
@@ -70,9 +73,44 @@ class Venta extends Model
         return $this->hasOne(EcfDocumento::class, 'venta_id');
     }
 
+    public function ecfDocumento()
+    {
+        return $this->ecf();
+    }
+
+    public function scopeDeSucursal($query)
+    {
+        if ($sucursalId = session('sucursal_id')) {
+            return $query->where('sucursal_id', $sucursalId);
+        }
+        return $query;
+    }
+
     public function mesa()
     {
         return $this->belongsTo(Mesa::class);
+    }
+
+    public function deliveryCompany()
+    {
+        return $this->belongsTo(DeliveryCompany::class);
+    }
+
+    public function splitBillPersons()
+    {
+        return $this->hasMany(\App\Models\SplitBillPerson::class);
+    }
+
+    public function vehiculo()
+    {
+        return $this->belongsTo(Vehiculo::class);
+    }
+
+    public function lavadores()
+    {
+        return $this->belongsToMany(\App\Models\Lavador::class, 'lavador_venta')
+            ->withPivot('porcentaje_aplicado', 'comision')
+            ->withTimestamps();
     }
 
     public function usaEcf(): bool

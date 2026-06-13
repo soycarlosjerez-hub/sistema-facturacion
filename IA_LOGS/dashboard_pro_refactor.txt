@@ -1,0 +1,42 @@
+# IA AUDIT LOG - SISTEMA DE FACTURACIÓN
+# Fecha de actualización: 2026-06-09
+
+## Dashboard PRO - Refactorización Completa
+
+### Archivos Modificados:
+
+1. **app/Services/DashboardService.php** (NUEVO)
+   - Centraliza todos los cálculos de KPIs del dashboard
+   - Métodos: getKpis(), getCashRegisterStatus(), getSecondaryStats(),
+     getSalesChartData(), getHourlySalesChart(), getPaymentMethodChart(),
+     getTopProducts(), getTopDebtors(), getRecentActivity(), getAlerts(), getUserRanking()
+   - Implementa caché para KPIs principales y estadísticas secundarias (Cache::remember)
+   - Soporte para filtro por fechas en getKpis()
+
+2. **app/Http/Controllers/HomeController.php** (REFACTORIZADO)
+   - Reducido de 259 líneas a 60 líneas
+   - Eliminados 20+ imports innecesarios
+   - Lógica delegada completamente a DashboardService
+   - Eliminado método obsoleto buildReportData()
+   - PDF actualizado para usar DashboardService
+   - Inyección de dependencia por constructor
+
+3. **resources/views/dashboard.blade.php** (REESCRITO)
+   - Variables actualizadas para usar la nueva estructura (kpis[], chartData[], etc.)
+   - NUEVO: Filtro de fechas (desde/hasta) en el hero
+   - NUEVO: Gráfico Doughnut de métodos de pago (Chart.js)
+   - NUEVO: Widget "Resumen Fiscal" con NCF por vencer y productos sin rotación
+   - NUEVO: Selector de rango de días (30d/7d) eliminado (simplificado)
+   - NUEVO: Indicadores de porcentaje por método de pago
+   - Mantiene: KPIs, tendencia de ventas, ventas por hora, top productos,
+     top deudores, ranking cajeros, ventas recientes, alertas
+
+### Mejoras Funcionales:
+   - Cache de 60 segundos en KPIs principales
+   - Cache de 120 segundos en estadísticas secundarias
+   - Filtro de fechas actualiza KPIs vía GET
+   - Controlador más mantenible y testeable
+   - Código más modular (servicio separado)
+
+---
+*Registro generado automáticamente por opencode.*

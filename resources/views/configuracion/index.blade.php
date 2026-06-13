@@ -78,6 +78,7 @@
                                     <option value="retail" {{ ($settings['tipo_negocio'] ?? '') === 'retail' ? 'selected' : '' }}>Colmado / Minimarket / Retail</option>
                                     <option value="mayorista" {{ ($settings['tipo_negocio'] ?? '') === 'mayorista' ? 'selected' : '' }}>Mayorista / Distribuidor</option>
                                     <option value="servicios" {{ ($settings['tipo_negocio'] ?? '') === 'servicios' ? 'selected' : '' }}>Servicios Profesionales</option>
+                                    <option value="lavadero" {{ ($settings['tipo_negocio'] ?? '') === 'lavadero' ? 'selected' : '' }}>Lavadero de Carro</option>
                                 </select>
                                 <div class="form-text">Define qué módulos y flujos se habilitan por defecto.</div>
                             </div>
@@ -85,8 +86,7 @@
                     </div>
                 </div>
 
-
-            </div>
+                </div>
 
             <!-- Panel de Acciones Laterales -->
             <div class="col-lg-4">

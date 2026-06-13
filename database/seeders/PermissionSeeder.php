@@ -179,6 +179,13 @@ class PermissionSeeder extends Seeder
                 'backups.create',
                 'backups.delete',
             ],
+            'lavadero' => [
+                'lavadero.view',
+                'lavadero.servicios',
+                'lavadero.vehiculos',
+                'lavadero.citas',
+                'lavadero.lavadores',
+            ],
             'configuracion' => [
                 'configuracion.view',
                 'configuracion.edit',
@@ -256,6 +263,12 @@ class PermissionSeeder extends Seeder
                 'restaurante.reservaciones',
                 'restaurante.cajas',
                 'restaurante.mesas.manage',
+
+                'lavadero.view',
+                'lavadero.servicios',
+                'lavadero.vehiculos',
+                'lavadero.citas',
+                'lavadero.lavadores',
 
                 'cajas.view',
                 'cajas.create',
@@ -345,6 +358,12 @@ class PermissionSeeder extends Seeder
                 'restaurante.cajas',
                 'restaurante.categorias',
                 'restaurante.reservaciones',
+
+                'lavadero.view',
+                'lavadero.servicios',
+                'lavadero.vehiculos',
+                'lavadero.citas',
+                'lavadero.lavadores',
 
                 'retail.terminal',
                 'retail.inventario',

@@ -211,7 +211,7 @@ function toggleActiva(id, activa) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
             'Accept': 'application/json'
         },
-        body: JSON.stringify({ activa: activa })
+        body: JSON.stringify({ activa: activa, _method: 'PUT' })
     }).then(r => {
         if (!r.ok) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar' });
     }).catch(() => {

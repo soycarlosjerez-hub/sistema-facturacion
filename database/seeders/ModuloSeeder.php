@@ -48,6 +48,18 @@ class ModuloSeeder extends Seeder
             ['key' => 'almacenes', 'label' => 'Almacenes', 'icon' => 'bi-buildings', 'categoria' => 'organizacion', 'orden' => 31,
              'sidebar_route' => 'almacenes.index', 'sidebar_is_route' => 'almacenes.*', 'sidebar_exact_route' => 'almacenes.index', 'sidebar_permission' => 'almacenes.view'],
 
+            // Lavadero
+            ['key' => 'lavadero', 'label' => 'Terminal Lavadero', 'icon' => 'bi-droplet', 'categoria' => 'lavadero', 'orden' => 35,
+             'sidebar_route' => 'lavadero.index', 'sidebar_is_route' => 'lavadero.*', 'sidebar_exact_route' => 'lavadero.index', 'sidebar_permission' => 'lavadero.view'],
+            ['key' => 'lavadero-servicios', 'label' => 'Servicios de Lavado', 'icon' => 'bi-card-checklist', 'categoria' => 'lavadero', 'orden' => 36,
+             'sidebar_route' => 'lavadero.servicios.index', 'sidebar_is_route' => 'lavadero.servicios.*', 'sidebar_exact_route' => 'lavadero.servicios.index', 'sidebar_permission' => 'lavadero.servicios'],
+            ['key' => 'lavadero-vehiculos', 'label' => 'Vehículos', 'icon' => 'bi-car-front', 'categoria' => 'lavadero', 'orden' => 37,
+             'sidebar_route' => 'lavadero.vehiculos.index', 'sidebar_is_route' => 'lavadero.vehiculos.*', 'sidebar_exact_route' => 'lavadero.vehiculos.index', 'sidebar_permission' => 'lavadero.vehiculos'],
+            ['key' => 'lavadero-citas', 'label' => 'Citas / Turnos', 'icon' => 'bi-calendar-event', 'categoria' => 'lavadero', 'orden' => 38,
+             'sidebar_route' => 'lavadero.citas.index', 'sidebar_is_route' => 'lavadero.citas.*', 'sidebar_exact_route' => 'lavadero.citas.index', 'sidebar_permission' => 'lavadero.citas'],
+            ['key' => 'lavadero-lavadores', 'label' => 'Lavadores', 'icon' => 'bi-people', 'categoria' => 'lavadero', 'orden' => 39,
+             'sidebar_route' => 'lavadero.lavadores.index', 'sidebar_is_route' => 'lavadero.lavadores.*', 'sidebar_exact_route' => 'lavadero.lavadores.index', 'sidebar_permission' => 'lavadero.lavadores'],
+
             // Restaurante
             ['key' => 'restaurante', 'label' => 'Restaurante (Terminal Mesas)', 'icon' => 'bi-cup-straw', 'categoria' => 'restaurante', 'orden' => 40,
              'sidebar_route' => 'restaurante.index', 'sidebar_is_route' => 'restaurante.*', 'sidebar_exact_route' => 'restaurante.index', 'sidebar_permission' => 'restaurante.view'],

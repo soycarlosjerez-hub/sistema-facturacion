@@ -75,6 +75,11 @@ class SystemSetting extends Model
         return in_array(static::tipoNegocio(), ['servicios', 'mixto']);
     }
 
+    public static function esLavadero(): bool
+    {
+        return in_array(static::tipoNegocio(), ['lavadero', 'mixto']);
+    }
+
     protected static function booted(): void
     {
         static::saved(function () {

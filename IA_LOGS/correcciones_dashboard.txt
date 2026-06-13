@@ -1,0 +1,49 @@
+# IA AUDIT LOG - CORRECCIONES DASHBOARD PRO
+# Fecha: 2026-06-09
+
+## FASE 1 - Corrección Crítica de Filtro de Fechas
+
+### Problema:
+El método `DashboardService::getKpis()` construía las variables `$ventasQuery` y `$pagosQuery` 
+con los filtros de fecha pero NUNCA las ejecutaba. Las consultas reales usaban fechas fijas 
+(`$hoy`, `$ayer`, `$mes`), ignorando completamente los parámetros del filtro del usuario.
+
+### Solución Aplicada:
+1. `getKpis()` ahora delega a dos métodos privados:
+   - `getFilteredKpis()` - ejecuta las consultas con los filtros reales
+   - `getDefaultKpis()` - comportamiento original (hoy/ayer/mes actual)
+2. Extraída lógica duplicada de cálculo de utilidad a `calcularUtilidad()`
+
+## FASE 2 - Refactorización de Código
+
+### Archivos Modificados:
+
+| Archivo | Cambio |
+|---------|--------|
+| `app/Services/DashboardService.php` | Eliminado import `AlmacenMovimiento`. Agregado `Collection`. |
+| | `getKpis()` separado en 3 métodos (SRP). |
+| | Tipos de retorno: FQCN `\Illuminate\Support\Collection` → `Collection` |
+| | Cache key: string concat → `sprintf()` |
+| `app/Http/Controllers/HomeController.php` | Agregada validación de fechas: `'desde' => 'nullable|date'`, `'hasta' => 'nullable|date|after_or_equal:desde'` |
+
+### Archivos Creados (Partials Blade):
+
+| Archivo | Contenido |
+|---------|-----------|
+| `resources/views/dashboard/_kpis.blade.php` | KPIs principales + secundarios (antes ~100 líneas inline) |
+| `resources/views/dashboard/_content.blade.php` | Charts, top productos, deudores, resumen fiscal |
+| `resources/views/dashboard/_activity.blade.php` | Ranking cajeros, ventas recientes, alertas |
+| `resources/views/dashboard/_scripts.blade.php` | Chart.js initialization (extraído a `@push('scripts')`) |
+
+### Mejora de Mantenibilidad:
+- Dashboard principal: De 780+ líneas → ~130 líneas (orquestador de partials)
+- Cada sección ahora es un archivo independiente y testeable
+- Los scripts Chart.js ahora usan `@push('scripts')` en lugar de estar al final del contenido
+
+## FASE 3 - Calidad (Pendiente)
+- Migrar Chart.js a Vite
+- Mover CSS inline a `resources/css/dashboard.css`
+- Implementar ViewComposer para la lógica @php
+
+---
+*Registro generado automáticamente por opencode.*

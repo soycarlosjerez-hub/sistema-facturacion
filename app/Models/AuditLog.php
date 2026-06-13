@@ -29,6 +29,11 @@ class AuditLog extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function model(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo();
+    }
+
     public function scopeOfAction($query, string $action)
     {
         return $query->where('action', $action);

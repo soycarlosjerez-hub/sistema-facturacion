@@ -75,15 +75,13 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a href="{{ route('sucursales.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                                <i class="bi bi-save me-2"></i>Guardar
+                            </button>
+                        </div>
                     </form>
-                </div>
-                <div class="card-footer bg-light border-top border-light p-4 text-end">
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('sucursales.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                            <i class="bi bi-save me-2"></i>Guardar
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>

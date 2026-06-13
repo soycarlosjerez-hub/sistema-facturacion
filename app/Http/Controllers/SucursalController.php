@@ -2,14 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSucursalRequest;
+use App\Http\Requests\UpdateSucursalRequest;
 use App\Models\Sucursal;
-use Illuminate\Http\Request;
+use App\Services\SucursalService;
 
 class SucursalController extends Controller
 {
+    protected SucursalService $sucursalService;
+
+    public function __construct(SucursalService $sucursalService)
+    {
+        $this->sucursalService = $sucursalService;
+    }
+
     public function index()
     {
-        $sucursales = Sucursal::orderBy('nombre')->get();
+        $sucursales = $this->sucursalService->list(request()->only(['search']));
+
         return view('sucursales.index', compact('sucursales'));
     }
 
@@ -18,25 +28,22 @@ class SucursalController extends Controller
         return view('sucursales.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreSucursalRequest $request)
     {
-        $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:sucursales,codigo',
-            'nombre' => 'required|string|max:255',
-            'direccion' => 'nullable|string|max:500',
-            'telefono' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-            'rnc' => 'nullable|string|max:20',
-            'activa' => 'nullable|boolean',
-            'es_matriz' => 'nullable|boolean',
-        ]);
+        $this->sucursalService->create($request->validated());
 
-        $data['activa'] = $request->boolean('activa');
-        $data['es_matriz'] = $request->boolean('es_matriz');
+        return redirect()->route('sucursales.index')
+            ->with('success', 'Sucursal creada exitosamente.');
+    }
 
-        Sucursal::create($data);
+    public function show(Sucursal $sucursal)
+    {
+        $sucursal->loadCount(['almacenes', 'cajas', 'usuarios', 'ventas', 'compras']);
 
-        return redirect()->route('sucursales.index')->with('success', 'Sucursal creada exitosamente.');
+        $stats = $this->sucursalService->getStats($sucursal);
+        $activity = $this->sucursalService->getRecentActivity($sucursal);
+
+        return view('sucursales.show', compact('sucursal', 'stats', 'activity'));
     }
 
     public function edit(Sucursal $sucursal)
@@ -44,30 +51,23 @@ class SucursalController extends Controller
         return view('sucursales.edit', compact('sucursal'));
     }
 
-    public function update(Request $request, Sucursal $sucursal)
+    public function update(UpdateSucursalRequest $request, Sucursal $sucursal)
     {
-        $data = $request->validate([
-            'codigo' => 'required|string|max:20|unique:sucursales,codigo,' . $sucursal->id,
-            'nombre' => 'required|string|max:255',
-            'direccion' => 'nullable|string|max:500',
-            'telefono' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-            'rnc' => 'nullable|string|max:20',
-            'activa' => 'nullable|boolean',
-            'es_matriz' => 'nullable|boolean',
-        ]);
+        $this->sucursalService->update($sucursal, $request->validated());
 
-        $data['activa'] = $request->boolean('activa');
-        $data['es_matriz'] = $request->boolean('es_matriz');
-
-        $sucursal->update($data);
-
-        return redirect()->route('sucursales.index')->with('success', 'Sucursal actualizada exitosamente.');
+        return redirect()->route('sucursales.index')
+            ->with('success', 'Sucursal actualizada exitosamente.');
     }
 
     public function destroy(Sucursal $sucursal)
     {
-        $sucursal->delete();
-        return redirect()->route('sucursales.index')->with('success', 'Sucursal eliminada.');
+        $result = $this->sucursalService->delete($sucursal);
+
+        if (!$result['success']) {
+            return back()->with('error', $result['message']);
+        }
+
+        return redirect()->route('sucursales.index')
+            ->with('success', $result['message']);
     }
 }
