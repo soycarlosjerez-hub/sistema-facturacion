@@ -25,34 +25,36 @@ class EcfService
 
     public function generarEcf(Venta $venta, ?string $tipoEcfOverride = null): EcfDocumento
     {
-        DB::beginTransaction();
-        try {
-            $tipoEcf = $tipoEcfOverride ?: $this->determinarTipoEcf($venta);
+        $tipoEcf = $tipoEcfOverride ?: $this->determinarTipoEcf($venta);
+        $maxAttempts = 5;
 
-            $secuencia = $this->obtenerSecuenciaDisponible($tipoEcf);
-            if (!$secuencia) {
-                throw new \RuntimeException("No hay secuencias e-CF activas para el tipo {$tipoEcf}");
-            }
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            DB::beginTransaction();
+            try {
+                $secuencia = $this->obtenerSecuenciaDisponible($tipoEcf);
+                if (!$secuencia) {
+                    throw new \RuntimeException("No hay secuencias e-CF activas para el tipo {$tipoEcf}");
+                }
 
-            $numero = $secuencia->getNextNumero();
-            $encf = $secuencia->tipo_ecf . str_pad($numero, 10, '0', STR_PAD_LEFT);
+                $numero = $secuencia->getNextNumero();
+                $encf = $secuencia->tipo_ecf . str_pad($numero, 10, '0', STR_PAD_LEFT);
 
-            $totales = $this->calcularTotales($venta);
+                $totales = $this->calcularTotales($venta);
 
-            $ecf = EcfDocumento::create([
-                'venta_id' => $venta->id,
-                'secuencia_ecf_id' => $secuencia->id,
-                'encf' => $encf,
-                'tipo_ecf' => $tipoEcf,
-                'estado' => 'borrador',
-                'fecha_emision' => now(),
-                'monto_gravado_total' => $totales['gravado'],
-                'monto_exento_total' => $totales['exento'],
-                'itbis_total' => $totales['itbis'],
-                'monto_total' => $totales['total'],
-                'codigo_seguridad' => null,
-                'usuario_id' => Auth::id(),
-            ]);
+                $ecf = EcfDocumento::create([
+                    'venta_id' => $venta->id,
+                    'secuencia_ecf_id' => $secuencia->id,
+                    'encf' => $encf,
+                    'tipo_ecf' => $tipoEcf,
+                    'estado' => 'borrador',
+                    'fecha_emision' => now(),
+                    'monto_gravado_total' => $totales['gravado'],
+                    'monto_exento_total' => $totales['exento'],
+                    'itbis_total' => $totales['itbis'],
+                    'monto_total' => $totales['total'],
+                    'codigo_seguridad' => null,
+                    'usuario_id' => Auth::id(),
+                ]);
 
             $ecf->load(['secuencia', 'venta.cliente', 'venta.detalles.producto']);
 
@@ -64,11 +66,24 @@ class EcfService
             $this->log($ecf, 'crear', 'exito', 'e-CF generado en estado borrador');
 
             return $ecf->fresh();
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'encf')) {
+                Log::warning('e-CF: ENCF duplicado, reintentando', [
+                    'venta_id' => $venta->id, 'encf' => $encf ?? '', 'attempt' => $attempt,
+                ]);
+                if ($attempt >= $maxAttempts) {
+                    throw new \RuntimeException("No se pudo generar un ENCF único después de {$maxAttempts} intentos: " . $e->getMessage());
+                }
+                continue;
+            }
+            throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('e-CF: error al generar', ['venta_id' => $venta->id, 'error' => $e->getMessage()]);
             throw $e;
         }
+    }
     }
 
     public function firmar(EcfDocumento $ecf): EcfDocumento
@@ -108,17 +123,26 @@ class EcfService
             throw new \RuntimeException("El e-CF no está en un estado válido para envío (actual: {$ecf->estado})");
         }
 
-        if ($ecf->estado === 'borrador' || empty($ecf->xml_content)) {
+        if (in_array($ecf->estado, ['borrador', 'generado']) || empty($ecf->xml_content)) {
             $ecf = $this->firmar($ecf);
         }
 
         $ecf->increment('intentos_envio');
+        $ecf->transicionarA('enviado');
+        $ecf->fecha_envio = now();
+        $ecf->save();
+
         $start = microtime(true);
 
-        $response = $this->dgii->enviar($ecf);
+        try {
+            $response = $this->dgii->enviar($ecf);
+        } catch (\Throwable $e) {
+            $this->log($ecf, 'enviar', 'error', 'Error de comunicación DGII: ' . $e->getMessage());
+            throw $e;
+        }
+
         $duration = (int) ((microtime(true) - $start) * 1000);
 
-        $ecf->fecha_envio = now();
         $ecf->track_id_dgii = $response['track_id'] ?? null;
         $ecf->mensaje_dgii = $response['mensaje'] ?? null;
 
@@ -126,7 +150,7 @@ class EcfService
             $ecf->transicionarA('aprobado');
             $ecf->fecha_aprobacion = now();
         } else {
-            $ecf->estado = 'rechazado';
+            $ecf->transicionarA('rechazado');
         }
         $ecf->save();
 

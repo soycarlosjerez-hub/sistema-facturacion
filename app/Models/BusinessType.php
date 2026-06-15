@@ -4,20 +4,41 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphedByMany;
 use Illuminate\Support\Facades\Cache;
 
 class BusinessType extends Model
 {
     protected $table = 'business_types';
-    protected $fillable = ['slug', 'nombre', 'descripcion', 'color', 'icon', 'activo', 'orden', 'config'];
+    
+    protected $fillable = [
+        'key', 'slug', 'nombre', 'descripcion', 
+        'color', 'color_default', 'icon', 'icono_default',
+        'activo', 'orden', 'campos_extra', 'soft_delete_default'
+    ];
 
     protected $casts = [
         'activo' => 'boolean',
         'orden' => 'integer',
-        'config' => 'array',
+        'campos_extra' => 'array',
+        'soft_delete_default' => 'boolean',
     ];
 
     public const CACHE_KEY = 'business_types_all';
+
+    // Polymorphic relationship: categories that belong to this business type
+    public function categories()
+    {
+        return $this->morphToMany(
+            Category::class,
+            'categorizable',
+            'categorizables',
+            'categorizable_id',  // FK on pivot to this model (business_types)
+            'category_id'        // FK on pivot to related model (categories)
+        )
+            ->withPivot('configuracion', 'soft_delete_enabled')
+            ->withTimestamps();
+    }
 
     public function modules(): HasMany
     {
@@ -36,7 +57,7 @@ class BusinessType extends Model
                 ->where('activo', true)
                 ->orderBy('orden')
                 ->get()
-                ->keyBy('slug')
+                ->keyBy('key')
                 ->toArray();
         });
     }
@@ -51,17 +72,18 @@ class BusinessType extends Model
         $types = self::allCached();
         return array_map(function ($t) {
             return [
+                'key' => $t['key'],
                 'slug' => $t['slug'],
                 'nombre' => $t['nombre'],
                 'descripcion' => $t['descripcion'] ?? '',
-                'color' => $t['color'] ?? 'secondary',
-                'icon' => $t['icon'] ?? 'bi-grid',
+                'color' => $t['color_default'] ?? $t['color'] ?? 'secondary',
+                'icon' => $t['icono_default'] ?? $t['icon'] ?? 'bi-grid',
                 'modulos' => collect($t['modules'] ?? [])
                     ->where('visible', true)
                     ->sortBy('orden')
                     ->pluck('modulo_key')
                     ->toArray(),
-                'config' => $t['config'] ?? [],
+                'config' => $t['campos_extra'] ?? [],
             ];
         }, $types);
     }

@@ -600,6 +600,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/restaurante/mesa/{mesa}/historial', [OrdenController::class, 'historialMesa'])->name('restaurante.mesa.historial')->middleware('permission:restaurante.view');
     Route::post('/restaurante/mesa/{mesa}/abrir', [OrdenController::class, 'abrirMesa'])->name('restaurante.mesa.abrir')->middleware('permission:restaurante.cobrar');
     Route::post('/restaurante/mesa/{mesa}/agregar', [OrdenController::class, 'agregarItem'])->name('restaurante.mesa.agregar')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/actualizar/{detalle}', [OrdenController::class, 'actualizarItem'])->name('restaurante.mesa.actualizar')->middleware('permission:restaurante.cobrar');
     Route::delete('/restaurante/mesa/{mesa}/quitar/{detalle}', [OrdenController::class, 'quitarItem'])->name('restaurante.mesa.quitar')->middleware('permission:restaurante.cobrar');
     Route::post('/restaurante/mesa/{mesa}/cobrar', [OrdenController::class, 'cobrar'])->name('restaurante.mesa.cobrar')->middleware('permission:restaurante.cobrar');
     Route::post('/restaurante/mesa/{mesa}/facturar', [OrdenController::class, 'facturar'])->name('restaurante.mesa.facturar')->middleware('permission:restaurante.cobrar');

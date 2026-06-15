@@ -53,6 +53,7 @@
                     {{ $mesa->estado === 'reservada' ? 'mesa-reservada' : '' }}
                     {{ $mesa->estado === 'inactiva' ? 'mesa-inactiva' : '' }}
                 " data-mesa-id="{{ $mesa->id }}" data-estado="{{ $mesa->estado }}" data-pos-x="{{ $mesa->pos_x ?? 0 }}" data-pos-y="{{ $mesa->pos_y ?? 0 }}"
+                    onclick="seleccionarMesa(this)"
                     @if($catColor) style="border-left-color: {{ $catColor }} !important;" @endif
                     @if($tooltipParts) title="{{ implode(' | ', $tooltipParts) }}" @endif>
                     @if($reservaInfo)
@@ -146,15 +147,14 @@
             </div>
         </div>
 
-        {{-- Buscador de productos (siempre visible cuando hay orden activa) --}}
+        {{-- Buscador de platos (abre modal con teclado táctil) --}}
         <div class="p-3 border-bottom d-none" id="productos-search-bar">
-            <div class="input-group shadow-sm rounded-3">
+            <div class="input-group shadow-sm rounded-3 cursor-pointer" onclick="abrirModalProductos()">
                 <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="buscar-producto" class="form-control" placeholder="Buscar producto por nombre o código..." autocomplete="off">
-                <button class="btn btn-outline-secondary" type="button" id="btn-limpiar-busqueda" style="display:none;" onclick="limpiarBusqueda()"><i class="bi bi-x-lg"></i></button>
+                <input type="text" id="buscar-producto" class="form-control bg-white" placeholder="Toca aquí para buscar platos..." readonly>
             </div>
             <div class="mt-1 d-flex gap-1">
-                <select id="categoria-filtro" class="form-select form-select-sm rounded-3" style="max-width:140px;" onchange="categoriaFiltro=this.value;buscarProductosLocal()">
+                <select id="categoria-filtro" class="form-select form-select-sm rounded-3" style="max-width:140px;">
                     <option value="">Todas las categorías</option>
                 </select>
                 <select id="item-curso" class="form-select form-select-sm rounded-3" style="max-width:110px;">
@@ -165,14 +165,12 @@
                 </select>
                 <input type="text" id="item-notas" class="form-control form-control-sm rounded-3" placeholder="Notas" maxlength="200">
             </div>
-            {{-- Resultados inline --}}
-            <div id="productos-resultados" class="mt-2" style="display:none; max-height: 250px; overflow-y: auto;"></div>
         </div>
 
         {{-- Menú rápido / Populares --}}
         <div class="p-2 border-bottom d-none" id="quick-menu">
             <div class="d-flex align-items-center mb-1">
-                <small class="text-muted fw-semibold me-2"><i class="bi bi-fire me-1"></i>Más vendidos</small>
+                <small class="text-muted fw-semibold me-2"><i class="bi bi-fire me-1"></i>Platos populares</small>
                 <button class="btn btn-sm p-0 text-muted" onclick="toggleQuickMenu()" type="button"><i class="bi bi-chevron-up" id="quick-menu-toggle-icon"></i></button>
             </div>
             <div id="quick-menu-items" class="d-flex gap-1 flex-wrap overflow-auto" style="max-height:80px;"></div>
@@ -224,7 +222,7 @@
             </div>
             <div class="row g-2">
                 <div class="col-6">
-                    <button class="btn btn-outline-primary w-100 rounded-pill py-2" onclick="document.getElementById('buscar-producto')?.focus()" id="btn-agregar">
+                    <button class="btn btn-outline-primary w-100 rounded-pill py-2" onclick="abrirModalProductos()" id="btn-agregar">
                         <i class="bi bi-plus-circle me-1"></i> Agregar
                     </button>
                 </div>
@@ -232,6 +230,52 @@
                     <button class="btn btn-success w-100 rounded-pill py-2 fw-bold" onclick="mostrarPago()" id="btn-cobrar">
                         <i class="bi bi-cash-coin me-1"></i> Cobrar
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Modal de platos con teclado virtual --}}
+<div class="modal fade" id="productosModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content rounded-4 border-0 shadow" style="max-height:95vh;">
+            <div class="modal-header border-0 bg-primary text-white rounded-top-4 py-2">
+                <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Plato</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="cerrarModalProductos()"></button>
+            </div>
+            <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
+                {{-- Búsqueda --}}
+                <div class="input-group shadow-sm rounded-3 mb-2">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar plato..." autocomplete="off" oninput="modalBuscarProductos()">
+                    <button class="btn btn-outline-secondary" type="button" id="modal-btn-limpiar" style="display:none;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg"></i></button>
+                </div>
+                {{-- Curso, categoría y notas --}}
+                <div class="d-flex gap-2 mb-2">
+                    <select id="modal-item-curso" class="form-select form-select-sm rounded-3" style="max-width:120px;">
+                        <option value="entrada">Entrada</option>
+                        <option value="fuerte" selected>Plato Fuerte</option>
+                        <option value="postre">Postre</option>
+                        <option value="bebida">Bebida</option>
+                    </select>
+                    <select id="modal-categoria-filtro" class="form-select form-select-sm rounded-3" onchange="modalBuscarProductos()">
+                        <option value="">Todas</option>
+                    </select>
+                    <input type="text" id="modal-item-notas" class="form-control form-control-sm rounded-3" placeholder="Notas" maxlength="200">
+                </div>
+                {{-- Grid de platos --}}
+                <div id="modal-productos-grid" class="row g-2 overflow-auto mb-2" style="flex:1; min-height:0;"></div>
+                {{-- Teclado virtual --}}
+                <div class="border-top pt-1 mt-1" id="teclado-virtual">
+                    <div class="d-flex justify-content-between align-items-center mb-0">
+                        <small class="text-muted fw-semibold" style="font-size:.65rem;">Teclado</small>
+                        <div class="btn-group btn-group-xs">
+                            <button class="btn btn-outline-secondary rounded-start-pill" style="font-size:.65rem;padding:1px 6px;" onclick="tecladoIdioma('us')" id="btn-idioma-us">US</button>
+                            <button class="btn btn-outline-secondary rounded-end-pill" style="font-size:.65rem;padding:1px 6px;" onclick="tecladoIdioma('es')" id="btn-idioma-es">ES</button>
+                        </div>
+                    </div>
+                    <div id="teclado-rows"></div>
                 </div>
             </div>
         </div>
@@ -578,7 +622,7 @@
             </div>
             <div class="modal-footer border-0">
                 <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="confirmarAbrirMesa()">
+                <button type="button" class="btn btn-primary rounded-pill btn-lg px-4" onclick="confirmarAbrirMesa()">
                     <i class="bi bi-check-lg me-1"></i> Abrir Mesa
                 </button>
             </div>
@@ -671,6 +715,7 @@
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    touch-action: manipulation;
 }
 .restaurant-pos .mesa-btn:hover {
     transform: translateY(-2px) scale(1.02);
@@ -738,15 +783,238 @@
     .restaurant-pos .mesas-panel { width: 100% !important; min-width: unset !important; max-height: 50vh; }
     .restaurant-pos .orden-panel { min-height: 50vh; }
 }
+
+.tecla {
+    flex: 1;
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    font-size: .78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background .08s, transform .08s;
+    padding: 0 3px;
+    min-width: 0;
+}
+.tecla:active {
+    background: #dbeafe;
+    transform: scale(0.93);
+    box-shadow: 0 0 0 2px rgba(59,130,246,.2);
+}
+.tecla-func {
+    background: #f1f5f9;
+    font-size: .72rem;
+}
+.tecla-shift {
+    flex: 1.6;
+}
+.tecla-shift.active {
+    background: #bfdbfe;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.15);
+    border-color: #93c5fd;
+}
+.tecla-backspace {
+    flex: 1.3;
+}
+.tecla-space {
+    flex: 4;
+}
+.tecla-enter {
+    flex: 1.3;
+}
+.tecla-punct {
+    flex: 1;
+}
+.tecla-func:active {
+    background: #bfdbfe;
+}
+.tecla-func.active {
+    background: #bfdbfe;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.15);
+    border-color: #93c5fd;
+}
+.tecla-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+#teclado-rows {
+    max-width: 100%;
+}
+#teclado-rows::-webkit-scrollbar {
+    height: 0;
+}
+
+@media (max-width: 576px) {
+    .tecla {
+        height: 34px;
+        font-size: .7rem;
+        border-radius: 6px;
+    }
+}
+
+/* Plato card con imagen y cantidad */
+.prod-card {
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .1s, box-shadow .1s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+.prod-card:active {
+    transform: scale(0.97);
+    box-shadow: 0 .1rem .2rem rgba(0,0,0,.1) !important;
+}
+.prod-card .prod-nombre {
+    font-size: .8rem;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.prod-card .prod-precio {
+    font-size: .9rem;
+}
+.prod-card-img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    background: #f8fafc;
+}
+.prod-card-img-placeholder {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.prod-card-initial {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.prod-card .card-body {
+    padding: 6px 8px 4px;
+}
+.prod-qty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    margin-top: 2px;
+}
+.prod-qty button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    transition: background .1s, transform .1s;
+    line-height: 1;
+    padding: 0;
+}
+.prod-qty button:active {
+    background: #dbeafe;
+    transform: scale(0.88);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.2);
+}
+.prod-qty span {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
+.prod-qty {
+    gap: 4px;
+    margin-top: 4px;
+}
+.prod-card-stock-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: .55rem;
+    padding: 1px 6px;
+    border-radius: 999px;
+    z-index: 2;
+}
+.prod-card .card-body {
+    position: relative;
+}
+
+.mesa-selected {
+    box-shadow: 0 0 0 3px #0d6efd, 0 .5rem 1rem rgba(13,110,253,.2) !important;
+    transform: translateY(-2px) scale(1.02);
+}
+
+#modal-categoria-filtro {
+    max-width: 160px;
+    font-size: .8rem;
+}
+
+/* Orden item quantity controls */
+.orden-qty {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.orden-qty button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid #dee2e6;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    transition: background .1s, transform .1s;
+    padding: 0;
+    line-height: 1;
+}
+.orden-qty button:active {
+    background: #dbeafe;
+    transform: scale(0.88);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.2);
+}
+.orden-qty span {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
 </style>
 
 <script>
 let mesaActual = null;
 let ordenActual = null;
 let postPagoData = null;
+let totalPagoFinal = 0;
 let productosData = [];
 let categoriasData = [];
-let categoriaFiltro = '';
 
 // Cargar catálogo completo al inicio (filtrado del lado del cliente)
 document.addEventListener('DOMContentLoaded', function () {
@@ -778,7 +1046,10 @@ document.addEventListener('DOMContentLoaded', renderCajaStatus);
 
 function renderCajaStatus() {
     fetch('{{ route("restaurante.sesion-activa") }}')
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) throw new Error('Error al obtener estado de caja');
+            return r.json();
+        })
         .then(data => {
             const bar = document.getElementById('caja-status-bar');
             if (data.sesion) {
@@ -813,7 +1084,10 @@ function renderCajaStatus() {
 
 function mostrarAbrirCaja() {
     fetch('{{ route("restaurante.cajas") }}')
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) throw new Error('Error al cargar cajas');
+            return r.json();
+        })
         .then(data => {
             const select = document.getElementById('caja-select');
             select.innerHTML = data.cajas.map(c =>
@@ -834,7 +1108,7 @@ function abrirCaja() {
     })
     .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         bootstrap.Modal.getInstance(document.getElementById('abrirCajaModal')).hide();
         renderCajaStatus();
     });
@@ -842,7 +1116,7 @@ function abrirCaja() {
 
 function crearCaja() {
     const nombre = document.getElementById('nueva-caja-nombre').value.trim();
-    if (!nombre) { alert('Ingresa un nombre para la caja'); return; }
+    if (!nombre) { Swal.fire({icon:'warning', title:'Campo requerido', text:'Ingresa un nombre para la caja'}); return; }
 
     fetch('{{ route("restaurante.crear-caja") }}', {
         method: 'POST',
@@ -932,12 +1206,12 @@ function cargarPopulares() {
         .then(data => {
             const container = document.getElementById('quick-menu-items');
             if (!data || data.length === 0) {
-                container.innerHTML = '<small class="text-muted">Sin productos populares</small>';
+                container.innerHTML = '<small class="text-muted">Sin platos populares</small>';
                 return;
             }
             container.innerHTML = data.map(p => `
                 <button class="btn btn-sm btn-outline-danger rounded-pill d-inline-flex align-items-center gap-1 flex-shrink-0"
-                    onclick="agregarProductoQuick(${p.id}, '${escapeHtml(p.nombre)}', ${p.precio}, ${p.stock})"
+                    onpointerdown="agregarProductoQuick(${p.id}, '${escapeHtml(p.nombre)}', ${p.precio}, ${p.stock})"
                     title="${escapeHtml(p.nombre)} - RD$ ${p.precio.toFixed(2)} · Stock: ${p.stock}">
                     <span class="badge bg-danger rounded-circle p-1" style="width:18px;height:18px;font-size:10px;">${p.iniciales}</span>
                     <span class="small">${escapeHtml(p.nombre)}</span>
@@ -950,7 +1224,7 @@ function cargarPopulares() {
 function agregarProductoQuick(productoId, nombre, precio, stock) {
     if (!ordenActual) return;
     if (stock !== undefined && stock <= 0) {
-        Swal.fire({icon:'error', title:'Sin stock', text:'Este producto no tiene disponible'});
+        Swal.fire({icon:'error', title:'Sin stock', text:'Este plato no tiene disponible'});
         return;
     }
     if (stock !== undefined && stock <= 3) {
@@ -987,24 +1261,25 @@ function enviarAgregarProductoQuick(productoId) {
     });
 }
 
-// Click en mesa
-document.querySelectorAll('.mesa-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const mesaId = this.dataset.mesaId;
-        mesaActual = mesaId;
-        cargarMesa(mesaId);
-    });
-});
+function seleccionarMesa(btn) {
+    const mesaId = btn.dataset.mesaId;
+    if (!mesaId) return;
+    mesaActual = mesaId;
+    cargarMesa(mesaId);
+}
 
 function cargarMesa(mesaId) {
     fetch(`/restaurante/mesa/${mesaId}`)
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) return r.text().then(t => { throw new Error(t.includes('<!DOCTYPE') ? 'Error del servidor (página no encontrada)' : t.substring(0,200)); });
+            return r.json();
+        })
         .then(data => {
             const mesa = data.mesa;
             const orden = data.orden;
 
-            document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('ring-2', 'ring-primary'));
-            document.querySelector(`.mesa-btn[data-mesa-id="${mesaId}"]`)?.classList.add('ring-2', 'ring-primary');
+            document.querySelectorAll('.mesa-btn').forEach(b => b.classList.remove('mesa-selected'));
+            document.querySelector(`.mesa-btn[data-mesa-id="${mesaId}"]`)?.classList.add('mesa-selected');
 
             document.getElementById('orden-titulo').textContent = mesa.nombre || 'Mesa ' + mesa.numero;
             const tipoBadge = orden && orden.tipo_orden && orden.tipo_orden !== 'mesa'
@@ -1038,7 +1313,6 @@ function cargarMesa(mesaId) {
                 clienteSelector.classList.remove('d-none');
                 document.getElementById('cliente-nombre').textContent = orden.cliente?.nombre || 'Consumidor Final';
                 document.getElementById('buscar-producto').value = '';
-                                    document.getElementById('productos-resultados').style.display = 'none';
                     document.getElementById('quick-menu').classList.remove('d-none');
                     cargarPopulares();
             } else if (mesa.estado === 'reservada' && data.reservacion) {
@@ -1092,13 +1366,16 @@ function cargarMesa(mesaId) {
                     <div class="text-center text-muted mt-5">
                         <i class="bi bi-cup-straw fs-1 d-block mb-2"></i>
                         <p>Mesa vacía</p>
-                        <button class="btn btn-primary rounded-pill mt-2" onclick="mostrarAbrirMesa(${mesaId})">
+                        <button class="btn btn-primary rounded-pill btn-lg mt-2" onclick="mostrarAbrirMesa(${mesaId})">
                             <i class="bi bi-plus-circle me-1"></i> Abrir Mesa
                         </button>
                     </div>
                 `;
                 document.getElementById('orden-footer').classList.add('d-none');
             }
+        })
+        .catch(err => {
+            Swal.fire({icon:'error', title:'Error', text:'No se pudo cargar la mesa: ' + err.message});
         });
 }
 
@@ -1134,7 +1411,7 @@ document.getElementById('buscar-cliente').addEventListener('input', function () 
                 </div>`
             ).join('');
         });
-});
+    });
 
 function seleccionarCliente(id, nombre) {
     const mesaId = document.getElementById('clienteModal').dataset.mesaId;
@@ -1285,29 +1562,34 @@ function renderOrden(orden) {
     let html = '';
     if (orden.detalles && orden.detalles.length > 0) {
         orden.detalles.forEach(d => {
-            const nombre = d.producto ? d.producto.nombre : 'Producto #' + d.producto_id;
-            const notasHtml = d.notas ? `<div class="small text-muted fst-italic mt-1" style="font-size:.65rem;">📝 ${escapeHtml(d.notas)}</div>` : '';
+            const nombre = d.producto ? d.producto.nombre : 'Plato #' + d.producto_id;
+            const notasHtml = d.notas ? `<div class="small text-muted fst-italic mt-1" style="font-size:.65rem;"><i class="bi bi-chat-text me-1"></i>${escapeHtml(d.notas)}</div>` : '';
             const cursoLabel = d.curso && d.curso !== 'fuerte' ? ` <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill" style="font-size:.6rem;">${d.curso}</span>` : '';
+            const stock = d.producto ? d.producto.stock : 999;
             html += `
             <div class="d-flex justify-content-between align-items-center p-2 rounded-3 mb-1 bg-light bg-opacity-50">
-                <div class="d-flex align-items-center gap-2 flex-grow-1">
-                    <span class="badge bg-dark rounded-pill item-qty">${d.cantidad}</span>
-                    <div>
-                        <div class="fw-semibold small">${nombre}${cursoLabel}</div>
+                <div class="d-flex align-items-center gap-1 flex-grow-1" style="min-width:0;">
+                    <div class="orden-qty">
+                        <button onclick="cambiarCantidadItem(${d.id}, -1, ${stock})" type="button">−</button>
+                        <span id="orden-qty-${d.id}">${d.cantidad}</span>
+                        <button onclick="cambiarCantidadItem(${d.id}, 1, ${stock})" type="button">+</button>
+                    </div>
+                    <div class="ms-1" style="min-width:0;">
+                        <div class="fw-semibold small text-truncate">${nombre}${cursoLabel}</div>
                         <small class="text-muted">RD$ ${Number(d.precio_unitario).toFixed(2)} c/u</small>
                         ${notasHtml}
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="fw-bold">RD$ ${Number(d.subtotal).toFixed(2)}</span>
-                    <button class="btn btn-sm btn-light rounded-pill" onclick="quitarItem(${d.id})" title="Quitar">
-                        <i class="bi bi-x text-danger"></i>
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    <span class="fw-bold small">RD$ ${Number(d.subtotal).toFixed(2)}</span>
+                    <button class="btn btn-sm btn-light rounded-pill" onclick="quitarItem(${d.id})" title="Quitar" style="width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-x text-danger fs-5"></i>
                     </button>
                 </div>
             </div>`;
         });
     } else {
-        html = '<p class="text-muted text-center py-4">Sin productos aún</p>';
+        html = '<p class="text-muted text-center py-4">Sin platos aún</p>';
     }
     document.getElementById('orden-items').innerHTML = html;
     document.getElementById('orden-subtotal').textContent = 'RD$ ' + Number(orden.subtotal).toFixed(2);
@@ -1333,57 +1615,6 @@ function renderOrden(orden) {
     }
 }
 
-function limpiarBusqueda() {
-    document.getElementById('buscar-producto').value = '';
-    document.getElementById('productos-resultados').style.display = 'none';
-    document.getElementById('btn-limpiar-busqueda').style.display = 'none';
-    document.getElementById('buscar-producto').focus();
-    ultimosResultados = [];
-}
-
-function agregarProductoCantidad(productoId, cantidad, stock) {
-    if (stock !== undefined && stock <= 0) {
-        Swal.fire({icon:'error', title:'Sin stock', text:'Este producto no tiene disponible'});
-        return;
-    }
-    if (stock !== undefined && stock <= 3) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Stock bajo',
-            text: `Solo quedan ${stock} unidades. ¿Agregar de todas formas?`,
-            showCancelButton: true,
-            confirmButtonText: 'Sí, agregar',
-            cancelButtonText: 'Cancelar'
-        }).then(result => {
-            if (result.isConfirmed) enviarAgregarProducto(productoId, cantidad);
-        });
-        return;
-    }
-    enviarAgregarProducto(productoId, cantidad);
-}
-
-function enviarAgregarProducto(productoId, cantidad) {
-    document.getElementById('productos-resultados').style.display = 'none';
-    document.getElementById('buscar-producto').value = '';
-    document.getElementById('btn-limpiar-busqueda').style.display = 'none';
-    const notas = document.getElementById('item-notas').value.trim();
-    const curso = document.getElementById('item-curso').value;
-    document.getElementById('item-notas').value = '';
-    ultimosResultados = [];
-
-    fetch(`/restaurante/mesa/${mesaActual}/agregar`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ producto_id: productoId, cantidad: cantidad, notas: notas, curso: curso })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) { alert(data.error); return; }
-        ordenActual = data.orden;
-        renderOrden(data.orden);
-    });
-}
-
 // Búsqueda de mesas en el panel lateral
 document.getElementById('buscar-mesa').addEventListener('input', function () {
     const q = this.value.trim().toLowerCase();
@@ -1391,67 +1622,6 @@ document.getElementById('buscar-mesa').addEventListener('input', function () {
         const text = (btn.textContent || '').toLowerCase();
         btn.closest('.col-6').style.display = (!q || text.includes(q)) ? '' : 'none';
     });
-});
-
-// Búsqueda de productos del lado del cliente
-let searchTimeout;
-let ultimosResultados = [];
-
-function buscarProductosLocal() {
-    const q = document.getElementById('buscar-producto').value.trim();
-    const container = document.getElementById('productos-resultados');
-    const limpiarBtn = document.getElementById('btn-limpiar-busqueda');
-
-    const results = productosData.filter(p => {
-        const matchNombre = (p.nombre || '').toLowerCase().includes(q.toLowerCase());
-        const matchCodigo = (p.codigo_barras || '').toLowerCase().includes(q.toLowerCase());
-        const matchCategoria = !categoriaFiltro || String(p.categoria_id) === categoriaFiltro;
-        return (matchNombre || matchCodigo) && matchCategoria;
-    }).slice(0, 15);
-    ultimosResultados = results;
-
-    if (results.length === 0) {
-        container.innerHTML = '<div class="text-muted small text-center py-2">Sin resultados</div>';
-        container.style.display = 'block';
-        return;
-    }
-    let html = '<div class="list-group list-group-flush rounded-3 border">';
-    results.forEach(p => {
-        html += `
-        <div class="list-group-item px-3 py-2 border-start-0 border-end-0 producto-item cursor-pointer" 
-             onclick="agregarProductoCantidad(${p.id}, 1, ${p.stock})"
-             style="transition: background 0.1s;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="flex-grow-1 min-w-0 me-2">
-                    <div class="fw-semibold small text-truncate">${escapeHtml(p.nombre)}</div>
-                    <small class="text-muted" style="font-size:.7rem;">RD$ ${Number(p.precio).toFixed(2)} · Stock: ${p.stock}</small>
-                </div>
-                <span class="badge bg-primary rounded-pill px-2 py-1 small">Agregar</span>
-            </div>
-        </div>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-    container.style.display = 'block';
-}
-
-document.getElementById('buscar-producto').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && ultimosResultados.length > 0) {
-        e.preventDefault();
-        const first = ultimosResultados[0];
-        agregarProductoCantidad(first.id, parseInt(document.getElementById('qty-' + first.id).value) || 1, first.stock);
-    }
-});
-document.getElementById('buscar-producto').addEventListener('input', function () {
-    clearTimeout(searchTimeout);
-    const q = this.value.trim();
-    const container = document.getElementById('productos-resultados');
-    const limpiarBtn = document.getElementById('btn-limpiar-busqueda');
-    limpiarBtn.style.display = q.length > 0 ? 'inline-block' : 'none';
-
-    if (q.length < 1 && !categoriaFiltro) { container.style.display = 'none'; return; }
-
-    searchTimeout = setTimeout(buscarProductosLocal, 100);
 });
 
 function escapeHtml(str) {
@@ -1665,14 +1835,72 @@ function mostrarHistorial() {
 }
 
 function quitarItem(detalleId) {
-    if (!confirm('¿Quitar este producto de la orden?')) return;
-    fetch(`/restaurante/mesa/${mesaActual}/quitar/${detalleId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+    Swal.fire({
+        icon: 'question',
+        title: '¿Quitar plato?',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, quitar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        fetch(`/restaurante/mesa/${mesaActual}/quitar/${detalleId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+            ordenActual = data.orden;
+            if (data.orden.detalles && data.orden.detalles.length > 0) {
+                renderOrden(data.orden);
+            } else {
+                cargarMesa(mesaActual);
+            }
+        });
+    });
+}
+
+function cambiarCantidadItem(detalleId, delta, stock) {
+    if (!ordenActual) {
+        Swal.fire({icon:'error', title:'Error', text:'No hay orden activa'});
+        return;
+    }
+    const detalle = ordenActual.detalles.find(d => d.id === detalleId);
+    if (!detalle) {
+        Swal.fire({icon:'error', title:'Error', text:'Comida no encontrada en la orden'});
+        return;
+    }
+    let nueva = parseInt(detalle.cantidad) + parseInt(delta);
+    if (nueva <= 0) {
+        Swal.fire({
+            icon: 'question',
+            title: '¿Quitar plato?',
+            text: `¿Eliminar "${detalle.producto?.nombre || 'Plato'}" de la orden?`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, quitar',
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) quitarItem(detalleId);
+        });
+        return;
+    }
+    const stk = parseInt(stock);
+    if (!isNaN(stk) && stk < nueva) {
+        Swal.fire({icon:'error', title:'Stock insuficiente', text:`Solo hay ${stk} unidades disponibles`});
+        return;
+    }
+    enviarCambiarCantidad(detalleId, nueva);
+}
+
+function enviarCambiarCantidad(detalleId, cantidad) {
+    fetch(`/restaurante/mesa/${mesaActual}/actualizar/${detalleId}`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cantidad: cantidad })
     })
     .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         ordenActual = data.orden;
         if (data.orden.detalles && data.orden.detalles.length > 0) {
             renderOrden(data.orden);
@@ -1720,9 +1948,10 @@ function actualizarTotalPago() {
     const cargoServicio = document.getElementById('cargo-servicio-check')?.checked
         ? totalBase * (parseFloat(document.getElementById('cargo-servicio-pct').textContent) || 0) / 100
         : 0;
-    const totalFinal = totalBase + propina + cargoServicio;
-    document.getElementById('pago-total').textContent = 'RD$ ' + totalFinal.toFixed(2);
-    document.getElementById('monto-recibido').value = totalFinal;
+    totalPagoFinal = totalBase + propina + cargoServicio;
+    document.getElementById('pago-total').textContent = 'RD$ ' + totalPagoFinal.toFixed(2);
+    document.getElementById('monto-recibido').value = '';
+    document.getElementById('cambio-info').classList.add('d-none');
 }
 
 document.querySelectorAll('.pago-metodo').forEach(btn => {
@@ -1733,7 +1962,7 @@ document.querySelectorAll('.pago-metodo').forEach(btn => {
         document.querySelectorAll('.pago-detalle').forEach(d => d.style.display = 'none');
         if (metodo === 'efectivo') {
             document.getElementById('pago-efectivo').style.display = 'block';
-            document.getElementById('monto-recibido').value = ordenActual.total;
+            document.getElementById('monto-recibido').value = totalPagoFinal || ordenActual?.total || 0;
         } else if (metodo === 'mixto') {
             document.getElementById('pago-mixto').style.display = 'block';
         }
@@ -1742,7 +1971,7 @@ document.querySelectorAll('.pago-metodo').forEach(btn => {
 
 document.getElementById('monto-recibido').addEventListener('input', function () {
     const recibido = parseFloat(this.value) || 0;
-    const total = ordenActual ? parseFloat(ordenActual.total) : 0;
+    const total = totalPagoFinal || parseFloat(ordenActual?.total || 0);
     if (recibido >= total) {
         document.getElementById('cambio-monto').textContent = 'RD$ ' + (recibido - total).toFixed(2);
         document.getElementById('cambio-info').classList.remove('d-none');
@@ -1753,7 +1982,7 @@ document.getElementById('monto-recibido').addEventListener('input', function () 
 
 document.querySelectorAll('#mixto-efectivo, #mixto-tarjeta, #mixto-transferencia').forEach(inp => {
     inp.addEventListener('input', function () {
-        const total = ordenActual ? parseFloat(ordenActual.total) : 0;
+        const total = totalPagoFinal || parseFloat(ordenActual?.total || 0);
         const efec = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
         const tarj = parseFloat(document.getElementById('mixto-tarjeta').value) || 0;
         const tran = parseFloat(document.getElementById('mixto-transferencia').value) || 0;
@@ -2000,35 +2229,42 @@ function eliminarWaitlist(id) {
 
 function cerrarMesa() {
     if (!mesaActual) return;
-    if (ordenActual && ordenActual.detalles && ordenActual.detalles.length > 0) {
-        if (!confirm('La mesa tiene productos sin cobrar. ¿Cerrar y anular la orden?')) return;
-    } else {
-        if (!confirm('¿Cerrar esta mesa?')) return;
-    }
-
-    fetch(`/restaurante/mesa/${mesaActual}/anular`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ motivo: 'Cierre manual desde interfaz' })
-    })
-    .then(r => {
-        if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error al cerrar'); });
-        return r.json();
-    })
-    .then(data => {
-        if (data.error) { Swal.fire({icon:'error', title:'No se pudo cerrar', text: data.error}); return; }
-        actualizarGridMesa(mesaActual, 'disponible');
-        document.getElementById('orden-titulo').textContent = 'Selecciona una mesa';
-        document.getElementById('orden-items').innerHTML = '<div class="text-center text-muted mt-5"><i class="bi bi-hand-index fs-1 d-block mb-2"></i><p>Selecciona una mesa para comenzar</p></div>';
-        document.getElementById('orden-footer').classList.add('d-none');
-        document.getElementById('orden-actions').classList.add('d-none');
-        document.getElementById('productos-search-bar').classList.add('d-none');
-        document.getElementById('cliente-selector').classList.add('d-none');
-        ordenActual = null;
-        mesaActual = null;
-    })
-    .catch(err => {
-        Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
+    const msg = ordenActual?.detalles?.length > 0
+        ? 'La mesa tiene platos sin cobrar. ¿Cerrar y anular la orden?'
+        : '¿Cerrar esta mesa?';
+    Swal.fire({
+        icon: 'question',
+        title: 'Cerrar mesa',
+        text: msg,
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cerrar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        fetch(`/restaurante/mesa/${mesaActual}/anular`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ motivo: 'Cierre manual desde interfaz' })
+        })
+        .then(r => {
+            if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error al cerrar'); });
+            return r.json();
+        })
+        .then(data => {
+            if (data.error) { Swal.fire({icon:'error', title:'No se pudo cerrar', text: data.error}); return; }
+            actualizarGridMesa(mesaActual, 'disponible');
+            document.getElementById('orden-titulo').textContent = 'Selecciona una mesa';
+            document.getElementById('orden-items').innerHTML = '<div class="text-center text-muted mt-5"><i class="bi bi-hand-index fs-1 d-block mb-2"></i><p>Selecciona una mesa para comenzar</p></div>';
+            document.getElementById('orden-footer').classList.add('d-none');
+            document.getElementById('orden-actions').classList.add('d-none');
+            document.getElementById('productos-search-bar').classList.add('d-none');
+            document.getElementById('cliente-selector').classList.add('d-none');
+            ordenActual = null;
+            mesaActual = null;
+        })
+        .catch(err => {
+            Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
+        });
     });
 }
 
@@ -2174,9 +2410,8 @@ function toggleMapa() {
             }
             el.addEventListener('click', function (e) {
                 if (wasDragged) { e.stopPropagation(); e.preventDefault(); }
-            });
-        });
-    }
+    });
+    });
 }
 
 function guardarMapa() {
@@ -2197,10 +2432,315 @@ function guardarMapa() {
 
 function seleccionarMesaMapa(mesaId) {
     // Abrir mesa desde el mapa igual que en grid
-    document.querySelectorAll('.mesa-mapa-btn').forEach(b => b.classList.remove('ring-2', 'ring-primary'));
+    document.querySelectorAll('.mesa-mapa-btn').forEach(b => b.classList.remove('mesa-selected'));
     const el = document.querySelector(`.mesa-mapa-btn[data-mesa-id="${mesaId}"]`);
-    if (el) el.classList.add('ring-2', 'ring-primary');
+    if (el) el.classList.add('mesa-selected');
     cargarMesa(mesaId);
+}
+}
+
+// ─── Modal de productos con teclado virtual ───
+let tecladoIdiomaActual = 'es';
+let cantidadesModal = {};
+let modalCategoriaFiltro = '';
+
+const TECLADO_LAYOUTS = {
+    us: [
+        ['q','w','e','r','t','y','u','i','o','p'],
+        ['a','s','d','f','g','h','j','k','l'],
+        ['z','x','c','v','b','n','m']
+    ],
+    es: [
+        ['q','w','e','r','t','y','u','i','o','p'],
+        ['a','s','d','f','g','h','j','k','l','ñ'],
+        ['z','x','c','v','b','n','m']
+    ]
+};
+
+function tecladoIdioma(idioma) {
+    tecladoIdiomaActual = idioma;
+    document.getElementById('btn-idioma-us').classList.toggle('active', idioma === 'us');
+    document.getElementById('btn-idioma-es').classList.toggle('active', idioma === 'es');
+    renderizarTeclado();
+}
+
+function renderizarTeclado() {
+    const container = document.getElementById('teclado-rows');
+    const layout = TECLADO_LAYOUTS[tecladoIdiomaActual] || TECLADO_LAYOUTS.es;
+    let html = '';
+
+    html += '<div class="tecla-row">';
+    ['1','2','3','4','5','6','7','8','9','0'].forEach(n => {
+        html += `<button class="tecla tecla-num" onpointerdown="teclaPulsar('${n}')" type="button">${n}</button>`;
+    });
+    html += '</div>';
+
+    layout.forEach(fila => {
+        html += '<div class="tecla-row">';
+        fila.forEach(letra => {
+            const display = teclaShiftActivo ? letra.toUpperCase() : letra;
+            html += `<button class="tecla" onpointerdown="teclaPulsar('${letra}')" type="button">${display}</button>`;
+        });
+        html += '</div>';
+    });
+
+    html += '<div class="tecla-row">';
+    const shiftCls = teclaShiftActivo ? ' active' : '';
+    html += `<button class="tecla tecla-func tecla-shift${shiftCls}" onpointerdown="teclaMayusculas()" type="button"><i class="bi bi-arrow-up-short fs-5"></i></button>`;
+    ['z','x','c','v','b','n','m'].forEach(letra => {
+        const display = teclaShiftActivo ? letra.toUpperCase() : letra;
+        html += `<button class="tecla" onpointerdown="teclaPulsar('${letra}')" type="button">${display}</button>`;
+    });
+    html += `<button class="tecla tecla-func tecla-backspace" onpointerdown="teclaBorrar()" type="button"><i class="bi bi-backspace fs-5"></i></button>`;
+    html += '</div>';
+
+    html += '<div class="tecla-row">';
+    html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar(',')" type="button">,</button>`;
+    html += `<button class="tecla tecla-space" onpointerdown="teclaPulsar(' ')" type="button"><span class="fw-normal">Espacio</span></button>`;
+    html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar('.')" type="button">.</button>`;
+    html += `<button class="tecla tecla-func tecla-enter" onpointerdown="teclaEnter()" type="button"><i class="bi bi-arrow-return-left fs-5"></i></button>`;
+    html += '</div>';
+
+    container.innerHTML = html;
+}
+
+let teclaShiftActivo = false;
+
+function teclaPulsar(caracter) {
+    const input = document.getElementById('modal-buscar-producto');
+    const start = input.selectionStart || input.value.length;
+    const end = input.selectionEnd || input.value.length;
+    const val = input.value;
+    const letra = teclaShiftActivo ? caracter.toUpperCase() : caracter;
+    input.value = val.substring(0, start) + letra + val.substring(end);
+    const newPos = start + letra.length;
+    input.setSelectionRange(newPos, newPos);
+    input.focus();
+    if (teclaShiftActivo) {
+        teclaShiftActivo = false;
+        renderizarTeclado();
+    }
+    modalBuscarProductos();
+}
+
+function teclaMayusculas() {
+    teclaShiftActivo = !teclaShiftActivo;
+    renderizarTeclado();
+}
+
+function teclaBorrar() {
+    const input = document.getElementById('modal-buscar-producto');
+    const start = input.selectionStart || input.value.length;
+    const end = input.selectionEnd || input.value.length;
+    if (start === 0 && end === 0) return;
+    if (start !== end) {
+        const val = input.value;
+        input.value = val.substring(0, start) + val.substring(end);
+        input.setSelectionRange(start, start);
+    } else {
+        const val = input.value;
+        input.value = val.substring(0, start - 1) + val.substring(start);
+        input.setSelectionRange(start - 1, start - 1);
+    }
+    input.focus();
+    modalBuscarProductos();
+}
+
+function teclaLimpiar() {
+    document.getElementById('modal-buscar-producto').value = '';
+    document.getElementById('modal-btn-limpiar').style.display = 'none';
+    modalBuscarProductos();
+    document.getElementById('modal-buscar-producto').focus();
+}
+
+function teclaEnter() {
+    cerrarModalProductos();
+}
+
+function modalBuscarProductos() {
+    const q = document.getElementById('modal-buscar-producto').value.trim();
+    const limpiarBtn = document.getElementById('modal-btn-limpiar');
+    limpiarBtn.style.display = q.length > 0 ? 'inline-block' : 'none';
+    renderizarProductosModal(q);
+}
+
+function modalLimpiarBusqueda() {
+    teclaLimpiar();
+}
+
+function cerrarModalProductos() {
+    const el = document.getElementById('productosModal');
+    const m = bootstrap.Modal.getInstance(el);
+    if (m) m.hide();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const productosModalEl = document.getElementById('productosModal');
+    if (productosModalEl) {
+        productosModalEl.addEventListener('hidden.bs.modal', function () {
+            const instance = bootstrap.Modal.getInstance(this);
+            if (instance) instance.dispose();
+        });
+    }
+});
+
+function abrirModalProductos() {
+    const modalEl = document.getElementById('productosModal');
+    const old = bootstrap.Modal.getInstance(modalEl);
+    if (old) old.dispose();
+    const modal = new bootstrap.Modal(modalEl, {keyboard: false});
+    document.getElementById('modal-buscar-producto').value = '';
+    document.getElementById('modal-btn-limpiar').style.display = 'none';
+    document.getElementById('modal-item-notas').value = '';
+    document.getElementById('modal-item-curso').value = 'fuerte';
+    document.getElementById('modal-categoria-filtro').value = '';
+    modalCategoriaFiltro = '';
+    cantidadesModal = {};
+    teclaShiftActivo = false;
+    renderizarFiltroCategoriasModal();
+    tecladoIdioma('es');
+    renderizarProductosModal('');
+    modal.show();
+    setTimeout(() => document.getElementById('modal-buscar-producto').focus(), 300);
+}
+
+function renderizarFiltroCategoriasModal() {
+    const sel = document.getElementById('modal-categoria-filtro');
+    if (!sel || categoriasData.length === 0) return;
+    let html = '<option value="">Todas</option>';
+    categoriasData.forEach(c => {
+        html += `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`;
+    });
+    sel.innerHTML = html;
+    // re-aplicar el evento
+    sel.onchange = function() {
+        modalCategoriaFiltro = this.value;
+        modalBuscarProductos();
+    };
+}
+
+const PALETA_COLORES = [
+    { bg: '#fee2e2', fg: '#dc2626' },
+    { bg: '#ffedd5', fg: '#ea580c' },
+    { bg: '#fef9c3', fg: '#ca8a04' },
+    { bg: '#dcfce7', fg: '#16a34a' },
+    { bg: '#cffafe', fg: '#0891b2' },
+    { bg: '#dbeafe', fg: '#2563eb' },
+    { bg: '#ede9fe', fg: '#7c3aed' },
+    { bg: '#fce7f3', fg: '#db2777' },
+    { bg: '#ccfbf1', fg: '#0d9488' },
+    { bg: '#faf5ff', fg: '#a21caf' },
+];
+
+function colorProducto(nombre) {
+    let h = 0;
+    for (let i = 0; i < nombre.length; i++) h = nombre.charCodeAt(i) + ((h << 5) - h);
+    return PALETA_COLORES[Math.abs(h) % PALETA_COLORES.length];
+}
+
+function renderizarProductosModal(filtro) {
+    const container = document.getElementById('modal-productos-grid');
+    const q = (filtro || '').toLowerCase();
+    const results = productosData.filter(p => {
+        const matchNombre = (p.nombre || '').toLowerCase().includes(q);
+        const matchCodigo = (p.codigo_barras || '').toLowerCase().includes(q);
+        const matchCategoria = !modalCategoriaFiltro || String(p.categoria_id) === modalCategoriaFiltro;
+        return (matchNombre || matchCodigo) && matchCategoria;
+    });
+
+    if (results.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center text-muted py-4">Sin resultados</div>';
+        return;
+    }
+
+    let html = '';
+    results.forEach(p => {
+        const id = p.id;
+        if (cantidadesModal[id] === undefined) cantidadesModal[id] = 1;
+        const qty = cantidadesModal[id];
+        const stockWarning = p.stock !== undefined && p.stock <= 3 ? ' border-warning' : '';
+        const c = colorProducto(p.nombre);
+        const initial = (p.nombre || '?').charAt(0).toUpperCase();
+        const imgHtml = p.tiene_imagen && p.imagen_url
+            ? `<img class="prod-card-img" src="${p.imagen_url}" alt="${escapeHtml(p.nombre)}" loading="lazy">`
+            : `<div class="prod-card-img-placeholder" style="background:${c.bg};color:${c.fg}"><span class="prod-card-initial">${initial}</span></div>`;
+        const stockBadge = p.stock !== undefined && p.stock <= 3
+            ? `<span class="prod-card-stock-badge badge bg-warning text-dark">${p.stock} uds</span>`
+            : '';
+
+        html += `
+        <div class="col-4 col-md-3 col-lg-2">
+            <div class="card border shadow-sm prod-card${stockWarning}" onclick="agregarProductoDesdeModal(${id}, ${p.stock ?? 999})">
+                ${stockBadge}
+                ${imgHtml}
+                <div class="card-body text-center">
+                    <div class="prod-nombre fw-semibold">${escapeHtml(p.nombre)}</div>
+                    <div class="prod-precio fw-bold text-primary">RD$ ${Number(p.precio).toFixed(2)}</div>
+                    <div class="prod-qty" onclick="event.stopPropagation()">
+                        <button onpointerdown="cambiarQtyModal(${id}, -1)" type="button">−</button>
+                        <span id="qty-${id}">${qty}</span>
+                        <button onpointerdown="cambiarQtyModal(${id}, 1)" type="button">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+function cambiarQtyModal(productoId, delta) {
+    if (cantidadesModal[productoId] === undefined) cantidadesModal[productoId] = 1;
+    let nueva = cantidadesModal[productoId] + delta;
+    if (nueva < 1) nueva = 1;
+    if (nueva > 99) nueva = 99;
+    cantidadesModal[productoId] = nueva;
+    const span = document.getElementById('qty-' + productoId);
+    if (span) span.textContent = nueva;
+}
+
+function agregarProductoDesdeModal(productoId, stock) {
+    const cantidad = cantidadesModal[productoId] || 1;
+    if (stock <= 0) {
+        Swal.fire({icon:'error', title:'Sin stock', text:'Este plato no tiene disponible'});
+        return;
+    }
+    if (stock !== undefined && stock < cantidad) {
+        Swal.fire({icon:'error', title:'Stock insuficiente', text:`Solo hay ${stock} unidades`});
+        return;
+    }
+    if (stock !== undefined && stock <= 3) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Stock bajo',
+            text: `Solo quedan ${stock} unidades. ¿Agregar de todas formas?`,
+            showCancelButton: true,
+            confirmButtonText: 'Sí, agregar',
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) enviarAgregarDesdeModal(productoId, cantidad);
+        });
+        return;
+    }
+    enviarAgregarDesdeModal(productoId, cantidad);
+}
+
+function enviarAgregarDesdeModal(productoId, cantidad) {
+    const notas = document.getElementById('modal-item-notas').value.trim();
+    const curso = document.getElementById('modal-item-curso').value;
+
+    fetch(`/restaurante/mesa/${mesaActual}/agregar`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ producto_id: productoId, cantidad: cantidad, notas: notas, curso: curso })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+        ordenActual = data.orden;
+        renderOrden(data.orden);
+        const modal = bootstrap.Modal.getInstance(document.getElementById('productosModal'));
+        if (modal) modal.hide();
+    });
 }
 </script>
 @endsection

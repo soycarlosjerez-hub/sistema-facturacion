@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
 use App\Models\SystemSetting;
+use App\Policies\CategoryPolicy;
 use App\View\Composers\DashboardComposer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -27,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('admin', function ($user) {
             return $user->role === 'admin';
         });
+
+        Gate::policy(Category::class, CategoryPolicy::class);
 
         // Dynamic mail config from system settings
         try {

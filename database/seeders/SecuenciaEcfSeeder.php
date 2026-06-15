@@ -64,10 +64,19 @@ class SecuenciaEcfSeeder extends Seeder
         ];
 
         foreach ($secuencias as $data) {
-            SecuenciaEcf::updateOrCreate(
-                ['tipo_ecf' => $data['tipo_ecf']],
-                $data
-            );
+            $existing = SecuenciaEcf::where('tipo_ecf', $data['tipo_ecf'])->first();
+            if ($existing) {
+                // Preservar el contador actual y solo actualizar metadatos
+                $existing->update([
+                    'nombre'            => $data['nombre'],
+                    'hasta'             => $data['hasta'],
+                    'fecha_vencimiento' => $data['fecha_vencimiento'],
+                    'activo'            => $data['activo'],
+                    'descripcion'       => $data['descripcion'],
+                ]);
+            } else {
+                SecuenciaEcf::create($data);
+            }
         }
 
         $this->command->info('✓ ' . count($secuencias) . ' secuencias e-CF creadas');

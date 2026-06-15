@@ -45,4 +45,32 @@ class RncValidator
         $digito = $digito === 11 ? 0 : ($digito === 10 ? 2 : $digito);
         return $digito === (int)$rnc[8];
     }
+
+    public static function tipoDocumentoDgii($tipo): string
+    {
+        return match (strtolower((string)$tipo)) {
+            '1', 'rnc' => '1',
+            '2', 'cedula', 'cédula' => '2',
+            '3', 'pasaporte' => '3',
+            default => '2',
+        };
+    }
+
+    public static function formato(?string $rnc, $tipo = null): string
+    {
+        $clean = preg_replace('/[^0-9]/', '', $rnc ?? '');
+        if ($clean === '') return '';
+
+        $len = strlen($clean);
+
+        if ($len === 9) {
+            return substr($clean, 0, 3) . '-' . substr($clean, 3, 5) . '-' . $clean[8];
+        }
+
+        if ($len === 11) {
+            return substr($clean, 0, 3) . '-' . substr($clean, 3, 7) . '-' . $clean[10];
+        }
+
+        return $clean;
+    }
 }

@@ -117,6 +117,21 @@ class OrdenController extends Controller
         return response()->json($result);
     }
 
+    public function actualizarItem(Request $request, Mesa $mesa, VentaDetalle $detalle)
+    {
+        $request->validate([
+            'cantidad' => 'required|integer|min:1|max:999',
+        ]);
+
+        $result = $this->orderService->actualizarItem($mesa, $detalle, $request->cantidad);
+
+        if (isset($result['error'])) {
+            return response()->json($result, $result['code']);
+        }
+
+        return response()->json($result);
+    }
+
     public function cobrar(Request $request, Mesa $mesa)
     {
         $request->validate([

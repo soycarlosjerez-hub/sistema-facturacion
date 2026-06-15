@@ -24,7 +24,7 @@ class Mesa extends Model
 
     public function categoria()
     {
-        return $this->belongsTo(MesaCategoria::class, 'categoria_id');
+        return $this->belongsTo(Category::class, 'categoria_id');
     }
 
     public function sucursal()

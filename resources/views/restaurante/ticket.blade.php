@@ -29,7 +29,7 @@ th, td { padding: 2px 0; text-align: left; }
     </table>
     <div class="sep"></div>
     <table>
-        <tr><th>Producto</th><th class="text-right">Cant</th><th class="text-right">Precio</th><th class="text-right">Subtotal</th></tr>
+        <tr><th>Plato</th><th class="text-right">Cant</th><th class="text-right">Precio</th><th class="text-right">Subtotal</th></tr>
         @foreach($venta->detalles as $d)
         <tr>
             <td>{{ $d->producto->nombre ?? 'N/A' }}

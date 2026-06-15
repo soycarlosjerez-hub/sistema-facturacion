@@ -252,6 +252,50 @@ class RestaurantOrderService
         }
     }
 
+    public function actualizarItem(Mesa $mesa, VentaDetalle $detalle, int $nuevaCantidad): array
+    {
+        $orden = $mesa->ordenActiva;
+        if (!$orden || $detalle->venta_id !== $orden->id) {
+            return ['error' => 'El detalle no pertenece a esta orden', 'code' => 422];
+        }
+
+        $precioUnitario = (float) $detalle->precio_unitario;
+        $cantidadActual = $detalle->cantidad;
+        $diferencia = $nuevaCantidad - $cantidadActual;
+
+        $producto = $detalle->producto;
+        if ($producto && $diferencia > 0 && $producto->stock < $diferencia) {
+            return ['error' => "Stock insuficiente. Disponible: {$producto->stock}", 'code' => 422];
+        }
+
+        DB::beginTransaction();
+        try {
+            $nuevoSubtotal = $precioUnitario * $nuevaCantidad;
+            $itbisPorcentaje = ($producto->itbis_porcentaje ?? 0) / 100;
+            $itbisAnterior = $detalle->subtotal * $itbisPorcentaje;
+            $itbisNuevo = $nuevoSubtotal * $itbisPorcentaje;
+
+            $orden->increment('subtotal', $nuevoSubtotal - $detalle->subtotal);
+            $orden->increment('impuestos', $itbisNuevo - $itbisAnterior);
+            $orden->increment('total', ($nuevoSubtotal - $detalle->subtotal) + ($itbisNuevo - $itbisAnterior));
+
+            $detalle->cantidad = $nuevaCantidad;
+            $detalle->subtotal = $nuevoSubtotal;
+            $detalle->save();
+
+            if ($producto) {
+                $producto->decrement('stock', $diferencia);
+            }
+
+            DB::commit();
+
+            return ['orden' => $orden->fresh()->load('detalles.producto')];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['error' => $e->getMessage(), 'code' => 500];
+        }
+    }
+
     public function cobrar(Mesa $mesa, array $data): array
     {
         $orden = $mesa->ordenActiva;

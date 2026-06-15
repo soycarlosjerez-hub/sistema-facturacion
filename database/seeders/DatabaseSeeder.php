@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RolesYUsuariosSeeder::class);
         $this->call(PermissionSeeder::class);
         $this->call(TiposVentasSeeder::class);
+        $this->call(CategoriaSeeder::class);
         $this->call(ProductosSeeder::class);
         $this->call(ProveedoresSeeder::class);
         $this->call(ClientesSeeder::class);
@@ -35,5 +36,6 @@ class DatabaseSeeder extends Seeder
         $this->call(SecuenciaEcfSeeder::class);
         $this->call(BusinessTypeSeeder::class);
         $this->call(DeliveryCompanySeeder::class);
+        $this->call(CategoryPermissionsSeeder::class);
     }
 }
