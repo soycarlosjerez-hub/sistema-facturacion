@@ -19,7 +19,7 @@ class ConfigurationController extends Controller
 
     public function update(Request $request)
     {
-        $data = $request->except('_token');
+        $data = $request->except(['_token', 'tipo_negocio']);
 
         $validator = Validator::make($data, [
             'empresa_nombre'     => 'required|string|max:255',
@@ -29,7 +29,6 @@ class ConfigurationController extends Controller
             'sistema_slogan'     => 'nullable|string|max:255',
             'impuesto_itbis'     => 'required|numeric|min:0|max:100',
             'moneda_simbolo'     => 'required|string|max:10',
-            'tipo_negocio'       => 'nullable|string|in:restaurante,retail,mayorista,servicios,mixto,lavadero',
             'mail_mailer'        => 'nullable|string|in:smtp,log,sendmail,mailgun,ses,postmark',
             'mail_host'          => 'nullable|string|max:255',
             'mail_port'          => 'nullable|numeric|min:1|max:65535',

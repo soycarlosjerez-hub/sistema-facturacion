@@ -540,6 +540,9 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                     </div>
                 </div>
                 <div class="d-flex gap-2">
+                    <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-outline-light flex-grow-1 rounded-3" title="Mi Perfil">
+                        <i class="bi bi-person-gear"></i>
+                    </a>
                     <form method="POST" action="{{ route('toggleDarkMode') }}" class="flex-grow-1">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-outline-light w-100 rounded-3" title="{{ $darkMode ? 'Modo claro' : 'Modo oscuro' }}">
@@ -607,7 +610,17 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
 
                     {{-- Tipo de Negocio Badge --}}
                     @php
-                        $tipoNegocio = \App\Models\SystemSetting::tipoNegocio();
+                        $tipoNegocio = null;
+                        $user = auth()->user();
+
+                        if ($user) {
+                            if ($user->businessInstance && $user->businessInstance->businessType) {
+                                $tipoNegocio = $user->businessInstance->businessType->slug;
+                            } elseif ($user->businessType) {
+                                $tipoNegocio = $user->businessType->slug;
+                            }
+                        }
+
                         $colores = [
                             'restaurante' => 'info',
                             'retail' => 'success',
@@ -627,10 +640,12 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         $color = $colores[$tipoNegocio] ?? 'secondary';
                         $icono = $iconos[$tipoNegocio] ?? 'grid';
                     @endphp
+                    @if($tipoNegocio)
                     <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} rounded-pill px-3 py-2 d-none d-lg-inline-flex align-items-center gap-1" style="cursor:help;" title="Tipo de negocio: {{ ucfirst($tipoNegocio) }}">
                         <i class="bi bi-{{ $icono }} me-1"></i>
                         {{ ucfirst($tipoNegocio) }}
                     </span>
+                    @endif
 
                     <span class="badge bg-light text-dark border d-none d-xl-inline-block">
                         <i class="bi bi-calendar3 me-1"></i>{{ date('d M, Y') }}

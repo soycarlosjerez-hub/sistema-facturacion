@@ -53,10 +53,10 @@
             </div>
         </div>
         <div class="d-flex gap-2" style="position: relative; z-index: 2;">
-            <a href="{{ route('roles.show', $role) }}" class="btn btn-light rounded-pill px-3">
+            <a href="{{ route($routePrefix . 'roles.show', $role) }}" class="btn btn-light rounded-pill px-3">
                 <i class="bi bi-eye me-1"></i>Ver
             </a>
-            <a href="{{ route('roles.index') }}" class="btn btn-light rounded-pill px-3">
+            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
                 <i class="bi bi-arrow-left me-1"></i>Volver
             </a>
         </div>
@@ -71,7 +71,7 @@
         </div>
     @endif
 
-    <form action="{{ route('roles.update', $role) }}" method="POST" id="roleForm">
+    <form action="{{ route($routePrefix . 'roles.update', $role) }}" method="POST" id="roleForm">
         @csrf @method('PUT')
 
         <div class="row g-4">
@@ -204,7 +204,7 @@
         <!-- Botones -->
         <div class="d-flex justify-content-between align-items-center mt-4 mb-4 flex-wrap gap-2">
             @if($role->name !== 'admin' && $role->users()->count() == 0)
-                <form action="{{ route('roles.destroy', $role) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
+                <form action="{{ route($routePrefix . 'roles.destroy', $role) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
                         <i class="bi bi-trash me-1"></i>Eliminar Rol
@@ -220,7 +220,7 @@
                 </div>
             @endif
             <div class="d-flex gap-2">
-                <a href="{{ route('roles.index') }}" class="btn btn-light rounded-pill px-4">
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4">
                     <i class="bi bi-x-lg me-1"></i>Cancelar
                 </a>
                 <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">

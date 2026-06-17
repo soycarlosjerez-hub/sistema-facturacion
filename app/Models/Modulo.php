@@ -9,7 +9,7 @@ class Modulo extends Model
     protected $table = 'modulos';
     protected $fillable = [
         'key', 'label', 'icon', 'categoria',
-        'sidebar_route', 'sidebar_is_route', 'sidebar_exact_route', 'sidebar_url', 'sidebar_permission',
+        'section', 'sidebar_route', 'sidebar_is_route', 'sidebar_exact_route', 'sidebar_url', 'sidebar_permission',
         'activo', 'orden',
     ];
 

@@ -1062,9 +1062,13 @@ function renderCajaStatus() {
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-white text-success">Caja Activa</span>
                             <small class="ms-2 opacity-75">RD$ ${Number(data.sesion.monto_inicial).toFixed(0)}</small>
-                            <button class="btn btn-sm btn-light rounded-pill text-danger fw-bold ms-2" onclick="mostrarCerrarCaja(${data.sesion.caja_id})" title="Cerrar Caja">
-                                <i class="bi bi-x-circle me-1"></i> Cerrar
-                            </button>
+@can('cajas.cerrar')
+                                <button class="btn btn-sm btn-light rounded-pill text-danger fw-bold ms-2" onclick="mostrarCerrarCaja(${data.sesion.caja_id})" title="Cerrar Caja">
+                                    <i class="bi bi-x-circle me-1"></i> Cerrar
+                                </button>
+@endcan
+
+
                         </div>
                     </div>
                 `;
@@ -1631,8 +1635,50 @@ function escapeHtml(str) {
 }
 
 // Split bill — asignación de items por persona
-let splitPersonas = 2;
-let splitAsignaciones = {};
+    let splitPersonas = 2;
+    let splitAsignaciones = {};
+    let splitPercentages = {};
+    let splitCompartidos = {};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function abrirSplitBill(n) {
     if (!ordenActual || !ordenActual.detalles || ordenActual.detalles.length === 0) {
@@ -1667,76 +1713,115 @@ function renderSplitBill() {
         html += `<th class="text-center" style="min-width:60px;">Persona ${p}</th>`;
     }
     html += `</tr></thead><tbody>`;
-
+    
     let totales = new Array(splitPersonas).fill(0);
     detalles.forEach(d => {
         const asignado = splitAsignaciones[d.id] || 1;
-        html += `<tr>
-            <td><small>${escapeHtml(d.producto?.nombre || 'Item #' + d.producto_id)}${d.cantidad > 1 ? ` <span class="badge bg-secondary">${d.cantidad}</span>` : ''}</small></td>
-            <td><small>RD$ ${Number(d.subtotal).toFixed(2)}</small></td>`;
+        html += `<tr data-id="${d.id}">
+            <td class="py-2">
+                <div class="d-flex align-items-center">
+                    <div class="form-check">
+                        <input class="form-check-input share-checkbox" type="checkbox" id="share-${d.id}" 
+                            ${splitCompartidos[d.id] ? 'checked' : ''} 
+                            onchange="toggleShare(${d.id})">
+                        <label class="form-check-label small" for="share-${d.id}">Comp.</label>
+                    </div>
+                    <small class="ms-1">${escapeHtml(d.producto?.nombre || 'Item #' + d.producto_id)}${d.cantidad > 1 ? ` <span class="badge bg-secondary">${d.cantidad}</span>` : ''}</small>
+                </div>
+            </td>
+            <td class="py-2"><small>RD$ ${Number(d.subtotal).toFixed(2)}</small></td>`;
         for (let p = 1; p <= splitPersonas; p++) {
             const active = asignado === p;
-            if (active) totales[p - 1] += parseFloat(d.subtotal);
-            html += `<td class="text-center">
-                <input type="radio" name="split-${d.id}" value="${p}" ${active ? 'checked' : ''} onchange="splitAsignaciones[${d.id}]=${p};actualizarTotalesSplit()" class="form-check-input">
+            if (active && !splitCompartidos[d.id]) totales[p - 1] += parseFloat(d.subtotal);
+            html += `<td class="text-center py-2">
+                <input type="radio" name="split-${d.id}" value="${p}" ${active ? 'checked' : ''} 
+                    onchange="splitAsignaciones[${d.id}]=${p};actualizarTotalesSplit()" class="form-check-input">
             </td>`;
         }
         html += `</tr>`;
     });
-
+    
     html += `</tbody></table></div>`;
     html += `<div class="mt-3 p-3 bg-light rounded-3"><div class="row g-2">`;
     for (let p = 1; p <= splitPersonas; p++) {
         html += `<div class="col-md-${Math.floor(12 / splitPersonas)}">
             <small class="fw-bold d-block">Persona ${p}</small>
-            <span class="fs-5 fw-bold text-primary" id="split-total-${p}">RD$ ${totales[p-1].toFixed(2)}</span>
+            <div class="d-flex align-items-center gap-2">
+                <input type="number" class="form-control form-control-sm percent-input" 
+                    data-idx="${p-1}" value="${splitPercentages[p-1] || 100}" 
+                    onchange="actualizarTotalesSplit()" min="0" max="100">
+                <span class="fs-5 fw-bold text-primary" id="split-total-${p}">RD$ ${totales[p-1].toFixed(2)}</span>
+            </div>
         </div>`;
     }
     html += `</div></div>`;
-
+    
     body.innerHTML = html;
     document.getElementById('split-bill-footer').style.display = 'flex';
     const sumaTotal = totales.reduce((a, b) => a + b, 0);
     document.getElementById('split-totals').textContent = `Total: RD$ ${sumaTotal.toFixed(2)} · ${splitPersonas} personas`;
 }
 
-function actualizarTotalesSplit() {
+function calcularDatosSplit() {
     const detalles = ordenActual.detalles;
     let totales = new Array(splitPersonas).fill(0);
-    detalles.forEach(d => {
-        const p = splitAsignaciones[d.id] || 1;
-        totales[p - 1] += parseFloat(d.subtotal);
+    let itemsPorPersona = {};
+    
+    document.querySelectorAll('.percent-input').forEach(input => {
+        const idx = input.dataset.idx;
+        splitPercentages[idx] = parseInt(input.value) || 0;
     });
+
+    detalles.forEach(d => {
+        const asignado = splitAsignaciones[d.id] || 1;
+        if (splitCompartidos[d.id]) {
+            const participantes = splitPercentages.filter(p => p > 0).length;
+            const divisor = participantes > 0 ? participantes : 1;
+            for (let p = 1; p <= splitPersonas; p++) {
+                totales[p - 1] += parseFloat(d.subtotal) / divisor;
+                if (splitPercentages[p-1] > 0) {
+                    if (!itemsPorPersona[p]) itemsPorPersona[p] = [];
+                    itemsPorPersona[p].push(d.id);
+                }
+            }
+        } else if (asignado) {
+            const pct = splitPercentages[asignado - 1] || 100;
+            totales[asignado - 1] += parseFloat(d.subtotal) * (pct / 100);
+            if (!itemsPorPersona[asignado]) itemsPorPersona[asignado] = [];
+            itemsPorPersona[asignado].push(d.id);
+        }
+    });
+    
+    return { totales, itemsPorPersona };
+}
+
+function actualizarTotalesSplit() {
+    const { totales, itemsPorPersona } = calcularDatosSplit();
+    
     for (let p = 1; p <= splitPersonas; p++) {
         const el = document.getElementById(`split-total-${p}`);
         if (el) el.textContent = 'RD$ ' + totales[p - 1].toFixed(2);
     }
+
     const sumaTotal = totales.reduce((a, b) => a + b, 0);
     document.getElementById('split-totals').textContent = `Total: RD$ ${sumaTotal.toFixed(2)} · ${splitPersonas} personas`;
+    
+    if (window.splitData) {
+        window.splitData.totales = totales;
+        window.splitData.itemsPorPersona = itemsPorPersona;
+    }
 }
 
 function confirmarSplitBill() {
-    // Calcular totales por persona
-    const detalles = ordenActual.detalles;
-    let totales = new Array(splitPersonas).fill(0);
-    let itemsPorPersona = {};
-    detalles.forEach(d => {
-        const p = splitAsignaciones[d.id] || 1;
-        totales[p - 1] += parseFloat(d.subtotal);
-        if (!itemsPorPersona[p]) itemsPorPersona[p] = [];
-        itemsPorPersona[p].push(d.id);
-    });
-
-    // Verificar que no haya items sin asignar (todos deben tener al menos 1 persona)
+    const { totales, itemsPorPersona } = calcularDatosSplit();
+    
     const suma = totales.reduce((a, b) => a + b, 0);
     if (suma <= 0) { alert('Asigna al menos un item a cada persona'); return; }
 
     bootstrap.Modal.getInstance(document.getElementById('splitBillModal')).hide();
-
-    // Guardar datos del split para el backend
+    
     window.splitData = { activo: true, personas: splitPersonas, totales, itemsPorPersona };
-
-    // Abrir modal de pago si está cerrado
+    
     const pagoModal = document.getElementById('pagoModal');
     if (!pagoModal.classList.contains('show')) {
         document.querySelector('.pago-metodo[data-metodo="mixto"]')?.click();

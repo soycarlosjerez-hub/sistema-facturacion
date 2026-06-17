@@ -9,6 +9,11 @@ use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
 {
+    private function routePrefix(): string
+    {
+        return request()->routeIs('owner.*') ? 'owner.' : '';
+    }
+
     public function index(Request $request)
     {
         $query = Role::withCount(['permissions', 'users']);
@@ -31,7 +36,8 @@ class RoleController extends Controller
             ->groupBy(fn($p) => explode('.', $p->name)[0])
             ->sortKeys();
 
-        return view('roles.index', compact('roles', 'stats', 'modulos'));
+        $routePrefix = $this->routePrefix();
+        return view('roles.index', compact('roles', 'stats', 'modulos', 'routePrefix'));
     }
 
     public function matrix()
@@ -45,7 +51,8 @@ class RoleController extends Controller
             $matrix[$rol->name] = $rol->permissions->pluck('name')->flip();
         }
 
-        return view('roles.matrix', compact('roles', 'permisos', 'modulos', 'matrix'));
+        $routePrefix = $this->routePrefix();
+        return view('roles.matrix', compact('roles', 'permisos', 'modulos', 'matrix', 'routePrefix'));
     }
 
     public function create()
@@ -53,7 +60,8 @@ class RoleController extends Controller
         $modulos = Permission::orderBy('name')->get()
             ->groupBy(fn($p) => explode('.', $p->name)[0])
             ->sortKeys();
-        return view('roles.create', compact('modulos'));
+        $routePrefix = $this->routePrefix();
+        return view('roles.create', compact('modulos', 'routePrefix'));
     }
 
     public function store(Request $request)
@@ -75,7 +83,7 @@ class RoleController extends Controller
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        return redirect()->route('roles.index')
+        return redirect()->route($this->routePrefix() . 'roles.index')
             ->with('success', "Rol \"{$rol->name}\" creado con {$rol->permissions->count()} permisos.");
     }
 
@@ -86,9 +94,10 @@ class RoleController extends Controller
         $permisosAll = Permission::orderBy('name')->get();
         $modulos = $permisosAll->groupBy(fn($p) => explode('.', $p->name)[0])->sortKeys();
         $users = $role->users()->orderBy('name')->get();
-        $isProtected = in_array($role->name, ['admin', 'vendedor', 'gerente', 'almacen', 'contador']);
+        $isProtected = in_array($role->name, ['admin']) && !auth()->user()->hasRole('owner');
 
-        return view('roles.show', compact('role', 'permisosGrouped', 'modulos', 'users', 'isProtected'));
+        $routePrefix = $this->routePrefix();
+        return view('roles.show', compact('role', 'permisosGrouped', 'modulos', 'users', 'isProtected', 'routePrefix'));
     }
 
     public function edit(Role $role)
@@ -98,9 +107,10 @@ class RoleController extends Controller
             ->groupBy(fn($p) => explode('.', $p->name)[0])
             ->sortKeys();
         $permisosAsignados = $role->permissions->pluck('name')->toArray();
-        $isProtected = in_array($role->name, ['admin']);
+        $isProtected = in_array($role->name, ['admin']) && !auth()->user()->hasRole('owner');
 
-        return view('roles.edit', compact('role', 'modulos', 'permisosAsignados', 'isProtected'));
+        $routePrefix = $this->routePrefix();
+        return view('roles.edit', compact('role', 'modulos', 'permisosAsignados', 'isProtected', 'routePrefix'));
     }
 
     public function update(Request $request, Role $role)
@@ -116,7 +126,7 @@ class RoleController extends Controller
 
         $rolNuevo = strtolower($request->name);
         $cambiaNombre = $rolNuevo !== $role->name;
-        $esAdmin = $role->name === 'admin';
+        $esAdmin = $role->name === 'admin' && !auth()->user()->hasRole('owner');
 
         if ($cambiaNombre) {
             \App\Models\User::where('role', $role->name)->update(['role' => $rolNuevo]);
@@ -132,7 +142,7 @@ class RoleController extends Controller
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        return redirect()->route('roles.index')
+        return redirect()->route($this->routePrefix() . 'roles.index')
             ->with('success', "Rol \"{$role->name}\" actualizado correctamente.");
     }
 
@@ -151,7 +161,7 @@ class RoleController extends Controller
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        return redirect()->route('roles.index')
+        return redirect()->route($this->routePrefix() . 'roles.index')
             ->with('success', "Rol \"{$nombre}\" eliminado correctamente.");
     }
 }

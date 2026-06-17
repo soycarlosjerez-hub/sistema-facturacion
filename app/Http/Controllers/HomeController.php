@@ -19,6 +19,10 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {
+        if (auth()->check() && auth()->user()->hasRole('owner')) {
+            return redirect()->route('owner.dashboard');
+        }
+
         $validated = $request->validate([
             'desde' => 'nullable|date',
             'hasta' => 'nullable|date|after_or_equal:desde',

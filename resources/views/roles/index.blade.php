@@ -4,14 +4,29 @@
 
 @php
     $rolConfig = [
-        'admin'    => ['color' => '#ef4444', 'gradient' => 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 'icon' => 'bi-shield-lock-fill',  'label' => 'Admin',     'desc' => 'Acceso total al sistema.'],
-        'gerente'  => ['color' => '#f59e0b', 'gradient' => 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 'icon' => 'bi-person-badge-fill', 'label' => 'Gerente',   'desc' => 'Gestión operativa, sin admin.'],
-        'vendedor' => ['color' => '#38bdf8', 'gradient' => 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)', 'icon' => 'bi-cart-check-fill',  'label' => 'Vendedor',  'desc' => 'POS, ventas y caja.'],
-        'almacen'  => ['color' => '#22c55e', 'gradient' => 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 'icon' => 'bi-box-seam-fill',     'label' => 'Almacén',   'desc' => 'Productos, compras, stock.'],
-        'contador' => ['color' => '#6366f1', 'gradient' => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 'icon' => 'bi-calculator-fill',   'label' => 'Contador',  'desc' => 'Reportes y consulta fiscal.'],
+        'admin'    => ['color' => '#ef4444', 'gradient' => 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 'icon' => 'bi-shield-lock-fill',   'label' => 'Admin',        'desc' => 'Acceso total al sistema.'],
+        'gerente'  => ['color' => '#f59e0b', 'gradient' => 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 'icon' => 'bi-person-badge-fill',  'label' => 'Gerente',      'desc' => 'Gestión operativa, sin admin.'],
+        'vendedor' => ['color' => '#38bdf8', 'gradient' => 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)', 'icon' => 'bi-cart-check-fill',   'label' => 'Vendedor',     'desc' => 'POS, ventas y caja.'],
+        'almacen'  => ['color' => '#22c55e', 'gradient' => 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 'icon' => 'bi-box-seam-fill',      'label' => 'Almacén',      'desc' => 'Productos, compras, stock.'],
+        'contador' => ['color' => '#6366f1', 'gradient' => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 'icon' => 'bi-calculator-fill',    'label' => 'Contador',     'desc' => 'Reportes y consulta fiscal.'],
+        'supervisor' => ['color' => '#8b5cf6', 'gradient' => 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)', 'icon' => 'bi-eye-fill',       'label' => 'Supervisor',   'desc' => 'Supervisión y anulaciones.'],
+        'administrativo' => ['color' => '#14b8a6', 'gradient' => 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)', 'icon' => 'bi-folder2-open', 'label' => 'Administrativo', 'desc' => 'Clientes, cobros, compras.'],
+        'mesero' => ['color' => '#f97316', 'gradient' => 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)', 'icon' => 'bi-person-fill',         'label' => 'Mesero',       'desc' => 'Toma pedidos y comandas.'],
+        'cocinero' => ['color' => '#dc2626', 'gradient' => 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', 'icon' => 'bi-fire',            'label' => 'Cocinero',     'desc' => 'KDS y comandas de cocina.'],
+        'delivery' => ['color' => '#0ea5e9', 'gradient' => 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)', 'icon' => 'bi-truck',            'label' => 'Delivery',     'desc' => 'Pedidos para entrega.'],
+        'bartender' => ['color' => '#a855f7', 'gradient' => 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)', 'icon' => 'bi-cup-hot-fill',    'label' => 'Bartender',    'desc' => 'Barra y comandas de bebidas.'],
+        'lavador' => ['color' => '#06b6d4', 'gradient' => 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', 'icon' => 'bi-droplet-fill',       'label' => 'Lavador',      'desc' => 'Servicios y vehículos.'],
+        'recepcionista' => ['color' => '#4f46e5', 'gradient' => 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)', 'icon' => 'bi-headset',     'label' => 'Recepcionista', 'desc' => 'Citas y recepción de vehículos.'],
+        'inspector' => ['color' => '#eab308', 'gradient' => 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)', 'icon' => 'bi-search',          'label' => 'Inspector',    'desc' => 'Inspección de vehículos.'],
+        'cajero' => ['color' => '#10b981', 'gradient' => 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 'icon' => 'bi-cash-register',       'label' => 'Cajero',       'desc' => 'POS y cobro en terminal.'],
+        'reponedor' => ['color' => '#d97706', 'gradient' => 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', 'icon' => 'bi-boxes',           'label' => 'Reponedor',    'desc' => 'Inventario y estantes.'],
+        'despachador' => ['color' => '#64748b', 'gradient' => 'linear-gradient(135deg, #64748b 0%, #475569 100%)', 'icon' => 'bi-truck',          'label' => 'Despachador',  'desc' => 'Conduces y despachos.'],
+        'vendedor-mayorista' => ['color' => '#1e40af', 'gradient' => 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)', 'icon' => 'bi-people-fill', 'label' => 'Vend. Mayorista', 'desc' => 'Cotizaciones y listas precio.'],
+        'consultor' => ['color' => '#475569', 'gradient' => 'linear-gradient(135deg, #475569 0%, #334155 100%)', 'icon' => 'bi-chat-dots-fill',   'label' => 'Consultor',    'desc' => 'Cotizaciones y proyectos.'],
+        'facturador' => ['color' => '#ec4899', 'gradient' => 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', 'icon' => 'bi-file-earmark-text-fill', 'label' => 'Facturador', 'desc' => 'Facturación NCF y cobros.'],
     ];
     $defaultCfg = ['color' => '#64748b', 'gradient' => 'linear-gradient(135deg, #64748b 0%, #475569 100%)', 'icon' => 'bi-shield', 'label' => '', 'desc' => 'Rol personalizado.'];
-    $protected = ['admin', 'gerente', 'vendedor', 'almacen', 'contador'];
+    $protected = ['admin'];
 @endphp
 
 @include('roles._styles')
@@ -25,10 +40,10 @@
             <p class="text-muted mb-0">Define roles y asigna permisos granulares a cada uno</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('roles.matrix') }}" class="btn btn-outline-primary rounded-pill">
+            <a href="{{ route($routePrefix . 'roles.matrix') }}" class="btn btn-outline-primary rounded-pill">
                 <i class="bi bi-grid-3x3-gap me-1"></i>Matriz
             </a>
-            <a href="{{ route('roles.create') }}" class="btn btn-primary rounded-pill">
+            <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-primary rounded-pill">
                 <i class="bi bi-plus-lg me-1"></i>Nuevo Rol
             </a>
         </div>
@@ -142,14 +157,14 @@
                             <small class="text-muted">{{ $rol->users_count == 1 ? 'usuario' : 'usuarios' }}</small>
                         </div>
                         <div class="d-flex gap-1">
-                            <a href="{{ route('roles.show', $rol) }}" class="role-action-btn view" title="Ver detalle">
+                            <a href="{{ route($routePrefix . 'roles.show', $rol) }}" class="role-action-btn view" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route('roles.edit', $rol) }}" class="role-action-btn edit" title="Editar permisos">
+                            <a href="{{ route($routePrefix . 'roles.edit', $rol) }}" class="role-action-btn edit" title="Editar permisos">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @if($rol->name !== 'admin' && $rol->users_count == 0)
-                                <form action="{{ route('roles.destroy', $rol) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $rol->name }}&quot;?')">
+                                <form action="{{ route($routePrefix . 'roles.destroy', $rol) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $rol->name }}&quot;?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="role-action-btn delete" title="Eliminar">
                                         <i class="bi bi-trash"></i>
@@ -167,7 +182,7 @@
                         <i class="bi bi-shield display-1 text-muted d-block mb-3"></i>
                         <h5 class="fw-bold">No hay roles definidos</h5>
                         <p class="text-muted">Crea tu primer rol para empezar a gestionar permisos.</p>
-                        <a href="{{ route('roles.create') }}" class="btn btn-primary rounded-pill px-4">
+                        <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-primary rounded-pill px-4">
                             <i class="bi bi-plus-lg me-1"></i>Crear Rol
                         </a>
                     </div>

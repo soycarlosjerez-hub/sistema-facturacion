@@ -9,13 +9,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Get the business type IDs by key
-        $restaurantType = DB::table('business_types')->where('key', 'restaurante')->value('id');
-        $productCatalogType = DB::table('business_types')->where('key', 'retail')->value('id');
+        // Get the business type IDs by slug
+        $restaurantType = DB::table('business_types')->where('slug', 'restaurante')->value('id');
+        $productCatalogType = DB::table('business_types')->where('slug', 'retail')->value('id');
         
         // Fallback to mixto if retail doesn't exist
         if (!$productCatalogType) {
-            $productCatalogType = DB::table('business_types')->where('key', 'mixto')->value('id');
+            $productCatalogType = DB::table('business_types')->where('slug', 'mixto')->value('id');
         }
 
         // Clean up existing wrong records first
@@ -81,21 +81,35 @@ return new class extends Migration
             ]);
         }
 
-        // 3. Update foreign keys in productos table
-        DB::statement("
-            UPDATE productos p
-            JOIN categorias oc ON p.categoria_id = oc.id
-            JOIN categories nc ON nc.nombre = oc.nombre AND nc.tenant_id = 1
-            SET p.categoria_id = nc.id
-        ");
+        // 3. Update foreign keys in productos table (cross-DB compatible)
+        $categoriaMap = DB::table('categorias')
+            ->join('categories', function ($join) {
+                $join->on('categorias.nombre', '=', 'categories.nombre')
+                     ->where('categories.tenant_id', 1);
+            })
+            ->select('categorias.id as old_id', 'categories.id as new_id')
+            ->get();
 
-        // 4. Update foreign keys in mesas table
-        DB::statement("
-            UPDATE mesas m
-            JOIN mesa_categorias oc ON m.categoria_id = oc.id
-            JOIN categories nc ON nc.nombre = oc.nombre AND nc.tenant_id = 1
-            SET m.categoria_id = nc.id
-        ");
+        foreach ($categoriaMap as $map) {
+            DB::table('productos')
+                ->where('categoria_id', $map->old_id)
+                ->update(['categoria_id' => $map->new_id]);
+        }
+
+        // 4. Update foreign keys in mesas table (cross-DB compatible)
+        $mesaCatMap = DB::table('mesa_categorias')
+            ->join('categories', function ($join) {
+                $join->on('mesa_categorias.nombre', '=', 'categories.nombre')
+                     ->where('categories.tenant_id', 1);
+            })
+            ->select('mesa_categorias.id as old_id', 'categories.id as new_id')
+            ->get();
+
+        foreach ($mesaCatMap as $map) {
+            DB::table('mesas')
+                ->where('categoria_id', $map->old_id)
+                ->update(['categoria_id' => $map->new_id]);
+        }
     }
 
     public function down(): void

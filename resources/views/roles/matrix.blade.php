@@ -28,10 +28,10 @@
             <p class="mb-0 opacity-75">Vista comparativa de todos los roles y sus permisos</p>
         </div>
         <div class="d-flex gap-2" style="position: relative; z-index: 2;">
-            <a href="{{ route('roles.index') }}" class="btn btn-light rounded-pill px-3">
+            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
                 <i class="bi bi-arrow-left me-1"></i>Volver
             </a>
-            <a href="{{ route('roles.create') }}" class="btn btn-dark rounded-pill px-3 fw-bold">
+            <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-dark rounded-pill px-3 fw-bold">
                 <i class="bi bi-plus-lg me-1"></i>Nuevo
             </a>
         </div>
@@ -68,7 +68,7 @@
                             @foreach($roles as $rol)
                                 @php $cfg = $rolConfig[$rol->name] ?? null; @endphp
                                 <th class="text-center" style="min-width: 110px;">
-                                    <a href="{{ route('roles.show', $rol) }}" class="text-decoration-none">
+                                    <a href="{{ route($routePrefix . 'roles.show', $rol) }}" class="text-decoration-none">
                                         <div class="d-flex flex-column align-items-center">
                                             <div class="rounded-circle d-flex align-items-center justify-content-center text-white mb-1" style="width: 32px; height: 32px; background: {{ $cfg['gradient'] ?? '#64748b' }};">
                                                 <i class="bi {{ $cfg['icon'] ?? 'bi-shield' }}"></i>

@@ -16,7 +16,7 @@ class PermissionMiddleware
 
         $user = Auth::user();
 
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole('admin') || $user->hasRole('owner') || $user->hasRole('admin-business')) {
             return $next($request);
         }
 

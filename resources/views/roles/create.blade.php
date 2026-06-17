@@ -45,7 +45,7 @@
             <h2 class="fw-bold mb-1">Crear Rol</h2>
             <p class="mb-0 opacity-75">Define un nuevo rol y selecciona los permisos que tendrá</p>
         </div>
-        <a href="{{ route('roles.index') }}" class="btn btn-light rounded-pill px-4 fw-bold" style="position: relative; z-index: 2;">
+        <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4 fw-bold" style="position: relative; z-index: 2;">
             <i class="bi bi-arrow-left me-1"></i>Volver
         </a>
     </div>
@@ -66,7 +66,7 @@
         </div>
     @endif
 
-    <form action="{{ route('roles.store') }}" method="POST" id="roleForm">
+    <form action="{{ route($routePrefix . 'roles.store') }}" method="POST" id="roleForm">
         @csrf
 
         <div class="row g-4">
@@ -189,7 +189,7 @@
                         @endforeach
                     <div class="card-footer bg-light border-top border-light p-4 text-end">
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('roles.index') }}" class="btn btn-light rounded-pill px-4">
+                            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4">
                                 <i class="bi bi-x-lg me-1"></i>Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: 0;">

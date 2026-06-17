@@ -53,35 +53,17 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">Impuesto Predeterminado (ITBIS %)</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" name="impuesto_itbis" class="form-control rounded-start-3" value="{{ $settings['impuesto_itbis'] ?? '' }}">
-                                    <span class="input-group-text bg-light">%</span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">Símbolo de Moneda</label>
-                                <select name="moneda_simbolo" class="form-select rounded-3">
-                                    <option value="RD$" {{ ($settings['moneda_simbolo'] ?? 'RD$') === 'RD$' ? 'selected' : '' }}>RD$ (Peso Dominicano)</option>
-                                    <option value="US$" {{ ($settings['moneda_simbolo'] ?? '') === 'US$' ? 'selected' : '' }}>US$ (Dólar)</option>
-                                    <option value="€" {{ ($settings['moneda_simbolo'] ?? '') === '€' ? 'selected' : '' }}>€ (Euro)</option>
-                                    <option value="$" {{ ($settings['moneda_simbolo'] ?? '') === '$' ? 'selected' : '' }}>$ (Dólar simple)</option>
-                                    <option value="₱" {{ ($settings['moneda_simbolo'] ?? '') === '₱' ? 'selected' : '' }}>₱ (Peso)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-bold">Tipo de Negocio</label>
-                                <select name="tipo_negocio" class="form-select rounded-3">
-                                    <option value="mixto" {{ ($settings['tipo_negocio'] ?? 'mixto') === 'mixto' ? 'selected' : '' }}>Mixto (Restaurante + Retail)</option>
-                                    <option value="restaurante" {{ ($settings['tipo_negocio'] ?? '') === 'restaurante' ? 'selected' : '' }}>Restaurante / Bar / Café</option>
-                                    <option value="retail" {{ ($settings['tipo_negocio'] ?? '') === 'retail' ? 'selected' : '' }}>Colmado / Minimarket / Retail</option>
-                                    <option value="mayorista" {{ ($settings['tipo_negocio'] ?? '') === 'mayorista' ? 'selected' : '' }}>Mayorista / Distribuidor</option>
-                                    <option value="servicios" {{ ($settings['tipo_negocio'] ?? '') === 'servicios' ? 'selected' : '' }}>Servicios Profesionales</option>
-                                    <option value="lavadero" {{ ($settings['tipo_negocio'] ?? '') === 'lavadero' ? 'selected' : '' }}>Lavadero de Carro</option>
-                                </select>
-                                <div class="form-text">Define qué módulos y flujos se habilitan por defecto.</div>
-                            </div>
+                         <div class="col-md-6">
+                                 <label class="form-label small fw-bold">Impuesto Predeterminado (ITBIS %)</label>
+                                 <div class="input-group">
+                                     <input type="number" step="0.01" name="impuesto_itbis" class="form-control rounded-start-3" value="{{ $settings['impuesto_itbis'] ?? '' }}">
+                                     <span class="input-group-text bg-light">%</span>
+                                 </div>
+                             </div>
+                             <div class="col-md-12">
+                                 <label class="form-label small fw-bold">Eslogan / Nota de Factura</label>
+                                 <input type="text" name="sistema_slogan" class="form-control rounded-3" value="{{ $settings['sistema_slogan'] ?? '' }}">
+                             </div>
                         </div>
                     </div>
                 </div>

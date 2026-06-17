@@ -4,21 +4,22 @@
 
 @section('content')
 @php
-    $rolConfig = [
-        'admin'    => ['color' => '#ef4444', 'gradient' => 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 'icon' => 'bi-shield-lock-fill',  'label' => 'Admin',    'desc' => 'Acceso total al sistema.'],
-        'gerente'  => ['color' => '#f59e0b', 'gradient' => 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 'icon' => 'bi-person-badge-fill', 'label' => 'Gerente',  'desc' => 'Gestión operativa, sin admin.'],
-        'vendedor' => ['color' => '#38bdf8', 'gradient' => 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)', 'icon' => 'bi-cart-check-fill',  'label' => 'Vendedor', 'desc' => 'POS, ventas y caja.'],
-        'almacen'  => ['color' => '#22c55e', 'gradient' => 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', 'icon' => 'bi-box-seam-fill',     'label' => 'Almacén',  'desc' => 'Productos, compras, stock.'],
-        'contador' => ['color' => '#6366f1', 'gradient' => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', 'icon' => 'bi-calculator-fill',   'label' => 'Contador', 'desc' => 'Reportes y consulta fiscal.'],
-    ];
     $rolSeleccionado = old('role', 'vendedor');
+    $defaultConfig = [
+        'color' => '#64748b',
+        'gradient' => 'linear-gradient(135deg,#64748b,#475569)',
+        'icon' => 'bi-person',
+        'label' => 'Rol',
+        'desc' => 'Rol personalizado.'
+    ];
 @endphp
 
+@include('usuarios._rol_config')
 @include('usuarios._styles')
 
-<div class="container-fluid px-4">
-    <!-- Header gradiente -->
-    <div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+<div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4"
+    style="background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);">
         <div style="position: relative; z-index: 2;">
             <div class="d-flex align-items-center gap-2 mb-1">
                 <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
@@ -83,7 +84,14 @@
                     <div class="card-body p-4">
                         <div class="role-picker" id="rolePicker">
                             @foreach($roles as $rol)
-                                @php $cfg = $rolConfig[$rol->name] ?? null; @endphp
+                                @php
+                                    $cfg = $rolConfig[$rol->name] ?? $defaultConfig;
+                                    $cfg['label'] = $cfg['label'] ?? ucfirst(str_replace(['-', '_'], ' ', $rol->name));
+                                    $cfg['desc'] = $cfg['desc'] ?? 'Rol personalizado.';
+                                    $cfg['color'] = $cfg['color'] ?? '#64748b';
+                                    $cfg['gradient'] = $cfg['gradient'] ?? 'linear-gradient(135deg,#64748b,#475569)';
+                                    $cfg['icon'] = $cfg['icon'] ?? 'bi-person';
+                                @endphp
                                 <label class="role-card {{ $rolSeleccionado == $rol->name ? 'active' : '' }}"
                                        style="--role-color: {{ $cfg['color'] }}; --role-gradient: {{ $cfg['gradient'] }};">
                                     <input type="radio" name="role" value="{{ $rol->name }}"

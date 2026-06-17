@@ -57,7 +57,7 @@ class BusinessType extends Model
                 ->where('activo', true)
                 ->orderBy('orden')
                 ->get()
-                ->keyBy('key')
+                ->keyBy('slug')
                 ->toArray();
         });
     }
@@ -90,24 +90,45 @@ class BusinessType extends Model
 
     public static function getTipoActual(): ?string
     {
-        return \App\Models\SystemSetting::get('tipo_negocio', 'mixto');
+        return null;
     }
 
-    public static function getModulosVisibles(string $tipo = null): array
+
+    public static function getModulosVisibles(?string $tipo = null): array
     {
-        $tipo = $tipo ?? self::getTipoActual();
-        $types = self::allCached();
-        if (!isset($types[$tipo])) {
+        // Use the provided type slug or fallback to session value
+        $tipo = $tipo ?? session('business_type_slug');
+
+        if (empty($tipo)) {
             return [];
         }
-        return collect($types[$tipo]['modules'] ?? [])
+
+       //dd(self::allCached());
+
+        // Get cached business types (keyed by the 'slug' column)
+        $types = self::allCached();
+
+        // Try to find the entry by key first (most common case)
+        if (isset($types[$tipo])) {
+            $typeEntry = $types[$tipo];
+        } else {
+            // Fallback: search the collection for a matching slug
+            $typeEntry = collect($types)->firstWhere('slug', $tipo);
+        }
+
+        if (! $typeEntry) {
+            return [];
+        }
+
+        // Return the visible module keys ordered by "orden"
+        return collect($typeEntry['modules'] ?? [])
             ->where('visible', true)
             ->sortBy('orden')
             ->pluck('modulo_key')
             ->toArray();
     }
 
-    public static function isModuloVisible(string $moduloKey, string $tipo = null): bool
+    public static function isModuloVisible(string $moduloKey, ?string $tipo = null): bool
     {
         $visibles = self::getModulosVisibles($tipo);
         return in_array($moduloKey, $visibles);

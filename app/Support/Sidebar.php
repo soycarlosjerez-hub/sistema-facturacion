@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use Illuminate\Support\Facades\Auth;
-use App\Models\SystemSetting;
 use App\Models\BusinessType;
 
 class Sidebar
@@ -15,23 +14,86 @@ class Sidebar
             return [];
         }
 
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin = $user->hasRole('admin') || $user->hasRole('admin-business');
         $can = fn(string $p) => $isAdmin || $user->can($p);
 
-        $tipoNegocio = SystemSetting::tipoNegocio();
+        ///dd(session('business_type_slug'));
+
+        $tipoNegocio = session('business_type_slug');
+
+        if (!$tipoNegocio) {
+            if ($user->businessInstance && $user->businessInstance->businessType) {
+                $tipoNegocio = $user->businessInstance->businessType->slug;
+            } elseif ($user->businessType) {
+                $tipoNegocio = $user->businessType->slug;
+            } else {
+                $tipoNegocio = 'restaurante'; // default/fallback
+            }
+            session(['business_type_slug' => $tipoNegocio]);
+        }
+
+
+                // Ensure fresh module data (clear cached business types)
+        BusinessType::flush();
+
+
+        //dd(BusinessType::getModulosVisibles('restaurante'));
+
+
         $visibles = BusinessType::getModulosVisibles($tipoNegocio);
         $mod = fn(string $key) => in_array($key, $visibles);
 
         $items = [];
 
         $items[] = ['section' => 'Principal'];
-        $items[] = [
-            'route' => 'dashboard',
-            'icon'  => 'bi-speedometer2',
-            'label' => 'Dashboard',
-            'show'  => $can('dashboard.view'),
-            'exact_route' => 'dashboard',
-        ];
+
+        // Dueño del Sistema (Owner) — única sección visible para este rol
+        if ($user->hasRole('owner')) {
+            if ($user->can('owner.dashboard')) {
+                $items[] = [
+                    'route' => 'owner.dashboard',
+                    'icon'  => 'bi-speedometer2',
+                    'label' => 'Panel de Control',
+                    'is_route' => 'owner.dashboard',
+                    'exact_route' => 'owner.dashboard',
+                ];
+            }
+            if ($user->can('owner.instances.view')) {
+                $items[] = [
+                    'route' => 'owner.instances.index',
+                    'icon'  => 'bi-building',
+                    'label' => 'Instancias',
+                    'is_route' => 'owner.instances.*',
+                    'exact_route' => 'owner.instances.index',
+                ];
+            }
+            if ($user->can('owner.business-types.view')) {
+                $items[] = [
+                    'route' => 'owner.business-types.index',
+                    'icon'  => 'bi-tags',
+                    'label' => 'Tipos de Negocio',
+                    'is_route' => 'owner.business-types.*',
+                    'exact_route' => 'owner.business-types.index',
+                ];
+            }
+            if ($user->can('owner.roles.manage')) {
+                $items[] = [
+                    'route' => 'owner.roles.index',
+                    'icon'  => 'bi-shield-shaded',
+                    'label' => 'Roles y Permisos',
+                    'is_route' => 'owner.roles.*',
+                    'exact_route' => 'owner.roles.index',
+                ];
+            }
+        } else {
+            $items[] = [
+                'route' => 'dashboard',
+                'icon'  => 'bi-speedometer2',
+                'label' => 'Dashboard',
+                'show'  => $can('dashboard.view'),
+                'exact_route' => 'dashboard',
+            ];
+        }
 
         // Inventario
         if ($mod('inventario') || $mod('compras') || $mod('proveedores') || $mod('kardex') || $mod('listas-precio')) {
@@ -287,16 +349,14 @@ class Sidebar
             }
             if ($can('configuracion.view')) {
                 $items[] = ['route' => 'configuracion.index', 'icon' => 'bi-sliders', 'label' => 'Parámetros', 'is_route' => 'configuracion.*', 'exact_route' => 'configuracion.index'];
-                $items[] = ['route' => 'business-types.index', 'icon' => 'bi-diagram-3', 'label' => 'Tipos de Negocio', 'is_route' => 'business-types.*', 'exact_route' => 'business-types.index'];
-                $items[] = ['route' => 'modulos.index', 'icon' => 'bi-grid', 'label' => 'Módulos', 'is_route' => 'modulos.*', 'exact_route' => 'modulos.index'];
                 $items[] = ['route' => 'configuracion.index', 'url' => route('configuracion.index') . '#correo-smtp', 'icon' => 'bi-envelope-at', 'label' => 'Correo SMTP', 'is_route' => 'configuracion.index', 'exact_route' => 'configuracion.index'];
             }
-            if ($can('usuarios.view')) {
-                $items[] = ['route' => 'usuarios.index', 'icon' => 'bi-shield-lock', 'label' => 'Usuarios', 'is_route' => 'usuarios.*'];
-            }
-            if ($can('roles.view')) {
-                $items[] = ['route' => 'roles.index', 'icon' => 'bi-shield-shaded', 'label' => 'Roles y Permisos', 'is_route' => 'roles.*'];
-            }
+            $items[] = ['route' => 'profile.edit', 'icon' => 'bi-key', 'label' => 'Cambiar Contraseña', 'is_route' => 'profile.edit'];
+        }
+        // Instance admin navigation
+        if (auth()->user() && auth()->user()->hasRole('admin-business')) {
+            // Instance admin navigation removed
+
         }
 
         return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));

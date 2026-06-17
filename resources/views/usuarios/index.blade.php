@@ -4,11 +4,26 @@
 
 @php
     $rolConfig = [
-        'admin'    => ['color' => 'danger',  'icon' => 'bi-shield-lock-fill',  'label' => 'Admin',    'gradient' => 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'],
-        'gerente'  => ['color' => 'warning', 'icon' => 'bi-person-badge-fill', 'label' => 'Gerente',  'gradient' => 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'],
-        'vendedor' => ['color' => 'primary', 'icon' => 'bi-cart-check-fill',  'label' => 'Vendedor', 'gradient' => 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)'],
-        'almacen'  => ['color' => 'success', 'icon' => 'bi-box-seam-fill',     'label' => 'Almacén',  'gradient' => 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'],
-        'contador' => ['color' => 'info',    'icon' => 'bi-calculator-fill',   'label' => 'Contador', 'gradient' => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'],
+        'admin'    => ['color' => 'danger',  'icon' => 'bi-shield-lock-fill',   'label' => 'Admin',            'gradient' => 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'],
+        'gerente'  => ['color' => 'warning', 'icon' => 'bi-person-badge-fill',  'label' => 'Gerente',          'gradient' => 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'],
+        'vendedor' => ['color' => 'primary', 'icon' => 'bi-cart-check-fill',    'label' => 'Vendedor',         'gradient' => 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)'],
+        'almacen'  => ['color' => 'success', 'icon' => 'bi-box-seam-fill',       'label' => 'Almacén',          'gradient' => 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'],
+        'contador' => ['color' => 'info',    'icon' => 'bi-calculator-fill',     'label' => 'Contador',         'gradient' => 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'],
+        'supervisor' => ['color' => 'purple', 'icon' => 'bi-eye-fill',          'label' => 'Supervisor',       'gradient' => 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'],
+        'administrativo' => ['color' => 'teal', 'icon' => 'bi-folder2-open',    'label' => 'Administrativo',   'gradient' => 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)'],
+        'mesero' => ['color' => 'orange',    'icon' => 'bi-person-fill',        'label' => 'Mesero',           'gradient' => 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'],
+        'cocinero' => ['color' => 'danger',  'icon' => 'bi-fire',               'label' => 'Cocinero',         'gradient' => 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'],
+        'delivery' => ['color' => 'info',    'icon' => 'bi-truck',              'label' => 'Delivery',         'gradient' => 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)'],
+        'bartender' => ['color' => 'purple', 'icon' => 'bi-cup-hot-fill',       'label' => 'Bartender',        'gradient' => 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)'],
+        'lavador' => ['color' => 'cyan',     'icon' => 'bi-droplet-fill',       'label' => 'Lavador',          'gradient' => 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)'],
+        'recepcionista' => ['color' => 'indigo', 'icon' => 'bi-headset',        'label' => 'Recepcionista',    'gradient' => 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)'],
+        'inspector' => ['color' => 'warning', 'icon' => 'bi-search',            'label' => 'Inspector',        'gradient' => 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)'],
+        'cajero' => ['color' => 'success',   'icon' => 'bi-cash-register',      'label' => 'Cajero',           'gradient' => 'linear-gradient(135deg, #10b981 0%, #059669 100%)'],
+        'reponedor' => ['color' => 'orange', 'icon' => 'bi-boxes',              'label' => 'Reponedor',        'gradient' => 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'],
+        'despachador' => ['color' => 'secondary', 'icon' => 'bi-truck',         'label' => 'Despachador',      'gradient' => 'linear-gradient(135deg, #64748b 0%, #475569 100%)'],
+        'vendedor-mayorista' => ['color' => 'primary', 'icon' => 'bi-people-fill', 'label' => 'Vend. Mayorista', 'gradient' => 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)'],
+        'consultor' => ['color' => 'secondary', 'icon' => 'bi-chat-dots-fill',  'label' => 'Consultor',        'gradient' => 'linear-gradient(135deg, #475569 0%, #334155 100%)'],
+        'facturador' => ['color' => 'pink',   'icon' => 'bi-file-earmark-text-fill', 'label' => 'Facturador',  'gradient' => 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)'],
     ];
 @endphp
 
@@ -237,11 +252,12 @@
                         <i class="bi bi-people"></i> Todos
                         <span class="count">{{ $stats['total'] }}</span>
                     </a>
-                    @foreach(['admin', 'gerente', 'vendedor', 'almacen', 'contador'] as $rolKey)
-                        @if($stats[$rolKey] > 0)
+                    @foreach($stats as $rolKey => $count)
+                        @if(in_array($rolKey, ['total', 'sin_rol'])) @continue @endif
+                        @if($count > 0 && isset($rolConfig[$rolKey]))
                             <a href="{{ route('usuarios.index', ['rol' => $rolKey] + request()->except('rol')) }}" class="role-filter-pill {{ request('rol') == $rolKey ? 'active' : '' }}" style="{{ request('rol') == $rolKey ? 'background: ' . $rolConfig[$rolKey]['gradient'] : '' }}">
                                 <i class="bi {{ $rolConfig[$rolKey]['icon'] }}"></i> {{ $rolConfig[$rolKey]['label'] }}
-                                <span class="count">{{ $stats[$rolKey] }}</span>
+                                <span class="count">{{ $count }}</span>
                             </a>
                         @endif
                     @endforeach

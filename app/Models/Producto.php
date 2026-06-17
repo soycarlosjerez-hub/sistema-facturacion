@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -103,14 +105,8 @@ class Producto extends Model
         return $query->whereBetween('stock', [6, 15]);
     }
 
-    public function scopeBuscar(Builder $query, ?string $termino): Builder
+    public function ingredientes(): BelongsToMany
     {
-        if (! $termino) {
-            return $query;
-        }
-        return $query->where(function ($q) use ($termino) {
-            $q->where('nombre', 'like', '%' . $termino . '%')
-              ->orWhere('codigo_barras', 'like', '%' . $termino . '%');
-        });
-    }
-}
+        return $this->belongsToMany(Ingrediente::class, 'producto_ingrediente')
+            ->withPivot('cantidad');
+    }}

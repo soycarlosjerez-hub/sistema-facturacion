@@ -14,16 +14,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Vendedor',
-            'email' => 'vendedor@test.com',
-            'role' => 'vendedor',
-        ]);
-
         $this->call(RolesYUsuariosSeeder::class);
-        $this->call(PermissionSeeder::class);
+        $this->call(CustomRolesSeeder::class);        // Crea roles base + root, admin-business, owner
+        $this->call(PermissionSeeder::class);         // Asigna permisos a TODOS los roles
         $this->call(TiposVentasSeeder::class);
         $this->call(CategoriaSeeder::class);
         $this->call(ProductosSeeder::class);
@@ -37,5 +30,6 @@ class DatabaseSeeder extends Seeder
         $this->call(BusinessTypeSeeder::class);
         $this->call(DeliveryCompanySeeder::class);
         $this->call(CategoryPermissionsSeeder::class);
+        $this->call(RolesAndUsersSeeder::class);
     }
 }

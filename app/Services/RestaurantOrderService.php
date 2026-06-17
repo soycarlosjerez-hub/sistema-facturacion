@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+
 class RestaurantOrderService
 {
     public function getIndexData(): array
@@ -141,49 +142,55 @@ class RestaurantOrderService
             return ['error' => $e->getMessage(), 'code' => 500];
         }
     }
-
     public function agregarItem(Mesa $mesa, int $productoId, int $cantidad, ?string $notas, ?string $curso): array
     {
         $orden = $mesa->ordenActiva;
         if (!$orden) {
             return ['error' => 'La mesa no tiene una orden abierta', 'code' => 422];
         }
-
+    
         $sucursalId = session('sucursal_id');
         $almacen = Almacen::where('sucursal_id', $sucursalId)->first();
         $almacenId = $almacen?->id ?? 1;
-
+    
         $producto = Producto::findOrFail($productoId);
         $notas = $notas;
         $curso = $curso ?? 'fuerte';
-
-        $detalleExistente = VentaDetalle::where('venta_id', $orden->id)
+    
+        $detalleExistente = \App\Models\VentaDetalle::where('venta_id', $orden->id)
             ->where('producto_id', $producto->id)
             ->where('notas', $notas)
             ->where('curso', $curso)
             ->first();
-
+    
         DB::beginTransaction();
         try {
+            // Validar stock del producto
             if ($producto->stock < $cantidad) {
                 DB::rollBack();
-                return ['error' => "Stock insuficiente. Disponible: {$producto->stock}", 'code' => 422];
+                return ['error' => "Stock insuficiente del producto. Disponible: {$producto->stock}", 'code' => 422];
             }
-
+            
+            // Validar stock de ingredientes
+            if ($errorIngrediente = $this->checkIngredientsStock($producto, $cantidad)) {
+                DB::rollBack();
+                return ['error' => $errorIngrediente, 'code' => 422];
+            }
+    
             if ($detalleExistente) {
                 $nuevaCantidad = $detalleExistente->cantidad + $cantidad;
                 $detalleExistente->cantidad = $nuevaCantidad;
                 $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
                 $detalleExistente->save();
-
+    
                 $itbisItem = ($producto->itbis_porcentaje ?? 0) / 100 * $producto->precio * $cantidad;
                 $orden->increment('subtotal', $producto->precio * $cantidad);
                 $orden->increment('impuestos', $itbisItem);
                 $orden->increment('total', ($producto->precio * $cantidad) + $itbisItem);
-
+    
                 $detalle = $detalleExistente->fresh();
             } else {
-                $detalle = VentaDetalle::create([
+                $detalle = \App\Models\VentaDetalle::create([
                     'venta_id'        => $orden->id,
                     'producto_id'     => $producto->id,
                     'cantidad'        => $cantidad,
@@ -193,15 +200,20 @@ class RestaurantOrderService
                     'notas'           => $notas,
                     'curso'           => $curso,
                 ]);
-
+    
                 $itbisItem = ($producto->itbis_porcentaje ?? 0) / 100 * $producto->precio * $cantidad;
                 $orden->increment('subtotal', $producto->precio * $cantidad);
                 $orden->increment('impuestos', $itbisItem);
                 $orden->increment('total', ($producto->precio * $cantidad) + $itbisItem);
             }
-
+    
             $producto->decrement('stock', $cantidad);
-
+            
+            foreach ($producto->ingredientes as $ingrediente) {
+                $cantidadADeducir = $ingrediente->pivot->cantidad * $cantidad;
+                $ingrediente->decrement('stock', $cantidadADeducir);
+            }
+    
             AlmacenMovimiento::create([
                 'producto_id' => $producto->id,
                 'almacen_id'  => $almacenId,
@@ -210,8 +222,9 @@ class RestaurantOrderService
                 'nota'        => 'Pedido restaurante - Mesa #' . $mesa->numero,
                 'user_id'     => Auth::id(),
             ]);
-
+    
             DB::commit();
+    
             return [
                 'orden'   => $orden->fresh()->load('detalles.producto'),
                 'detalle' => $detalle->load('producto'),
@@ -240,7 +253,13 @@ class RestaurantOrderService
 
             if ($detalle->producto) {
                 $detalle->producto->increment('stock', $detalle->cantidad);
+                
+                foreach ($detalle->producto->ingredientes as $ingrediente) {
+                    $cantidadAReducir = $ingrediente->pivot->cantidad * $detalle->cantidad;
+                    $ingrediente->increment('stock', $cantidadAReducir);
+                }
             }
+
 
             $detalle->delete();
             DB::commit();
@@ -285,7 +304,13 @@ class RestaurantOrderService
 
             if ($producto) {
                 $producto->decrement('stock', $diferencia);
+                
+                foreach ($producto->ingredientes as $ingrediente) {
+                    $cantidadADeducir = $ingrediente->pivot->cantidad * $diferencia;
+                    $ingrediente->decrement('stock', $cantidadADeducir);
+                }
             }
+
 
             DB::commit();
 
@@ -518,8 +543,6 @@ class RestaurantOrderService
 
     public function abrirCaja(int $cajaId, float $montoInicial): array
     {
-        $caja = Caja::findOrFail($cajaId);
-
         if (!$caja->activo) return ['error' => 'Esta caja está inactiva', 'code' => 422];
         if ($caja->estado === 'abierta') return ['error' => 'La caja ya está abierta', 'code' => 422];
 
@@ -638,5 +661,16 @@ class RestaurantOrderService
             'transferencia' => $totalTransferencia,
             'total'      => $totalEfectivo + $totalTarjeta + $totalTransferencia,
         ];
+    }
+
+    private function checkIngredientsStock(Producto $producto, int $cantidad): ?string
+    {
+        foreach ($producto->ingredientes as $ingrediente) {
+            $cantidadRequerida = $ingrediente->pivot->cantidad * $cantidad;
+            if ($ingrediente->stock < $cantidadRequerida) {
+                return "Stock insuficiente del ingrediente '{$ingrediente->nombre}'. Disponible: {$ingrediente->stock}, Requerido: {$cantidadRequerida}";
+            }
+        }
+        return null;
     }
 }

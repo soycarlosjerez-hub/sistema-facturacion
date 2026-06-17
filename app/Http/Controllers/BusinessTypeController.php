@@ -12,6 +12,17 @@ class BusinessTypeController extends Controller
     public function index()
     {
         $tipos = BusinessType::with('modules')->orderBy('orden')->get();
+
+        if (!auth()->user()->hasRole('owner')) {
+            $user = auth()->user();
+            if ($user && $user->business_instance) {
+                $tipos = $tipos->where('id', $user->business_instance->business_type_id);
+            } else {
+                // If no instance is associated, show nothing or handle accordingly
+                $tipos = collect([]);
+            }
+        }
+
         $modulosDisponibles = $this->getModulosDisponibles();
         
         return view('business-types.index', compact('tipos', 'modulosDisponibles'));

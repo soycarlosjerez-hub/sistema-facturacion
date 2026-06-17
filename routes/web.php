@@ -513,10 +513,59 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Admin only routes (using Spatie role admin)
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin|owner'])->group(function () {
     Route::resource('usuarios', UserController::class);
     Route::resource('roles', RoleController::class);
     Route::get('roles-matrix', [RoleController::class, 'matrix'])->name('roles.matrix');
+});
+
+// Admin de Instancia (admin-business) - gestión de usuarios solo en su instancia
+// Instance user management routes removed for admin-business role
+// Route::get('/users', [\App\Http\Controllers\OwnerController::class, 'instanceUsersIndex'])->name('users.index');
+// Route::get('/users/create', [\App\Http\Controllers\OwnerController::class, 'instanceUserCreate'])->name('users.create');
+// Route::post('/users', [\App\Http\Controllers\OwnerController::class, 'instanceUserStore'])->name('users.store');
+// Route::get('/users/{user}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceUserEdit'])->name('users.edit');
+// Route::put('/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserUpdate'])->name('users.update');
+// Route::delete('/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserDestroy'])->name('users.destroy');
+
+
+// Owner (Dueño del Sistema)
+Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\OwnerController::class, 'index'])->name('dashboard');
+    Route::get('/business-types', [\App\Http\Controllers\OwnerController::class, 'businessTypes'])->name('business-types.index');
+    Route::get('/business-types/create', [\App\Http\Controllers\OwnerController::class, 'businessTypesCreate'])->name('business-types.create');
+    Route::post('/business-types', [\App\Http\Controllers\OwnerController::class, 'businessTypesStore'])->name('business-types.store');
+    Route::get('/business-types/{type}/edit', [\App\Http\Controllers\OwnerController::class, 'businessTypesEdit'])->name('business-types.edit');
+    Route::put('/business-types/{type}', [\App\Http\Controllers\OwnerController::class, 'businessTypesUpdate'])->name('business-types.update');
+    Route::delete('/business-types/{type}', [\App\Http\Controllers\OwnerController::class, 'businessTypesDestroy'])->name('business-types.destroy');
+    Route::get('/instances', [\App\Http\Controllers\OwnerController::class, 'instances'])->name('instances.index');
+    Route::get('/instances/create', [\App\Http\Controllers\OwnerController::class, 'instancesCreate'])->name('instances.create');
+    Route::post('/instances', [\App\Http\Controllers\OwnerController::class, 'instancesStore'])->name('instances.store');
+    Route::get('/instances/{instance}', [\App\Http\Controllers\OwnerController::class, 'instancesShow'])->name('instances.show');
+    Route::get('/instances/{instance}/edit', [\App\Http\Controllers\OwnerController::class, 'instancesEdit'])->name('instances.edit');
+    Route::put('/instances/{instance}', [\App\Http\Controllers\OwnerController::class, 'instancesUpdate'])->name('instances.update');
+    Route::delete('/instances/{instance}', [\App\Http\Controllers\OwnerController::class, 'instancesDestroy'])->name('instances.destroy');
+    Route::get('/instances/{instance}/config', [\App\Http\Controllers\OwnerController::class, 'instancesConfig'])->name('instances.config');
+    Route::put('/instances/{instance}/config', [\App\Http\Controllers\OwnerController::class, 'instancesConfigUpdate'])->name('instances.config.update');
+    Route::post('/instances/{instance}/toggle-block', [\App\Http\Controllers\OwnerController::class, 'alternarBloqueo'])->name('instances.toggle-block');
+    Route::get('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'paymentHistory'])->name('instances.pagos');
+    Route::get('/instances/{instance}/pagos/create', [\App\Http\Controllers\OwnerController::class, 'registerPayment'])->name('instances.pagos.create');
+    Route::post('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'storePayment'])->name('instances.pagos.store');
+    // Instance user management
+    Route::get('/instances/{instance}/users/create', [\App\Http\Controllers\OwnerController::class, 'instanceUserCreate'])->name('instances.users.create');
+    Route::post('/instances/{instance}/users', [\App\Http\Controllers\OwnerController::class, 'instanceUserStore'])->name('instances.users.store');
+    Route::get('/instances/{instance}/users/{user}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceUserEdit'])->name('instances.users.edit');
+    Route::put('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserUpdate'])->name('instances.users.update');
+    Route::delete('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserDestroy'])->name('instances.users.destroy');
+    // Owner role management (reuses RoleController)
+    Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
+    Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('roles.create');
+    Route::post('/roles', [\App\Http\Controllers\RoleController::class, 'store'])->name('roles.store');
+    Route::get('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'show'])->name('roles.show');
+    Route::get('/roles/{role}/edit', [\App\Http\Controllers\RoleController::class, 'edit'])->name('roles.edit');
+    Route::put('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'update'])->name('roles.update');
+    Route::delete('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'destroy'])->name('roles.destroy');
+    Route::get('/roles-matrix', [\App\Http\Controllers\RoleController::class, 'matrix'])->name('roles.matrix');
 });
 
 // Devoluciones
@@ -687,5 +736,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/lavadero/lavadores/activos', [\App\Http\Controllers\LavadorController::class, 'activos'])->name('lavadero.lavadores.activos')->middleware('permission:lavadero.view');
     Route::post('/lavadero/ventas/{venta}/lavadores', [\App\Http\Controllers\LavaderoController::class, 'asignarLavadores'])->name('lavadero.ventas.lavadores')->middleware('permission:lavadero.view');
 });
+
+Route::get('/instancia-bloqueada', function () {
+    return view('errors.instancia-bloqueada');
+})->name('instancia-bloqueada');
 
 require __DIR__ . '/auth.php';

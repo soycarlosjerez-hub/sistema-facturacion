@@ -58,10 +58,10 @@
             </div>
         </div>
         <div class="d-flex gap-2" style="position: relative; z-index: 2;">
-            <a href="{{ route('roles.index') }}" class="btn btn-light rounded-pill px-3">
+            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
                 <i class="bi bi-arrow-left me-1"></i>Volver
             </a>
-            <a href="{{ route('roles.edit', $role) }}" class="btn btn-dark rounded-pill px-3 fw-bold">
+            <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="btn btn-dark rounded-pill px-3 fw-bold">
                 <i class="bi bi-pencil me-1"></i>Editar
             </a>
         </div>
@@ -169,7 +169,7 @@
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-shield-x display-4 d-block mb-2"></i>
                             <p class="mb-0">Este rol no tiene permisos asignados.</p>
-                            <a href="{{ route('roles.edit', $role) }}" class="btn btn-primary rounded-pill px-4 mt-3">
+                            <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="btn btn-primary rounded-pill px-4 mt-3">
                                 <i class="bi bi-pencil me-1"></i>Asignar Permisos
                             </a>
                         </div>
@@ -187,7 +187,7 @@
                 </div>
                 <div class="card-body p-4">
                     @forelse($users as $user)
-                        <a href="{{ route('usuarios.show', $user->id) }}" class="d-flex align-items-center gap-3 p-2 rounded-3 text-decoration-none" style="transition: background 0.15s;" onmouseover="this.style.background='rgba(56,189,248,0.06)'" onmouseout="this.style.background=''">
+                        <div class="d-flex align-items-center gap-3 p-2 rounded-3">
                             <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 12px; background: {{ $cfg['gradient'] }}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">
                                 {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', $user->name)[1] ?? '', 0, 1)) }}
                             </div>
@@ -195,8 +195,12 @@
                                 <div class="fw-bold text-dark">{{ $user->name }}</div>
                                 <small class="text-muted">{{ $user->email }}</small>
                             </div>
-                            <i class="bi bi-chevron-right text-muted"></i>
-                        </a>
+                            @if(!request()->routeIs('owner.*'))
+                            <a href="{{ route('usuarios.show', $user->id) }}" class="text-decoration-none">
+                                <i class="bi bi-chevron-right text-muted"></i>
+                            </a>
+                            @endif
+                        </div>
                     @empty
                         <div class="text-center py-4 text-muted">
                             <i class="bi bi-person-x display-6 d-block mb-2"></i>

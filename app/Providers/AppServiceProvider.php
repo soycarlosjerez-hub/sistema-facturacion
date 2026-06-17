@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\BusinessInstance;
 use App\Models\Category;
 use App\Models\SystemSetting;
+use App\Policies\BusinessInstancePolicy;
 use App\Policies\CategoryPolicy;
 use App\View\Composers\DashboardComposer;
 use Illuminate\Support\Facades\Cache;
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(BusinessInstance::class, BusinessInstancePolicy::class);
 
         // Dynamic mail config from system settings
         try {

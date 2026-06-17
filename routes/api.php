@@ -18,5 +18,5 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
         ->name('categories.toggle-type');
 
     Route::apiResource('business-types', BusinessTypeController::class)
-        ->only(['index', 'store', 'show', 'update', 'destroy']);
+        ->names('api.business-types');
 });
