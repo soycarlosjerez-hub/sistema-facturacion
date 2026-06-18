@@ -4,13 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 
 class SystemSetting extends Model
 {
-    protected $fillable = ['key', 'value', 'description'];
+    protected $fillable = ['key', 'value', 'description', 'tenant_id'];
 
-    public const CACHE_KEY = 'system_settings_all';
     public const CACHE_TTL = 3600;
+
+    /**
+     * Get the current tenant identifier.
+     * Returns null for global settings (owner/root).
+     */
+    public static function tenantId(): ?int
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return null;
+        }
+        // Owners and root have access to global settings
+        if ($user->hasRole('owner') || $user->hasRole('root')) {
+            return null;
+        }
+        return $user->business_instance_id ?? null;
+    }
 
     public static function get(string $key, ?string $default = null): ?string
     {
@@ -20,14 +37,24 @@ class SystemSetting extends Model
 
     public static function allCached(): array
     {
-        return Cache::rememberForever(static::CACHE_KEY, function () {
-            return static::pluck('value', 'key')->all();
+        $tenantId = static::tenantId();
+        $cacheKey = $tenantId ? 'system_settings_all_' . $tenantId : 'system_settings_all_global';
+        return Cache::remember($cacheKey, static::CACHE_TTL, function () use ($tenantId) {
+            $query = static::query()->select('key', 'value');
+            if ($tenantId) {
+                $query->where('tenant_id', $tenantId);
+            } else {
+                $query->whereNull('tenant_id');
+            }
+            return $query->pluck('value', 'key')->all();
         });
     }
 
     public static function flush(): void
     {
-        Cache::forget(static::CACHE_KEY);
+        $tenantId = static::tenantId();
+        $cacheKey = $tenantId ? 'system_settings_all_' . $tenantId : 'system_settings_all_global';
+        Cache::forget($cacheKey);
     }
 
     public static function empresaNombre(): string

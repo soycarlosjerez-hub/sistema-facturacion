@@ -2,6 +2,18 @@
 
 @section('title', 'Configuración del Sistema')
 
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
 @section('content')
 <div class="container-fluid px-4" style="padding-bottom: 80px;">
     <!-- Header Moderno -->
@@ -133,7 +145,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label small fw-bold">Contraseña</label>
-                                <input type="password" name="mail_password" class="form-control rounded-3" placeholder="{{ $settings['mail_password'] ? '********' : 'Ingresar contraseña' }}">
+                                <input type="password" name="mail_password" class="form-control rounded-3" placeholder="{{ ($settings['mail_password'] ?? '') ? '********' : 'Ingresar contraseña' }}">
                                 <div class="form-text">Dejar vacío para conservar la contraseña actual.</div>
                             </div>
                             <div class="col-md-4">

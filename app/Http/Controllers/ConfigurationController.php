@@ -39,8 +39,12 @@ class ConfigurationController extends Controller
             return $v !== null && $v !== '';
         });
 
+        $tenantId = SystemSetting::tenantId();
         foreach ($filteredData as $key => $value) {
-            SystemSetting::updateOrCreate(['key' => $key], ['value' => $value]);
+            SystemSetting::updateOrCreate(
+                ['key' => $key, 'tenant_id' => $tenantId],
+                ['value' => $value]
+            );
         }
 
         SystemSetting::flush();
