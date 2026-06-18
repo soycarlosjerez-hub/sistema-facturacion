@@ -17,6 +17,21 @@ class PermissionSeeder extends Seeder
             'dashboard' => [
                 'dashboard.view',
             ],
+            'owner' => [
+                'owner.dashboard',
+                'owner.instances.view',
+                'owner.instances.create',
+                'owner.instances.edit',
+                'owner.instances.delete',
+                'owner.business-types.view',
+                'owner.business-types.create',
+                'owner.business-types.edit',
+                'owner.business-types.delete',
+                'owner.roles.view',
+                'owner.roles.manage',
+                'owner.users.view',
+                'owner.users.manage',
+            ],
             'reportes' => [
                 'reportes.view',
                 'reportes.export',
@@ -210,6 +225,139 @@ class PermissionSeeder extends Seeder
 
         $rolePermissions = [
             'admin' => $allPermissions,
+
+            'root' => $allPermissions,
+
+            'owner' => array_merge($allPermissions, [
+                'owner.dashboard',
+                'owner.instances.view',
+                'owner.instances.create',
+                'owner.instances.edit',
+                'owner.instances.delete',
+                'owner.business-types.view',
+                'owner.business-types.create',
+                'owner.business-types.edit',
+                'owner.business-types.delete',
+                'owner.roles.view',
+                'owner.roles.manage',
+                'owner.users.view',
+                'owner.users.manage',
+            ]),
+
+            'admin-business' => [
+                'dashboard.view',
+                'reportes.view',
+                'reportes.export',
+                'reportes.restaurante',
+
+                'ventas.view',
+                'ventas.create',
+                'ventas.anular',
+                'ventas.export',
+
+                'cotizaciones.view',
+                'cotizaciones.create',
+                'cotizaciones.edit',
+                'cotizaciones.delete',
+                'cotizaciones.export',
+                'cotizaciones.convertir',
+
+                'conduces.view',
+                'conduces.create',
+                'conduces.edit',
+                'conduces.print',
+                'conduces.deliver',
+
+                'devoluciones.view',
+                'devoluciones.create',
+                'devoluciones.confirmar',
+
+                'listas-precio.view',
+                'listas-precio.create',
+                'listas-precio.edit',
+
+                'gastos.view',
+                'gastos.create',
+                'gastos.edit',
+
+                'auditoria.view',
+                'backups.view',
+                'backups.create',
+
+                'payment-processors.view',
+                'payment-processors.create',
+                'payment-processors.edit',
+
+                'restaurante.view',
+                'restaurante.cobrar',
+                'restaurante.anular',
+                'restaurante.descuento',
+                'restaurante.categorias',
+                'restaurante.reservaciones',
+                'restaurante.cajas',
+                'restaurante.mesas.manage',
+
+                'lavadero.view',
+                'lavadero.servicios',
+                'lavadero.vehiculos',
+                'lavadero.citas',
+                'lavadero.lavadores',
+
+                'cajas.view',
+                'cajas.create',
+                'cajas.edit',
+                'cajas.open',
+                'cajas.close',
+                'cajas.view.report',
+
+                'clientes.view',
+                'clientes.create',
+                'clientes.edit',
+
+                'cobros.view',
+                'cobros.create',
+                'cobros.export',
+
+                'productos.view',
+                'productos.create',
+                'productos.edit',
+                'productos.import',
+                'productos.export',
+
+                'compras.view',
+                'compras.create',
+                'compras.edit',
+                'compras.export',
+
+                'proveedores.view',
+                'proveedores.create',
+                'proveedores.edit',
+
+                'almacenes.view',
+                'almacenes.create',
+                'almacenes.edit',
+                'almacenes.movements',
+
+                'kardex.view',
+                'kardex.export',
+
+                'ncf.view',
+                'ncf.manage',
+
+                'ecf.view',
+                'ecf.manage',
+                'ecf.send',
+                'ecf.certificados',
+
+                'sucursales.view',
+                'sucursales.create',
+                'sucursales.edit',
+
+                'configuracion.view',
+
+                'usuarios.view',
+                'roles.view',
+            ],
 
             'gerente' => [
                 'dashboard.view',

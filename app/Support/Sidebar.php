@@ -85,15 +85,17 @@ class Sidebar
                     'exact_route' => 'owner.roles.index',
                 ];
             }
-        } else {
-            $items[] = [
-                'route' => 'dashboard',
-                'icon'  => 'bi-speedometer2',
-                'label' => 'Dashboard',
-                'show'  => $can('dashboard.view'),
-                'exact_route' => 'dashboard',
-            ];
+
+            return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
         }
+
+        $items[] = [
+            'route' => 'dashboard',
+            'icon'  => 'bi-speedometer2',
+            'label' => 'Dashboard',
+            'show'  => $can('dashboard.view'),
+            'exact_route' => 'dashboard',
+        ];
 
         // Inventario
         if ($mod('inventario') || $mod('compras') || $mod('proveedores') || $mod('kardex') || $mod('listas-precio')) {
