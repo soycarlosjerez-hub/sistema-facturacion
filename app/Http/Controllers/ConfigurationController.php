@@ -21,30 +21,11 @@ class ConfigurationController extends Controller
     {
         $data = $request->except(['_token', 'tipo_negocio']);
 
-        $validator = Validator::make($data, [
-            'empresa_nombre'     => 'required|string|max:255',
-            'empresa_rnc'        => 'nullable|string|max:20',
-            'empresa_telefono'   => 'nullable|string|max:30',
-            'empresa_direccion'  => 'nullable|string|max:255',
-            'sistema_slogan'     => 'nullable|string|max:255',
-            'impuesto_itbis'     => 'required|numeric|min:0|max:100',
-            'moneda_simbolo'     => 'required|string|max:10',
-            'mail_mailer'        => 'nullable|string|in:smtp,log,sendmail,mailgun,ses,postmark',
-            'mail_host'          => 'nullable|string|max:255',
-            'mail_port'          => 'nullable|numeric|min:1|max:65535',
-            'mail_username'      => 'nullable|string|max:255',
-            'mail_encryption'    => 'nullable|string|in:tls,ssl,null',
-            'mail_from_address'  => 'nullable|email|max:255',
-            'mail_from_name'     => 'nullable|string|max:255',
-        ], [
-            'empresa_nombre.required' => 'El nombre del establecimiento es obligatorio.',
-            'impuesto_itbis.required' => 'El ITBIS predeterminado es obligatorio.',
-            'impuesto_itbis.max'      => 'El ITBIS no puede ser mayor a 100%.',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
+        // Validation removed: all fields are optional.
+        // $validator = Validator::make($data, []);
+        // if ($validator->fails()) {
+        //     return back()->withErrors($validator)->withInput();
+        // }
 
         // Encrypt mail password, preserve existing if left blank
         if (empty($data['mail_password'])) {
@@ -53,7 +34,12 @@ class ConfigurationController extends Controller
             $data['mail_password'] = Crypt::encryptString($data['mail_password']);
         }
 
-        foreach ($data as $key => $value) {
+        // Remove null or empty values to avoid DB constraint errors
+        $filteredData = array_filter($data, function($v) {
+            return $v !== null && $v !== '';
+        });
+
+        foreach ($filteredData as $key => $value) {
             SystemSetting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 

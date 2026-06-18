@@ -228,7 +228,8 @@ class PermissionSeeder extends Seeder
 
             'root' => $allPermissions,
 
-            'owner' => array_merge($allPermissions, [
+            'owner' => [
+                // Owner-specific permissions
                 'owner.dashboard',
                 'owner.instances.view',
                 'owner.instances.create',
@@ -242,7 +243,20 @@ class PermissionSeeder extends Seeder
                 'owner.roles.manage',
                 'owner.users.view',
                 'owner.users.manage',
-            ]),
+                
+                // System configuration (to change "Colmado Premium, etc.)
+                'configuracion.view',
+                'configuracion.edit',
+                
+                // System monitoring
+                'auditoria.view',
+                'backups.view',
+                'backups.create',
+                
+                // Reports (optional - for system oversight)
+                'reportes.view',
+                'reportes.export',
+            ],
 
             'admin-business' => [
                 'dashboard.view',

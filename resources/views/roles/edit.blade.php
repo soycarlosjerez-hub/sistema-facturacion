@@ -303,5 +303,41 @@
         });
     });
 </script>
+
+<!-- Sticky Bottom Save Bar -->
+<div id="stickySaveBar" class="sticky-save-bar">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2" id="saveBarLeft">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span class="fw-semibold d-none d-sm-inline">Editar Rol</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" form="roleForm" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                <i class="bi bi-save me-1"></i>Guardar Cambios
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sticky-save-bar {
+        position: fixed;
+        bottom: 0;
+        left: var(--sidebar-width, 0px);
+        right: 0;
+        background: #fff;
+        border-top: 2px solid var(--bs-primary, #0d6efd);
+        padding: 0.75rem 1.5rem;
+        z-index: 1050;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+    body.dark-mode .sticky-save-bar {
+        background: #0f172a;
+        border-top-color: #38bdf8;
+    }
+    @media (max-width: 991.98px) {
+        .sticky-save-bar { left: 0; }
+    }
+</style>
 @endif
 @endsection

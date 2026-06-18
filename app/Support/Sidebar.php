@@ -85,8 +85,8 @@ class Sidebar
                     'exact_route' => 'owner.roles.index',
                 ];
             }
-
-            return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
+            // Owner also sees Configuración section to change system settings like "Colmado Premium"
+            // Continue to show all other sections since owner has all permissions
         }
 
         $items[] = [
@@ -98,7 +98,13 @@ class Sidebar
         ];
 
         // Inventario
-        if ($mod('inventario') || $mod('compras') || $mod('proveedores') || $mod('kardex') || $mod('listas-precio')) {
+        if (
+            ($mod('inventario') && $can('productos.view')) ||
+            ($mod('listas-precio') && $can('listas-precio.view')) ||
+            ($mod('compras') && $can('compras.view')) ||
+            ($mod('proveedores') && $can('proveedores.view')) ||
+            ($mod('kardex') && $can('kardex.view'))
+        ) {
             $items[] = ['section' => 'Inventario'];
             if ($mod('inventario') && $can('productos.view')) {
                 $items[] = ['route' => 'productos.index', 'icon' => 'bi-box-seam', 'label' => 'Productos', 'is_route' => 'productos.*', 'exact_route' => 'productos.index'];
@@ -143,7 +149,11 @@ class Sidebar
         }
 
         // Clientes y Caja
-        if ($mod('clientes') || $mod('cobros') || $mod('cajas')) {
+        if (
+            ($mod('clientes') && $can('clientes.view')) ||
+            ($mod('cobros') && $can('cobros.view')) ||
+            ($mod('cajas') && ($can('cajas.view') || $can('cajas.open')))
+        ) {
             $items[] = ['section' => 'Clientes y Caja'];
             if ($mod('clientes') && $can('clientes.view')) {
                 $items[] = ['route' => 'clientes.index', 'icon' => 'bi-people', 'label' => 'Clientes', 'is_route' => 'clientes.*', 'exact_route' => 'clientes.index'];
