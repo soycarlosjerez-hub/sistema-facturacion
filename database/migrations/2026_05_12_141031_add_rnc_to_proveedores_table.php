@@ -24,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('proveedores', function (Blueprint $table) {
-            $table->dropColumn('rnc_cedula');
+            if (Schema::hasColumn('proveedores', 'rnc_cedula')) {
+                $table->dropColumn('rnc_cedula');
+            }
         });
     }
 };

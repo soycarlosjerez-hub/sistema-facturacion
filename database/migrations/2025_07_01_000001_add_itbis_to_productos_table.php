@@ -24,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('productos', function (Blueprint $table) {
-            $table->dropColumn('itbis_porcentaje');
+            if (Schema::hasColumn('productos', 'itbis_porcentaje')) {
+                $table->dropColumn('itbis_porcentaje');
+            }
         });
     }
 };

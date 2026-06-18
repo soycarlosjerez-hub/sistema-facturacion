@@ -32,13 +32,28 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('compras', function (Blueprint $table) {
-            $table->dropColumn(['aplica_retencion_isr', 'aplica_retencion_itbis', 'retencion_isr', 'retencion_itbis', 'total_neto']);
+            $columns = ['aplica_retencion_isr', 'aplica_retencion_itbis', 'retencion_isr', 'retencion_itbis', 'total_neto'];
+            foreach ($columns as $column) {
+                if (Schema::hasColumn('compras', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
         Schema::table('ventas', function (Blueprint $table) {
-            $table->dropColumn(['retencion_isr', 'retencion_itbis']);
+            $columns = ['retencion_isr', 'retencion_itbis'];
+            foreach ($columns as $column) {
+                if (Schema::hasColumn('ventas', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
         Schema::table('proveedores', function (Blueprint $table) {
-            $table->dropColumn(['rnc', 'tipo_persona', 'sujeto_retencion_isr', 'sujeto_retencion_itbis']);
+            $columns = ['rnc', 'tipo_persona', 'sujeto_retencion_isr', 'sujeto_retencion_itbis'];
+            foreach ($columns as $column) {
+                if (Schema::hasColumn('proveedores', $column)) {
+                    $table->dropColumn($column);
+                }
+            }
         });
     }
 };
