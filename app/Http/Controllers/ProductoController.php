@@ -105,6 +105,10 @@ class ProductoController extends Controller
     protected function buildFilteredQuery(Request $request)
     {
         $query = Producto::query();
+        // Apply tenant isolation
+        if (auth()->check() && auth()->user()->business_instance_id !== null) {
+            $query->where('tenant_id', auth()->user()->business_instance_id);
+        }
 
         if ($request->filled('nombre')) {
             $termino = trim($request->nombre);

@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 
 class Producto extends Model
 {
-    use Auditable;
+    use Auditable, TenantScope;
     protected $fillable = [
         'categoria_id',
         'nombre',
@@ -24,6 +25,7 @@ class Producto extends Model
         'stock',
         'stock_minimo',
         'imagen',
+        'tenant_id',
     ];
 
     protected $casts = [
@@ -35,6 +37,9 @@ class Producto extends Model
     ];
 
     protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen'];
+    protected $attributes = [
+        'precio_compra' => 0,
+    ];
 
     public function categoria()
     {

@@ -40,14 +40,21 @@ class ProductoService
             };
         }
 
+        // Apply tenant filter for multi‑tenant isolation
+        if (auth()->check() && auth()->user()->business_instance_id !== null) {
+            $query->where('tenant_id', auth()->user()->business_instance_id);
+        }
+        // Paginate and return results
         return $query->latest()->paginate(10)->appends($filters);
     }
 
     public function create(array $data, ?UploadedFile $imagen = null): Producto
     {
-        if ($imagen) {
-            $data['imagen'] = $this->saveImage($imagen);
-        }
+        // Ensure product is scoped to the current tenant (business_instance_id)
+        $data['tenant_id'] = auth()->user()->business_instance_id;
+    if ($imagen) {
+        $data['imagen'] = $this->saveImage($imagen);
+    }
 
         $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? 18.00;
 
