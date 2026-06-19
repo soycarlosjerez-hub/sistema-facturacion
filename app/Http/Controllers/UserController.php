@@ -10,6 +10,8 @@ use App\Services\UserBusinessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserCreatedNotification;
 
 class UserController extends Controller
 {
@@ -98,18 +100,24 @@ class UserController extends Controller
             'role.required'      => 'Selecciona un rol.',
         ]);
 
+        // Capture plain password before hashing for email
+        $plainPassword = $request->password;
+
+        // Create user with hashed password
         $user = User::create([
-            'name'        => $request->name,
-            'email'       => $request->email,
-            'password'    => Hash::make($request->password),
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($plainPassword),
             'sucursal_id' => $request->sucursal_id,
-            // business_type_id is NOT set in creation
         ]);
 
         $user->assignRole($request->role);
         
         // Sync roles based on business type after creation
         UserBusinessService::syncRolesForUser($user);
+
+        // Send welcome email with credentials
+        Mail::to($user->email)->send(new UserCreatedNotification($user, $plainPassword));
 
         return redirect()->route('usuarios.index')
             ->with('success', "Usuario \"{$user->name}\" creado con rol " . ucfirst($request->role) . ".");
