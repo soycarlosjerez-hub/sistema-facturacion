@@ -3,14 +3,16 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 
 class Cliente extends Model
 {
-    use Auditable;
+    use Auditable, TenantScope;
+
     protected $fillable = [
         'nombre', 'email', 'telefono', 'direccion', 'rnc_cedula', 'rnc',
-        'tipo_documento', 'tipo_cliente', 'limite_credito', 'balance_pendiente',
+        'tipo_documento', 'tipo_cliente', 'limite_credito', 'balance_pendiente', 'tenant_id',
     ];
 
     protected $casts = [
@@ -18,6 +20,16 @@ class Cliente extends Model
         'balance_pendiente' => 'decimal:2',
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('tenant', function ($builder) {
+            if (auth()->check() && method_exists($builder->getModel(), 'getTenantIdColumn')) {
+                $builder->where('tenant_id', auth()->user()->tenant_id);
+            }
+        });
+    }
+
+    // Relationships
     public function ventas()
     {
         return $this->hasMany(Venta::class);
@@ -33,6 +45,7 @@ class Cliente extends Model
         return $this->hasMany(Conduce::class);
     }
 
+    // Helper to get or create the generic consumer client
     public static function consumidorFinal(): self
     {
         return static::firstOrCreate(
@@ -45,6 +58,7 @@ class Cliente extends Model
         );
     }
 
+    // Accessor for a pretty label
     public function getTipoClienteLabelAttribute(): string
     {
         $labels = [
@@ -56,6 +70,7 @@ class Cliente extends Model
         return $labels[$this->tipo_cliente ?? 'consumo'] ?? 'Consumo';
     }
 
+    // Accessor for badge colour class
     public function getColorBadgeAttribute(): string
     {
         $colors = [

@@ -3,20 +3,22 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 
 class Venta extends Model
 {
-    use Auditable;
+    use Auditable, TenantScope;
+
     protected $casts = [
-        'subtotal' => 'decimal:2',
-        'impuestos' => 'decimal:2',
-        'descuento' => 'decimal:2',
-        'propina' => 'decimal:2',
+        'subtotal'       => 'decimal:2',
+        'impuestos'      => 'decimal:2',
+        'descuento'      => 'decimal:2',
+        'propina'        => 'decimal:2',
         'cargo_servicio' => 'decimal:2',
-        'total' => 'decimal:2',
-        'delivery_fee' => 'decimal:2',
-        'fecha' => 'datetime',
+        'total'          => 'decimal:2',
+        'delivery_fee'   => 'decimal:2',
+        'fecha'          => 'datetime',
     ];
 
     protected $fillable = [
@@ -27,7 +29,17 @@ class Venta extends Model
         'fecha', 'subtotal', 'impuestos', 'descuento', 'total', 'estado',
         'descuento_tipo', 'descuento_motivo', 'notas', 'tipo_orden', 'propina',
         'delivery_company_id', 'delivery_fee', 'cargo_servicio', 'vehiculo_id',
+        'tenant_id',
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope('tenant', function ($builder) {
+            if (auth()->check()) {
+                $builder->where('tenant_id', auth()->user()->tenant_id);
+            }
+        });
+    }
 
     public function sucursal()
     {
@@ -63,6 +75,7 @@ class Venta extends Model
     {
         return $this->belongsTo(TipoVenta::class);
     }
+
     public function pagos()
     {
         return $this->hasMany(Pago::class);
