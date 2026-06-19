@@ -244,7 +244,7 @@ class PermissionSeeder extends Seeder
                 'owner.users.view',
                 'owner.users.manage',
                 
-                // System configuration (to change "Colmado Premium, etc.)
+                // System configuration (to change "Colmado Premium", etc.)
                 'configuracion.view',
                 'configuracion.edit',
                 
@@ -253,9 +253,39 @@ class PermissionSeeder extends Seeder
                 'backups.view',
                 'backups.create',
                 
-                // Reports (optional - for system oversight)
+                // Reports (for system oversight)
                 'reportes.view',
                 'reportes.export',
+                
+                // Business modules (to see sidebar sections)
+                'productos.view',
+                'listas-precio.view',
+                'compras.view',
+                'proveedores.view',
+                'kardex.view',
+                'ventas.view',
+                'ventas.create',
+                'ventas.anular',
+                'cotizaciones.view',
+                'cotizaciones.create',
+                'conduces.view',
+                'devoluciones.view',
+                'gastos.view',
+                'clientes.view',
+                'cobros.view',
+                'cajas.view',
+                'cajas.open',
+                'almacenes.view',
+                'almacenes.movements',
+                'lavadero.view',
+                'restaurante.view',
+                'sucursales.view',
+                'ncf.view',
+                'ecf.view',
+                'impresoras.view',
+                'payment-processors.view',
+                'usuarios.view',
+                'roles.view',
             ],
 
             'admin-business' => [

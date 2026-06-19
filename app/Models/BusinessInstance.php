@@ -67,6 +67,22 @@ class BusinessInstance extends Model
         return $this->hasOne(PagoInstancia::class, 'business_instance_id')->latestOfMany('mes_pagado');
     }
 
+    public function modules(): HasMany
+    {
+        return $this->hasMany(BusinessInstanceModule::class);
+    }
+
+    public function isModuloVisible(string $moduloKey): bool
+    {
+        // Check instance-level override first
+        $override = $this->modules()->where('modulo_key', $moduloKey)->first();
+        if ($override !== null) {
+            return $override->visible;
+        }
+        // Fallback to BusinessType level
+        return $this->businessType?->isModuloVisible($moduloKey) ?? false;
+    }
+
     public function getDefaultConfig(): array
     {
         $baseConfig = $this->businessType?->config ?? [];

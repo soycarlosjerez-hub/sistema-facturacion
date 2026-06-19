@@ -41,7 +41,7 @@ class Sidebar
 
 
         $visibles = BusinessType::getModulosVisibles($tipoNegocio);
-        $mod = fn(string $key) => in_array($key, $visibles);
+        $mod = fn(string $key) => $user->businessInstance?->isModuloVisible($key) ?? in_array($key, $visibles);
 
         $items = [];
 
