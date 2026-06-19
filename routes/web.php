@@ -189,6 +189,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');
 
         Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
+        Route::get('/categorias/create', [CategoriaController::class, 'create'])->name('categorias.create');
         Route::get('/categorias/{categoria}', [CategoriaController::class, 'show'])->name('categorias.show');
     });
 
@@ -197,7 +198,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/productos', [ProductoController::class, 'store'])->name('productos.store');
         Route::post('/productos/import', [ProductoController::class, 'import'])->name('productos.import.store');
 
-        Route::get('/categorias/create', [CategoriaController::class, 'create'])->name('categorias.create');
         Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store');
     });
 
