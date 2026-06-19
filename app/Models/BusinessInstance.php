@@ -80,7 +80,7 @@ class BusinessInstance extends Model
             return $override->visible;
         }
         // Fallback to BusinessType level
-        return $this->businessType?->isModuloVisible($moduloKey) ?? false;
+        return $this->businessType?->isModuloVisible($moduloKey, $this->businessType->slug) ?? false;
     }
 
     public function getDefaultConfig(): array
