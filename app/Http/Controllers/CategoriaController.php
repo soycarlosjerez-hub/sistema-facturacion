@@ -9,7 +9,12 @@ class CategoriaController extends Controller
 {
     public function index()
     {
-        $categorias = Categoria::withCount('productos')->orderBy('nombre')->paginate(10);
+        $query = Categoria::withCount('productos')->orderBy('nombre');
+        // Scope to current tenant
+        if (auth()->check() && auth()->user()->business_instance_id !== null) {
+            $query->where('tenant_id', auth()->user()->business_instance_id);
+        }
+        $categorias = $query->paginate(10);
         return view('categorias.index', compact('categorias'));
     }
 
@@ -27,6 +32,8 @@ class CategoriaController extends Controller
         ]);
 
         $data['activa'] = $request->boolean('activa', true);
+        // Assign to current tenant
+        $data['tenant_id'] = auth()->user()->business_instance_id;
 
         Categoria::create($data);
 
