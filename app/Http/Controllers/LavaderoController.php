@@ -151,6 +151,7 @@ class LavaderoController extends Controller
             }
 
             Pago::create([
+                'tenant_id' => auth()->user()->business_instance_id,
                 'venta_id' => $venta->id,
                 'caja_id' => $sesionActiva?->caja_id,
                 'sesion_caja_id' => $sesionActiva?->id,

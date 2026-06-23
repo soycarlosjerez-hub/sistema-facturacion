@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class Pago extends Model
 {
     use Auditable;
+    use TenantScope;
     protected $fillable = [
+        'tenant_id',
         'venta_id',
         'caja_id',
         'sesion_caja_id',

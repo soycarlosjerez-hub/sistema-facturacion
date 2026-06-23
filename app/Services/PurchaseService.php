@@ -308,7 +308,8 @@ class PurchaseService
         }
 
         AlmacenMovimiento::create([
-            'producto_id'       => $producto->id,
+            'tenant_id'          => Auth::user()->business_instance_id,
+            'producto_id'        => $producto->id,
             'detalle_compra_id'  => $detalle->id,
             'user_id'            => Auth::id(),
             'almacen_id'         => $compra->almacen_id,

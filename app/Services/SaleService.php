@@ -99,6 +99,7 @@ class SaleService
             foreach ($venta->detalles as $detalle) {
                 $almacenId = ($detalle->almacen_id > 0) ? $detalle->almacen_id : 1;
                 AlmacenMovimiento::create([
+                    'tenant_id'   => Auth::user()->business_instance_id,
                     'producto_id' => $detalle->producto_id,
                     'almacen_id'  => $almacenId,
                     'tipo'        => 'entrada',
@@ -269,6 +270,7 @@ class SaleService
             ]);
 
             AlmacenMovimiento::create([
+                'tenant_id'   => Auth::user()->business_instance_id,
                 'producto_id' => $productoId,
                 'almacen_id'  => $almacenId,
                 'tipo'        => 'salida',
@@ -292,6 +294,7 @@ class SaleService
         }
 
         Pago::create([
+            'tenant_id'      => Auth::user()->business_instance_id,
             'venta_id'       => $venta->id,
             'caja_id'        => $sesion->caja_id,
             'sesion_caja_id' => $sesion->id,

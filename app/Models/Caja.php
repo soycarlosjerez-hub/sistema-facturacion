@@ -5,11 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class Caja extends Model
 {
     use Auditable;
+    use TenantScope;
     protected $fillable = [
+        'tenant_id',
         'nombre',
         'codigo',
         'sucursal_id',

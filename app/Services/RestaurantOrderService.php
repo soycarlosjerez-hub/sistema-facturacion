@@ -212,6 +212,7 @@ class RestaurantOrderService
             }
     
             AlmacenMovimiento::create([
+                'tenant_id'   => Auth::user()->business_instance_id,
                 'producto_id' => $producto->id,
                 'almacen_id'  => $almacenId,
                 'tipo'        => 'salida',
@@ -387,6 +388,7 @@ class RestaurantOrderService
                 ] as $pago) {
                     if ($pago['monto'] > 0) {
                         Pago::create([
+                            'tenant_id'      => Auth::user()->business_instance_id,
                             'venta_id'       => $orden->id,
                             'caja_id'        => $sesion->caja_id,
                             'sesion_caja_id' => $sesion->id,
@@ -399,6 +401,7 @@ class RestaurantOrderService
                 }
             } else {
                 Pago::create([
+                    'tenant_id'      => Auth::user()->business_instance_id,
                     'venta_id'       => $orden->id,
                     'caja_id'        => $sesion->caja_id,
                     'sesion_caja_id' => $sesion->id,
@@ -459,6 +462,7 @@ class RestaurantOrderService
             foreach ($orden->detalles as $detalle) {
                 $detalle->producto->increment('stock', $detalle->cantidad);
                 AlmacenMovimiento::create([
+                    'tenant_id'   => Auth::user()->business_instance_id,
                     'producto_id' => $detalle->producto_id,
                     'almacen_id'  => $detalle->almacen_id,
                     'tipo'        => 'entrada',
@@ -553,6 +557,7 @@ class RestaurantOrderService
         DB::beginTransaction();
         try {
             $sesion = SesionCaja::create([
+                'tenant_id'      => Auth::user()->business_instance_id,
                 'caja_id'        => $caja->id,
                 'user_id'        => Auth::id(),
                 'fecha_apertura' => now(),
@@ -572,6 +577,7 @@ class RestaurantOrderService
     public function crearCaja(string $nombre, ?string $codigo, ?string $ubicacion): Caja
     {
         return Caja::create([
+            'tenant_id'    => Auth::user()->business_instance_id,
             'nombre'       => $nombre,
             'codigo'       => $codigo,
             'ubicacion'    => $ubicacion,

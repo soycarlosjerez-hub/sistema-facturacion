@@ -100,6 +100,7 @@ class AlmacenService
         DB::beginTransaction();
         try {
             AlmacenMovimiento::create([
+                'tenant_id'   => Auth::user()->business_instance_id,
                 'producto_id' => $data['producto_id'],
                 'almacen_id'  => $data['almacen_id'],
                 'user_id'     => Auth::id(),
@@ -146,6 +147,7 @@ class AlmacenService
         DB::beginTransaction();
         try {
             AlmacenMovimiento::create([
+                'tenant_id'   => Auth::user()->business_instance_id,
                 'producto_id' => $data['producto_id'],
                 'almacen_id'  => $data['almacen_origen_id'],
                 'user_id'     => Auth::id(),
@@ -155,6 +157,7 @@ class AlmacenService
             ]);
 
             AlmacenMovimiento::create([
+                'tenant_id'   => Auth::user()->business_instance_id,
                 'producto_id' => $data['producto_id'],
                 'almacen_id'  => $data['almacen_destino_id'],
                 'user_id'     => Auth::id(),

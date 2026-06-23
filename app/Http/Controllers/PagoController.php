@@ -45,6 +45,7 @@ class PagoController extends Controller
                 ->first();
 
             $pago = Pago::create([
+                'tenant_id'      => Auth::user()->business_instance_id,
                 'venta_id'       => $venta->id,
                 'caja_id'        => $sesion?->caja_id ?? $venta->caja_id,
                 'sesion_caja_id' => $sesion?->id ?? $venta->sesion_caja_id,

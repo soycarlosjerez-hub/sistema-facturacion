@@ -5,16 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class Almacen extends Model
 {
     use HasFactory;
     use Auditable;
+    use TenantScope;
 
-    protected $table = 'almacenes'; // o el nombre que usaste en la base de datos
+    protected $table = 'almacenes';
 
 
-    protected $fillable = ['nombre', 'ubicacion', 'sucursal_id'];
+    protected $fillable = ['tenant_id', 'nombre', 'ubicacion', 'sucursal_id'];
 
     public function movimientos()
     {

@@ -4,14 +4,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class AlmacenMovimiento extends Model
 {
     use HasFactory;
     use Auditable;
+    use TenantScope;
 
     protected $fillable = [
-        'producto_id', 'detalle_compra_id', 'user_id', 'almacen_id', 'tipo', 'cantidad', 'nota'
+        'tenant_id', 'producto_id', 'detalle_compra_id', 'user_id', 'almacen_id', 'tipo', 'cantidad', 'nota'
     ];
 
     public function producto()
