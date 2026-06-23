@@ -498,7 +498,7 @@ class OwnerController extends Controller
                 'almacen_movimientos', 'almacenes',
                 'ncf_sequences', 'secuencias_ecf',
                 'lavadero_citas', 'lavadero_servicios', 'lavadores',
-                'sesiones_caja', 'cajas',
+                'sesion_cajas', 'cajas',
                 'mesas', 'mesa_categorias', 'reservaciones',
                 'waitlist_entries',
                 'lista_precio_items', 'lista_precios',
