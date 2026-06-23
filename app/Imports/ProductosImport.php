@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\Categoria;
 use App\Models\Producto;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -21,7 +22,19 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation
             'itbis_porcentaje' => $row['itbis_porcentaje'] ?? 18,
             'stock'            => $row['stock'] ?? 0,
             'imagen'           => $row['imagen'] ?? null,
+            'categoria_id'     => $this->resolveCategoryId($row['categoria'] ?? $row['categoria_id'] ?? null),
         ]);
+    }
+
+    private function resolveCategoryId($value): ?int
+    {
+        if (!$value) return null;
+        if (is_numeric($value)) {
+            $cat = Categoria::find((int) $value);
+            return $cat?->id;
+        }
+        $cat = Categoria::where('nombre', $value)->first();
+        return $cat?->id;
     }
 
     public function rules(): array

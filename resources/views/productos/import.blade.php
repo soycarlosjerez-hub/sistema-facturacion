@@ -54,8 +54,9 @@
                 <div class="card-body p-4">
                     <h6 class="fw-bold mb-3"><i class="bi bi-info-circle text-info me-1"></i>Formato del archivo</h6>
                     <p class="text-muted small mb-2">El archivo debe contener las siguientes columnas en la primera fila (cabecera):</p>
-                    <code class="d-block bg-light p-2 rounded small">nombre, codigo_barras, descripcion, precio, precio_compra, unidad_medida, itbis_porcentaje, stock, imagen</code>
-                    <p class="text-muted small mt-3 mb-0"><strong>Nota:</strong> Los productos se identifican por <code>nombre</code>. Si un producto ya existe, se actualizará.</p>
+                    <code class="d-block bg-light p-2 rounded small">nombre, codigo_barras, descripcion, precio, precio_compra, unidad_medida, itbis_porcentaje, stock, imagen, categoria</code>
+                    <p class="text-muted small mt-3 mb-2"><strong>Nota:</strong> Los productos se identifican por <code>nombre</code>. Si un producto ya existe, se actualizará.</p>
+                    <p class="text-muted small mb-0">Columna <code>categoria</code> (opcional): puede ser el ID numérico o el nombre exacto de la categoría.</p>
                 </div>
             </div>
         </div>
