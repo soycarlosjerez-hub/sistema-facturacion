@@ -25,8 +25,16 @@ class CategoriaController extends Controller
 
     public function store(Request $request)
     {
+        $tenantId = auth()->user()->business_instance_id;
+        $nombreRules = 'required|string|max:100';
+        if ($tenantId) {
+            $nombreRules .= '|unique:categorias,nombre,NULL,id,tenant_id,' . $tenantId;
+        } else {
+            $nombreRules .= '|unique:categorias,nombre';
+        }
+
         $data = $request->validate([
-            'nombre'      => 'required|string|max:100|unique:categorias,nombre,NULL,id,tenant_id,' . auth()->user()->business_instance_id,
+            'nombre'      => $nombreRules,
             'descripcion' => 'nullable|string|max:255',
             'activa'      => 'boolean',
         ]);
@@ -54,8 +62,16 @@ class CategoriaController extends Controller
 
     public function update(Request $request, Categoria $categoria)
     {
+        $tenantId = auth()->user()->business_instance_id;
+        $nombreRules = 'required|string|max:100';
+        if ($tenantId) {
+            $nombreRules .= '|unique:categorias,nombre,' . $categoria->id . ',id,tenant_id,' . $tenantId;
+        } else {
+            $nombreRules .= '|unique:categorias,nombre,' . $categoria->id;
+        }
+
         $data = $request->validate([
-            'nombre'      => 'required|string|max:100|unique:categorias,nombre,' . $categoria->id . ',id,tenant_id,' . auth()->user()->business_instance_id,
+            'nombre'      => $nombreRules,
             'descripcion' => 'nullable|string|max:255',
             'activa'      => 'boolean',
         ]);
