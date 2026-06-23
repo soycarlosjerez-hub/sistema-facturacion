@@ -32,15 +32,6 @@ class Venta extends Model
         'tenant_id',
     ];
 
-    protected static function booted()
-    {
-        static::addGlobalScope('tenant', function ($builder) {
-            if (auth()->check()) {
-                $builder->where('tenant_id', auth()->user()->tenant_id);
-            }
-        });
-    }
-
     public function sucursal()
     {
         return $this->belongsTo(Sucursal::class);

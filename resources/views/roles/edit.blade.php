@@ -219,14 +219,7 @@
                     @endif
                 </div>
             @endif
-            <div class="d-flex gap-2">
-                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4">
-                    <i class="bi bi-x-lg me-1"></i>Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-                    <i class="bi bi-check-lg me-1"></i>Guardar Cambios
-                </button>
-            </div>
+
         </div>
     </form>
 </div>

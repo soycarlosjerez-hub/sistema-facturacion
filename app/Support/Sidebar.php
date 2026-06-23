@@ -14,7 +14,7 @@ class Sidebar
             return [];
         }
 
-        $isAdmin = $user->hasRole('admin') || $user->hasRole('admin-business');
+        $isAdmin = $user->hasRole('admin') || $user->hasRole('admin-business') || $user->hasRole('root');
         $can = fn(string $p) => $isAdmin || $user->can($p);
 
         ///dd(session('business_type_slug'));
@@ -41,7 +41,9 @@ class Sidebar
 
 
         $visibles = BusinessType::getModulosVisibles($tipoNegocio);
-        $mod = fn(string $key) => $user->businessInstance?->isModuloVisible($key) ?? in_array($key, $visibles);
+        $mod = fn(string $key) => $user->instanceRole
+            ? $user->instanceRole->isModuloVisible($key)
+            : ($user->businessInstance?->isModuloVisible($key) ?? in_array($key, $visibles));
 
         $items = [];
 
@@ -76,6 +78,15 @@ class Sidebar
                     'exact_route' => 'owner.business-types.index',
                 ];
             }
+            if ($user->can('owner.business-types.view')) {
+                $items[] = [
+                    'route' => 'owner.modules.index',
+                    'icon'  => 'bi-grid',
+                    'label' => 'Módulos',
+                    'is_route' => 'owner.modules.*',
+                    'exact_route' => 'owner.modules.index',
+                ];
+            }
             if ($user->can('owner.roles.manage')) {
                 $items[] = [
                     'route' => 'owner.roles.index',
@@ -95,6 +106,12 @@ class Sidebar
             'label' => 'Dashboard',
             'show'  => $can('dashboard.view'),
             'exact_route' => 'dashboard',
+        ];
+        $items[] = [
+            'route' => 'profile.edit',
+            'icon'  => 'bi-key',
+            'label' => 'Cambiar Contraseña',
+            'is_route' => 'profile.edit',
         ];
 
         // Inventario
@@ -283,7 +300,8 @@ class Sidebar
         }
 
         // Reportes
-        if ($can('reportes.view')) {
+        $hasReportes = $mod('reportes-ventas') || $mod('reportes-compras') || $mod('reportes-stock') || $mod('reportes-utilidades') || $mod('reportes-caja') || $mod('reportes-restaurante') || $mod('reportes-retenciones') || $mod('reportes-fiscales') || $mod('reportes-resumen');
+        if ($hasReportes && $can('reportes.view')) {
             $items[] = ['section' => 'Reportes'];
             $items[] = [
                 'route' => 'reportes.index',
@@ -324,53 +342,58 @@ class Sidebar
             }
         }
 
-        // Sistema
-        if ($can('auditoria.view') || $can('backups.view')) {
+        // Sistema — cuando hay InstanceRole, requiere el módulo asignado
+        $hasSis = fn(string $k) => $user->instance_role_id ? $mod($k) : true;
+        if (
+            ($hasSis('auditoria') && $can('auditoria.view')) ||
+            ($hasSis('backups') && $can('backups.view'))
+        ) {
             $items[] = ['section' => 'Sistema'];
-            if ($can('auditoria.view')) {
+            if ($hasSis('auditoria') && $can('auditoria.view')) {
                 $items[] = ['route' => 'audit-logs.index', 'icon' => 'bi-journal-text', 'label' => 'Auditoría', 'is_route' => 'audit-logs.*', 'exact_route' => 'audit-logs.index'];
             }
-            if ($can('backups.view')) {
+            if ($hasSis('backups') && $can('backups.view')) {
                 $items[] = ['route' => 'backups.index', 'icon' => 'bi-cloud-arrow-down', 'label' => 'Backups', 'is_route' => 'backups.*', 'exact_route' => 'backups.index'];
             }
         }
 
-        // Configuración
-        if ($can('ncf.view') || $can('ecf.view') || $can('configuracion.view') || $can('usuarios.view') || $can('roles.view') || $can('payment-processors.view')) {
+        // Configuración — cuando hay InstanceRole, requiere el módulo asignado
+        $hasConf = fn(string $k) => $user->instance_role_id ? $mod($k) : true;
+        if (
+            ($hasConf('ncf') && $can('ncf.view')) ||
+            ($hasConf('ecf') && $can('ecf.view')) ||
+            ($hasConf('payment-processors') && $can('payment-processors.view')) ||
+            ($hasConf('delivery-companies') && $can('delivery-companies.view')) ||
+            ($hasConf('impresoras') && $can('impresoras.view')) ||
+            ($hasConf('configuracion-general') && $can('configuracion.view'))
+        ) {
             $items[] = ['section' => 'Configuración'];
-            if ($can('ncf.view')) {
+            if ($hasConf('ncf') && $can('ncf.view')) {
                 $items[] = ['route' => 'ncf.index', 'icon' => 'bi-receipt-cutoff', 'label' => 'Comprobantes (NCF)', 'is_route' => 'ncf.*', 'exact_route' => 'ncf.index'];
             }
-            if ($can('ecf.view')) {
+            if ($hasConf('ecf') && $can('ecf.view')) {
                 $items[] = ['route' => 'ecf.index', 'icon' => 'bi-shield-check', 'label' => 'e-CF (DGII)', 'is_route' => 'ecf.*', 'exact_route' => 'ecf.index'];
             }
-            if ($can('ecf.manage')) {
+            if ($hasConf('secuencias-ecf') && $can('ecf.manage')) {
                 $items[] = ['route' => 'secuencias-ecf.index', 'icon' => 'bi-hash', 'label' => 'Secuencias e-CF', 'is_route' => 'secuencias-ecf.*', 'exact_route' => 'secuencias-ecf.index'];
             }
-            if ($can('ecf.certificados')) {
+            if ($hasConf('certificados-digitales') && $can('ecf.certificados')) {
                 $items[] = ['route' => 'certificados-digitales.index', 'icon' => 'bi-key', 'label' => 'Certificados Digitales', 'is_route' => 'certificados-digitales.*', 'exact_route' => 'certificados-digitales.index'];
             }
-            if ($can('payment-processors.view')) {
+            if ($hasConf('payment-processors') && $can('payment-processors.view')) {
                 $items[] = ['route' => 'payment-processors.index', 'icon' => 'bi-credit-card', 'label' => 'Procesadores de Pago', 'is_route' => 'payment-processors.*', 'exact_route' => 'payment-processors.index'];
             }
-            if ($can('delivery-companies.view')) {
+            if ($hasConf('delivery-companies') && $can('delivery-companies.view')) {
                 $items[] = ['route' => 'delivery-companies.index', 'icon' => 'bi-truck', 'label' => 'Delivery Companies', 'is_route' => 'delivery-companies.*', 'exact_route' => 'delivery-companies.index'];
             }
-            if ($can('impresoras.view')) {
+            if ($hasConf('impresoras') && $can('impresoras.view')) {
                 $items[] = ['route' => 'impresoras.index', 'icon' => 'bi-printer', 'label' => 'Impresoras', 'is_route' => 'impresoras.*', 'exact_route' => 'impresoras.index'];
             }
-            if ($can('configuracion.view')) {
+            if ($hasConf('configuracion-general') && $can('configuracion.view')) {
                 $items[] = ['route' => 'configuracion.index', 'icon' => 'bi-sliders', 'label' => 'Parámetros', 'is_route' => 'configuracion.*', 'exact_route' => 'configuracion.index'];
                 $items[] = ['route' => 'configuracion.index', 'url' => route('configuracion.index') . '#correo-smtp', 'icon' => 'bi-envelope-at', 'label' => 'Correo SMTP', 'is_route' => 'configuracion.index', 'exact_route' => 'configuracion.index'];
             }
-            $items[] = ['route' => 'profile.edit', 'icon' => 'bi-key', 'label' => 'Cambiar Contraseña', 'is_route' => 'profile.edit'];
         }
-        // Instance admin navigation
-        if (auth()->user() && auth()->user()->hasRole('admin-business')) {
-            // Instance admin navigation removed
-
-        }
-
         return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
     }
 }

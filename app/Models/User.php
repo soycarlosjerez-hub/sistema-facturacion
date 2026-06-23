@@ -27,6 +27,7 @@ class User extends Authenticatable
         'sucursal_id',
         'business_type_id',
         'business_instance_id',
+        'instance_role_id',
     ];
 
     /**
@@ -65,6 +66,11 @@ class User extends Authenticatable
     public function businessInstance()
     {
         return $this->belongsTo(BusinessInstance::class);
+    }
+
+    public function instanceRole()
+    {
+        return $this->belongsTo(InstanceRole::class);
     }
 
     protected function getAuditableIgnored(): array

@@ -538,6 +538,13 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/business-types/{type}/edit', [\App\Http\Controllers\OwnerController::class, 'businessTypesEdit'])->name('business-types.edit');
     Route::put('/business-types/{type}', [\App\Http\Controllers\OwnerController::class, 'businessTypesUpdate'])->name('business-types.update');
     Route::delete('/business-types/{type}', [\App\Http\Controllers\OwnerController::class, 'businessTypesDestroy'])->name('business-types.destroy');
+    // Module management
+    Route::get('/modules', [\App\Http\Controllers\OwnerController::class, 'modulesIndex'])->name('modules.index');
+    Route::get('/modules/create', [\App\Http\Controllers\OwnerController::class, 'modulesCreate'])->name('modules.create');
+    Route::post('/modules', [\App\Http\Controllers\OwnerController::class, 'modulesStore'])->name('modules.store');
+    Route::get('/modules/{module}/edit', [\App\Http\Controllers\OwnerController::class, 'modulesEdit'])->name('modules.edit');
+    Route::put('/modules/{module}', [\App\Http\Controllers\OwnerController::class, 'modulesUpdate'])->name('modules.update');
+    Route::delete('/modules/{module}', [\App\Http\Controllers\OwnerController::class, 'modulesDestroy'])->name('modules.destroy');
     Route::get('/instances', [\App\Http\Controllers\OwnerController::class, 'instances'])->name('instances.index');
     Route::get('/instances/create', [\App\Http\Controllers\OwnerController::class, 'instancesCreate'])->name('instances.create');
     Route::post('/instances', [\App\Http\Controllers\OwnerController::class, 'instancesStore'])->name('instances.store');
@@ -557,6 +564,13 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/instances/{instance}/users/{user}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceUserEdit'])->name('instances.users.edit');
     Route::put('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserUpdate'])->name('instances.users.update');
     Route::delete('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserDestroy'])->name('instances.users.destroy');
+    // Instance role management
+    Route::get('/instances/{instance}/roles', [\App\Http\Controllers\OwnerController::class, 'instanceRoles'])->name('instances.roles');
+    Route::get('/instances/{instance}/roles/create', [\App\Http\Controllers\OwnerController::class, 'instanceRolesCreate'])->name('instances.roles.create');
+    Route::post('/instances/{instance}/roles', [\App\Http\Controllers\OwnerController::class, 'instanceRolesStore'])->name('instances.roles.store');
+    Route::get('/instances/{instance}/roles/{role}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceRolesEdit'])->name('instances.roles.edit');
+    Route::put('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesUpdate'])->name('instances.roles.update');
+    Route::delete('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesDestroy'])->name('instances.roles.destroy');
     // Owner role management (reuses RoleController)
     Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('roles.create');

@@ -2,20 +2,7 @@
 @section('title', 'Nuevo Usuario - ' . $instance->nombre)
 @section('content')
 @php
-    $roleIcons = [
-        'admin' => ['bi-shield-lock', 'danger'], 'gerente' => ['bi-briefcase', 'primary'],
-        'vendedor' => ['bi-cart3', 'success'], 'almacen' => ['bi-box-seam', 'warning'],
-        'contador' => ['bi-calculator', 'info'],
-        'supervisor' => ['bi-eye', 'purple'], 'administrativo' => ['bi-folder2-open', 'teal'],
-        'mesero' => ['bi-person', 'orange'], 'cocinero' => ['bi-fire', 'danger'],
-        'delivery' => ['bi-truck', 'info'], 'bartender' => ['bi-cup-hot', 'purple'],
-        'lavador' => ['bi-droplet', 'cyan'], 'recepcionista' => ['bi-headset', 'indigo'],
-        'inspector' => ['bi-search', 'warning'],
-        'cajero' => ['bi-cash-register', 'success'], 'reponedor' => ['bi-boxes', 'orange'],
-        'despachador' => ['bi-truck', 'secondary'], 'vendedor-mayorista' => ['bi-people', 'primary'],
-        'consultor' => ['bi-chat-dots', 'secondary'], 'facturador' => ['bi-file-earmark-text', 'pink'],
-        'owner' => ['bi-shield-shaded', 'danger'], 'root' => ['bi-key-fill', 'dark'], 'admin-business' => ['bi-building-fill-lock', 'primary']
-    ];
+    $hasInstanceRoles = $instanceRoles->isNotEmpty();
 @endphp
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -61,30 +48,21 @@
                             </div>
                         </div>
 
+                        @if($hasInstanceRoles)
                         <div class="mb-4">
-                            <label class="form-label fw-bold small">Rol <span class="text-danger">*</span></label>
-                            <div class="row g-2">
-                                @php $allRoles = \Spatie\Permission\Models\Role::orderBy('name')->get(); @endphp
-                                 @foreach($allRoles as $rol)
-                                      @php
-                                          $roleName = $rol->name;
-                                          $icon = $roleIcons[$roleName][0] ?? 'bi-person';
-                                          $color = $roleIcons[$roleName][1] ?? 'primary';
-                                      @endphp
-                                    <div class="col-md-6">
-                                        <label class="role-card d-block rounded-3 border p-3 {{ old('role') === $roleName ? 'border-'.$color.' bg-'.$color.' bg-opacity-10' : 'border-light' }}" style="cursor:pointer;" onclick="selectRole(this, '{{ $roleName }}')">
-                                            <div class="form-check">
-                                                <input type="radio" name="role" value="{{ $roleName }}" class="form-check-input role-input" id="role_{{ $roleName }}" {{ old('role') === $roleName ? 'checked' : '' }} required>
-                                                <label class="form-check-label fw-bold" for="role_{{ $roleName }}">
-                                                    <i class="bi {{ $icon }} text-{{ $color }} me-2"></i>{{ $rol->name }}
-                                                </label>
-                                            </div>
-                                        </label>
-                                    </div>
+                            <label class="form-label fw-bold small">Rol de Instancia (módulos visibles)</label>
+                            <select name="instance_role_id" class="form-select rounded-pill @error('instance_role_id') is-invalid @enderror">
+                                <option value="">— Sin rol de instancia (usa configuración del tipo de negocio) —</option>
+                                @foreach($instanceRoles as $ir)
+                                <option value="{{ $ir->id }}" {{ old('instance_role_id') == $ir->id ? 'selected' : '' }}>
+                                    {{ $ir->name }} ({{ $ir->visibleModules()->count() }} módulos)
+                                </option>
                                 @endforeach
-                            </div>
-                            @error('role') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                            </select>
+                            <small class="text-muted">Define qué módulos ve este usuario en el sidebar. Si no seleccionas, se usará la configuración del tipo de negocio.</small>
+                            @error('instance_role_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
+                        @endif
 
                         <hr>
                         <div class="d-flex justify-content-between">
@@ -101,20 +79,4 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-function selectRole(el, role) {
-    const colorMap = {gerente:'primary', admin:'danger', vendedor:'success', almacen:'warning', contador:'info', supervisor:'purple', administrativo:'teal', mesero:'orange', cocinero:'danger', delivery:'info', bartender:'purple', lavador:'cyan', recepcionista:'indigo', inspector:'warning', cajero:'success', reponedor:'orange', despachador:'secondary', ['vendedor-mayorista']:'primary', consultor:'secondary', facturador:'pink'};
-    document.querySelectorAll('.role-card').forEach(c => {
-        ['primary','danger','success','warning','info','purple','teal','orange','cyan','indigo','secondary','pink'].forEach(cl => {
-            c.classList.remove('border-'+cl, 'bg-'+cl, 'bg-opacity-10');
-        });
-        c.classList.add('border-light');
-    });
-    const c = colorMap[role] || 'primary';
-    el.classList.remove('border-light');
-    el.classList.add('border-'+c, 'bg-'+c, 'bg-opacity-10');
-    document.getElementById('role_' + role).checked = true;
-}
-</script>
-@endpush
+

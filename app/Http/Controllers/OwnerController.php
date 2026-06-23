@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
+use App\Models\InstanceRole;
+use App\Models\InstanceRoleModule;
 use App\Models\Modulo;
 use App\Models\PagoInstancia;
 use App\Models\SystemSetting;
@@ -200,6 +202,96 @@ class OwnerController extends Controller
 
         return redirect()->route('owner.business-types.index')
             ->with('success', 'Tipo de negocio actualizado correctamente.');
+    }
+
+    // ─── Módulos CRUD ────────────────────────────────────────────────
+
+    public function modulesIndex()
+    {
+        $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+        $modulos = Modulo::orderBy('categoria')->orderBy('orden')->get();
+        return view('owner.modules.index', compact('modulos', 'categorias'));
+    }
+
+    public function modulesCreate()
+    {
+        $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+        return view('owner.modules.form', compact('categorias'));
+    }
+
+    public function modulesStore(Request $request)
+    {
+        $data = $request->validate([
+            'key' => 'required|string|max:50|unique:modulos,key',
+            'label' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:100',
+            'categoria' => 'required|string|max:50',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'boolean',
+        ]);
+
+        Modulo::create([
+            'key' => $data['key'],
+            'label' => $data['label'],
+            'icon' => $data['icon'] ?? 'bi-circle',
+            'categoria' => $data['categoria'],
+            'orden' => $data['orden'] ?? 0,
+            'activo' => $request->boolean('activo', true),
+        ]);
+
+        return redirect()->route('owner.modules.index')
+            ->with('success', "Módulo \"{$data['label']}\" creado correctamente.");
+    }
+
+    public function modulesEdit($id)
+    {
+        $modulo = Modulo::findOrFail($id);
+        $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+        return view('owner.modules.form', compact('modulo', 'categorias'));
+    }
+
+    public function modulesUpdate(Request $request, $id)
+    {
+        $modulo = Modulo::findOrFail($id);
+
+        $data = $request->validate([
+            'key' => 'required|string|max:50|unique:modulos,key,' . $modulo->id,
+            'label' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:100',
+            'categoria' => 'required|string|max:50',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'boolean',
+        ]);
+
+        $modulo->update([
+            'key' => $data['key'],
+            'label' => $data['label'],
+            'icon' => $data['icon'] ?? 'bi-circle',
+            'categoria' => $data['categoria'],
+            'orden' => $data['orden'] ?? 0,
+            'activo' => $request->boolean('activo', true),
+        ]);
+
+        return redirect()->route('owner.modules.index')
+            ->with('success', "Módulo \"{$modulo->label}\" actualizado correctamente.");
+    }
+
+    public function modulesDestroy($id)
+    {
+        $modulo = Modulo::findOrFail($id);
+
+        $typesCount = BusinessTypeModule::where('modulo_key', $modulo->key)->count();
+        $instanceRolesCount = InstanceRoleModule::where('modulo_key', $modulo->key)->count();
+        $instanceOverrideCount = \App\Models\BusinessInstanceModule::where('modulo_key', $modulo->key)->count();
+
+        if ($typesCount > 0 || $instanceRolesCount > 0 || $instanceOverrideCount > 0) {
+            return back()->with('error', "No se puede eliminar \"{$modulo->label}\" porque está en uso por {$typesCount} tipo(s) de negocio, {$instanceRolesCount} role(s) de instancia y {$instanceOverrideCount} instancia(s). Desactívelo en su lugar.");
+        }
+
+        $modulo->delete();
+
+        return redirect()->route('owner.modules.index')
+            ->with('success', "Módulo \"{$modulo->label}\" eliminado.");
     }
 
     public function instances()
@@ -452,33 +544,33 @@ class OwnerController extends Controller
     public function instanceUserCreate($id)
     {
         $instance = BusinessInstance::with('businessType')->findOrFail($id);
-        return view('owner.instances.users.create', compact('instance'));
+        $instanceRoles = InstanceRole::where('business_instance_id', $instance->id)->orderBy('name')->get();
+        return view('owner.instances.users.create', compact('instance', 'instanceRoles'));
     }
 
     public function instanceUserStore(Request $request, $id)
     {
         $instance = BusinessInstance::with('businessType')->findOrFail($id);
 
-        $allRoles = \Spatie\Permission\Models\Role::pluck('name')->toArray();
-
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'role' => ['required', 'string', Rule::in($allRoles)],
+            'instance_role_id' => 'nullable|exists:instance_roles,id',
         ]);
 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => $data['role'],
+            'role' => 'admin-business',
             'business_type_id' => $instance->businessType?->id,
             'business_instance_id' => $instance->id,
+            'instance_role_id' => $data['instance_role_id'] ?? null,
             'sucursal_id' => null,
         ]);
 
-        $user->assignRole($data['role']);
+        $user->assignRole('admin-business');
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', "Usuario {$user->name} creado correctamente para {$instance->nombre}.");
@@ -488,8 +580,9 @@ class OwnerController extends Controller
     {
         $instance = BusinessInstance::findOrFail($id);
         $user = User::where('business_instance_id', $instance->id)->findOrFail($userId);
+        $instanceRoles = InstanceRole::where('business_instance_id', $instance->id)->orderBy('name')->get();
 
-        return view('owner.instances.users.edit', compact('instance', 'user'));
+        return view('owner.instances.users.edit', compact('instance', 'user', 'instanceRoles'));
     }
 
     public function instanceUserUpdate(Request $request, $id, $userId)
@@ -497,25 +590,22 @@ class OwnerController extends Controller
         $instance = BusinessInstance::findOrFail($id);
         $user = User::where('business_instance_id', $instance->id)->findOrFail($userId);
 
-        $allRoles = \Spatie\Permission\Models\Role::pluck('name')->toArray();
-
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6|confirmed',
-            'role' => ['required', 'string', Rule::in($allRoles)],
+            'instance_role_id' => 'nullable|exists:instance_roles,id',
         ]);
 
         $user->name = $data['name'];
         $user->email = $data['email'];
-        $user->role = $data['role'];
+        $user->instance_role_id = $data['instance_role_id'] ?? null;
 
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
 
         $user->save();
-        $user->syncRoles([$data['role']]);
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Usuario actualizado correctamente.');
@@ -536,6 +626,114 @@ class OwnerController extends Controller
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', "Usuario {$name} eliminado de {$instance->nombre}.");
+    }
+
+    // ─── Instance Roles CRUD ─────────────────────────────────────────
+
+    public function instanceRoles($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $roles = InstanceRole::where('business_instance_id', $instance->id)
+            ->withCount('users')
+            ->orderBy('name')
+            ->get();
+        return view('owner.instances.roles.index', compact('instance', 'roles'));
+    }
+
+    public function instanceRolesCreate($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $modulos = Modulo::allActive()->groupBy('categoria');
+        $totalModulos = Modulo::allActive()->count();
+        return view('owner.instances.roles.create', compact('instance', 'modulos', 'totalModulos'));
+    }
+
+    public function instanceRolesStore(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'modulos' => 'nullable|array',
+            'modulos.*' => 'string|exists:modulos,key',
+        ]);
+
+        $existing = InstanceRole::where('business_instance_id', $instance->id)
+            ->where('name', $data['name'])->exists();
+        if ($existing) {
+            return back()->withInput()->with('error', 'Ya existe un rol con ese nombre en esta instancia.');
+        }
+
+        $role = InstanceRole::create([
+            'business_instance_id' => $instance->id,
+            'name' => $data['name'],
+        ]);
+
+        if (!empty($data['modulos'])) {
+            $role->syncModules($data['modulos']);
+        }
+
+        return redirect()->route('owner.instances.roles', $instance)
+            ->with('success', "Rol '{$role->name}' creado correctamente.");
+    }
+
+    public function instanceRolesEdit($id, $roleId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $role = InstanceRole::where('business_instance_id', $instance->id)
+            ->with('modules')->findOrFail($roleId);
+        $modulos = Modulo::allActive()->groupBy('categoria');
+        $totalModulos = Modulo::allActive()->count();
+        $selectedModulos = $role->modules->where('is_visible', true)->pluck('modulo_key')->toArray();
+        return view('owner.instances.roles.edit', compact('instance', 'role', 'modulos', 'totalModulos', 'selectedModulos'));
+    }
+
+    public function instanceRolesUpdate(Request $request, $id, $roleId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $role = InstanceRole::where('business_instance_id', $instance->id)
+            ->findOrFail($roleId);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'modulos' => 'nullable|array',
+            'modulos.*' => 'string|exists:modulos,key',
+        ]);
+
+        $existing = InstanceRole::where('business_instance_id', $instance->id)
+            ->where('name', $data['name'])
+            ->where('id', '!=', $role->id)->exists();
+        if ($existing) {
+            return back()->withInput()->with('error', 'Ya existe otro rol con ese nombre en esta instancia.');
+        }
+
+        $role->update(['name' => $data['name']]);
+
+        if (!empty($data['modulos'])) {
+            $role->syncModules($data['modulos']);
+        } else {
+            $role->modules()->delete();
+        }
+
+        return redirect()->route('owner.instances.roles', $instance)
+            ->with('success', "Rol '{$role->name}' actualizado correctamente.");
+    }
+
+    public function instanceRolesDestroy($id, $roleId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $role = InstanceRole::where('business_instance_id', $instance->id)
+            ->findOrFail($roleId);
+
+        if ($role->users()->count() > 0) {
+            return back()->with('error', 'No puedes eliminar un rol que tiene usuarios asignados.');
+        }
+
+        $name = $role->name;
+        $role->delete();
+
+        return redirect()->route('owner.instances.roles', $instance)
+            ->with('success', "Rol '{$name}' eliminado correctamente.");
     }
 
     /**

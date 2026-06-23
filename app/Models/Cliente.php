@@ -20,15 +20,6 @@ class Cliente extends Model
         'balance_pendiente' => 'decimal:2',
     ];
 
-    protected static function booted()
-    {
-        static::addGlobalScope('tenant', function ($builder) {
-            if (auth()->check() && method_exists($builder->getModel(), 'getTenantIdColumn')) {
-                $builder->where('tenant_id', auth()->user()->tenant_id);
-            }
-        });
-    }
-
     // Relationships
     public function ventas()
     {

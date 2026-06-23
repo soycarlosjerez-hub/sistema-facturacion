@@ -20,7 +20,8 @@ class DashboardService
 {
     public function getKpis(string $startDate = null, string $endDate = null): array
     {
-        $cacheKey = sprintf('dashboard_kpis_%s_%s', $startDate ?? 'default', $endDate ?? 'default');
+        $instanceId = auth()->user()->business_instance_id ?? 'global';
+        $cacheKey = sprintf('dashboard_kpis_%s_%s_%s', $instanceId, $startDate ?? 'default', $endDate ?? 'default');
 
         return Cache::remember($cacheKey, 60, function () use ($startDate, $endDate) {
             if ($startDate || $endDate) {
@@ -107,6 +108,7 @@ class DashboardService
         return (float) (VentaDetalle::query()
             ->join('ventas', 'ventas.id', '=', 'venta_detalles.venta_id')
             ->join('productos', 'productos.id', '=', 'venta_detalles.producto_id')
+            ->where('ventas.tenant_id', auth()->user()->business_instance_id)
             ->whereMonth('ventas.created_at', $month)
             ->whereYear('ventas.created_at', $year)
             ->selectRaw('SUM(venta_detalles.cantidad * (venta_detalles.precio_unitario - productos.precio_compra)) as total_utilidad')
@@ -139,7 +141,8 @@ class DashboardService
 
     public function getSecondaryStats(): array
     {
-        $cacheKey = 'dashboard_secondary_stats';
+        $instanceId = auth()->user()->business_instance_id ?? 'global';
+        $cacheKey = 'dashboard_secondary_stats_' . $instanceId;
         return Cache::remember($cacheKey, 120, function () {
             return [
                 'totalProductos' => Producto::count(),
@@ -222,6 +225,7 @@ class DashboardService
         return DB::table('venta_detalles')
             ->join('ventas', 'ventas.id', '=', 'venta_detalles.venta_id')
             ->join('productos', 'productos.id', '=', 'venta_detalles.producto_id')
+            ->where('ventas.tenant_id', auth()->user()->business_instance_id)
             ->whereMonth('ventas.created_at', $mes->month)
             ->whereYear('ventas.created_at', $mes->year)
             ->select(
@@ -296,6 +300,7 @@ class DashboardService
         $mes = Carbon::now();
         return DB::table('ventas')
             ->join('users', 'users.id', '=', 'ventas.user_id')
+            ->where('ventas.tenant_id', auth()->user()->business_instance_id)
             ->whereMonth('ventas.created_at', $mes->month)
             ->whereYear('ventas.created_at', $mes->year)
             ->select(

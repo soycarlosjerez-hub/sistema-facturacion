@@ -237,6 +237,44 @@
         </div>
     </div>
 
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-person-badge text-info me-2"></i>Roles de Instancia</h5>
+            <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-sm btn-info rounded-pill fw-bold text-white">
+                <i class="bi bi-gear me-1"></i>Gestionar Roles
+            </a>
+        </div>
+        <div class="card-body p-4 pt-0">
+            @php
+                $instanceRoles = \App\Models\InstanceRole::where('business_instance_id', $instance->id)->withCount('users')->orderBy('name')->get();
+            @endphp
+            @forelse($instanceRoles as $role)
+            <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                        <span class="fw-bold text-info" style="font-size:.85rem;">{{ substr($role->name, 0, 1) }}</span>
+                    </div>
+                    <div>
+                        <span class="fw-bold">{{ $role->name }}</span>
+                        <small class="text-muted d-block">{{ $role->users_count }} usuario(s) &middot; {{ $role->visibleModules()->count() }} módulo(s)</small>
+                    </div>
+                </div>
+                <a href="{{ route('owner.instances.roles.edit', [$instance, $role]) }}" class="btn btn-sm btn-outline-info rounded-pill" title="Editar módulos">
+                    <i class="bi bi-pencil"></i>
+                </a>
+            </div>
+            @empty
+            <div class="text-center py-3 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2 mb-0">No hay roles definidos para esta instancia.</p>
+                <a href="{{ route('owner.instances.roles.create', $instance) }}" class="btn btn-info rounded-pill mt-2 btn-sm fw-bold text-white">
+                    <i class="bi bi-plus-lg me-1"></i>Crear Primer Rol
+                </a>
+            </div>
+            @endforelse
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Usuarios Asignados</h5>
