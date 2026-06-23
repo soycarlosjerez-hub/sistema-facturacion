@@ -1,16 +1,67 @@
 @extends('layouts.app')
-
 @section('title', $listaPrecio->nombre)
+
+@push('styles')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+    border-radius: 1rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(14,165,233, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+.premium-header::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.sticky-save-bar {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-width, 280px);
+    right: 0;
+    background: #fff;
+    border-top: 2px solid #0ea5e9;
+    padding: 0.75rem 1.5rem;
+    z-index: 1050;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+.sticky-save-bar .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+body.dark-mode .sticky-save-bar {
+    background: #0f172a;
+    border-top-color: #38bdf8;
+}
+@media (max-width: 991.98px) {
+    .sticky-save-bar { left: 0; }
+}
+</style>
+@endpush
 
 @section('content')
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-tags text-primary me-2"></i>{{ $listaPrecio->nombre }}</h2>
-            <p class="text-muted mb-0">{{ $listaPrecio->codigo }} &middot; {{ $listaPrecio->items->count() }} productos</p>
-        </div>
-        <div>
-            <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold me-2">
+    <div class="premium-header">
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+                    <i class="bi bi-tags fs-2 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Editar Lista de Precios</h2>
+                    <p class="text-white text-opacity-75 mb-0">{{ $listaPrecio->nombre }}</p>
+                </div>
+            </div>
+            <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
                 <i class="bi bi-arrow-left me-2"></i>Volver
             </a>
         </div>
@@ -81,7 +132,7 @@
                         @endif
                     </div>
                     <hr>
-                    <form action="{{ route('listas-precio.update', $listaPrecio) }}" method="POST">
+                    <form id="listaPrecioForm" action="{{ route('listas-precio.update', $listaPrecio) }}" method="POST">
                         @csrf @method('PUT')
                         <div class="mb-2">
                             <label class="form-label small fw-semibold">Nombre</label>
@@ -109,9 +160,6 @@
                             <input class="form-check-input" type="checkbox" role="switch" id="activa" name="activa" value="1" {{ $listaPrecio->activa ? 'checked' : '' }}>
                             <label class="form-check-label small fw-semibold" for="activa">Activa</label>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill btn-sm">
-                            <i class="bi bi-save me-1"></i>Actualizar lista
-                        </button>
                     </form>
                 </div>
             </div>
@@ -141,6 +189,18 @@
     @csrf
     <div id="preciosContainer"></div>
 </form>
+
+<div id="stickySaveBar" class="sticky-save-bar">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span class="fw-semibold d-none d-sm-inline">Editando: {{ $listaPrecio->nombre }}</span>
+        </div>
+        <button type="submit" form="listaPrecioForm" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none;">
+            <i class="bi bi-save me-1"></i>Actualizar Lista
+        </button>
+    </div>
+</div>
 
 @push('scripts')
 <script>
@@ -193,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
         form.submit();
     });
 
-    // Auto-marcar rows con precio al escribir
     document.querySelectorAll('.precio-lista').forEach(input => {
         input.addEventListener('input', () => {
             const row = input.closest('tr');

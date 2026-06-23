@@ -37,9 +37,7 @@
 @endpush
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
+<div class="container-fluid px-4">
             <div class="premium-header">
                 <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
                     <div class="d-flex align-items-center gap-3">
@@ -143,7 +141,5 @@
                     </div>
                 </div>
             </form>
-        </div>
-    </div>
 </div>
 @endsection

@@ -71,6 +71,7 @@ Route::pattern('auditLog', '[0-9]+');
 Route::pattern('backup', '[0-9]+');
 Route::pattern('paymentProcessor', '[0-9]+');
 Route::pattern('lavador', '[0-9]+');
+Route::pattern('listaPrecio', '[0-9]+');
 
 // Dashboard
 Route::middleware('auth')->group(function () {

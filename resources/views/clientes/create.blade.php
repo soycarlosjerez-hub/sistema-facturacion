@@ -2,23 +2,68 @@
 
 @section('title', 'Nuevo Cliente')
 
+@push('styles')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 1rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+.premium-header::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.sticky-save-bar {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-width, 280px);
+    right: 0;
+    background: #fff;
+    border-top: 2px solid #10b981;
+    padding: 0.75rem 1.5rem;
+    z-index: 1050;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+.sticky-save-bar .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+body.dark-mode .sticky-save-bar {
+    background: #0f172a;
+    border-top-color: #34d399;
+}
+@media (max-width: 991.98px) {
+    .sticky-save-bar { left: 0; }
+}
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-person-plus text-primary me-2"></i>
-                Nuevo Cliente
-            </h2>
-            <p class="text-muted mb-0">Registrar un nuevo cliente</p>
-        </div>
-        <div>
-            <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary rounded-pill me-2">
-                <i class="bi bi-x-lg me-1"></i> Cancelar
+<div class="container-fluid px-4 pb-5">
+
+    <div class="premium-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="fw-bold mb-1">
+                    <i class="bi bi-person-plus me-2"></i>
+                    Nuevo Cliente
+                </h3>
+                <p class="mb-0 opacity-75">Registrar un nuevo cliente</p>
+            </div>
+            <a href="{{ route('clientes.index') }}" class="btn btn-light btn-sm rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Volver
             </a>
-            <button type="submit" form="form-cliente" class="btn btn-primary rounded-pill px-4">
-                <i class="bi bi-save me-1"></i> Guardar
-            </button>
         </div>
     </div>
 
@@ -40,7 +85,7 @@
 
     <div class="row g-3">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm mb-3">
+            <div class="card border-0 shadow-sm mb-3" style="background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);">
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="mb-0 fw-bold">
                         <i class="bi bi-info-circle text-primary me-2"></i>
@@ -48,7 +93,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form id="form-cliente" action="{{ route('clientes.store') }}" method="POST">
+                    <form id="clienteForm" action="{{ route('clientes.store') }}" method="POST">
                         @csrf
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -84,14 +129,6 @@
                         </div>
                     </form>
                 </div>
-                <div class="card-footer bg-light border-top border-light p-4 text-end">
-                    <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-                        <button type="submit" form="form-cliente" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                            <i class="bi bi-save me-2"></i>Guardar
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -117,6 +154,22 @@
             </div>
         </div>
     </div>
+
+    <div class="sticky-save-bar">
+        <div class="d-flex justify-content-end align-items-center gap-3">
+            <span class="text-muted small d-none d-md-inline">
+                <i class="bi bi-info-circle me-1"></i>
+                Creando nuevo cliente
+            </span>
+            <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary rounded-pill btn-sm px-3">
+                <i class="bi bi-x-lg me-1"></i> Cancelar
+            </a>
+            <button type="submit" form="clienteForm" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-save me-1"></i> Guardar Cliente
+            </button>
+        </div>
+    </div>
+
 </div>
 @endsection
 

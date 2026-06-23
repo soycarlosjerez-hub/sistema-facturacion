@@ -37,9 +37,7 @@
 @endpush
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
+<div class="container-fluid px-4">
 
             {{-- Header --}}
             <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -113,7 +111,5 @@
                 </form>
             </div>
 
-        </div>
-    </div>
 </div>
 @endsection

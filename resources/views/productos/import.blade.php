@@ -86,8 +86,6 @@
 
     @if(!isset($step) || $step !== 'map')
         {{-- STEP 1: Upload --}}
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                     <div class="card-header bg-white border-bottom p-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-cloud-arrow-up text-indigo me-2"></i>Subir archivo</h5>
@@ -157,8 +155,7 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+
 
         @push('scripts')
         <script>
@@ -204,8 +201,6 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
         @endpush
     @else
         {{-- STEP 2: Column Mapping --}}
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
                 <form action="{{ route('productos.import.process') }}" method="POST">
                     @csrf
                     <input type="hidden" name="hash" value="{{ $hash }}">
@@ -288,8 +283,7 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+
     @endif
 </div>
 @endsection

@@ -2,170 +2,220 @@
 
 @section('title', 'Nueva Compra')
 
+@push('styles')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 1rem;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+.premium-header::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.sticky-save-bar {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-width, 280px);
+    right: 0;
+    background: #fff;
+    border-top: 2px solid #10b981;
+    padding: 0.75rem 1.5rem;
+    z-index: 1050;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+.sticky-save-bar .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+body.dark-mode .sticky-save-bar {
+    background: #0f172a;
+    border-top-color: #34d399;
+}
+@media (max-width: 991.98px) {
+    .sticky-save-bar { left: 0; }
+}
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1"><i class="bi bi-cart-plus text-primary me-2"></i>Registrar Compra</h2>
-                    <p class="text-muted mb-0">Registra una entrada de inventario desde un proveedor.</p>
-                </div>
-                <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
-                </a>
+<div class="container-fluid py-4" style="background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); border-radius: 1.5rem;">
+    <div class="premium-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-cart-plus me-2"></i>Registrar Compra</h2>
+                <p class="mb-0 opacity-75">Registra una entrada de inventario desde un proveedor</p>
             </div>
+            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+        </div>
+    </div>
 
-            @if (session('error'))
-                <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
-                    {{ session('error') }}
+    @if (session('error'))
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('compras.store') }}" method="POST" id="compraForm">
+        @csrf
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-header bg-white border-bottom border-light p-4"><h5 class="fw-bold mb-0 text-dark"><i class="bi bi-cart me-2 text-primary"></i>Datos de la Compra</h5></div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Proveedor <span class="text-danger">*</span></label>
+                        <select name="proveedor_id" class="form-select form-select-lg" required>
+                            <option value="">Seleccionar proveedor</option>
+                            @foreach($proveedores as $proveedor)
+                                <option value="{{ $proveedor->id }}" {{ old('proveedor_id') == $proveedor->id ? 'selected' : '' }}>{{ $proveedor->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Tipo de Compra <span class="text-danger">*</span></label>
+                        <select name="tipo_compra_id" class="form-select form-select-lg" required>
+                            <option value="">Seleccionar tipo</option>
+                            @foreach($tiposCompra as $tipo)
+                                <option value="{{ $tipo->id }}" {{ old('tipo_compra_id') == $tipo->id ? 'selected' : '' }}>{{ $tipo->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
+                        <select name="almacen_id" class="form-select form-select-lg" required>
+                            <option value="">Seleccionar almacén</option>
+                            @foreach($almacenes as $almacen)
+                                <option value="{{ $almacen->id }}" {{ old('almacen_id') == $almacen->id ? 'selected' : '' }}>{{ $almacen->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Fecha</label>
+                        <input type="date" name="fecha" class="form-control form-control-lg" value="{{ old('fecha', date('Y-m-d')) }}">
+                    </div>
                 </div>
-            @endif
+            </div>
+        </div>
 
-            @if ($errors->any())
-                <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>Detalle de la Compra</h5>
+                <button type="button" class="btn btn-success rounded-pill px-3" id="btnAgregarFila">
+                    <i class="bi bi-plus-lg me-1"></i>Agregar fila
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="detalleCompra">
+                    <thead class="table-light">
+                        <tr class="text-muted text-uppercase small">
+                            <th>Producto</th>
+                            <th style="width: 160px;">Cód. Barras</th>
+                            <th style="width: 90px;">Cantidad</th>
+                            <th style="width: 130px;">Precio Unit.</th>
+                            <th style="width: 90px;">ITBIS %</th>
+                            <th style="width: 130px;">Subtotal</th>
+                            <th style="width: 60px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="detalle-body"></tbody>
+                    <tfoot class="bg-light bg-opacity-50">
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold">Subtotal:</td>
+                            <td class="fw-bold text-end" id="subtotal-display">RD$ 0.00</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold">ITBIS:</td>
+                            <td class="fw-bold text-end" id="itbis-display">RD$ 0.00</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold fs-5">TOTAL:</td>
+                            <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ 0.00</td>
+                            <td></td>
+                        </tr>
+                        <tr class="retenciones-row" style="display:none">
+                            <td colspan="5" class="text-end text-danger fw-bold">Retenciones:</td>
+                            <td class="text-end fw-bold" id="retenciones-display">RD$ 0.00</td>
+                            <td></td>
+                        </tr>
+                        <tr class="total-neto-row" style="display:none">
+                            <td colspan="5" class="text-end fw-bold fs-5">Total a Pagar:</td>
+                            <td class="fw-bold text-end fs-5 text-success" id="total-neto-display">RD$ 0.00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
 
-            <form action="{{ route('compras.store') }}" method="POST" id="compraForm">
-                @csrf
-
-                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-                    <div class="card-header bg-white border-bottom border-light p-4"><h5 class="fw-bold mb-0 text-dark"><i class="bi bi-cart me-2 text-primary"></i>Datos de la Compra</h5></div>
-                    <div class="card-body p-4">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="form-label small fw-semibold">Proveedor <span class="text-danger">*</span></label>
-                                <select name="proveedor_id" class="form-select form-select-lg" required>
-                                    <option value="">Seleccionar proveedor</option>
-                                    @foreach($proveedores as $proveedor)
-                                        <option value="{{ $proveedor->id }}" {{ old('proveedor_id') == $proveedor->id ? 'selected' : '' }}>{{ $proveedor->nombre }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small fw-semibold">Tipo de Compra <span class="text-danger">*</span></label>
-                                <select name="tipo_compra_id" class="form-select form-select-lg" required>
-                                    <option value="">Seleccionar tipo</option>
-                                    @foreach($tiposCompra as $tipo)
-                                        <option value="{{ $tipo->id }}" {{ old('tipo_compra_id') == $tipo->id ? 'selected' : '' }}>{{ $tipo->nombre }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
-                                <select name="almacen_id" class="form-select form-select-lg" required>
-                                    <option value="">Seleccionar almacén</option>
-                                    @foreach($almacenes as $almacen)
-                                        <option value="{{ $almacen->id }}" {{ old('almacen_id') == $almacen->id ? 'selected' : '' }}>{{ $almacen->nombre }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label small fw-semibold">Fecha</label>
-                                <input type="date" name="fecha" class="form-control form-control-lg" value="{{ old('fecha', date('Y-m-d')) }}">
-                            </div>
+        <div class="card border-0 shadow-sm rounded-4 mb-4" id="retencionesCard">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-percent text-warning me-2"></i>Retenciones</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="aplica_retencion_isr" name="aplica_retencion_isr" value="1" {{ old('aplica_retencion_isr') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="aplica_retencion_isr">
+                                <strong>Retención ISR</strong> <small class="text-muted">(10% del total)</small>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="aplica_retencion_itbis" name="aplica_retencion_itbis" value="1" {{ old('aplica_retencion_itbis') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="aplica_retencion_itbis">
+                                <strong>Retención ITBIS</strong> <small class="text-muted">(100% del ITBIS)</small>
+                            </label>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>Detalle de la Compra</h5>
-                        <button type="button" class="btn btn-success rounded-pill px-3" id="btnAgregarFila">
-                            <i class="bi bi-plus-lg me-1"></i>Agregar fila
-                        </button>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" id="detalleCompra">
-                            <thead class="table-light">
-                                <tr class="text-muted text-uppercase small">
-                                    <th>Producto</th>
-                                    <th style="width: 160px;">Cód. Barras</th>
-                                    <th style="width: 90px;">Cantidad</th>
-                                    <th style="width: 130px;">Precio Unit.</th>
-                                    <th style="width: 90px;">ITBIS %</th>
-                                    <th style="width: 130px;">Subtotal</th>
-                                    <th style="width: 60px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="detalle-body"></tbody>
-                            <tfoot class="bg-light bg-opacity-50">
-                                <tr>
-                                    <td colspan="5" class="text-end fw-bold">Subtotal:</td>
-                                    <td class="fw-bold text-end" id="subtotal-display">RD$ 0.00</td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" class="text-end fw-bold">ITBIS:</td>
-                                    <td class="fw-bold text-end" id="itbis-display">RD$ 0.00</td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" class="text-end fw-bold fs-5">TOTAL:</td>
-                                    <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ 0.00</td>
-                                    <td></td>
-                                </tr>
-                                <tr class="retenciones-row" style="display:none">
-                                    <td colspan="5" class="text-end text-danger fw-bold">Retenciones:</td>
-                                    <td class="text-end fw-bold" id="retenciones-display">RD$ 0.00</td>
-                                    <td></td>
-                                </tr>
-                                <tr class="total-neto-row" style="display:none">
-                                    <td colspan="5" class="text-end fw-bold fs-5">Total a Pagar:</td>
-                                    <td class="fw-bold text-end fs-5 text-success" id="total-neto-display">RD$ 0.00</td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-body p-4">
+                <label class="form-label small fw-semibold">Observaciones</label>
+                <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas sobre la compra (opcional)">{{ old('observaciones') }}</textarea>
+            </div>
+        </div>
 
-                <div class="card border-0 shadow-sm rounded-4 mb-4" id="retencionesCard">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-percent text-warning me-2"></i>Retenciones</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="aplica_retencion_isr" name="aplica_retencion_isr" value="1" {{ old('aplica_retencion_isr') ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="aplica_retencion_isr">
-                                        <strong>Retención ISR</strong> <small class="text-muted">(10% del total)</small>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="aplica_retencion_itbis" name="aplica_retencion_itbis" value="1" {{ old('aplica_retencion_itbis') ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="aplica_retencion_itbis">
-                                        <strong>Retención ITBIS</strong> <small class="text-muted">(100% del ITBIS)</small>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <input type="hidden" name="total" id="total-hidden" value="0">
+    </form>
+</div>
 
-                <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-                    <div class="card-body p-4">
-                        <label class="form-label small fw-semibold">Observaciones</label>
-                        <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas sobre la compra (opcional)">{{ old('observaciones') }}</textarea>
-                    </div>
-                    <div class="card-footer bg-light border-top border-light p-4 text-end">
-                        <input type="hidden" name="total" id="total-hidden" value="0">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                                <i class="bi bi-save me-2"></i>Guardar Compra
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+<div class="sticky-save-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted"><i class="bi bi-info-circle me-1"></i>Registrando nueva compra</span>
+        <div class="d-flex gap-2">
+            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="compraForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-save me-2"></i>Guardar Compra
+            </button>
         </div>
     </div>
 </div>
