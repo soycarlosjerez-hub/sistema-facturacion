@@ -26,7 +26,7 @@ class CategoriaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nombre'      => 'required|string|max:100|unique:categorias,nombre',
+            'nombre'      => 'required|string|max:100|unique:categorias,nombre,NULL,id,tenant_id,' . auth()->user()->business_instance_id,
             'descripcion' => 'nullable|string|max:255',
             'activa'      => 'boolean',
         ]);
@@ -55,7 +55,7 @@ class CategoriaController extends Controller
     public function update(Request $request, Categoria $categoria)
     {
         $data = $request->validate([
-            'nombre'      => 'required|string|max:100|unique:categorias,nombre,' . $categoria->id,
+            'nombre'      => 'required|string|max:100|unique:categorias,nombre,' . $categoria->id . ',id,tenant_id,' . auth()->user()->business_instance_id,
             'descripcion' => 'nullable|string|max:255',
             'activa'      => 'boolean',
         ]);
