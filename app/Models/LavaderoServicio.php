@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 
 class LavaderoServicio extends Model
 {
     use Auditable;
+    use TenantScope;
 
     protected $fillable = [
         'nombre', 'descripcion', 'precio', 'precio_compra',
-        'duracion_minutos', 'categoria', 'activo', 'orden',
+        'duracion_minutos', 'categoria', 'activo', 'orden', 'tenant_id',
     ];
 
     protected $casts = [

@@ -23,7 +23,7 @@ trait TenantScope
         static::addGlobalScope('tenant', function (Builder $builder) {
             if (Auth::check() && Auth::user()->business_instance_id !== null) {
                 // Compare model's tenant_id against user's business_instance_id
-                $builder->where('tenant_id', Auth::user()->business_instance_id);
+                $builder->where($builder->getModel()->getTable() . '.tenant_id', Auth::user()->business_instance_id);
             }
         });
     }

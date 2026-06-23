@@ -63,6 +63,7 @@ class DevolucionService
                 'venta_id'  => $data['venta_id'] ?? null,
                 'cliente_id' => $data['cliente_id'],
                 'user_id'   => Auth::id(),
+                'tenant_id' => Auth::user()->business_instance_id ?? null,
                 'fecha'     => $data['fecha'],
                 'motivo'    => $data['motivo'],
                 'tipo'      => $data['tipo'],
@@ -81,6 +82,7 @@ class DevolucionService
                     'itbis_porcentaje' => $item['itbis_porcentaje'] ?? 18,
                     'subtotal'         => round((float) $item['cantidad'] * (float) $item['precio_unitario'] * (1 + ((float) ($item['itbis_porcentaje'] ?? 18) / 100)), 2),
                     'motivo'           => $item['motivo'] ?? null,
+                    'tenant_id'        => Auth::user()->business_instance_id ?? null,
                 ]);
             }
 

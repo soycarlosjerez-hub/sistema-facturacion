@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasEcfStateMachine;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class EcfDocumento extends Model
 {
     use HasEcfStateMachine;
+    use TenantScope;
 
     protected $table = 'ecf_documentos';
 
@@ -40,6 +42,8 @@ class EcfDocumento extends Model
         'anulado_por_encf',
         'nota_credito_id',
         'usuario_id',
+        'documento_original_id',
+        'tenant_id',
     ];
 
     protected $casts = [

@@ -2,17 +2,32 @@
 
 @section('title', 'Config. Backups')
 
+@push('styles')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+    border-radius: 1rem; padding: 2rem; color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(2,132,199,0.4);
+    position: relative; overflow: hidden;
+}
+.premium-header::after {
+    content: ''; position: absolute; top: -50%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-gear text-secondary me-2"></i>
-                Configuración de Backups
-            </h2>
+            <h2 class="fw-bold mb-1"><i class="bi bi-gear text-secondary me-2"></i>Configuración de Backups</h2>
             <p class="text-muted mb-0">Información del sistema de respaldo</p>
         </div>
-        <a href="{{ route('backups.index') }}" class="btn btn-outline-secondary rounded-pill">
+        <a href="{{ route('backups.index') }}" class="btn btn-outline-light rounded-pill">
             <i class="bi bi-arrow-left me-1"></i> Volver
         </a>
     </div>

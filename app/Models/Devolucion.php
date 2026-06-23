@@ -5,14 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\TenantScope;
 
 class Devolucion extends Model
 {
+    use TenantScope;
+
     protected $table = 'devoluciones';
 
     protected $fillable = [
         'codigo', 'venta_id', 'cliente_id', 'user_id', 'fecha', 'motivo',
-        'tipo', 'subtotal', 'itbis', 'total', 'estado', 'nota_credito_id',
+        'tipo', 'subtotal', 'itbis', 'total', 'estado', 'nota_credito_id', 'tenant_id',
     ];
 
     protected $casts = [

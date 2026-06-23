@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\TenantScope;
 
 class EcfLogEnvio extends Model
 {
+    use TenantScope;
+
     protected $table = 'ecf_log_envios';
 
     public $timestamps = false;
@@ -21,6 +24,7 @@ class EcfLogEnvio extends Model
         'mensaje',
         'duracion_ms',
         'created_at',
+        'tenant_id',
     ];
 
     protected $casts = [

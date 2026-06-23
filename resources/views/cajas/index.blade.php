@@ -2,129 +2,64 @@
 
 @section('title', 'Gestión de Cajas')
 
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .premium-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .avatar-circle {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600; font-size: 1.2rem;
+        transition: transform 0.2s;
+    }
+    .status-badge {
+        padding: 0.4em 0.8em;
+        border-radius: 2rem;
+        font-weight: 500;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <style>
-        .caja-stat-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 1.25rem;
-            border: 1px solid rgba(15,23,42,0.06);
-            box-shadow: 0 4px 12px rgba(15,23,42,0.04);
-            transition: all 0.3s;
-        }
-        .caja-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,23,42,0.08); }
-        .caja-stat-card .icon-bubble {
-            width: 48px; height: 48px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-        }
-        body.dark-mode .caja-stat-card { background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9)); }
+<div class="container-fluid px-4 py-3">
 
-        .caja-card {
-            background: var(--card-bg, white);
-            border-radius: 20px;
-            border: 1px solid rgba(15,23,42,0.06);
-            box-shadow: 0 4px 12px rgba(15,23,42,0.04);
-            transition: all 0.3s;
-            overflow: hidden;
-            position: relative;
-        }
-        .caja-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(15,23,42,0.10); }
-        body.dark-mode .caja-card { background: rgba(30,41,59,0.95); border-color: rgba(255,255,255,0.05); }
-
-        .caja-card-header {
-            padding: 1.25rem 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .caja-card-header.abierta { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
-        .caja-card-header.cerrada { background: linear-gradient(135deg, #64748b 0%, #475569 100%); color: white; }
-        .caja-card-header.inactiva { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); color: white; opacity: 0.7; }
-        .caja-card-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 200px;
-            height: 200px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .status-pill.abierta { background: rgba(255,255,255,0.25); color: white; }
-        .status-pill.cerrada { background: rgba(0,0,0,0.2); color: white; }
-        .status-pill.inactiva { background: rgba(239,68,68,0.3); color: white; }
-
-        .caja-stat-mini {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 0;
-            font-size: 0.85rem;
-            color: var(--bs-secondary, #64748b);
-        }
-        .caja-stat-mini strong { color: var(--bs-dark, #0f172a); font-weight: 700; }
-        body.dark-mode .caja-stat-mini { color: rgba(255,255,255,0.7); }
-        body.dark-mode .caja-stat-mini strong { color: white; }
-
-        .caja-actions {
-            display: flex;
-            gap: 6px;
-            padding: 0.75rem 1.5rem;
-            background: rgba(15,23,42,0.02);
-            border-top: 1px solid rgba(15,23,42,0.06);
-        }
-        body.dark-mode .caja-actions { background: rgba(255,255,255,0.02); border-top-color: rgba(255,255,255,0.05); }
-
-        .caja-action-btn {
-            flex: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            padding: 8px 10px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-            cursor: pointer;
-        }
-        .caja-action-btn:hover { transform: translateY(-1px); }
-        .caja-action-btn.edit { background: rgba(56,189,248,0.1); color: #0284c7; border-color: rgba(56,189,248,0.2); }
-        .caja-action-btn.edit:hover { background: rgba(56,189,248,0.2); }
-        .caja-action-btn.toggle { background: rgba(168,85,247,0.1); color: #7c3aed; border-color: rgba(168,85,247,0.2); }
-        .caja-action-btn.toggle:hover { background: rgba(168,85,247,0.2); }
-        .caja-action-btn.delete { background: rgba(239,68,68,0.1); color: #dc2626; border-color: rgba(239,68,68,0.2); }
-        .caja-action-btn.delete:hover { background: rgba(239,68,68,0.2); }
-        .caja-action-btn.quick-edit { background: rgba(245,158,11,0.1); color: #d97706; border-color: rgba(245,158,11,0.2); }
-        .caja-action-btn.quick-edit:hover { background: rgba(245,158,11,0.2); }
-    </style>
-
-    <!-- Hero Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-            <h2 class="mb-1 fw-bold"><i class="bi bi-cash-register text-primary me-2"></i>Cajas y Turnos</h2>
-            <p class="text-muted mb-0">Administra múltiples cajas registradoras. Cada cajero abre su propia caja al iniciar el turno.</p>
+    <!-- Premium Header -->
+    <div class="premium-header">
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+                    <i class="bi bi-cash-register fs-2 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Cajas y Turnos</h2>
+                    <p class="text-white text-opacity-75 mb-0">Administra múltiples cajas registradoras. Cada cajero abre su propia caja al iniciar el turno.</p>
+                </div>
+            </div>
+            <a href="{{ route('cajas.create') }}" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-sm text-cyan-800">
+                <i class="bi bi-plus-circle me-2"></i>Nueva Caja
+            </a>
         </div>
-        <a href="{{ route('cajas.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-plus-circle me-2"></i>Nueva Caja
-        </a>
     </div>
 
     @if(session('success'))
@@ -162,10 +97,10 @@
     <!-- Stats Row -->
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-            <div class="caja-stat-card">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-primary bg-opacity-10 text-primary">
-                        <i class="bi bi-cash-register"></i>
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-cash-register fs-4"></i>
                     </div>
                     <div>
                         <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Total</div>
@@ -175,10 +110,10 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="caja-stat-card">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-success bg-opacity-10 text-success">
-                        <i class="bi bi-play-circle-fill"></i>
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-success bg-opacity-10 text-success rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-play-circle-fill fs-4"></i>
                     </div>
                     <div>
                         <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Abiertas</div>
@@ -188,10 +123,10 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="caja-stat-card">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-secondary bg-opacity-10 text-secondary">
-                        <i class="bi bi-stop-circle-fill"></i>
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-secondary bg-opacity-10 text-secondary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-stop-circle-fill fs-4"></i>
                     </div>
                     <div>
                         <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Cerradas</div>
@@ -201,10 +136,10 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="caja-stat-card">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-warning bg-opacity-10 text-warning">
-                        <i class="bi bi-pause-circle-fill"></i>
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="bg-warning bg-opacity-10 text-warning rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-pause-circle-fill fs-4"></i>
                     </div>
                     <div>
                         <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Inactivas</div>
@@ -223,42 +158,51 @@
                 $isMySession = $sesionActiva && $sesionActiva->user_id == auth()->id();
                 $esAdmin = auth()->user()->role === 'admin';
                 $estadoClass = !$caja->activo ? 'inactiva' : $caja->estado;
+                $headerGradient = match($estadoClass) {
+                    'abierta' => 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    'inactiva' => 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+                    default => 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                };
+                $opacityStyle = $estadoClass === 'inactiva' ? 'opacity: 0.7;' : '';
             @endphp
             <div class="col-lg-4 col-md-6" data-card-id="{{ $caja->id }}">
-                <div class="caja-card h-100">
-                    <!-- Header con gradiente -->
-                    <div class="caja-card-header {{ $estadoClass }}">
-                        <div class="d-flex justify-content-between align-items-start position-relative" style="z-index: 2;">
-                            <div>
-                                <div class="small opacity-75 fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">
-                                    @if($caja->codigo){{ $caja->codigo }}@else C{{ str_pad($caja->id, 2, '0', STR_PAD_LEFT) }}@endif
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="{{ $opacityStyle }}">
+                    <!-- Header with gradient -->
+                    <div class="card-header border-0 text-white py-3" style="background: {{ $headerGradient }}; position: relative; overflow: hidden;">
+                        <div style="position: relative; z-index: 2;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="small opacity-75 fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 1px;">
+                                        @if($caja->codigo){{ $caja->codigo }}@else C{{ str_pad($caja->id, 2, '0', STR_PAD_LEFT) }}@endif
+                                    </div>
+                                    <h5 class="fw-bold mb-0 text-white">{{ $caja->nombre }}</h5>
                                 </div>
-                                <h4 class="fw-bold mb-0 text-white">{{ $caja->nombre }}</h4>
+                                <i class="bi bi-cash-stack opacity-25" style="font-size: 2.5rem;"></i>
                             </div>
-                            <i class="bi bi-cash-stack" style="font-size: 2.5rem; opacity: 0.4;"></i>
+                            <div class="mt-2">
+                                @if(! $caja->activo)
+                                    <span class="badge bg-white bg-opacity-25 text-white rounded-pill px-3 py-1"><i class="bi bi-pause-fill me-1"></i>INACTIVA</span>
+                                @elseif($caja->estado == 'abierta')
+                                    <span class="badge bg-white bg-opacity-25 text-white rounded-pill px-3 py-1"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>ABIERTA</span>
+                                @else
+                                    <span class="badge bg-white bg-opacity-25 text-white rounded-pill px-3 py-1"><i class="bi bi-circle me-1"></i>CERRADA</span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="mt-3 position-relative" style="z-index: 2;">
-                            @if(! $caja->activo)
-                                <span class="status-pill inactiva"><i class="bi bi-pause-fill"></i>INACTIVA</span>
-                            @elseif($caja->estado == 'abierta')
-                                <span class="status-pill abierta"><i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>ABIERTA</span>
-                            @else
-                                <span class="status-pill cerrada"><i class="bi bi-circle"></i>CERRADA</span>
-                            @endif
-                        </div>
+                        <div style="position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
                     </div>
 
                     <!-- Body -->
-                    <div class="p-4">
+                    <div class="card-body p-4">
                         @if($caja->ubicacion)
-                            <div class="caja-stat-mini mb-2">
-                                <i class="bi bi-geo-alt text-muted"></i>
+                            <div class="d-flex align-items-center gap-2 mb-2 text-muted small">
+                                <i class="bi bi-geo-alt"></i>
                                 <span>{{ $caja->ubicacion }}</span>
                             </div>
                         @endif
                         @if($caja->sucursal)
-                            <div class="caja-stat-mini mb-2">
-                                <i class="bi bi-building text-muted"></i>
+                            <div class="d-flex align-items-center gap-2 mb-2 text-muted small">
+                                <i class="bi bi-building"></i>
                                 <span>{{ $caja->sucursal->nombre }}</span>
                             </div>
                         @endif
@@ -275,22 +219,22 @@
                             </div>
                         @endif
 
-                        <div class="caja-stat-mini">
+                        <div class="d-flex align-items-center gap-2 mb-1 text-muted small">
                             <i class="bi bi-graph-up text-primary"></i>
                             <span>Ventas históricas: <strong>RD$ {{ number_format($caja->ventas_historico, 0) }}</strong></span>
                         </div>
-                        <div class="caja-stat-mini">
+                        <div class="d-flex align-items-center gap-2 mb-1 text-muted small">
                             <i class="bi bi-clock-history text-info"></i>
                             <span>Total de turnos: <strong>{{ $caja->total_sesiones }}</strong></span>
                         </div>
                         @if($caja->ultima_sesion)
-                            <div class="caja-stat-mini">
-                                <i class="bi bi-calendar text-muted"></i>
+                            <div class="d-flex align-items-center gap-2 mb-1 text-muted small">
+                                <i class="bi bi-calendar"></i>
                                 <span>Última: <strong>{{ $caja->ultima_sesion->created_at->diffForHumans() }}</strong></span>
                             </div>
                         @endif
 
-                        <!-- Acciones según estado -->
+                        <!-- Actions according to status -->
                         <div class="mt-3">
                             @if($caja->estado == 'abierta' && $isMySession)
                                 <div class="d-grid gap-2">
@@ -317,25 +261,25 @@
                         </div>
                     </div>
 
-                    <!-- Acciones Admin -->
+                    <!-- Admin Actions -->
                     @if($esAdmin)
-                        <div class="caja-actions">
-                            <button type="button" class="caja-action-btn quick-edit" title="Edición rápida"
+                        <div class="card-footer bg-light bg-opacity-50 border-top p-3 d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-warning rounded-pill flex-fill"
                                     data-bs-toggle="modal" data-bs-target="#modalQuickEdit"
                                     data-id="{{ $caja->id }}"
                                     data-nombre="{{ $caja->nombre }}"
                                     data-codigo="{{ $caja->codigo }}"
                                     data-ubicacion="{{ $caja->ubicacion }}"
                                     data-activo="{{ $caja->activo ? '1' : '0' }}">
-                                <i class="bi bi-lightning-charge-fill"></i> Rápida
+                                <i class="bi bi-lightning-charge-fill me-1"></i> Rápida
                             </button>
-                            <a href="{{ route('cajas.edit', $caja->id) }}" class="caja-action-btn edit" title="Edición completa">
-                                <i class="bi bi-pencil-square"></i> Completa
+                            <a href="{{ route('cajas.edit', $caja->id) }}" class="btn btn-sm btn-outline-primary rounded-pill flex-fill">
+                                <i class="bi bi-pencil-square me-1"></i> Completa
                             </a>
                             <form action="{{ route('cajas.destroy', $caja->id) }}" method="POST" class="flex-fill" onsubmit="return confirm('¿Eliminar la caja {{ $caja->nombre }}? Esta acción no se puede deshacer.')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="caja-action-btn delete w-100" {{ $caja->estado == 'abierta' ? 'disabled' : '' }}>
-                                    <i class="bi bi-trash"></i>
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill w-100" {{ $caja->estado == 'abierta' ? 'disabled' : '' }}>
+                                    <i class="bi bi-trash me-1"></i>
                                 </button>
                             </form>
                         </div>
@@ -461,7 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
         errorBox.classList.add('d-none');
         errorBox.textContent = '';
 
-        // Header muestra a qué caja se le edita
         const header = modal.querySelector('.modal-header small');
         if (header) header.textContent = 'Editando: ' + nombre;
 
@@ -520,11 +463,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.querySelector(`[data-card-id="${id}"]`);
             if (card && result.caja) {
                 const c = result.caja;
-                const h4 = card.querySelector('.caja-card-header h4');
-                if (h4) h4.textContent = c.nombre;
-                const codeEl = card.querySelector('.caja-card-header .small');
+                const h5 = card.querySelector('.card-header h5');
+                if (h5) h5.textContent = c.nombre;
+                const codeEl = card.querySelector('.card-header .small');
                 if (codeEl) codeEl.textContent = c.codigo || ('C' + String(c.id).padStart(2, '0'));
-                const locLine = card.querySelector('.caja-stat-mini .bi-geo-alt')?.parentElement;
+                const locLine = card.querySelector('.bi-geo-alt')?.parentElement;
                 if (locLine) {
                     if (c.ubicacion) {
                         locLine.querySelector('span').textContent = c.ubicacion;
@@ -533,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         locLine.style.display = 'none';
                     }
                 }
-                const qeBtn = card.querySelector('.quick-edit');
+                const qeBtn = card.querySelector('[data-bs-target="#modalQuickEdit"]');
                 if (qeBtn) {
                     qeBtn.dataset.nombre = c.nombre;
                     qeBtn.dataset.codigo = c.codigo || '';

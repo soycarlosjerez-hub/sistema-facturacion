@@ -4,12 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\TenantScope;
 
 class ConduceItem extends Model
 {
+    use TenantScope;
+
     protected $fillable = [
         'conduce_id', 'producto_id', 'codigo', 'nombre', 'unidad',
-        'descripcion', 'cantidad', 'cantidad_recibida', 'peso', 'orden',
+        'descripcion', 'cantidad', 'cantidad_recibida', 'peso', 'orden', 'tenant_id',
     ];
 
     protected $casts = [

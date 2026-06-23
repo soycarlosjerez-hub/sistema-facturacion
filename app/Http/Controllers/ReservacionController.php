@@ -52,6 +52,7 @@ class ReservacionController extends Controller
         }
 
         $data['user_id'] = Auth::id();
+        $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
 
         DB::beginTransaction();
         try {

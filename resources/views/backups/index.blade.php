@@ -2,23 +2,66 @@
 
 @section('title', 'Backups')
 
+@push('styles')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    border-radius: 1rem; padding: 2rem; color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(5,150,105,0.4);
+    position: relative; overflow: hidden;
+}
+.premium-header::after {
+    content: ''; position: absolute; top: -50%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.filter-card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.btn-icon-hover {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50% !important;
+    padding: 0;
+    transition: all 0.2s;
+}
+.btn-icon-hover:hover { transform: scale(1.15); }
+.avatar-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 1.2rem;
+}
+.status-badge {
+    padding: 0.4em 0.8em;
+    border-radius: 2rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-cloud-arrow-down text-success me-2"></i>
-                Respaldo de Base de Datos
-            </h2>
+            <h2 class="fw-bold mb-1"><i class="bi bi-cloud-arrow-down text-success me-2"></i>Respaldo de Base de Datos</h2>
             <p class="text-muted mb-0">Gestión de copias de seguridad</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('backups.config') }}" class="btn btn-outline-secondary rounded-pill">
+            <a href="{{ route('backups.config') }}" class="btn btn-outline-light rounded-pill">
                 <i class="bi bi-gear me-1"></i> Configuración
             </a>
             <form method="POST" action="{{ route('backups.store') }}" style="display:inline;">
                 @csrf
-                <button type="submit" class="btn btn-success rounded-pill px-4" onclick="return confirm('¿Iniciar backup ahora?')">
+                <button type="submit" class="btn btn-white text-success rounded-pill px-4 fw-bold shadow-sm" onclick="return confirm('¿Iniciar backup ahora?')">
                     <i class="bi bi-shield-check me-1"></i> Crear Backup
                 </button>
             </form>
@@ -29,7 +72,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="icon-bubble bg-soft-success mx-auto mb-2" style="width:44px;height:44px;font-size:1.1rem;">
+                    <div class="avatar-circle bg-soft-success mx-auto mb-2">
                         <i class="bi bi-hdd-stack"></i>
                     </div>
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Total Backups</small>
@@ -40,7 +83,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="icon-bubble bg-soft-info mx-auto mb-2" style="width:44px;height:44px;font-size:1.1rem;">
+                    <div class="avatar-circle bg-soft-info mx-auto mb-2">
                         <i class="bi bi-hard-drive"></i>
                     </div>
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Espacio Total</small>
@@ -59,7 +102,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="icon-bubble bg-soft-warning mx-auto mb-2" style="width:44px;height:44px;font-size:1.1rem;">
+                    <div class="avatar-circle bg-soft-warning mx-auto mb-2">
                         <i class="bi bi-person"></i>
                     </div>
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Manuales</small>
@@ -70,7 +113,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-3 text-center">
-                    <div class="icon-bubble bg-soft-dark mx-auto mb-2" style="width:44px;height:44px;font-size:1.1rem;">
+                    <div class="avatar-circle bg-soft-dark mx-auto mb-2" style="background:rgba(15,23,42,0.08);color:#0f172a;">
                         <i class="bi bi-clock-history"></i>
                     </div>
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Automáticos</small>
@@ -116,9 +159,9 @@
                             </td>
                             <td>
                                 @if($backup->status === 'completado')
-                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">Completado</span>
+                                    <span class="status-badge bg-success bg-opacity-10 text-success">Completado</span>
                                 @else
-                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1">Fallido</span>
+                                    <span class="status-badge bg-danger bg-opacity-10 text-danger">Fallido</span>
                                 @endif
                             </td>
                             <td><span class="fw-semibold">{{ $backup->sizeForHumans() }}</span></td>
@@ -126,11 +169,11 @@
                             <td><small>{{ $backup->created_at->format('d/m/Y h:i A') }}</small></td>
                             <td class="text-end pe-4">
                                 @if($backup->status === 'completado')
-                                <a href="{{ route('backups.download', $backup) }}" class="btn btn-sm btn-outline-success rounded-pill" title="Descargar">
+                                <a href="{{ route('backups.download', $backup) }}" class="btn btn-sm btn-outline-success rounded-pill btn-icon-hover" title="Descargar">
                                     <i class="bi bi-download"></i>
                                 </a>
                                 @endif
-                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" 
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btn-icon-hover" 
                                         onclick="confirmDelete('{{ route('backups.destroy', $backup) }}', '{{ $backup->filename }}')"
                                         title="Eliminar">
                                     <i class="bi bi-trash"></i>
@@ -162,7 +205,7 @@
     <div class="card border-0 shadow-sm rounded-4 mt-4">
         <div class="card-body p-4">
             <div class="d-flex align-items-center gap-3">
-                <div class="icon-bubble bg-soft-info flex-shrink-0" style="width:52px;height:52px;font-size:1.3rem;">
+                <div class="avatar-circle bg-soft-info flex-shrink-0" style="width:52px;height:52px;font-size:1.3rem;">
                     <i class="bi bi-info-circle"></i>
                 </div>
                 <div>
@@ -179,6 +222,14 @@
 @endsection
 
 @push('scripts')
+<style>
+.btn-white {
+    background: white; color: #059669; border: none;
+}
+.btn-white:hover {
+    background: #f0fdf4; color: #047857;
+}
+</style>
 <script>
 function confirmDelete(url, filename) {
     Swal.fire({

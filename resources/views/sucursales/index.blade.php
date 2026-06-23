@@ -2,35 +2,73 @@
 
 @section('title', 'Sucursales')
 
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 1rem; padding: 2rem; color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+        position: relative; overflow: hidden;
+    }
+    .premium-header::after {
+        content: ''; position: absolute; top: -50%; right: -20%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .filter-card {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .btn-icon-hover {
+        width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 50%; transition: background-color 0.2s;
+    }
+    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
+    .status-badge {
+        padding: 0.4em 0.8em; border-radius: 2rem;
+        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center">
         <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-building text-primary me-2"></i>Sucursales</h2>
-            <p class="text-muted mb-0">Gesti&oacute;n de sucursales o puntos de venta.</p>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-geo-alt me-3 fs-1 opacity-75"></i>Gestión de Sucursales
+            </h2>
+            <p class="mb-0 opacity-75 fs-5">Administra las sucursales, ubicaciones y datos de contacto</p>
         </div>
-        @can('sucursales.create')
-        <a href="{{ route('sucursales.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-plus-lg me-2"></i>Nueva Sucursal
-        </a>
-        @endcan
+        <div>
+            @can('sucursales.create')
+            <a href="{{ route('sucursales.create') }}" class="btn btn-light text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-plus-lg me-2"></i> Nueva Sucursal
+            </a>
+            @endcan
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-        <div class="card-body p-3 bg-light bg-opacity-50">
-            <form method="GET" action="{{ route('sucursales.index') }}" class="row g-2 align-items-center">
-                <div class="col-lg-6">
-                    <div class="input-group input-group-merge">
-                        <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="search" class="form-control border-0 bg-white" placeholder="Buscar por nombre, código o teléfono..." value="{{ request('search') }}" autocomplete="off">
-                    </div>
+    <div class="filter-card p-3 mb-4">
+        <form method="GET" action="{{ route('sucursales.index') }}" class="row g-2 align-items-end">
+            <div class="col-lg-5">
+                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider mb-1">Buscar</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="buscar" class="form-control border-start-0 ps-0" placeholder="Nombre, dirección o teléfono..." value="{{ request('buscar') }}" autocomplete="off">
                 </div>
-                <div class="col-lg-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('sucursales.index') }}" class="btn btn-light rounded-pill"><i class="bi bi-x-lg"></i></a>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="col-lg-3 d-flex gap-2 align-items-end">
+                <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel me-2"></i>Filtrar</button>
+                <a href="{{ route('sucursales.index') }}" class="btn btn-outline-secondary rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;" title="Limpiar"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
     </div>
 
     <div class="card border-0 shadow-sm rounded-4">
@@ -73,18 +111,18 @@
                             @endif
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('sucursales.show', $s) }}" class="btn btn-sm btn-outline-info rounded-pill me-1" title="Ver detalles">
+                            <a href="{{ route('sucursales.show', $s) }}" class="btn btn-icon-hover text-info border-0 bg-transparent" title="Ver detalles">
                                 <i class="bi bi-eye"></i>
                             </a>
                             @can('sucursales.edit')
-                            <a href="{{ route('sucursales.edit', $s) }}" class="btn btn-sm btn-outline-primary rounded-pill me-1" title="Editar">
+                            <a href="{{ route('sucursales.edit', $s) }}" class="btn btn-icon-hover text-primary border-0 bg-transparent" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @endcan
                             @can('sucursales.delete')
                             <form action="{{ route('sucursales.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la sucursal {{ $s->nombre }}?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger rounded-pill" title="Eliminar">
+                                <button class="btn btn-icon-hover text-danger border-0 bg-transparent" title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>

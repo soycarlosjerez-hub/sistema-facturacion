@@ -6,6 +6,7 @@ use App\Models\ListaPrecio;
 use App\Models\ListaPrecioItem;
 use App\Models\Producto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ListaPrecioController extends Controller
@@ -33,6 +34,7 @@ class ListaPrecioController extends Controller
         ]);
 
         $data['activa'] = $request->boolean('activa');
+        $data['tenant_id'] = Auth::user()->business_instance_id;
 
         ListaPrecio::create($data);
 
@@ -93,7 +95,8 @@ class ListaPrecioController extends Controller
                         'lista_precio_id' => $listaPrecio->id,
                         'producto_id' => $item['producto_id'],
                     ],
-                    ['precio' => $item['precio']]
+                    ['precio' => $item['precio']],
+                    ['tenant_id' => Auth::user()->business_instance_id]
                 );
             }
         });
@@ -120,6 +123,7 @@ class ListaPrecioController extends Controller
             'nombre' => $listaPrecio->nombre . ' (Copia)',
             'descripcion' => $listaPrecio->descripcion,
             'activa' => false,
+            'tenant_id' => Auth::user()->business_instance_id,
         ]);
         
         foreach ($listaPrecio->items as $item) {
@@ -127,6 +131,7 @@ class ListaPrecioController extends Controller
                 'lista_precio_id' => $nueva->id,
                 'producto_id' => $item->producto_id,
                 'precio' => $item->precio,
+                'tenant_id' => Auth::user()->business_instance_id,
             ]);
         }
         

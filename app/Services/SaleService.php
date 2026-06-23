@@ -267,6 +267,7 @@ class SaleService
                 'precio_unitario' => $data['precio'][$key],
                 'subtotal'        => $data['subtotal'][$key],
                 'almacen_id'      => $almacenId,
+                'tenant_id'       => Auth::user()->business_instance_id,
             ]);
 
             AlmacenMovimiento::create([

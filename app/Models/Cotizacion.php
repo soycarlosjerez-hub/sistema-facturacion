@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class Cotizacion extends Model
 {
     use HasFactory;
     use Auditable;
+    use TenantScope;
 
     protected $table = 'cotizaciones';
 
@@ -31,6 +33,7 @@ class Cotizacion extends Model
         'condiciones',
         'venta_id',
         'convertida_en',
+        'tenant_id',
     ];
 
     protected $casts = [

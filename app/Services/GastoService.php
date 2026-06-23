@@ -52,6 +52,7 @@ class GastoService
     {
         $data['user_id'] = Auth::id();
         $data['sucursal_id'] = session('sucursal_id');
+        $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
 
         $sesionActiva = SesionCaja::where('user_id', Auth::id())
             ->where('estado', 'abierta')

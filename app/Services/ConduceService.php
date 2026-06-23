@@ -78,6 +78,7 @@ class ConduceService
                 'cliente_id'        => $data['cliente_id'],
                 'user_id'           => Auth::id(),
                 'sucursal_id'       => session('sucursal_id'),
+                'tenant_id'         => Auth::user()->business_instance_id ?? null,
                 'venta_id'          => $data['venta_id'] ?? null,
                 'direccion_entrega' => $data['direccion_entrega'],
                 'referencia'        => $data['referencia'] ?? null,
@@ -212,6 +213,7 @@ class ConduceService
                 'unidad'      => $item['unidad'] ?? 'UND',
                 'peso'        => $item['peso'] ?? 0,
                 'orden'       => $idx,
+                'tenant_id'   => Auth::user()->business_instance_id,
             ]);
         }
 

@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class Sucursal extends Model
 {
     use SoftDeletes;
     use Auditable;
+    use TenantScope;
 
     protected $table = 'sucursales';
 
     protected $fillable = [
-        'codigo', 'nombre', 'direccion', 'telefono', 'email', 'rnc', 'activa', 'es_matriz',
+        'codigo', 'nombre', 'direccion', 'telefono', 'email', 'rnc', 'activa', 'es_matriz', 'tenant_id',
     ];
 
     protected $casts = [

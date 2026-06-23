@@ -78,6 +78,7 @@ class RestaurantOrderService
                     'estado'         => 'abierta',
                     'tipo_orden'     => 'mesa',
                     'notas'          => 'Reservación automática - ' . $reservacion->cliente_nombre,
+                    'tenant_id'      => Auth::user()->business_instance_id,
                 ]);
 
                 $mesa->update(['estado' => 'ocupada']);
@@ -128,6 +129,7 @@ class RestaurantOrderService
                 'estado'              => 'abierta',
                 'tipo_orden'          => $tipoOrden,
                 'delivery_company_id' => $deliveryCompanyId,
+                'tenant_id'           => Auth::user()->business_instance_id,
             ]);
 
             $mesa->update(['estado' => 'ocupada']);
@@ -196,6 +198,7 @@ class RestaurantOrderService
                     'almacen_id'      => $almacenId,
                     'notas'           => $notas,
                     'curso'           => $curso,
+                    'tenant_id'       => Auth::user()->business_instance_id,
                 ]);
     
                 $itbisItem = ($producto->itbis_porcentaje ?? 0) / 100 * $producto->precio * $cantidad;
@@ -420,6 +423,7 @@ class RestaurantOrderService
                         'persona_nombre' => $person['nombre'] ?? ('Persona ' . $person['num']),
                         'items'          => $person['items'] ?? [],
                         'subtotal'       => $person['subtotal'] ?? 0,
+                        'tenant_id'      => Auth::user()->business_instance_id,
                     ]);
                 }
             }

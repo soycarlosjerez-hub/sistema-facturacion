@@ -1,15 +1,60 @@
 @extends('layouts.app')
 @section('title', 'Gestión de Mesas')
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .premium-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .status-badge {
+        padding: 0.4em 0.8em;
+        border-radius: 2rem;
+        font-weight: 500;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    .btn-icon-hover {
+        width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+    .btn-icon-hover:hover { transform: scale(1.15); }
+</style>
+@endpush
 @section('content')
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1"><i class="bi bi-grid-3x3-gap text-primary me-2"></i>Gestión de Mesas</h4>
-            <p class="text-muted mb-0">Administra las mesas del restaurante</p>
+    <div class="premium-header">
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+                    <i class="bi bi-grid-3x3-gap fs-2 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Gestión de Mesas</h2>
+                    <p class="text-white text-opacity-75 mb-0">Administra las mesas del restaurante</p>
+                </div>
+            </div>
+            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#mesaModal" onclick="abrirModalCrear()">
+                <i class="bi bi-plus-lg me-1"></i> Nueva Mesa
+            </button>
         </div>
-        <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#mesaModal" onclick="abrirModalCrear()">
-            <i class="bi bi-plus-lg me-1"></i> Nueva Mesa
-        </button>
     </div>
 
     @if(session('success'))

@@ -1,25 +1,29 @@
 @extends('layouts.app')
 @section('title', 'Pantalla de Cocina — KDS')
 @section('content_class', 'px-0')
-@section('content')
-<div class="container-fluid py-3 px-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2 class="fw-bold mb-0"><i class="bi bi-egg-fried me-2 text-warning"></i>Pantalla de Cocina</h2>
-            <small class="text-muted" id="kds-clock">{{ now()->format('d/m/Y h:i:s A') }}</small>
-        </div>
-        <div class="d-flex gap-2 align-items-center">
-            <span class="badge bg-danger rounded-pill px-3 py-2 fs-6" id="kds-count">0 pendientes</span>
-            <button class="btn btn-outline-secondary rounded-pill btn-sm" onclick="location.reload()">
-                <i class="bi bi-arrow-clockwise me-1"></i> Recargar
-            </button>
-        </div>
-    </div>
-    <div class="row g-3" id="kds-orders"></div>
-</div>
-
+@push('styles')
 <style>
-.kds-card { transition: all .2s ease; border-left: 4px solid #eab308; }
+    .premium-header {
+        background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+        border-radius: 1rem;
+        padding: 1.25rem 2rem;
+        color: white;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .premium-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .kds-card { transition: all .2s ease; border-left: 4px solid #eab308; }
 .kds-card.urgent { border-left-color: #ef4444; animation: kds-pulse 2s infinite; }
 .kds-card.done { border-left-color: #22c55e; opacity: .7; }
 .kds-item { border-left: 3px solid transparent; padding: 4px 8px; margin: 2px 0; border-radius: 4px; font-size: .9rem; }
@@ -31,6 +35,30 @@
 .kds-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
 .kds-btn-group .btn { font-size: .7rem; padding: 2px 8px; }
 </style>
+@endpush
+@section('content')
+<div class="container-fluid py-3 px-4">
+    <div class="premium-header">
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-egg-fried fs-3 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Pantalla de Cocina</h2>
+                    <small class="text-white text-opacity-75" id="kds-clock">{{ now()->format('d/m/Y h:i:s A') }}</small>
+                </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-2 fs-6 border border-white border-opacity-25" id="kds-count">0 pendientes</span>
+                <button class="btn btn-light rounded-pill btn-sm fw-bold shadow-sm" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Recargar
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3" id="kds-orders"></div>
+</div>
 <script>
 let kdsUltimoConteo = 0;
 

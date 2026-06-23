@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 
 class VentaDetalle extends Model
 {
-    protected $fillable = ['venta_id', 'producto_id','almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at'];
+    use TenantScope;
+
+    protected $fillable = ['venta_id', 'producto_id','almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
 
     protected $casts = [
         'cantidad' => 'decimal:2',

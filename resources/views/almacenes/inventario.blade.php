@@ -1,62 +1,103 @@
 @extends('layouts.app')
 @section('title', 'Inventario por Almacén')
+
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border-radius: 1rem; padding: 2rem; color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+        position: relative; overflow: hidden;
+    }
+    .premium-header::after {
+        content: ''; position: absolute; top: -50%; right: -20%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .filter-card {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .btn-icon-hover {
+        width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 50%; transition: background-color 0.2s;
+    }
+    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
+    .status-badge {
+        padding: 0.4em 0.8em; border-radius: 2rem;
+        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4 py-3">
 
     {{-- Header --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">
-            <i class="bi bi-box-seam me-2"></i>Inventario por Almacén
-        </h2>
-        @php
-            $totalProductos = 0;
-            $totalValorGeneral = 0;
-            foreach ($almacenes as $alm) {
-                if ($almacenId && $almacenId != $alm->id) continue;
-                foreach ($stocks->get($alm->id, collect()) as $it) {
-                    if ((int)$it->stock <= 0) continue;
-                    $p = $productos->firstWhere('id', $it->producto_id);
-                    if (!$p) continue;
-                    $totalProductos++;
-                    $totalValorGeneral += $it->stock * ($p->precio_compra ?? 0);
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="bi bi-box-seam me-3 fs-1 opacity-75"></i>Inventario por Almacén
+            </h2>
+            <p class="mb-0 opacity-75 fs-5">Consulta el stock y valor del inventario en cada almacén</p>
+        </div>
+        <div class="d-flex gap-3 text-white">
+            @php
+                $totalProductos = 0;
+                $totalValorGeneral = 0;
+                foreach ($almacenes as $alm) {
+                    if ($almacenId && $almacenId != $alm->id) continue;
+                    foreach ($stocks->get($alm->id, collect()) as $it) {
+                        if ((int)$it->stock <= 0) continue;
+                        $p = $productos->firstWhere('id', $it->producto_id);
+                        if (!$p) continue;
+                        $totalProductos++;
+                        $totalValorGeneral += $it->stock * ($p->precio_compra ?? 0);
+                    }
                 }
-            }
-        @endphp
-        <div class="d-flex gap-3">
+            @endphp
             <div class="text-end">
-                <small class="text-muted d-block">Productos</small>
+                <small class="opacity-75 d-block">Productos</small>
                 <span class="fw-bold fs-5">{{ $totalProductos }}</span>
             </div>
             <div class="text-end">
-                <small class="text-muted d-block">Valor Total</small>
-                <span class="fw-bold fs-5 text-success">RD$ {{ number_format($totalValorGeneral, 2) }}</span>
+                <small class="opacity-75 d-block">Valor Total</small>
+                <span class="fw-bold fs-5">RD$ {{ number_format($totalValorGeneral, 2) }}</span>
             </div>
         </div>
     </div>
 
     {{-- Filtros --}}
-    <form method="GET" class="row g-2 mb-4">
-        <div class="col-lg-4 col-md-6">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" name="buscar" id="buscar-instant" class="form-control border-start-0 ps-0" placeholder="Buscar producto por nombre o código..." value="{{ $buscar }}" autocomplete="off">
+    <div class="filter-card p-3 mb-4">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-lg-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="buscar" id="buscar-instant" class="form-control border-start-0 ps-0" placeholder="Buscar producto por nombre o código..." value="{{ $buscar }}" autocomplete="off">
+                </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-4">
-            <select name="almacen_id" class="form-select" onchange="this.form.submit()">
-                <option value="">Todos los almacenes</option>
-                @foreach($almacenes as $a)
-                    <option value="{{ $a->id }}" {{ $almacenId == $a->id ? 'selected' : '' }}>{{ $a->nombre }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-lg-3 col-md-2">
-            <button class="btn btn-primary w-100 d-none d-lg-inline-block"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-        </div>
-        <div class="col-lg-2 col-md-2">
-            <a href="{{ route('almacenes.inventario') }}" class="btn btn-outline-secondary w-100">Limpiar</a>
-        </div>
-    </form>
+            <div class="col-lg-3">
+                <select name="almacen_id" class="form-select bg-white" onchange="this.form.submit()">
+                    <option value="">Todos los almacenes</option>
+                    @foreach($almacenes as $a)
+                        <option value="{{ $a->id }}" {{ $almacenId == $a->id ? 'selected' : '' }}>{{ $a->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <button class="btn btn-primary rounded-pill w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+            </div>
+            <div class="col-lg-2">
+                <a href="{{ route('almacenes.inventario') }}" class="btn btn-outline-secondary rounded-pill w-100">Limpiar</a>
+            </div>
+        </form>
+    </div>
 
     {{-- Cards por almacén --}}
     @foreach($almacenes as $almacen)

@@ -46,6 +46,7 @@ class PurchaseService
                     'precio_unitario'   => $item['precio'],
                     'itbis_porcentaje'  => $item['itbis_porcentaje'] ?? 18,
                     'subtotal'          => $this->computeDetailSubtotal($item),
+                    'tenant_id'         => Auth::user()->business_instance_id ?? null,
                 ]);
 
                 $this->createInventoryMovement($compra, $detalle, $producto, $item['cantidad']);
@@ -98,6 +99,7 @@ class PurchaseService
                     'precio_unitario'  => $item['precio'],
                     'itbis_porcentaje' => $item['itbis_porcentaje'] ?? 18,
                     'subtotal'         => $this->computeDetailSubtotal($item),
+                    'tenant_id'        => Auth::user()->business_instance_id ?? null,
                 ]);
 
                 $this->createInventoryMovement($compra, $detalle, $producto, $item['cantidad']);

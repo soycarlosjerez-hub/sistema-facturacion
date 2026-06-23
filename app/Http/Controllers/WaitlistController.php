@@ -30,6 +30,7 @@ class WaitlistController extends Controller
         $data['sucursal_id'] = session('sucursal_id');
         $data['user_id'] = Auth::id();
         $data['estado'] = 'esperando';
+        $data['tenant_id'] = Auth::user()->business_instance_id;
 
         $entry = WaitlistEntry::create($data);
         return response()->json(['success' => true, 'entry' => $entry]);

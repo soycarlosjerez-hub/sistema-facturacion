@@ -6,6 +6,7 @@ use App\Models\Proveedor;
 use App\Support\RncValidator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 
 class ProveedorService
 {
@@ -30,6 +31,7 @@ class ProveedorService
         $this->validarRnc($data);
         $data['sujeto_retencion_isr'] = $data['sujeto_retencion_isr'] ?? false;
         $data['sujeto_retencion_itbis'] = $data['sujeto_retencion_itbis'] ?? false;
+        $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
         return Proveedor::create($data);
     }
 

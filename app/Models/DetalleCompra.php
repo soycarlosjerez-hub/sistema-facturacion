@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetalleCompra extends Model
 {
+    use TenantScope;
+
     protected $table = 'compra_detalles';
 
     protected $fillable = [
@@ -16,6 +19,7 @@ class DetalleCompra extends Model
         'precio_unitario',
         'itbis_porcentaje',
         'subtotal',
+        'tenant_id',
     ];
 
     protected $casts = [

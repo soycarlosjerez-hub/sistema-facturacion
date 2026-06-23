@@ -30,6 +30,7 @@ class LavadorController extends Controller
 
         $data['user_id'] = auth()->id();
         $data['activo'] = $request->boolean('activo', true);
+        $data['tenant_id'] = auth()->user()->business_instance_id ?? null;
 
         Lavador::create($data);
         return redirect()->route('lavadero.lavadores.index')->with('success', 'Lavador creado');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MesaCategoria;
 use App\Models\Mesa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MesaCategoriaController extends Controller
 {
@@ -27,6 +28,8 @@ class MesaCategoriaController extends Controller
             'icono'  => 'nullable|string|max:50',
             'orden'  => 'nullable|integer|min:0',
         ]);
+
+        $data['tenant_id'] = Auth::user()->business_instance_id;
 
         MesaCategoria::create($data);
 

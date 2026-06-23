@@ -26,6 +26,7 @@ class LavaderoServicioController extends Controller
             'orden' => 'nullable|integer',
         ]);
 
+        $data['tenant_id'] = auth()->user()->business_instance_id ?? null;
         LavaderoServicio::create($data);
         return redirect()->route('lavadero.servicios.index')->with('success', 'Servicio creado');
     }

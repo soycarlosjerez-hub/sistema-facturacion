@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\TenantScope;
 
 class ListaPrecio extends Model
 {
+    use TenantScope;
+
     protected $table = 'lista_precios';
 
     protected $fillable = [
-        'codigo', 'nombre', 'descripcion', 'vigencia_desde', 'vigencia_hasta', 'activa',
+        'codigo', 'nombre', 'descripcion', 'vigencia_desde', 'vigencia_hasta', 'activa', 'tenant_id',
     ];
 
     protected $casts = [

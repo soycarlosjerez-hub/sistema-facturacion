@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\TenantScope;
 
 class CotizacionItem extends Model
 {
     use HasFactory;
+    use TenantScope;
 
     protected $table = 'cotizacion_items';
 
@@ -27,6 +29,7 @@ class CotizacionItem extends Model
         'subtotal',
         'total',
         'orden',
+        'tenant_id',
     ];
 
     protected $casts = [

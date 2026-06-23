@@ -2,19 +2,63 @@
 
 @section('title', 'Configuración del Sistema')
 
+@push('styles')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    border-radius: 1rem; padding: 2rem; color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(37,99,235,0.4);
+    position: relative; overflow: hidden;
+}
+.premium-header::after {
+    content: ''; position: absolute; top: -50%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.btn-white {
+    background: white;
+    color: #2563eb;
+    border: none;
+}
+.btn-white:hover {
+    background: #f8fafc;
+    color: #1d4ed8;
+}
+.sticky-save-bar {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-width, 0px);
+    right: 0;
+    background: #fff;
+    border-top: 2px solid #2563eb;
+    padding: 0.75rem 1.5rem;
+    z-index: 1050;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+body.dark-mode .sticky-save-bar {
+    background: #0f172a;
+    border-top-color: #38bdf8;
+}
+@media (max-width: 991.98px) {
+    .sticky-save-bar { left: 0; }
+}
+</style>
+@endpush
 
+@section('content')
 @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
-@section('content')
+
 <div class="container-fluid px-4" style="padding-bottom: 80px;">
-    <!-- Header Moderno -->
-    <div class="row align-items-center mb-4">
-        <div class="col-md-6">
-            <h3 class="fw-bold mb-0">Parámetros del Sistema</h3>
+    <div class="premium-header mb-4">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-gear-wide-connected me-2"></i>Parámetros del Sistema</h2>
             <p class="text-muted mb-0">Personaliza la información de tu negocio y reglas de facturación</p>
         </div>
     </div>
@@ -22,7 +66,6 @@
     <form action="{{ route('configuracion.update') }}" method="POST">
         @csrf
         <div class="row g-4">
-            <!-- Datos de la Empresa -->
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-header border-0 bg-transparent py-3">
@@ -60,24 +103,22 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-3">
-                         <div class="col-md-6">
-                                 <label class="form-label small fw-bold">Impuesto Predeterminado (ITBIS %)</label>
-                                 <div class="input-group">
-                                     <input type="number" step="0.01" name="impuesto_itbis" class="form-control rounded-start-3" value="{{ $settings['impuesto_itbis'] ?? '' }}">
-                                     <span class="input-group-text bg-light">%</span>
-                                 </div>
-                             </div>
-                             <div class="col-md-12">
-                                 <label class="form-label small fw-bold">Eslogan / Nota de Factura</label>
-                                 <input type="text" name="sistema_slogan" class="form-control rounded-3" value="{{ $settings['sistema_slogan'] ?? '' }}">
-                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Impuesto Predeterminado (ITBIS %)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" name="impuesto_itbis" class="form-control rounded-start-3" value="{{ $settings['impuesto_itbis'] ?? '' }}">
+                                    <span class="input-group-text bg-light">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-bold">Eslogan / Nota de Factura</label>
+                                <input type="text" name="sistema_slogan" class="form-control rounded-3" value="{{ $settings['sistema_slogan'] ?? '' }}">
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                </div>
-
-            <!-- Panel de Acciones Laterales -->
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white">
                     <div class="card-body p-4">
@@ -101,7 +142,6 @@
             </div>
         </div>
 
-        <!-- Configuración SMTP -->
         <div class="row g-4 mt-2">
             <div class="col-12">
                 <div id="correo-smtp" class="card border-0 shadow-sm rounded-4">
@@ -197,7 +237,7 @@
     </div>
 </div>
 
-<!-- Sticky Bottom Save Bar - Always Visible -->
+<!-- Sticky Bottom Save Bar -->
 <div id="stickySaveBar" class="sticky-save-bar">
     <div class="d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2" id="saveBarLeft">
@@ -211,36 +251,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .btn-white {
-        background: white;
-        color: var(--bs-primary);
-        border: none;
-    }
-    .btn-white:hover {
-        background: #f8fafc;
-        color: var(--bs-primary-dark);
-    }
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 0px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid var(--bs-primary, #0d6efd);
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #38bdf8;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
-</style>
 
 <script>
 (function() {

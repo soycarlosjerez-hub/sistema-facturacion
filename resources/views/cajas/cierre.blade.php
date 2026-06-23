@@ -2,14 +2,50 @@
 
 @section('title', 'Cierre de Caja')
 
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .premium-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="text-center mb-4">
-                <i class="bi bi-safe text-warning mb-2" style="font-size: 3rem;"></i>
-                <h3 class="fw-bold mb-0">Cierre de Caja - {{ $caja->nombre }}</h3>
-                <p class="text-muted">Turno iniciado el: {{ $sesion->fecha_apertura->format('d/m/Y h:i A') }}</p>
+            <div class="premium-header">
+                <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+                            <i class="bi bi-safe fs-2 text-white"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold mb-0 text-white">Cierre de Caja</h2>
+                            <p class="text-white text-opacity-75 mb-0">{{ $caja->nombre }} - Turno iniciado {{ $sesion->fecha_apertura->format('d/m/Y h:i A') }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </a>
+                </div>
             </div>
 
             <div class="card border-0 shadow-sm rounded-4">
@@ -83,11 +119,13 @@
 
                         <div class="row">
                             <div class="col-6">
-                                <a href="{{ route('cajas.index') }}" class="btn btn-light w-100 rounded-pill py-3 fw-bold">Cancelar</a>
+                                <a href="{{ route('cajas.index') }}" class="btn btn-light w-100 rounded-pill py-3 fw-bold">
+                                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                                </a>
                             </div>
                             <div class="col-6">
                                 <button type="submit" class="btn btn-warning w-100 rounded-pill py-3 fw-bold shadow-sm" onclick="return confirm('¿Estás seguro de que deseas cerrar la caja? Esta acción no se puede deshacer.')">
-                                    PROCESAR CIERRE DE CAJA
+                                    <i class="bi bi-lock-fill me-1"></i>PROCESAR CIERRE
                                 </button>
                             </div>
                         </div>

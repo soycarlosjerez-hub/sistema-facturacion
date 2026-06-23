@@ -4,14 +4,13 @@
 
 @push('styles')
 <style>
-    /* Premium UI Styles */
     .premium-header {
-        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         border-radius: 1rem;
         padding: 2rem;
         color: white;
         margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
         position: relative;
         overflow: hidden;
     }
@@ -32,44 +31,14 @@
         border-radius: 1rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     }
-    .table-custom {
-        border-collapse: separate;
-        border-spacing: 0 0.5rem;
-    }
-    .table-custom tbody tr {
-        background: white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        transition: all 0.2s ease-in-out;
-        border-radius: 0.75rem;
-    }
-    .table-custom tbody tr:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-    }
-    .table-custom td:first-child {
-        border-top-left-radius: 0.75rem;
-        border-bottom-left-radius: 0.75rem;
-    }
-    .table-custom td:last-child {
-        border-top-right-radius: 0.75rem;
-        border-bottom-right-radius: 0.75rem;
-    }
-    .table-custom td {
-        border-top: 1px solid transparent;
-        border-bottom: 1px solid transparent;
-        padding: 1rem 1.25rem;
-        vertical-align: middle;
-    }
     .avatar-circle {
-        width: 40px;
-        height: 40px;
+        width: 44px; height: 44px;
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 1.1rem;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600; font-size: 1.2rem;
+        transition: transform 0.2s;
     }
+    tr:hover .avatar-circle { transform: scale(1.1); }
     .status-badge {
         padding: 0.4em 0.8em;
         border-radius: 2rem;
@@ -77,36 +46,23 @@
         font-size: 0.75rem;
         letter-spacing: 0.5px;
     }
-    .row-details {
-        background-color: #f8fafc !important;
-        border-radius: 0.75rem;
-        margin-top: -0.5rem;
-        margin-bottom: 0.5rem;
-    }
     .btn-icon-hover {
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
         border-radius: 50%;
         transition: background-color 0.2s;
     }
-    .btn-icon-hover:hover {
-        background-color: rgba(0,0,0,0.05);
-    }
+    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-4">
+<div class="container-fluid px-4 py-3">
 
-    <!-- Header Section -->
     <div class="premium-header d-flex justify-content-between align-items-center">
         <div>
             <h2 class="fw-bold mb-1 d-flex align-items-center">
-                <i class="bi bi-cart-check me-3 fs-1 opacity-75"></i>
-                Gestión de Compras
+                <i class="bi bi-cart-check me-3 fs-1 opacity-75"></i> Gestión de Compras
             </h2>
             <p class="mb-0 opacity-75 fs-5">Administra tus compras, proveedores y retenciones</p>
         </div>
@@ -119,7 +75,6 @@
         </div>
     </div>
 
-    <!-- Filters Section -->
     <div class="filter-card p-4 mb-4">
         <form method="GET" id="filtros-form" action="{{ route('compras.index') }}" class="row g-3 align-items-end">
             <div class="col-lg-4">
@@ -139,29 +94,26 @@
             </div>
             <div class="col-lg-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel me-2"></i>Filtrar</button>
-                <a href="{{ route('compras.index') }}" class="btn btn-outline-secondary rounded-circle" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-arrow-counterclockwise"></i></a>
+                <a href="{{ route('compras.index') }}" class="btn btn-outline-secondary rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;"><i class="bi bi-arrow-counterclockwise"></i></a>
             </div>
-            <div class="col-lg-2 text-end">
-                <div class="btn-group shadow-sm rounded-pill">
-                    <a href="{{ route('compras.exportar', request()->all()) }}" class="btn btn-light text-success border-0 px-3">
-                        <i class="bi bi-file-excel me-1"></i> Excel
-                    </a>
-                    <a href="{{ route('compras.pdf', request()->all()) }}" class="btn btn-light text-danger border-0 px-3">
-                        <i class="bi bi-file-pdf me-1"></i> PDF
-                    </a>
-                </div>
+            <div class="col-lg-2 d-flex gap-2">
+                <a href="{{ route('compras.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium flex-grow-1">
+                    <i class="bi bi-file-excel me-1"></i> Excel
+                </a>
+                <a href="{{ route('compras.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium flex-grow-1">
+                    <i class="bi bi-file-pdf me-1"></i> PDF
+                </a>
             </div>
         </form>
     </div>
 
-    <!-- Data Table -->
-    <div class="table-responsive" style="min-height: 400px;">
-        <table class="table table-custom mb-0 w-100">
+    <div class="table-responsive" style="min-height:400px;">
+        <table class="table table-hover align-middle mb-0 w-100">
             <thead class="text-muted small text-uppercase tracking-wider" style="border-bottom: 2px solid #e2e8f0;">
                 <tr>
                     <th class="ps-4 pb-3">Comprobante</th>
                     <th class="pb-3">Proveedor</th>
-                    <th class="pb-3">Fecha & Hora</th>
+                    <th class="pb-3">Fecha &amp; Hora</th>
                     <th class="pb-3">Detalles</th>
                     <th class="text-end pb-3">Montos</th>
                     <th class="text-end pe-4 pb-3">Acciones</th>
@@ -173,7 +125,7 @@
                     <td class="ps-4">
                         <div class="d-flex flex-column">
                             <span class="fw-bold text-dark fs-6">{{ $c->folio }}</span>
-                            <span class="status-badge bg-secondary bg-opacity-10 text-secondary mt-1 d-inline-block text-truncate" style="max-width: 120px;">
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary mt-1 d-inline-block text-truncate" style="max-width:120px;">
                                 {{ $c->tipoCompra?->nombre ?? 'N/A' }}
                             </span>
                         </div>
@@ -185,12 +137,12 @@
                                 $colors = ['#f87171', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa', '#f472b6'];
                                 $color = $colors[crc32($c->proveedor->nombre ?? '') % count($colors)];
                             @endphp
-                            <div class="avatar-circle text-white me-3 shadow-sm" style="background-color: {{ $color }};">
+                            <div class="avatar-circle text-white me-3 shadow-sm" style="background-color: {{ $color }}; width:40px;height:40px;font-size:1.1rem;">
                                 {{ $firstLetter }}
                             </div>
                             <div>
                                 <div class="fw-bold text-dark fs-6">{{ $c->proveedor->nombre ?? 'Desconocido' }}</div>
-                                <div class="text-muted small">RNC: {{ $c->proveedor->rnc ?? $c->proveedor->rnc_cedula ?? '—' }}</div>
+                                <div class="text-muted small">RNC: {{ $c->proveedor->rnc ?? $c->proveedor->rnc_cedula ?? '&mdash;' }}</div>
                             </div>
                         </div>
                     </td>
@@ -201,16 +153,16 @@
                     <td>
                         <div class="d-flex flex-column gap-1">
                             @if($c->almacen)
-                                <span class="status-badge bg-info bg-opacity-10 text-info w-auto d-inline-block">
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill w-auto d-inline-block">
                                     <i class="bi bi-building me-1"></i>{{ $c->almacen->nombre }}
                                 </span>
                             @else
-                                <span class="text-muted small">—</span>
+                                <span class="text-muted small">&mdash;</span>
                             @endif
-                            
+
                             @if($c->aplica_retencion_isr || $c->aplica_retencion_itbis)
-                                <span class="status-badge bg-warning bg-opacity-25 text-dark mt-1" title="ISR: {{ number_format($c->retencion_isr, 2) }} / ITBIS: {{ number_format($c->retencion_itbis, 2) }}">
-                                    <i class="bi bi-shield-exclamation me-1"></i>Retenciones Aplicadas
+                                <span class="badge bg-warning bg-opacity-25 text-dark rounded-pill" title="ISR: {{ number_format($c->retencion_isr, 2) }} / ITBIS: {{ number_format($c->retencion_itbis, 2) }}">
+                                    <i class="bi bi-shield-exclamation me-1"></i>Retenciones
                                 </span>
                             @endif
                         </div>
@@ -221,10 +173,10 @@
                     </td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-1">
-                            <button class="btn btn-icon-hover text-muted" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $c->id }}" aria-expanded="false" title="Ver productos">
+                            <button class="btn btn-icon-hover text-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $c->id }}" aria-expanded="false" title="Ver productos">
                                 <i class="bi bi-chevron-down"></i>
                             </button>
-                            <a href="{{ route('compras.show', $c) }}" class="btn btn-icon-hover text-info" title="Ver detalle completo">
+                            <a href="{{ route('compras.show', $c) }}" class="btn btn-icon-hover text-info" title="Ver">
                                 <i class="bi bi-eye"></i>
                             </a>
                             <a href="{{ route('compras.edit', $c) }}" class="btn btn-icon-hover text-primary" title="Editar">
@@ -239,9 +191,9 @@
                         </div>
                     </td>
                 </tr>
-                <tr class="collapse row-details shadow-sm" id="details-{{ $c->id }}">
-                    <td colspan="6" class="p-4 border-0">
-                        <div class="bg-white rounded p-3 border border-light">
+                <tr class="collapse" id="details-{{ $c->id }}">
+                    <td colspan="6" class="p-4 border-0 bg-light">
+                        <div class="rounded p-3 bg-white border">
                             <h6 class="text-muted fw-bold mb-3 small text-uppercase"><i class="bi bi-box-seam me-2"></i>Productos Adquiridos ({{ $c->detalles->count() }})</h6>
                             <div class="table-responsive">
                                 <table class="table table-sm table-borderless mb-0">
@@ -257,8 +209,8 @@
                                     <tbody>
                                         @foreach($c->detalles as $d)
                                         <tr>
-                                            <td class="fw-medium text-dark">{{ $d->producto->nombre ?? '—' }}</td>
-                                            <td class="text-center bg-light rounded">{{ $d->cantidad }}</td>
+                                            <td class="fw-medium text-dark">{{ $d->producto->nombre ?? '&mdash;' }}</td>
+                                            <td class="text-center">{{ $d->cantidad }}</td>
                                             <td class="text-end text-muted">RD$ {{ number_format($d->precio_unitario, 2) }}</td>
                                             <td class="text-end text-muted">{{ number_format($d->itbis_porcentaje ?? 18, 2) }}%</td>
                                             <td class="text-end fw-bold text-dark">RD$ {{ number_format($d->subtotal, 2) }}</td>
@@ -274,14 +226,14 @@
                 <tr>
                     <td colspan="6" class="text-center py-5">
                         <div class="d-flex flex-column align-items-center justify-content-center p-5">
-                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
-                                <i class="bi bi-cart-x text-muted opacity-50" style="font-size: 3rem;"></i>
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-4" style="width:100px;height:100px;">
+                                <i class="bi bi-cart-x text-muted opacity-50" style="font-size:3rem;"></i>
                             </div>
                             <h4 class="fw-bold text-dark mb-2">No hay compras registradas</h4>
-                            <p class="text-muted mb-4 text-center" style="max-width: 400px;">Aún no se han registrado compras para esta instancia. Comienza agregando tu primera orden de compra.</p>
+                            <p class="text-muted mb-4 text-center" style="max-width:400px;">Aún no se han registrado compras para esta instancia.</p>
                             @can('compras.create')
                             <a href="{{ route('compras.create') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-                                <i class="bi bi-plus-lg me-2"></i> Registrar Nueva Compra
+                                <i class="bi bi-plus-lg me-2"></i> Registrar Compra
                             </a>
                             @endcan
                         </div>
@@ -310,16 +262,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!searchInput) return;
 
     function recargar(url) {
-        // Add a visual loading state
         tbody.style.opacity = '0.5';
-        
+
         fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(r => r.text())
             .then(html => {
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 const newTbody = doc.getElementById('compras-tbody');
                 const newPag = doc.getElementById('pagination-container');
-                
+
                 if (newTbody && tbody) {
                     tbody.innerHTML = newTbody.innerHTML;
                     tbody.style.opacity = '1';

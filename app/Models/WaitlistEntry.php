@@ -4,13 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class WaitlistEntry extends Model
 {
     use Auditable;
+    use TenantScope;
     protected $table = 'waitlist_entries';
 
-    protected $fillable = ['sucursal_id', 'cliente_nombre', 'cliente_telefono', 'personas', 'notas', 'estado', 'user_id'];
+    protected $fillable = ['sucursal_id', 'cliente_nombre', 'cliente_telefono', 'personas', 'notas', 'estado', 'user_id', 'tenant_id'];
 
     protected $casts = ['personas' => 'integer'];
 

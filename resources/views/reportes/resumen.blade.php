@@ -2,9 +2,34 @@
 
 @section('title', 'Resumen Fiscal Anual')
 
+@push('styles')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    border-radius: 1rem; padding: 2rem; color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 25px -5px rgba(79,70,229,0.4);
+    position: relative; overflow: hidden;
+}
+.premium-header::after {
+    content: ''; position: absolute; top: -50%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+}
+.filter-card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1">
                 <i class="bi bi-bar-chart-line text-danger me-2"></i>

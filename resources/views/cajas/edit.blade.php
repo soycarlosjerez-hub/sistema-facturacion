@@ -2,18 +2,59 @@
 
 @section('title', 'Editar Caja')
 
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .premium-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .sticky-save {
+        position: sticky;
+        bottom: 0;
+        z-index: 1020;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(12px);
+        border-top: 1px solid rgba(8,145,178,0.15);
+        padding: 1rem 2rem;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1"><i class="bi bi-pencil-square text-primary me-2"></i>Editar Caja</h2>
-                    <p class="text-muted mb-0">Modifica los datos de <strong>{{ $caja->nombre }}</strong>.</p>
+            <div class="premium-header">
+                <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+                            <i class="bi bi-pencil-square fs-2 text-white"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold mb-0 text-white">Editar Caja</h2>
+                            <p class="text-white text-opacity-75 mb-0">Modifica los datos de <strong class="text-white">{{ $caja->nombre }}</strong>.</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </a>
                 </div>
-                <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm">
-                    <i class="bi bi-arrow-left me-1"></i>Volver
-                </a>
             </div>
 
             @if ($errors->any())
@@ -33,10 +74,10 @@
             <form action="{{ route('cajas.update', $caja) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <div class="card-header p-4 text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <div class="card-header bg-white border-bottom border-light p-4">
                         <div class="d-flex align-items-center justify-content-between">
-                            <h5 class="fw-bold mb-0"><i class="bi bi-cash-register me-2"></i>Editando: {{ $caja->nombre }}</h5>
-                            <span class="badge bg-white text-dark">ID #{{ $caja->id }}</span>
+                            <h5 class="fw-bold mb-0"><i class="bi bi-cash-register text-primary me-2"></i>Editando: {{ $caja->nombre }}</h5>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">ID #{{ $caja->id }}</span>
                         </div>
                     </div>
                     <div class="card-body p-4 p-md-5">
@@ -117,9 +158,11 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mt-4 pt-4 border-top">
+                    </div>
+                    <div class="card-footer bg-light border-top border-light p-4 text-end">
+                        <div class="d-flex justify-content-end gap-2">
                             <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-                            <button type="submit" class="btn btn-warning rounded-pill px-5 fw-bold shadow-sm text-dark">
+                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
                                 <i class="bi bi-cloud-arrow-up me-1"></i>Guardar Cambios
                             </button>
                         </div>

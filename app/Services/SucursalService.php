@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Sucursal;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SucursalService
@@ -28,6 +29,7 @@ class SucursalService
     {
         $data['activa'] = $data['activa'] ?? false;
         $data['es_matriz'] = $data['es_matriz'] ?? false;
+        $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
 
         // Si es matriz, quitar matriz a las demás
         if ($data['es_matriz']) {

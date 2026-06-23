@@ -2,18 +2,59 @@
 
 @section('title', 'Nueva Caja')
 
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .premium-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .sticky-save {
+        position: sticky;
+        bottom: 0;
+        z-index: 1020;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(12px);
+        border-top: 1px solid rgba(8,145,178,0.15);
+        padding: 1rem 2rem;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1"><i class="bi bi-cash-register text-primary me-2"></i>Nueva Caja</h2>
-                    <p class="text-muted mb-0">Registra una nueva caja registradora en el sistema.</p>
+            <div class="premium-header">
+                <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+                            <i class="bi bi-cash-register fs-2 text-white"></i>
+                        </div>
+                        <div>
+                            <h2 class="fw-bold mb-0 text-white">Nueva Caja</h2>
+                            <p class="text-white text-opacity-75 mb-0">Registra una nueva caja registradora en el sistema.</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </a>
                 </div>
-                <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm">
-                    <i class="bi bi-arrow-left me-1"></i>Volver
-                </a>
             </div>
 
             @if (session('error'))
@@ -33,8 +74,8 @@
             <form action="{{ route('cajas.store') }}" method="POST">
                 @csrf
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header p-4 text-white" style="background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-info-circle me-2"></i>Información de la Caja</h5>
+                    <div class="card-header bg-white border-bottom border-light p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Información de la Caja</h5>
                     </div>
                     <div class="card-body p-4 p-md-5">
                         <div class="row g-4">

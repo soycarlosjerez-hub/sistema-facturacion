@@ -3,14 +3,16 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 
 class SplitBillPerson extends Model
 {
     use Auditable;
+    use TenantScope;
 
     protected $fillable = [
-        'venta_id', 'persona_num', 'persona_nombre', 'items', 'subtotal',
+        'venta_id', 'persona_num', 'persona_nombre', 'items', 'subtotal', 'tenant_id',
     ];
 
     protected $casts = [

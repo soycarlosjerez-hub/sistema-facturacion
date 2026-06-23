@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SecuenciaEcf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SecuenciaEcfController extends Controller
 {
@@ -43,6 +44,7 @@ class SecuenciaEcfController extends Controller
         ]);
 
         $data['activo'] = $request->boolean('activo', true);
+        $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
         SecuenciaEcf::create($data);
 
         return redirect()->route('secuencias-ecf.index')

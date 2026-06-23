@@ -40,6 +40,7 @@ class LavaderoCitaController extends Controller
 
         $data['user_id'] = auth()->id();
         $data['sucursal_id'] = session('sucursal_id');
+        $data['tenant_id'] = auth()->user()->business_instance_id ?? null;
 
         LavaderoCita::create($data);
         return redirect()->route('lavadero.citas.index')->with('success', 'Cita creada');

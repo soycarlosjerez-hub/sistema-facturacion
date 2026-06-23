@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class Conduce extends Model
 {
     use SoftDeletes;
     use Auditable;
+    use TenantScope;
 
     protected $fillable = [
         'numero', 'fecha', 'fecha_entrega', 'fecha_recibido',
@@ -21,7 +23,7 @@ class Conduce extends Model
         'direccion_origen', 'direccion_entrega', 'contacto_entrega',
         'telefono_entrega', 'referencia',
         'estado', 'recibido_por', 'recibido_cedula',
-        'observaciones', 'total_items', 'peso_total',
+        'observaciones', 'total_items', 'peso_total', 'tenant_id',
     ];
 
     protected $casts = [

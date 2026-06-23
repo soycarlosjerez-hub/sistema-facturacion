@@ -54,6 +54,7 @@ class EcfService
                     'monto_total' => $totales['total'],
                     'codigo_seguridad' => null,
                     'usuario_id' => Auth::id(),
+                    'tenant_id' => Auth::user()->business_instance_id ?? null,
                 ]);
 
             $ecf->load(['secuencia', 'venta.cliente', 'venta.detalles.producto']);
@@ -266,6 +267,7 @@ class EcfService
             'documento_original_id' => $original->id,
             'usuario_id' => Auth::id(),
             'motivo_anulacion' => $motivo,
+            'tenant_id' => Auth::user()->business_instance_id ?? null,
         ]);
 
         $nc->load('secuencia', 'venta.cliente', 'venta.detalles.producto');
@@ -311,6 +313,7 @@ class EcfService
             'codigo_seguridad' => null,
             'documento_original_id' => $original->id,
             'usuario_id' => Auth::id(),
+            'tenant_id' => Auth::user()->business_instance_id ?? null,
         ]);
 
         $nc->load('secuencia', 'venta.cliente', 'venta.detalles.producto');
@@ -359,6 +362,7 @@ class EcfService
             'codigo_seguridad' => null,
             'documento_original_id' => $original->id,
             'usuario_id' => Auth::id(),
+            'tenant_id' => Auth::user()->business_instance_id ?? null,
         ]);
 
         $nc->load('secuencia', 'venta.cliente', 'venta.detalles.producto');
@@ -406,6 +410,7 @@ class EcfService
             'monto_total' => $compra->total,
             'codigo_seguridad' => null,
             'usuario_id' => Auth::id(),
+            'tenant_id' => Auth::user()->business_instance_id ?? null,
         ]);
 
         $ecf->load('secuencia');
@@ -563,6 +568,7 @@ class EcfService
             'mensaje' => $mensaje,
             'duracion_ms' => $duracionMs,
             'created_at' => now(),
+            'tenant_id' => Auth::user()->business_instance_id ?? null,
         ]);
     }
 }

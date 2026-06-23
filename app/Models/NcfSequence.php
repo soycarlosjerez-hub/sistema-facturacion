@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 
 class NcfSequence extends Model
 {
+    use TenantScope;
+
     protected $fillable = [
         'nombre',
         'prefijo',
@@ -14,5 +17,6 @@ class NcfSequence extends Model
         'actual',
         'fecha_vencimiento',
         'activo',
+        'tenant_id',
     ];
 }

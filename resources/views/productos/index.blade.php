@@ -4,7 +4,6 @@
 
 @push('styles')
 <style>
-    /* Premium UI Styles */
     .premium-header {
         background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
         border-radius: 1rem;
@@ -32,34 +31,14 @@
         border-radius: 1rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     }
-    .table-custom {
-        border-collapse: separate;
-        border-spacing: 0 0.5rem;
+    .avatar-circle {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600; font-size: 1.2rem;
+        transition: transform 0.2s;
     }
-    .table-custom tbody tr {
-        background: white;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        transition: all 0.2s ease-in-out;
-        border-radius: 0.75rem;
-    }
-    .table-custom tbody tr:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-    }
-    .table-custom td:first-child {
-        border-top-left-radius: 0.75rem;
-        border-bottom-left-radius: 0.75rem;
-    }
-    .table-custom td:last-child {
-        border-top-right-radius: 0.75rem;
-        border-bottom-right-radius: 0.75rem;
-    }
-    .table-custom td {
-        border-top: 1px solid transparent;
-        border-bottom: 1px solid transparent;
-        padding: 1rem 1.25rem;
-        vertical-align: middle;
-    }
+    tr:hover .avatar-circle { transform: scale(1.1); }
     .status-badge {
         padding: 0.4em 0.8em;
         border-radius: 2rem;
@@ -68,34 +47,22 @@
         letter-spacing: 0.5px;
     }
     .btn-icon-hover {
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
         border-radius: 50%;
         transition: background-color 0.2s;
     }
-    .btn-icon-hover:hover {
-        background-color: rgba(0,0,0,0.05);
-    }
-    .product-img-wrapper { 
-        transition: transform 0.2s; 
-    }
-    tr:hover .product-img-wrapper { 
-        transform: scale(1.1); 
-    }
+    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-4">
-    <!-- Page Header -->
+<div class="container-fluid px-4 py-3">
+
     <div class="premium-header d-flex justify-content-between align-items-center">
         <div>
             <h2 class="fw-bold mb-1 d-flex align-items-center">
-                <i class="bi bi-box-seam me-3 fs-1 opacity-75"></i>
-                Catálogo de Productos
+                <i class="bi bi-box-seam me-3 fs-1 opacity-75"></i> Catálogo de Productos
             </h2>
             <p class="mb-0 opacity-75 fs-5">Administración de inventario, precios y existencias</p>
         </div>
@@ -108,47 +75,45 @@
         </div>
     </div>
 
-    <!-- Filtros de Búsqueda -->
     <div class="filter-card p-4 mb-4">
         <form method="GET" action="{{ route('productos.index') }}" id="filtros-form" class="row g-3 align-items-end">
             <div class="col-lg-4">
                 <label class="form-label text-muted small fw-bold text-uppercase tracking-wider">Buscar</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                    <input type="text" name="nombre" id="busqueda-producto" class="form-control border-start-0 ps-0"
-                           placeholder="Nombre, código o SKU..." value="{{ request('nombre') }}" autocomplete="off">
+                    <input type="text" name="nombre" id="busqueda-producto" class="form-control border-start-0 ps-0" placeholder="Nombre, código o SKU..." value="{{ request('nombre') }}" autocomplete="off">
                 </div>
             </div>
             <div class="col-lg-2">
-                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider">Estado de Stock</label>
-                <select name="stock_status" class="form-select bg-white">
-                    <option value="">Todos los niveles</option>
-                    <option value="critical" {{ request('stock_status') == 'critical' ? 'selected' : '' }}>Crítico (≤ 5)</option>
+                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider">Stock</label>
+                <select name="stock_status" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="critical" {{ request('stock_status') == 'critical' ? 'selected' : '' }}>Crítico (&le; 5)</option>
                     <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Bajo (6 - 15)</option>
-                    <option value="ok" {{ request('stock_status') == 'ok' ? 'selected' : '' }}>Normal (> 15)</option>
+                    <option value="ok" {{ request('stock_status') == 'ok' ? 'selected' : '' }}>Normal (&gt; 15)</option>
                 </select>
             </div>
             <div class="col-lg-2">
-                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider">Precio Mínimo</label>
-                <input type="number" name="precio_min" class="form-control bg-white" placeholder="RD$ 0.00" value="{{ request('precio_min') }}" step="0.01" min="0">
+                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider">Precio Mín.</label>
+                <input type="number" name="precio_min" class="form-control" placeholder="RD$ 0.00" value="{{ request('precio_min') }}" step="0.01" min="0">
             </div>
             <div class="col-lg-2">
-                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider">Precio Máximo</label>
-                <input type="number" name="precio_max" class="form-control bg-white" placeholder="RD$ 0.00" value="{{ request('precio_max') }}" step="0.01" min="0">
+                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider">Precio Máx.</label>
+                <input type="number" name="precio_max" class="form-control" placeholder="RD$ 0.00" value="{{ request('precio_max') }}" step="0.01" min="0">
             </div>
             <div class="col-lg-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel me-2"></i>Filtrar</button>
-                <a href="{{ route('productos.index') }}" class="btn btn-outline-secondary rounded-circle" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;"><i class="bi bi-arrow-counterclockwise"></i></a>
+                <a href="{{ route('productos.index') }}" class="btn btn-outline-secondary rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;"><i class="bi bi-arrow-counterclockwise"></i></a>
             </div>
-            <div class="col-12 mt-3 text-end">
-                <div class="btn-group shadow-sm rounded-pill">
-                    <a href="{{ route('productos.import') }}" class="btn btn-light text-info border-0 px-3">
+            <div class="col-12">
+                <div class="d-flex gap-2">
+                    <a href="{{ route('productos.import') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
                         <i class="bi bi-upload me-1"></i> Importar CSV
                     </a>
-                    <a href="{{ route('productos.exportar', request()->all()) }}" class="btn btn-light text-success border-start px-3">
+                    <a href="{{ route('productos.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
                         <i class="bi bi-file-excel me-1"></i> Excel
                     </a>
-                    <a href="{{ route('productos.pdf', request()->all()) }}" class="btn btn-light text-danger border-start px-3">
+                    <a href="{{ route('productos.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
                         <i class="bi bi-file-pdf me-1"></i> PDF
                     </a>
                 </div>
@@ -156,26 +121,25 @@
         </form>
     </div>
 
-    <!-- Lista de Productos -->
-    <div id="products-container" class="table-responsive" style="min-height: 400px;">
-        <table class="table table-custom mb-0 w-100">
+    <div id="products-container" class="table-responsive" style="min-height:400px;">
+        <table class="table table-hover align-middle mb-0 w-100">
             <thead class="text-muted small text-uppercase tracking-wider" style="border-bottom: 2px solid #e2e8f0;">
                 <tr>
                     <th class="ps-4 pb-3">Producto</th>
                     <th class="pb-3">Categoría</th>
-                    <th class="pb-3 text-end">Venta & Costos</th>
-                    <th class="pb-3 text-center">Rentabilidad</th>
-                    <th class="pb-3 text-center">Inventario</th>
+                    <th class="text-end pb-3">Venta &amp; Costos</th>
+                    <th class="text-center pb-3">Rentabilidad</th>
+                    <th class="text-center pb-3">Inventario</th>
                     <th class="text-end pe-4 pb-3">Acciones</th>
                 </tr>
             </thead>
             <tbody id="products-tbody">
                 @forelse($productos as $p)
                 <tr>
-                    <td class="ps-4" style="max-width: 300px;">
+                    <td class="ps-4" style="max-width:300px;">
                         <div class="d-flex align-items-center">
-                            <div class="product-img-wrapper me-3 shadow-sm rounded-circle" style="width: 48px; height: 48px; overflow: hidden; border: 2px solid #f8fafc; flex-shrink: 0;">
-                                <img src="{{ $p->imagen_url }}" width="100%" height="100%" style="object-fit: cover; background: #e2e8f0;" alt="{{ $p->nombre }}">
+                            <div class="me-3 shadow-sm rounded-circle" style="width:48px;height:48px;overflow:hidden;border:2px solid #f8fafc;flex-shrink:0;">
+                                <img src="{{ $p->imagen_url }}" width="100%" height="100%" style="object-fit:cover;background:#e2e8f0;" alt="{{ $p->nombre }}">
                             </div>
                             <div class="text-truncate">
                                 <div class="fw-bold text-dark fs-6 text-truncate" title="{{ $p->nombre }}">{{ $p->nombre }}</div>
@@ -185,22 +149,22 @@
                     </td>
                     <td>
                         @if($p->categoria)
-                            <span class="status-badge bg-info bg-opacity-10 text-info d-inline-block text-truncate" style="max-width: 150px;">
+                            <span class="badge bg-info bg-opacity-10 text-info rounded-pill">
                                 <i class="bi bi-tags me-1"></i>{{ $p->categoria->nombre }}
                             </span>
                         @else
-                            <span class="text-muted small">—</span>
+                            <span class="text-muted small">&mdash;</span>
                         @endif
                     </td>
                     <td class="text-end">
                         <div class="fw-bold text-primary fs-6">RD$ {{ number_format($p->precio, 2) }}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Costo: RD$ {{ number_format($p->precio_compra ?? 0, 2) }}</div>
-                        <div class="text-muted" style="font-size: 0.7rem;">ITBIS: {{ number_format($p->itbis_porcentaje ?? 18, 2) }}%</div>
+                        <div class="text-muted" style="font-size:0.75rem;">Costo: RD$ {{ number_format($p->precio_compra ?? 0, 2) }}</div>
+                        <div class="text-muted" style="font-size:0.7rem;">ITBIS: {{ number_format($p->itbis_porcentaje ?? 18, 2) }}%</div>
                     </td>
                     <td class="text-center">
                         @php $profit = $p->ganancia; @endphp
                         <div class="d-flex flex-column align-items-center gap-1">
-                            <span class="status-badge {{ $profit >= 0 ? 'bg-success' : 'bg-danger' }} bg-opacity-10 text-{{ $profit >= 0 ? 'success' : 'danger' }}">
+                            <span class="badge rounded-pill {{ $profit >= 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger' }}">
                                 {{ $profit >= 0 ? '+' : '' }}RD$ {{ number_format($profit, 2) }}
                             </span>
                             <span class="text-muted small fw-medium">{{ number_format($p->margen_porcentaje, 1) }}% Margen</span>
@@ -208,22 +172,22 @@
                     </td>
                     <td class="text-center">
                         @if($p->estado_stock === 'critical')
-                            <span class="status-badge bg-danger text-white shadow-sm">
+                            <span class="badge bg-danger rounded-pill">
                                 <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $p->stock }} unid.
                             </span>
                         @elseif($p->estado_stock === 'low')
-                            <span class="status-badge bg-warning text-dark shadow-sm">
+                            <span class="badge bg-warning text-dark rounded-pill">
                                 <i class="bi bi-exclamation-circle-fill me-1"></i> {{ $p->stock }} unid.
                             </span>
                         @else
-                            <span class="status-badge bg-light text-dark border">
+                            <span class="badge bg-light text-dark border rounded-pill">
                                 <i class="bi bi-check-circle-fill text-success me-1"></i> {{ $p->stock }} unid.
                             </span>
                         @endif
                     </td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-1">
-                            <a href="{{ route('productos.show', $p) }}" class="btn btn-icon-hover text-info" title="Ver detalles">
+                            <a href="{{ route('productos.show', $p) }}" class="btn btn-icon-hover text-info" title="Ver">
                                 <i class="bi bi-eye"></i>
                             </a>
                             <a href="{{ route('productos.edit', $p) }}" class="btn btn-icon-hover text-primary" title="Editar">
@@ -242,21 +206,14 @@
                 <tr>
                     <td colspan="6" class="text-center py-5">
                         <div class="d-flex flex-column align-items-center justify-content-center p-5">
-                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
-                                <i class="bi bi-box-seam text-muted opacity-50" style="font-size: 3rem;"></i>
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-4" style="width:100px;height:100px;">
+                                <i class="bi bi-box-seam text-muted opacity-50" style="font-size:3rem;"></i>
                             </div>
                             <h4 class="fw-bold text-dark mb-2">No se encontraron productos</h4>
-                            <p class="text-muted mb-4 text-center" style="max-width: 400px;">No hay productos que coincidan con los filtros de búsqueda actuales, o tu inventario está vacío.</p>
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('productos.index') }}" class="btn btn-light rounded-pill px-4 py-2 shadow-sm">
-                                    Limpiar Filtros
-                                </a>
-                                @can('productos.create')
-                                <a href="{{ route('productos.create') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-                                    <i class="bi bi-plus-lg me-2"></i> Crear Producto
-                                </a>
-                                @endcan
-                            </div>
+                            <p class="text-muted mb-4 text-center" style="max-width:400px;">No hay productos que coincidan con los filtros de búsqueda actuales.</p>
+                            <a href="{{ route('productos.create') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                                <i class="bi bi-plus-lg me-2"></i> Nuevo Producto
+                            </a>
                         </div>
                     </td>
                 </tr>
@@ -265,7 +222,6 @@
         </table>
     </div>
 
-    <!-- Paginación -->
     <div class="mt-4 d-flex justify-content-center" id="pagination-container">
         {{ $productos->withQueryString()->links() }}
     </div>
@@ -290,12 +246,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 const newTbody = doc.getElementById('products-tbody');
                 const newPagination = doc.getElementById('pagination-container');
-                
+
                 if (newTbody && tbody) {
                     tbody.innerHTML = newTbody.innerHTML;
                     tbody.style.opacity = '1';
                 }
-                
+
                 if (newPagination && pagination) {
                     pagination.innerHTML = newPagination.innerHTML;
                 } else if (pagination) {

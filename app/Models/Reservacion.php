@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
 
 class Reservacion extends Model
 {
     use Auditable;
+    use TenantScope;
     protected $table = 'reservaciones';
 
     protected $fillable = [
         'mesa_id', 'cliente_id', 'cliente_nombre', 'cliente_telefono',
-        'cliente_email', 'personas', 'fecha_hora', 'notas', 'estado', 'user_id',
+        'cliente_email', 'personas', 'fecha_hora', 'notas', 'estado', 'user_id', 'tenant_id',
     ];
 
     protected $casts = [

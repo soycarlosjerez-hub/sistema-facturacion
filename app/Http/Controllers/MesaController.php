@@ -32,6 +32,7 @@ class MesaController extends Controller
 
         $data['sucursal_id'] = session('sucursal_id');
         $data['estado'] = 'disponible';
+        $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
 
         Mesa::create($data);
 

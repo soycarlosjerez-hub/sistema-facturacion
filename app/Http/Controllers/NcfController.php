@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NcfSequence;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class NcfController extends Controller
 {
@@ -29,7 +30,9 @@ class NcfController extends Controller
             'fecha_vencimiento' => 'required|date|after:today',
         ]);
 
-        NcfSequence::create($request->all());
+        $data = $request->all();
+        $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
+        NcfSequence::create($data);
 
         return redirect()->route('ncf.index')->with('success', 'Secuencia NCF creada correctamente.');
     }

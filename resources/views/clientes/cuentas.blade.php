@@ -2,18 +2,81 @@
 
 @section('title', 'Cuentas por Cobrar')
 
+@push('styles')
+<style>
+    .premium-header {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+    .premium-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    .filter-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .status-badge {
+        padding: 0.4em 0.8em;
+        border-radius: 2rem;
+        font-weight: 500;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    .btn-icon-hover {
+        width: 32px; height: 32px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+    .btn-icon-hover:hover { transform: scale(1.15); }
+    .avatar-circle {
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 600; font-size: 1.2rem;
+        transition: transform 0.2s;
+    }
+    tr:hover .avatar-circle { transform: scale(1.1); }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4">
-    <!-- Header -->
-    <div class="row align-items-center mb-4">
-        <div class="col-md-6">
-            <h3 class="fw-bold mb-0">Gestión de Cuentas</h3>
-            <p class="text-muted mb-0">Auditando deudas, fiados y cuentas abiertas</p>
-        </div>
-        <div class="col-md-6 text-md-end">
-            <div class="bg-white d-inline-block px-4 py-2 rounded-pill shadow-sm border">
-                <span class="text-muted small fw-bold text-uppercase me-2">Total por Cobrar:</span>
-                <span class="fs-5 fw-bold text-danger">RD${{ number_format($clientes->sum('balance_pendiente'), 2) }}</span>
+    <!-- Premium Header -->
+    <div class="premium-header">
+        <div class="row align-items-center position-relative" style="z-index: 2;">
+            <div class="col-md-7">
+                <div class="d-flex align-items-center gap-3 mb-1">
+                    <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i class="bi bi-cash-coin fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0 text-white">Cuentas por Cobrar</h2>
+                        <p class="text-white text-opacity-75 mb-0">Auditando deudas, fiados y cuentas abiertas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5 text-md-end">
+                <div class="bg-white bg-opacity-20 d-inline-block px-4 py-2 rounded-pill border border-white border-opacity-25">
+                    <span class="small fw-bold text-uppercase me-2 opacity-75">Total por Cobrar:</span>
+                    <span class="fs-5 fw-bold">RD${{ number_format($clientes->sum('balance_pendiente'), 2) }}</span>
+                </div>
             </div>
         </div>
     </div>

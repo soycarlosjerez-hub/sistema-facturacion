@@ -78,6 +78,7 @@ class CotizacionService
                 'cliente_id'   => $data['cliente_id'],
                 'user_id'      => Auth::id(),
                 'sucursal_id'  => session('sucursal_id'),
+                'tenant_id'    => Auth::user()->business_instance_id ?? null,
                 'fecha'        => $data['fecha'],
                 'fecha_validez' => $data['fecha_validez'] ?? null,
                 'estado'       => $data['estado'] ?? 'borrador',
@@ -201,6 +202,7 @@ class CotizacionService
                 'total'           => (float) $cotizacion->total,
                 'tipo_comprobante' => 'ecf',
                 'estado'          => 'completada',
+                'tenant_id'       => Auth::user()->business_instance_id ?? null,
             ]);
 
             foreach ($cotizacion->items as $item) {
@@ -211,6 +213,7 @@ class CotizacionService
                     'cantidad'       => $item->cantidad,
                     'precio_unitario' => $item->precio_unitario,
                     'subtotal'       => $subtotalItem,
+                    'tenant_id'      => Auth::user()->business_instance_id ?? null,
                 ]);
             }
 
@@ -263,6 +266,7 @@ class CotizacionService
                 'descuento'        => $itemData['descuento'] ?? 0,
                 'itbis_porcentaje' => $itemData['itbis_porcentaje'] ?? ($producto?->itbis_porcentaje ?? 18),
                 'orden'            => $i,
+                'tenant_id'        => Auth::user()->business_instance_id ?? null,
             ]);
 
             $item->calcular();

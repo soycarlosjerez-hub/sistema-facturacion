@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\Auditable;
@@ -9,6 +10,7 @@ use App\Traits\Auditable;
 class SecuenciaEcf extends Model
 {
     use Auditable;
+    use TenantScope;
     protected $table = 'secuencias_ecf';
 
     protected $fillable = [
@@ -20,6 +22,7 @@ class SecuenciaEcf extends Model
         'fecha_vencimiento',
         'activo',
         'descripcion',
+        'tenant_id',
     ];
 
     protected $casts = [

@@ -133,6 +133,7 @@ class LavaderoController extends Controller
                 'total' => $total,
                 'estado' => 'pagada',
                 'notas' => 'Lavado de vehículo',
+                'tenant_id' => auth()->user()->business_instance_id,
             ]);
 
             $prodId = \App\Models\Producto::value('id');
@@ -147,6 +148,7 @@ class LavaderoController extends Controller
                     'precio_unitario' => $s['precio'],
                     'subtotal' => $s['precio'],
                     'notas' => $s['nombre'],
+                    'tenant_id' => auth()->user()->business_instance_id,
                 ]);
             }
 
