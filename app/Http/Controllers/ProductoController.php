@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Categoria;
 use App\Exports\ProductosExport;
+use App\Imports\DynamicProductosImport;
 use App\Imports\ProductosImport;
 use App\Services\ProductoService;
 use App\Http\Requests\StoreProductoRequest;
 use App\Http\Requests\UpdateProductoRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -28,6 +31,130 @@ class ProductoController extends Controller
     public function showImportForm()
     {
         return view('productos.import');
+    }
+
+    public function uploadPreview(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+        ]);
+
+        $file = $request->file('file');
+        $hash = md5(uniqid());
+        $path = $file->storeAs('imports/' . $hash, 'file.' . $file->getClientOriginalExtension(), 'local');
+
+        $headers = [];
+        $fullPath = Storage::disk('local')->path($path);
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        if (in_array($ext, ['csv', 'txt'])) {
+            $guessed = $this->detectDelimiter($fullPath);
+            $handle = fopen($fullPath, 'r');
+            if ($handle) {
+                $firstLine = fgets($handle);
+                fclose($handle);
+                if ($firstLine) {
+                    $firstLine = preg_replace('/^\xEF\xBB\xBF/', '', $firstLine);
+                    $result = $this->parseHeaders($firstLine, $guessed);
+                    $headers = $result['headers'];
+                    $delimiter = $result['delimiter'];
+                }
+            }
+            if (!isset($delimiter)) $delimiter = $guessed;
+        } else {
+            $delimiter = ',';
+            try {
+                $reader = \PhpOffice\PhpSpreadsheet\IOFactory::load($fullPath);
+                $sheet = $reader->getActiveSheet();
+                $row = $sheet->rangeToArray('A1:' . $sheet->getHighestColumn() . '1', null, true, false)[0] ?? [];
+                $headers = array_filter(array_map('trim', $row), fn($h) => !empty($h));
+            } catch (\Exception $e) {
+                $headers = [];
+            }
+        }
+
+        if (empty($headers)) {
+            Storage::disk('local')->deleteDirectory('imports/' . $hash);
+            $preview = '';
+            if (isset($firstLine)) {
+                $raw = substr($firstLine, 0, 200);
+                $preview = ' Contenido (primeros 200 bytes): ' . json_encode($raw);
+            }
+            return back()->with('error', 'No se pudieron leer los encabezados del archivo. Verifica que la primera fila tenga los nombres de las columnas separados por coma (,) o punto y coma (;).' . $preview);
+        }
+
+        $productFields = [
+            'nombre' => 'Nombre *',
+            'codigo_barras' => 'Código de Barras',
+            'descripcion' => 'Descripción',
+            'precio' => 'Precio *',
+            'precio_compra' => 'Precio de Compra',
+            'unidad_medida' => 'Unidad de Medida',
+            'itbis_porcentaje' => 'ITBIS %',
+            'stock' => 'Stock *',
+            'categoria' => 'Categoría (ID o Nombre)',
+        ];
+
+        return view('productos.import', [
+            'step' => 'map',
+            'hash' => $hash,
+            'headers' => $headers,
+            'productFields' => $productFields,
+            'delimiter' => $delimiter,
+        ]);
+    }
+
+    public function processImport(Request $request)
+    {
+        $request->validate([
+            'hash' => 'required|string',
+            'delimiter' => ['required', Rule::in([',', ';'])],
+            'mapping' => 'required|array',
+            'mapping.*' => 'nullable|string',
+        ]);
+
+        $hash = $request->input('hash');
+        $delimiter = $request->input('delimiter');
+        $mapping = array_filter($request->input('mapping', []), fn($v) => !empty($v));
+        $files = Storage::disk('local')->files('imports/' . $hash);
+
+        if (empty($files)) {
+            return redirect()->route('productos.import')
+                ->with('error', 'Archivo no encontrado. Por favor sube el archivo nuevamente.');
+        }
+
+        $path = Storage::disk('local')->path($files[0]);
+
+        $defaults = [
+            'unidad_medida' => 'Unidad',
+            'itbis_porcentaje' => 18,
+            'stock' => 0,
+            'precio' => 0,
+        ];
+
+        $import = new DynamicProductosImport($mapping, $defaults, $delimiter);
+
+        try {
+            Excel::import($import, $path);
+
+            Storage::disk('local')->deleteDirectory('imports/' . $hash);
+
+            $message = $import->imported . ' productos importados correctamente.';
+            if (!empty($import->failures)) {
+                $message .= ' ' . count($import->failures) . ' filas con errores fueron omitidas.';
+            }
+
+            return redirect()->route('productos.index')
+                ->with('success', $message);
+        } catch (\Throwable $e) {
+            Storage::disk('local')->deleteDirectory('imports/' . $hash);
+            $message = 'Error al importar: ' . $e->getMessage();
+            if (!empty($import->failures)) {
+                $message .= ' (' . count($import->failures) . ' filas omitidas)';
+            }
+            return redirect()->route('productos.index')
+                ->with('error', $message);
+        }
     }
 
     public function create()
@@ -141,5 +268,37 @@ class ProductoController extends Controller
         }
 
         return $query;
+    }
+
+    private function detectDelimiter(string $filePath): string
+    {
+        $handle = fopen($filePath, 'r');
+        if (!$handle) return ',';
+        $firstLine = fgets($handle);
+        fclose($handle);
+        if (!$firstLine) return ',';
+
+        $firstLine = preg_replace('/^\xEF\xBB\xBF/', '', $firstLine);
+        $semicolons = substr_count($firstLine, ';');
+        $commas = substr_count($firstLine, ',');
+
+        return $semicolons > $commas ? ';' : ',';
+    }
+
+    private function parseHeaders(string $line, string $preferred): array
+    {
+        $attempts = $preferred === ',' ? [',', ';'] : [';', ','];
+
+        foreach ($attempts as $d) {
+            $headers = str_getcsv($line, $d);
+            $headers = array_map(fn($h) => trim(preg_replace('/^\xEF\xBB\xBF/', '', $h)), $headers);
+            $headers = array_filter($headers, fn($h) => $h !== '');
+            $headers = array_values($headers);
+            if (!empty($headers)) {
+                return ['headers' => $headers, 'delimiter' => $d];
+            }
+        }
+
+        return ['headers' => [], 'delimiter' => $preferred];
     }
 }

@@ -184,6 +184,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
         Route::get('/productos/import', [ProductoController::class, 'showImportForm'])->name('productos.import');
+        Route::post('/productos/import/preview', [ProductoController::class, 'uploadPreview'])->name('productos.import.preview');
+        Route::post('/productos/import/process', [ProductoController::class, 'processImport'])->name('productos.import.process');
         Route::get('/productos/exportar', [ProductoController::class, 'exportExcel'])->name('productos.exportar');
         Route::get('/productos/pdf', [ProductoController::class, 'exportPdf'])->name('productos.pdf');
         Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');
@@ -196,7 +198,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:productos.create')->group(function () {
         Route::get('/productos/create', [ProductoController::class, 'create'])->name('productos.create');
         Route::post('/productos', [ProductoController::class, 'store'])->name('productos.store');
-        Route::post('/productos/import', [ProductoController::class, 'import'])->name('productos.import.store');
+        Route::post('/productos/import', [ProductoController::class, 'uploadPreview'])->name('productos.import.store');
 
         Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store');
     });
