@@ -9,6 +9,8 @@ class TipoVenta extends Model
 {
     use HasFactory;
 
+    const RESTAURANTE = 1;
+
     protected $table = 'tipos_ventas';
 
     protected $fillable = [

@@ -70,7 +70,7 @@ class RestaurantOrderService
                     'caja_id'        => $sesion?->caja_id,
                     'sesion_caja_id' => $sesion?->id,
                     'cliente_id'     => $cliente->id,
-                    'tipo_venta_id'  => 1,
+                    'tipo_venta_id'  => \App\Models\TipoVenta::RESTAURANTE,
                     'fecha'          => now(),
                     'subtotal'       => 0,
                     'impuestos'      => 0,
@@ -106,9 +106,6 @@ class RestaurantOrderService
         }
 
         $tipoOrden = $tipoOrden ?? 'mesa';
-        $servicioPorcentaje = (float) config('app.servicio_porcentaje', 0);
-        $servicioMinPersonas = (int) config('app.servicio_min_personas', 8);
-        $aplicarServicio = $servicioPorcentaje > 0 && $mesa->capacidad >= $servicioMinPersonas;
 
         if ($tipoOrden === 'delivery' && !$deliveryCompanyId) {
             return ['error' => 'Debes seleccionar una empresa de delivery', 'code' => 422];
@@ -123,7 +120,7 @@ class RestaurantOrderService
                 'caja_id'             => $sesion->caja_id,
                 'sesion_caja_id'      => $sesion->id,
                 'cliente_id'          => $clienteId ?? Cliente::consumidorFinal()->id,
-                'tipo_venta_id'       => 1,
+                'tipo_venta_id'       => \App\Models\TipoVenta::RESTAURANTE,
                 'fecha'               => now(),
                 'subtotal'            => 0,
                 'impuestos'           => 0,
@@ -543,6 +540,8 @@ class RestaurantOrderService
 
     public function abrirCaja(int $cajaId, float $montoInicial): array
     {
+        $caja = Caja::where('sucursal_id', session('sucursal_id'))->findOrFail($cajaId);
+
         if (!$caja->activo) return ['error' => 'Esta caja está inactiva', 'code' => 422];
         if ($caja->estado === 'abierta') return ['error' => 'La caja ya está abierta', 'code' => 422];
 

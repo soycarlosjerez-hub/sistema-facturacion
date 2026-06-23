@@ -583,6 +583,7 @@ Route::middleware(['auth', 'permission:devoluciones.view'])->group(function () {
 // Listas de Precios
 Route::middleware(['auth', 'permission:listas-precio.view'])->group(function () {
     Route::get('listas-precio', [ListaPrecioController::class, 'index'])->name('listas-precio.index');
+    Route::get('listas-precio/{listaPrecio}', [ListaPrecioController::class, 'show'])->name('listas-precio.show');
 });
 Route::middleware(['auth', 'permission:listas-precio.create'])->group(function () {
     Route::get('listas-precio/create', [ListaPrecioController::class, 'create'])->name('listas-precio.create');

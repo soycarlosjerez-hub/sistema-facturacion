@@ -23,6 +23,7 @@ class PurchaseService
 
         return DB::transaction(function () use ($data, $products, $totals, &$newProducts, &$updatedProducts) {
             $compra = Compra::create([
+                'tenant_id'       => Auth::user()->business_instance_id ?? null,
                 'proveedor_id'    => $data['proveedor_id'],
                 'sucursal_id'     => session('sucursal_id'),
                 'almacen_id'      => $data['almacen_id'] ?? null,
@@ -229,6 +230,7 @@ class PurchaseService
         }
 
         $producto = Producto::create([
+            'tenant_id'        => Auth::user()->business_instance_id ?? null,
             'nombre'           => trim($item['nombre']),
             'codigo_barras'    => !empty($item['codigo_barras']) ? trim($item['codigo_barras']) : null,
             'precio_compra'    => $precio,

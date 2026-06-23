@@ -39,6 +39,13 @@ class ListaPrecioController extends Controller
         return redirect()->route('listas-precio.index')->with('success', 'Lista de precios creada exitosamente.');
     }
 
+    public function show(ListaPrecio $listaPrecio)
+    {
+        $listaPrecio->load('items.producto');
+        $productos = Producto::orderBy('nombre')->get();
+        return view('listas-precio.show', compact('listaPrecio', 'productos'));
+    }
+
     public function edit(ListaPrecio $listaPrecio)
     {
         $listaPrecio->load('items.producto');
@@ -107,13 +114,14 @@ class ListaPrecioController extends Controller
 
     public function duplicar(ListaPrecio $listaPrecio)
     {
+        $nuevoCodigo = substr($listaPrecio->codigo, 0, 15) . '-CPY';
         $nueva = ListaPrecio::create([
-            'codigo' => $listaPrecio->codigo . '-COPY',
+            'codigo' => $nuevoCodigo,
             'nombre' => $listaPrecio->nombre . ' (Copia)',
             'descripcion' => $listaPrecio->descripcion,
             'activa' => false,
         ]);
-
+        
         foreach ($listaPrecio->items as $item) {
             ListaPrecioItem::create([
                 'lista_precio_id' => $nueva->id,
@@ -121,7 +129,7 @@ class ListaPrecioController extends Controller
                 'precio' => $item->precio,
             ]);
         }
-
+        
         return redirect()->route('listas-precio.edit', $nueva)
             ->with('success', 'Lista duplicada exitosamente. Revisa y activa cuando esté lista.');
     }

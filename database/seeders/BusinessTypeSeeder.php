@@ -22,7 +22,7 @@ class BusinessTypeSeeder extends Seeder
                 'modulos' => [
                     'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
                     'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
-                    'clientes', 'cajas', 'reportes-caja', 'reportes-restaurante', 'reportes-resumen',
+                    'clientes', 'cajas', 'sucursales', 'almacenes', 'reportes-caja', 'reportes-restaurante', 'reportes-resumen',
                 ],
             ],
             [

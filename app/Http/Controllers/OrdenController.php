@@ -142,6 +142,10 @@ class OrdenController extends Controller
             'propina'              => 'nullable|numeric|min:0',
             'split'                => 'nullable|boolean',
             'personas'             => 'nullable|integer|min:2|max:10|required_if:split,true',
+            'split_persons'        => 'nullable|array|required_if:split,true',
+            'split_persons.*.num'  => 'required_with:split_persons|integer|min:1',
+            'split_persons.*.nombre'=> 'nullable|string|max:100',
+            'split_persons.*.subtotal' => 'required_with:split_persons|numeric|min:0',
             'totales'              => 'nullable|array|required_if:split,true',
         ]);
 

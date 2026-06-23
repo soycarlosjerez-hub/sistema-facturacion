@@ -65,7 +65,6 @@
                                 </div>
                             </div>
                         </div>
-                    </form>
                 </div>
                 <div class="card-footer bg-light border-top border-light p-4 text-end">
                     <div class="d-flex justify-content-end gap-2">
@@ -75,6 +74,7 @@
                         </button>
                     </div>
                 </div>
+                </form>
             </div>
         </div>
     </div>
