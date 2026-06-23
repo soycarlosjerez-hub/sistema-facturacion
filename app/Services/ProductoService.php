@@ -9,6 +9,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ProductoService
 {
@@ -124,6 +125,13 @@ class ProductoService
     public function saveImage(UploadedFile $file): string
     {
         $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-        return $file->storeAs('productos', $name . '-' . uniqid() . '.' . $file->getClientOriginalExtension(), 'public');
+        $filename = $name . '-' . uniqid() . '.webp';
+
+        $image = Image::read($file);
+        $image->resize(width: 800);
+        $image->toWebp(quality: 70)
+              ->save(storage_path('app/public/productos/' . $filename));
+
+        return 'productos/' . $filename;
     }
 }
