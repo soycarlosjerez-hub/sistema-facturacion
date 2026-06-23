@@ -555,6 +555,7 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/instances/{instance}/config', [\App\Http\Controllers\OwnerController::class, 'instancesConfig'])->name('instances.config');
     Route::put('/instances/{instance}/config', [\App\Http\Controllers\OwnerController::class, 'instancesConfigUpdate'])->name('instances.config.update');
     Route::post('/instances/{instance}/toggle-block', [\App\Http\Controllers\OwnerController::class, 'alternarBloqueo'])->name('instances.toggle-block');
+    Route::post('/instances/{instance}/clean', [\App\Http\Controllers\OwnerController::class, 'cleanInstance'])->name('instances.clean');
     Route::get('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'paymentHistory'])->name('instances.pagos');
     Route::get('/instances/{instance}/pagos/create', [\App\Http\Controllers\OwnerController::class, 'registerPayment'])->name('instances.pagos.create');
     Route::post('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'storePayment'])->name('instances.pagos.store');

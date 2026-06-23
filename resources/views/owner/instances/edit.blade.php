@@ -91,5 +91,69 @@
             </div>
         </div>
     </div>
+
+    <!-- Danger Zone -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="border-left: 4px solid #dc2626 !important;">
+                <div class="card-header text-white py-3" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-white">Zona de Peligro</h5>
+                            <small class="text-white text-opacity-75">Acciones destructivas que no se pueden deshacer</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div class="bg-danger bg-opacity-10 text-danger rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px;">
+                            <i class="bi bi-eraser fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Limpiar todos los datos de la instancia</h6>
+                            <p class="text-muted small mb-0">
+                                Esta acción eliminará <strong>todos los datos operacionales</strong> de <strong>{{ $instance->nombre }}</strong>:
+                                productos, clientes, proveedores, ventas, compras, cotizaciones, conduces, devoluciones,
+                                gastos, almacenes, cajas, mesas, reservaciones, datos de lavadero, listas de precio,
+                                sucursales, secuencias NCF/ECF, y más.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 mb-3" style="background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.15);">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-info-circle text-danger mt-1"></i>
+                            <div class="small">
+                                <strong class="text-danger">Se conservarán:</strong> usuarios, roles de instancia, 
+                                visibilidad de módulos, historial de pagos y configuración de la instancia.
+                                <br>
+                                <strong class="text-danger">No se puede deshacer.</strong> Asegúrate de haber hecho 
+                                un backup antes de continuar.
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ route('owner.instances.clean', $instance) }}" 
+                          onsubmit="return confirm('¿ESTÁS ABSOLUTAMENTE SEGURO? Esta acción eliminará TODOS los datos de {{ $instance->nombre }}. No se puede deshacer.')">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-danger">Escribe <strong>{{ $instance->nombre }}</strong> para confirmar:</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-key text-danger"></i></span>
+                                <input type="text" name="confirm_name" class="form-control border-start-0" 
+                                       placeholder="Escribe el nombre exacto de la instancia" 
+                                       autocomplete="off" required
+                                       oninput="document.getElementById('clean-btn').disabled = (this.value !== '{{ $instance->nombre }}')">
+                            </div>
+                        </div>
+                        <button type="submit" id="clean-btn" class="btn btn-danger rounded-pill px-4 fw-bold" disabled>
+                            <i class="bi bi-eraser me-2"></i>Limpiar Todos los Datos
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

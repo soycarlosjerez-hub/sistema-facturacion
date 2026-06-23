@@ -13,6 +13,7 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\UserBusinessService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -473,6 +474,47 @@ class OwnerController extends Controller
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Configuración de instancia actualizada correctamente.');
+    }
+
+    public function cleanInstance(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $request->validate([
+            'confirm_name' => 'required|string|in:' . $instance->nombre,
+        ]);
+
+        $tenantId = $instance->id;
+
+        DB::transaction(function () use ($tenantId) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+            $tables = [
+                'split_bill_persons', 'venta_detalles', 'pagos', 'ecf_log_envios',
+                'ecf_documentos', 'conduce_items', 'conduces',
+                'detalles_devolucion', 'devoluciones',
+                'compra_detalles', 'compras', 'gastos',
+                'cotizacion_items', 'cotizaciones',
+                'almacen_movimientos', 'almacenes',
+                'ncf_sequences', 'secuencias_ecf',
+                'lavadero_citas', 'lavadero_servicios', 'lavadores',
+                'sesiones_caja', 'cajas',
+                'mesas', 'mesa_categorias', 'reservaciones',
+                'waitlist_entries',
+                'lista_precio_items', 'lista_precios',
+                'proveedores', 'clientes', 'productos', 'categorias',
+                'sucursales',
+            ];
+
+            foreach ($tables as $table) {
+                DB::table($table)->where('tenant_id', $tenantId)->delete();
+            }
+
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        });
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', "Todos los datos operacionales de {$instance->nombre} han sido eliminados. La instancia está limpia.");
     }
 
     public function alternarBloqueo(Request $request, $id)
