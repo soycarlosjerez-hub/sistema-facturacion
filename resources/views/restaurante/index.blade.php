@@ -1011,6 +1011,7 @@
 <script>
 let mesaActual = null;
 let ordenActual = null;
+let sesionCajaActiva = null;
 let postPagoData = null;
 let totalPagoFinal = 0;
 let productosData = [];
@@ -1051,6 +1052,7 @@ function renderCajaStatus() {
             return r.json();
         })
         .then(data => {
+            sesionCajaActiva = data.sesion;
             const bar = document.getElementById('caja-status-bar');
             if (data.sesion) {
                 bar.innerHTML = `
@@ -1353,9 +1355,10 @@ function cargarMesa(mesaId) {
                             ${timerHtml}
                         </div>
                         <div class="d-flex gap-2 justify-content-center mt-3 px-3">
-                            <button class="btn btn-success rounded-pill flex-fill py-2 fw-bold" onclick="confirmarReserva(${mesaId}, ${r.id})">
-                                <i class="bi bi-play-circle-fill me-1"></i> Ocupar ahora
-                            </button>
+                            ${sesionCajaActiva
+                                ? `<button class="btn btn-success rounded-pill flex-fill py-2 fw-bold" onclick="confirmarReserva(${mesaId}, ${r.id})"><i class="bi bi-play-circle-fill me-1"></i> Ocupar ahora</button>`
+                                : `<button class="btn btn-danger rounded-pill flex-fill py-2 fw-bold" onclick="mostrarAbrirCaja()"><i class="bi bi-cash-stack me-1"></i> Abrir Caja primero</button>`
+                            }
                             <button class="btn btn-outline-danger rounded-pill" onclick="liberarMesa(${mesaId})">
                                 <i class="bi bi-x-circle me-1"></i> Liberar
                             </button>
@@ -1366,15 +1369,30 @@ function cargarMesa(mesaId) {
                 ordenActual = null;
                 searchBar.classList.add('d-none');
                 clienteSelector.classList.add('d-none');
-                document.getElementById('orden-items').innerHTML = `
-                    <div class="text-center text-muted mt-5">
-                        <i class="bi bi-cup-straw fs-1 d-block mb-2"></i>
-                        <p>Mesa vacía</p>
-                        <button class="btn btn-primary rounded-pill btn-lg mt-2" onclick="mostrarAbrirMesa(${mesaId})">
-                            <i class="bi bi-plus-circle me-1"></i> Abrir Mesa
-                        </button>
-                    </div>
-                `;
+                if (sesionCajaActiva) {
+                    document.getElementById('orden-items').innerHTML = `
+                        <div class="text-center text-muted mt-5">
+                            <i class="bi bi-cup-straw fs-1 d-block mb-2"></i>
+                            <p>Mesa vacía</p>
+                            <button class="btn btn-primary rounded-pill btn-lg mt-2" onclick="mostrarAbrirMesa(${mesaId})">
+                                <i class="bi bi-plus-circle me-1"></i> Abrir Mesa
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('orden-items').innerHTML = `
+                        <div class="text-center mt-5">
+                            <div class="bg-danger bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                                <i class="bi bi-cash-stack text-danger fs-2"></i>
+                            </div>
+                            <p class="fw-bold text-danger mb-1">Sin caja activa</p>
+                            <small class="text-muted d-block mb-3">Debes abrir una caja antes de poder abrir mesas.</small>
+                            <button class="btn btn-danger rounded-pill fw-bold" onclick="mostrarAbrirCaja()">
+                                <i class="bi bi-plus-circle me-1"></i> Abrir Caja
+                            </button>
+                        </div>
+                    `;
+                }
                 document.getElementById('orden-footer').classList.add('d-none');
             }
         })

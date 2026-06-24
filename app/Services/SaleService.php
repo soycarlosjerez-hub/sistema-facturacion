@@ -166,7 +166,8 @@ class SaleService
         $tipoVentaDefault = $tiposVenta->firstWhere('nombre', 'Contado') ?? $tiposVenta->first();
         $almacenes  = \App\Models\Almacen::orderBy('nombre')->get();
 
-        $productos = Producto::orderBy('nombre')
+        $productos = Producto::withoutGlobalScope('tenant')
+            ->orderBy('nombre')
             ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen')
             ->get()
             ->map(fn($p) => $p->setAttribute('imagen_url', $p->imagen_url));

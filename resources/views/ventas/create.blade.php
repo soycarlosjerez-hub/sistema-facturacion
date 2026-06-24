@@ -1468,16 +1468,16 @@ body:not(.dark-mode) {
     #productosModal .form-control:focus { border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); color: var(--pos-text); }
 
     .tecla {
-        flex: 1; height: 38px; border-radius: 8px;
+        flex: 1; height: 52px; border-radius: 10px;
         border: 1px solid var(--pos-border);
         background: var(--pos-card); color: var(--pos-text);
-        font-size: .78rem; font-weight: 600; cursor: pointer;
+        font-size: 1.15rem; font-weight: 600; cursor: pointer;
         display: inline-flex; align-items: center; justify-content: center;
         touch-action: manipulation; user-select: none; -webkit-user-select: none;
-        transition: background .08s, transform .08s; padding: 0 3px; min-width: 0;
+        transition: background .08s, transform .08s; padding: 0 4px; min-width: 0;
     }
     .tecla:active { background: rgba(14,165,233,0.2); transform: scale(0.93); box-shadow: 0 0 0 2px rgba(14,165,233,0.2); }
-    .tecla-func { background: rgba(255,255,255,0.06); font-size: .72rem; }
+    .tecla-func { background: rgba(255,255,255,0.06); font-size: 1rem; }
     .tecla-shift { flex: 1.6; }
     .tecla-shift.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
     .tecla-backspace { flex: 1.3; }
@@ -1486,40 +1486,36 @@ body:not(.dark-mode) {
     .tecla-punct { flex: 1; }
     .tecla-func:active { background: rgba(14,165,233,0.2); }
     .tecla-func.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
-    .tecla-row { display: flex; gap: 4px; justify-content: center; margin-bottom: 4px; }
+    .tecla-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 6px; }
     #teclado-rows { max-width: 100%; }
     #teclado-rows::-webkit-scrollbar { height: 0; }
-
-    @media (max-width: 576px) {
-        .tecla { height: 34px; font-size: .7rem; border-radius: 6px; }
-    }
 
     /* ============ Modal Productos — Product Cards ============ */
     .modal-prod-card {
         background: var(--pos-card); border: 1px solid var(--pos-border); border-radius: 14px;
-        padding: 10px; cursor: pointer; text-align: center; position: relative;
+        padding: 12px 10px; cursor: pointer; text-align: center; position: relative;
         transition: transform .15s, box-shadow .15s; height: 100%; display: flex; flex-direction: column; align-items: center;
     }
     .modal-prod-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); border-color: var(--pos-accent); }
     .modal-prod-card.out-of-stock { opacity: 0.4; cursor: not-allowed; }
     .modal-prod-card.out-of-stock:hover { transform: none; box-shadow: none; }
-    .modal-prod-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,0.05); margin-bottom: 6px; }
+    .modal-prod-img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,0.05); margin-bottom: 8px; }
     .modal-prod-img-placeholder {
-        width: 64px; height: 64px; border-radius: 12px;
+        width: 80px; height: 80px; border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem; font-weight: 800; margin-bottom: 6px;
+        font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;
     }
-    .modal-prod-name { font-size: .75rem; font-weight: 600; color: var(--pos-text); line-height: 1.2; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
-    .modal-prod-price { font-size: .8rem; font-weight: 800; color: var(--pos-accent); font-variant-numeric: tabular-nums; }
-    .modal-prod-stock-badge { font-size: .6rem; padding: 1px 6px; border-radius: 6px; font-weight: 700; position: absolute; top: 6px; right: 6px; }
-    .modal-prod-qty { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .modal-prod-name { font-size: .9rem; font-weight: 600; color: var(--pos-text); line-height: 1.2; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+    .modal-prod-price { font-size: 1rem; font-weight: 800; color: var(--pos-accent); font-variant-numeric: tabular-nums; }
+    .modal-prod-stock-badge { font-size: .7rem; padding: 2px 8px; border-radius: 6px; font-weight: 700; position: absolute; top: 8px; right: 8px; }
+    .modal-prod-qty { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
     .modal-prod-qty button {
-        width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--pos-border);
-        background: rgba(255,255,255,0.06); color: var(--pos-text); font-weight: 700; font-size: .8rem;
+        width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--pos-border);
+        background: rgba(255,255,255,0.06); color: var(--pos-text); font-weight: 700; font-size: 1.1rem;
         display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s;
     }
     .modal-prod-qty button:hover { background: rgba(14,165,233,0.15); border-color: var(--pos-accent); }
-    .modal-prod-qty span { font-weight: 800; font-size: .85rem; min-width: 20px; text-align: center; color: var(--pos-text); }
+    .modal-prod-qty span { font-weight: 800; font-size: 1rem; min-width: 24px; text-align: center; color: var(--pos-text); }
 </style>
 
 <form id="pos-form" action="{{ route('ventas.store') }}" method="POST" autocomplete="off">
@@ -1946,23 +1942,23 @@ body:not(.dark-mode) {
 <div class="modal fade" id="productosModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content rounded-4 border-0 shadow" style="max-height:95vh;">
-            <div class="modal-header border-0 rounded-top-4 py-2">
-                <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Producto</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="cerrarModalProductos()"></button>
+            <div class="modal-header border-0 rounded-top-4 py-3">
+                <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Producto</h5>
+                <button type="button" class="btn-close btn-close-white" style="width:36px;height:36px;" data-bs-dismiss="modal" onclick="cerrarModalProductos()"></button>
             </div>
-            <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
+            <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 68px);">
                 <div class="input-group shadow-sm rounded-3 mb-2">
-                    <span class="input-group-text" style="background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text-muted);"><i class="bi bi-search"></i></span>
-                    <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()">
-                    <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: var(--pos-text-muted);" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg"></i></button>
+                    <span class="input-group-text" style="background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text-muted); min-height:48px;"><i class="bi bi-search fs-5"></i></span>
+                    <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()" style="min-height:48px; font-size:1.05rem;">
+                    <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: var(--pos-text-muted); min-width:48px;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg fs-5"></i></button>
                 </div>
                 <div id="modal-productos-grid" class="row g-2 overflow-auto mb-2" style="flex:1; min-height:0;"></div>
-                <div class="border-top pt-1 mt-1" id="teclado-virtual" style="border-color: var(--pos-border) !important;">
-                    <div class="d-flex justify-content-between align-items-center mb-0">
-                        <small class="fw-semibold" style="font-size:.65rem; color: var(--pos-text-muted);">Teclado</small>
-                        <div class="btn-group btn-group-xs">
-                            <button class="btn btn-outline-secondary rounded-start-pill" style="font-size:.65rem;padding:1px 6px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('us')" id="btn-idioma-us">US</button>
-                            <button class="btn btn-outline-secondary rounded-end-pill" style="font-size:.65rem;padding:1px 6px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('es')" id="btn-idioma-es">ES</button>
+                <div class="border-top pt-2 mt-2" id="teclado-virtual" style="border-color: var(--pos-border) !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="fw-semibold" style="font-size:.8rem; color: var(--pos-text-muted);">Teclado</small>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary rounded-start-pill" style="font-size:.8rem;padding:4px 12px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('us')" id="btn-idioma-us">US</button>
+                            <button class="btn btn-outline-secondary rounded-end-pill" style="font-size:.8rem;padding:4px 12px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('es')" id="btn-idioma-es">ES</button>
                         </div>
                     </div>
                     <div id="teclado-rows"></div>
@@ -2360,7 +2356,7 @@ body:not(.dark-mode) {
             html += `<button class="tecla" onpointerdown="teclaPulsar('${n}')" type="button">${n}</button>`;
         });
         html += '</div>';
-        layout.forEach(fila => {
+        layout.slice(0, -1).forEach(fila => {
             html += '<div class="tecla-row">';
             fila.forEach(letra => {
                 const display = teclaShiftActivo ? letra.toUpperCase() : letra;
@@ -2370,18 +2366,18 @@ body:not(.dark-mode) {
         });
         html += '<div class="tecla-row">';
         const shiftCls = teclaShiftActivo ? ' active' : '';
-        html += `<button class="tecla tecla-func tecla-shift${shiftCls}" onpointerdown="teclaMayusculas()" type="button"><i class="bi bi-arrow-up-short fs-5"></i></button>`;
-        ['z','x','c','v','b','n','m'].forEach(letra => {
+        html += `<button class="tecla tecla-func tecla-shift${shiftCls}" onpointerdown="teclaMayusculas()" type="button"><i class="bi bi-arrow-up-short fs-4"></i></button>`;
+        layout[layout.length - 1].forEach(letra => {
             const display = teclaShiftActivo ? letra.toUpperCase() : letra;
             html += `<button class="tecla" onpointerdown="teclaPulsar('${letra}')" type="button">${display}</button>`;
         });
-        html += `<button class="tecla tecla-func tecla-backspace" onpointerdown="teclaBorrar()" type="button"><i class="bi bi-backspace fs-5"></i></button>`;
+        html += `<button class="tecla tecla-func tecla-backspace" onpointerdown="teclaBorrar()" type="button"><i class="bi bi-backspace fs-4"></i></button>`;
         html += '</div>';
         html += '<div class="tecla-row">';
         html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar(',')" type="button">,</button>`;
-        html += `<button class="tecla tecla-func tecla-space" onpointerdown="teclaPulsar(' ')" type="button"><span class="fw-normal">Espacio</span></button>`;
+        html += `<button class="tecla tecla-func tecla-space" onpointerdown="teclaPulsar(' ')" type="button"><span class="fw-normal" style="font-size:1rem;">Espacio</span></button>`;
         html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar('.')" type="button">.</button>`;
-        html += `<button class="tecla tecla-enter" onpointerdown="teclaEnter()" type="button"><i class="bi bi-arrow-return-left fs-5"></i></button>`;
+        html += `<button class="tecla tecla-enter" onpointerdown="teclaEnter()" type="button"><i class="bi bi-arrow-return-left fs-4"></i></button>`;
         html += '</div>';
         container.innerHTML = html;
     }

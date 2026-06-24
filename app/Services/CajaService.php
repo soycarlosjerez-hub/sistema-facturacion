@@ -112,15 +112,21 @@ class CajaService
 
         $caja->update(['estado' => 'abierta']);
 
-        return ['success' => true, 'message' => 'Caja "' . $caja->nombre . '" abierta.', 'redirect' => route('ventas.create')];
+        return ['success' => true, 'message' => 'Caja "' . $caja->nombre . '" abierta.', 'redirect' => route('cajas.index')];
     }
 
     public function resumenCierre(Caja $caja): array
     {
-        $sesion = SesionCaja::where('caja_id', $caja->id)
-            ->where('estado', 'abierta')
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $query = SesionCaja::where('caja_id', $caja->id)
+            ->where('estado', 'abierta');
+
+        if (in_array(auth()->user()->role, ['admin', 'owner'])) {
+            $query->withoutGlobalScope('tenant');
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        $sesion = $query->firstOrFail();
 
         $pagosEfectivo = 0;
         $pagosTarjeta = 0;
@@ -158,10 +164,16 @@ class CajaService
 
     public function cerrar(Caja $caja, array $data): array
     {
-        $sesion = SesionCaja::where('caja_id', $caja->id)
-            ->where('estado', 'abierta')
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        $query = SesionCaja::where('caja_id', $caja->id)
+            ->where('estado', 'abierta');
+
+        if (in_array(auth()->user()->role, ['admin', 'owner'])) {
+            $query->withoutGlobalScope('tenant');
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        $sesion = $query->firstOrFail();
 
         $montoDeclarado = (float) ($data['monto_declarado'] ?? 0);
         $cobrosEfectivo = (float) ($data['cobros_efectivo'] ?? 0);

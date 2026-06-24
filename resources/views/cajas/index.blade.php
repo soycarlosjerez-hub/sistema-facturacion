@@ -94,6 +94,7 @@
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-top: 1px solid rgba(255,255,255,0.5);
+        padding: 1.5rem 1.75rem 1.25rem;
     }
     .modal-premium .caja-info-glass {
         background: rgba(255,255,255,0.6);
@@ -106,12 +107,13 @@
     .modal-premium .input-fondo {
         border: 2px solid #e2e8f0;
         border-radius: 0.75rem;
-        padding: 0.875rem 1rem;
-        font-size: 1.5rem;
+        padding: 1.1rem 1.25rem;
+        font-size: 2rem;
         font-weight: 700;
         text-align: center;
         transition: all 0.25s ease;
         background: rgba(255,255,255,0.8);
+        min-height: 64px;
     }
     .modal-premium .input-fondo:focus {
         border-color: #10b981;
@@ -124,9 +126,9 @@
         color: white;
         border: none;
         border-radius: 0.75rem 0 0 0.75rem;
-        padding: 0.875rem 1rem;
+        padding: 1.1rem 1.25rem;
         font-weight: 700;
-        font-size: 1rem;
+        font-size: 1.15rem;
         display: flex;
         align-items: center;
     }
@@ -136,12 +138,13 @@
         -webkit-backdrop-filter: blur(8px);
         border: 1.5px solid rgba(16,185,129,0.2);
         border-radius: 2rem;
-        padding: 0.5rem 1rem;
+        padding: 0.85rem 1.25rem;
         font-weight: 600;
-        font-size: 0.8rem;
+        font-size: 1rem;
         color: #059669;
         transition: all 0.2s ease;
         white-space: nowrap;
+        min-height: 56px;
     }
     .modal-premium .btn-quick:hover {
         background: rgba(16,185,129,0.1);
@@ -163,12 +166,13 @@
         background: linear-gradient(135deg, #10b981, #059669);
         border: none;
         border-radius: 2rem;
-        padding: 0.75rem 2rem;
+        padding: 1rem 2.5rem;
         font-weight: 700;
-        font-size: 0.95rem;
+        font-size: 1.15rem;
         color: white;
         transition: all 0.25s ease;
         box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+        min-height: 56px;
     }
     .modal-premium .btn-open:hover {
         transform: translateY(-2px);
@@ -342,7 +346,7 @@
             @php
                 $sesionActiva = $caja->sesionActiva();
                 $isMySession = $sesionActiva && $sesionActiva->user_id == auth()->id();
-                $esAdmin = auth()->user()->role === 'admin';
+                $esAdmin = in_array(auth()->user()->role, ['admin', 'owner']);
                 $estadoClass = !$caja->activo ? 'inactiva' : $caja->estado;
                 $headerGradient = match($estadoClass) {
                     'abierta' => 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -396,7 +400,7 @@
                         @if($sesionActiva)
                             <div class="p-2 rounded-3 mb-3" style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e;">
                                 <div class="small fw-bold text-success mb-1">
-                                    <i class="bi bi-person-circle me-1"></i>{{ $sesionActiva->user->name }}
+                                    <i class="bi bi-person-circle me-1"></i>{{ $sesionActiva->user?->name ?? 'Desconocido' }}
                                 </div>
                                 <div class="small text-muted">
                                     <i class="bi bi-clock me-1"></i>{{ $sesionActiva->fecha_apertura->format('h:i A') }}
@@ -429,6 +433,17 @@
                                     </a>
                                     <a href="{{ route('cajas.cierre', $caja->id) }}" class="btn btn-warning rounded-pill fw-bold">
                                         <i class="bi bi-lock me-1"></i>CERRAR TURNO
+                                    </a>
+                                </div>
+                            @elseif($caja->estado == 'abierta' && $esAdmin)
+                                <div class="d-grid gap-2">
+                                    @if($sesionActiva)
+                                        <div class="text-center mb-1">
+                                            <small class="text-muted">Abierta por: <strong class="text-danger">{{ $sesionActiva->user?->name ?? 'Desconocido' }}</strong></small>
+                                        </div>
+                                    @endif
+                                    <a href="{{ route('cajas.cierre', $caja->id) }}" class="btn btn-danger rounded-pill fw-bold">
+                                        <i class="bi bi-shield-lock me-1"></i>CERRAR TURNO (Admin)
                                     </a>
                                 </div>
                             @elseif($caja->estado == 'abierta')
@@ -476,7 +491,7 @@
             <!-- Modal Abrir Caja — Premium UI -->
             @if($caja->activo && $caja->estado == 'cerrada')
             <div class="modal fade modal-premium" id="modalAbrir{{ $caja->id }}" tabindex="-1" data-bs-backdrop="static">
-                <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
                     <div class="modal-content">
                         <form action="{{ route('cajas.abrir', $caja->id) }}" method="POST" id="formAbrir{{ $caja->id }}">
                             @csrf
@@ -484,52 +499,52 @@
                             <!-- Premium Animated Header -->
                             <div class="modal-header-premium text-white position-relative" style="z-index:2;">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width:52px;height:52px;">
-                                        <i class="bi bi-play-circle-fill fs-2"></i>
+                                    <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                                        <i class="bi bi-play-circle-fill" style="font-size:2rem;"></i>
                                     </div>
                                     <div>
-                                        <h5 class="fw-bold mb-0">Abrir Caja</h5>
+                                        <h4 class="fw-bold mb-0" style="font-size:1.35rem;">Abrir Caja</h4>
                                         <div class="d-flex align-items-center gap-2 mt-1">
-                                            <small class="text-white text-opacity-75">Iniciar nuevo turno</small>
+                                            <small class="text-white text-opacity-75" style="font-size:.85rem;">Iniciar nuevo turno</small>
                                             <span class="turno-badge" id="turnoBadge{{ $caja->id }}"></span>
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" class="btn-close btn-close-white position-absolute" style="top:1rem;right:1rem;" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                <button type="button" class="btn-close btn-close-white position-absolute" style="top:1rem;right:1rem;width:32px;height:32px;" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                             </div>
 
                             <!-- Glass Body -->
-                            <div class="glass-body px-4 pt-4 pb-3">
+                            <div class="glass-body">
 
                                 <!-- Caja Info Card -->
                                 <div class="caja-info-glass mb-3">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:44px;height:44px;background:linear-gradient(135deg,#0891b2,#06b6d4);">
-                                            <i class="bi bi-cash-register text-white fs-5"></i>
+                                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:52px;height:52px;background:linear-gradient(135deg,#0891b2,#06b6d4);">
+                                            <i class="bi bi-cash-register text-white" style="font-size:1.35rem;"></i>
                                         </div>
                                         <div class="flex-fill">
-                                            <h6 class="fw-bold mb-0">{{ $caja->nombre }}</h6>
+                                            <h6 class="fw-bold mb-0" style="font-size:1.05rem;">{{ $caja->nombre }}</h6>
                                             <div class="d-flex gap-2 flex-wrap mt-1">
                                                 @if($caja->codigo)
-                                                    <span class="badge bg-dark rounded-pill" style="font-size:.65rem;">{{ $caja->codigo }}</span>
+                                                    <span class="badge bg-dark rounded-pill" style="font-size:.72rem;">{{ $caja->codigo }}</span>
                                                 @endif
                                                 @if($caja->ubicacion)
-                                                    <span class="text-muted" style="font-size:.7rem;">
+                                                    <span class="text-muted" style="font-size:.78rem;">
                                                         <i class="bi bi-geo-alt me-1"></i>{{ $caja->ubicacion }}
                                                     </span>
                                                 @endif
                                             </div>
                                         </div>
                                         <div class="text-end">
-                                            <small class="text-muted d-block" style="font-size:.6rem;letter-spacing:.5px;">HORA</small>
-                                            <span class="fw-bold" id="horaActual{{ $caja->id }}" style="font-size:.9rem;"></span>
+                                            <small class="text-muted d-block" style="font-size:.65rem;letter-spacing:.5px;">HORA</small>
+                                            <span class="fw-bold" id="horaActual{{ $caja->id }}" style="font-size:1.05rem;"></span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Fondo Inicial Input -->
                                 <div class="mb-3">
-                                    <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="letter-spacing:.5px;">
+                                    <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="letter-spacing:.5px;font-size:.85rem;">
                                         <i class="bi bi-wallet2 me-1"></i>Fondo Inicial
                                     </label>
                                     <div class="input-group shadow-sm">
@@ -541,31 +556,39 @@
                                 </div>
 
                                 <!-- Quick Amount Buttons -->
-                                <div class="d-flex gap-2 justify-content-center flex-wrap mb-3">
-                                    <button type="button" class="btn-quick" data-monto="0">
-                                        <i class="bi bi-dash-circle me-1" style="font-size:.75rem;"></i>Sin fondo
-                                    </button>
-                                    <button type="button" class="btn-quick" data-monto="100">
-                                        <span class="d-none d-sm-inline">RD$</span> 100
-                                    </button>
-                                    <button type="button" class="btn-quick" data-monto="500">
-                                        <span class="d-none d-sm-inline">RD$</span> 500
-                                    </button>
-                                    <button type="button" class="btn-quick" data-monto="1000">
-                                        <span class="d-none d-sm-inline">RD$</span> 1,000
-                                    </button>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <button type="button" class="btn-quick w-100" data-monto="0">
+                                            <i class="bi bi-dash-circle me-1" style="font-size:.85rem;"></i>Sin fondo
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="btn-quick w-100" data-monto="100">
+                                            RD$ 100
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="btn-quick w-100" data-monto="500">
+                                            RD$ 500
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="btn-quick w-100" data-monto="1000">
+                                            RD$ 1,000
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Info Hint -->
-                                <div class="info-hint text-center">
+                                <div class="info-hint text-center" style="font-size:.85rem;">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    Presiona <kbd>Enter</kbd> para confirmar o selecciona un monto r&aacute;pido
+                                    Selecciona un monto r&aacute;pido o escribe uno personalizado
                                 </div>
                             </div>
 
                             <!-- Footer -->
                             <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:rgba(248,250,252,0.9);border-top:1px solid rgba(0,0,0,0.04);">
-                                <button type="button" class="btn btn-light rounded-pill px-3 fw-bold" data-bs-dismiss="modal" style="font-size:.85rem;">
+                                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal" style="font-size:1rem;min-height:54px;">
                                     <i class="bi bi-x-lg me-1"></i>Cancelar
                                 </button>
                                 <button type="submit" class="btn btn-open" id="btnAbrir{{ $caja->id }}">
