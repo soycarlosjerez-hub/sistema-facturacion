@@ -23,6 +23,7 @@ class ClienteService
 
     public function create(array $data): Cliente
     {
+        $data['tenant_id'] = auth()->user()->business_instance_id;
         return Cliente::create($data);
     }
 
