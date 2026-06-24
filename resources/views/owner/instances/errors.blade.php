@@ -175,7 +175,7 @@
         <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-bug text-danger me-2"></i>Registro de Errores</h5>
             <div class="d-flex gap-2">
-                <small class="text-muted">{{ $errors->total() }} resultado(s)</small>
+                <small class="text-muted">{{ $errorLogs->total() }} resultado(s)</small>
                 @if($stats['total'] > 0)
                 <form method="POST" action="{{ route('owner.instances.errors.clear', $instance) }}" onsubmit="return confirm('Eliminar errores con m&aacute;s de 30 d&iacute;as de antig&uuml;edad?')">
                     @csrf @method('DELETE')
@@ -187,7 +187,7 @@
             </div>
         </div>
         <div class="card-body p-0">
-            @if($errors->isNotEmpty())
+            @if($errorLogs->isNotEmpty())
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -202,21 +202,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($errors as $error)
-                        <tr class="error-row" data-bs-toggle="modal" data-bs-target="#errorModal{{ $error->id }}">
-                            <td><small class="text-muted">{{ $error->created_at->format('d/m/Y H:i:s') }}</small></td>
+                        @foreach($errorLogs as $log)
+                        <tr class="error-row" data-bs-toggle="modal" data-bs-target="#errorModal{{ $log->id }}">
+                            <td><small class="text-muted">{{ $log->created_at->format('d/m/Y H:i:s') }}</small></td>
                             <td>
-                                <span class="badge bg-{{ $error->level_color }} bg-opacity-10 text-{{ $error->level_color }} rounded-pill text-uppercase" style="font-size:.65rem;">
-                                    {{ $error->level }}
+                                <span class="badge bg-{{ $log->level_color }} bg-opacity-10 text-{{ $log->level_color }} rounded-pill text-uppercase" style="font-size:.65rem;">
+                                    {{ $log->level }}
                                 </span>
                             </td>
                             <td>
-                                <i class="bi {{ $error->source_icon }} me-1 text-muted"></i>
-                                <small>{{ ucfirst($error->source) }}</small>
+                                <i class="bi {{ $log->source_icon }} me-1 text-muted"></i>
+                                <small>{{ ucfirst($log->source) }}</small>
                             </td>
-                            <td class="text-truncate" style="max-width:400px;">{{ $error->title }}</td>
-                            <td><small>{{ $error->user?->name ?? '—' }}</small></td>
-                            <td><small class="text-muted">{{ $error->ip_address ?? '—' }}</small></td>
+                            <td class="text-truncate" style="max-width:400px;">{{ $log->title }}</td>
+                            <td><small>{{ $log->user?->name ?? '—' }}</small></td>
+                            <td><small class="text-muted">{{ $log->ip_address ?? '—' }}</small></td>
                             <td><i class="bi bi-chevron-right text-muted"></i></td>
                         </tr>
                         @endforeach
@@ -224,9 +224,9 @@
                 </table>
             </div>
 
-            @if($errors->hasPages())
+            @if($errorLogs->hasPages())
             <div class="p-3">
-                {{ $errors->links() }}
+                {{ $errorLogs->links() }}
             </div>
             @endif
             @else
@@ -243,16 +243,16 @@
 </div>
 
 <!-- Detail Modals -->
-@foreach($errors as $error)
-<div class="modal fade" id="errorModal{{ $error->id }}" tabindex="-1" aria-hidden="true">
+@foreach($errorLogs as $log)
+<div class="modal fade" id="errorModal{{ $log->id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0 pb-0">
                 <div>
-                    <span class="badge bg-{{ $error->level_color }} bg-opacity-10 text-{{ $error->level_color }} rounded-pill text-uppercase mb-2" style="font-size:.7rem;">
-                        <i class="bi {{ $error->source_icon }} me-1"></i>{{ $error->level }} &middot; {{ ucfirst($error->source) }}
+                    <span class="badge bg-{{ $log->level_color }} bg-opacity-10 text-{{ $log->level_color }} rounded-pill text-uppercase mb-2" style="font-size:.7rem;">
+                        <i class="bi {{ $log->source_icon }} me-1"></i>{{ $log->level }} &middot; {{ ucfirst($log->source) }}
                     </span>
-                    <h5 class="fw-bold mb-0">{{ $error->title }}</h5>
+                    <h5 class="fw-bold mb-0">{{ $log->title }}</h5>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
@@ -260,47 +260,47 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <small class="text-muted fw-bold text-uppercase d-block" style="font-size:.6rem;">Fecha</small>
-                        <span>{{ $error->created_at->format('d/m/Y H:i:s') }}</span>
+                        <span>{{ $log->created_at->format('d/m/Y H:i:s') }}</span>
                     </div>
                     <div class="col-md-4">
                         <small class="text-muted fw-bold text-uppercase d-block" style="font-size:.6rem;">Usuario</small>
-                        <span>{{ $error->user?->name ?? '—' }} {{ $error->user?->email ? '(' . $error->user->email . ')' : '' }}</span>
+                        <span>{{ $log->user?->name ?? '—' }} {{ $log->user?->email ? '(' . $log->user->email . ')' : '' }}</span>
                     </div>
                     <div class="col-md-4">
                         <small class="text-muted fw-bold text-uppercase d-block" style="font-size:.6rem;">IP</small>
-                        <span>{{ $error->ip_address ?? '—' }}</span>
+                        <span>{{ $log->ip_address ?? '—' }}</span>
                     </div>
                 </div>
 
-                @if($error->file)
+                @if($log->file)
                 <div class="mb-3">
                     <small class="text-muted fw-bold text-uppercase d-block" style="font-size:.6rem;">Archivo</small>
-                    <code class="small">{{ $error->file }}@if($error->line):{{ $error->line }}@endif</code>
+                    <code class="small">{{ $log->file }}@if($log->line):{{ $log->line }}@endif</code>
                 </div>
                 @endif
 
                 <div class="mb-3">
                     <small class="text-muted fw-bold text-uppercase d-block mb-2" style="font-size:.6rem;">Mensaje Completo</small>
                     <div class="p-3 bg-light rounded-3">
-                        <pre class="mb-0 small" style="white-space:pre-wrap;word-break:break-word;">{{ $error->message }}</pre>
+                        <pre class="mb-0 small" style="white-space:pre-wrap;word-break:break-word;">{{ $log->message }}</pre>
                     </div>
                 </div>
 
-                @if($error->context)
+                @if($log->context)
                 <div class="mb-3">
                     <small class="text-muted fw-bold text-uppercase d-block mb-2" style="font-size:.6rem;">Contexto</small>
                     <div class="trace-block">
-@foreach($error->context as $key => $value)
+@foreach($log->context as $key => $value)
 <span class="context-key">{{ $key }}</span>: <span class="context-value">{{ is_array($value) ? json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : $value }}</span>
 @endforeach
                     </div>
                 </div>
                 @endif
 
-                @if($error->user_agent)
+                @if($log->user_agent)
                 <div>
                     <small class="text-muted fw-bold text-uppercase d-block mb-2" style="font-size:.6rem;">User Agent</small>
-                    <small class="text-muted">{{ $error->user_agent }}</small>
+                    <small class="text-muted">{{ $log->user_agent }}</small>
                 </div>
                 @endif
             </div>

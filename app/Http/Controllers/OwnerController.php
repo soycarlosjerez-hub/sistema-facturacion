@@ -833,7 +833,7 @@ class OwnerController extends Controller
             $query->whereDate('created_at', '<=', $hasta);
         }
 
-        $errors = $query->latest()->paginate(30)->withQueryString();
+        $errorLogs = $query->latest()->paginate(30)->withQueryString();
 
         $stats = [
             'total' => InstanceErrorLog::where('tenant_id', $id)->count(),
@@ -843,7 +843,7 @@ class OwnerController extends Controller
             'criticals' => InstanceErrorLog::where('tenant_id', $id)->ofLevel('critical')->count(),
         ];
 
-        return view('owner.instances.errors', compact('instance', 'errors', 'stats'));
+        return view('owner.instances.errors', compact('instance', 'errorLogs', 'stats'));
     }
 
     public function clearErrors($id)
