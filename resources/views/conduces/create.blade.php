@@ -1,5 +1,33 @@
 @extends('layouts.app')
 @section('title', 'Nuevo Conduce')
+
+@push('styles')
+<style>
+    .sticky-save-bar {
+        position: fixed;
+        bottom: 0;
+        left: var(--sidebar-width, 280px);
+        right: 0;
+        background: #fff;
+        border-top: 2px solid #f59e0b;
+        padding: 0.75rem 1.5rem;
+        z-index: 1050;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+    .sticky-save-bar .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    body.dark-mode .sticky-save-bar {
+        background: #0f172a;
+        border-top-color: #fbbf24;
+    }
+    @media (max-width: 991.98px) {
+        .sticky-save-bar { left: 0; }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
@@ -46,15 +74,22 @@
                         @include('conduces._form', ['conduce' => null, 'clientes' => $clientes, 'productos' => $productos])
                     </div>
 
-                    <div class="card-footer bg-light border-top border-light p-4 text-end">
-                        <a href="{{ route('conduces.index') }}" class="btn btn-light rounded-pill px-4 fw-semibold me-2">Cancelar</a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
-                            <i class="bi bi-check-lg me-2"></i>Guardar Conduce
-                        </button>
-                    </div>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
 
+<div class="sticky-save-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-info-circle me-1"></i> Creando nuevo conduce
+        </span>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="{{ route('conduces.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="formConduce" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none;">
+                <i class="bi bi-save me-2"></i>Guardar Conduce
+            </button>
         </div>
     </div>
 </div>

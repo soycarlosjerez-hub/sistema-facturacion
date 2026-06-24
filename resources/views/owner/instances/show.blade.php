@@ -239,6 +239,56 @@
 
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-exclamation-triangle text-danger me-2"></i>Errores Recientes
+                @if($errorCount > 0)
+                    <span class="badge bg-danger rounded-pill ms-2" style="font-size:.65rem;">{{ $errorCount }} en 7 d&iacute;as</span>
+                @endif
+            </h5>
+            <a href="{{ route('owner.instances.errors', $instance) }}" class="btn btn-sm btn-outline-danger rounded-pill fw-bold">
+                <i class="bi bi-arrow-right me-1"></i>Ver Todos
+            </a>
+        </div>
+        <div class="card-body p-4 pt-0">
+            @if($recentErrors->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nivel</th>
+                            <th>Fuente</th>
+                            <th>Mensaje</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($recentErrors as $error)
+                        <tr>
+                            <td class="text-nowrap"><small>{{ $error->created_at->format('d/m/Y H:i') }}</small></td>
+                            <td><span class="badge bg-{{ $error->level_color }} bg-opacity-10 text-{{ $error->level_color }} rounded-pill text-uppercase" style="font-size:.65rem;">{{ $error->level }}</span></td>
+                            <td><i class="bi {{ $error->source_icon }} me-1 text-muted"></i>{{ ucfirst($error->source) }}</td>
+                            <td class="text-truncate" style="max-width:300px;" title="{{ $error->title }}">{{ $error->title }}</td>
+                            <td>{{ $error->user?->name ?? '—' }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div class="text-center py-4 text-muted">
+                <div class="bg-success bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:56px;height:56px;">
+                    <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                </div>
+                <p class="fw-bold mb-0">Sin errores recientes</p>
+                <small>Esta instancia no tiene errores en los &uacute;ltimos 7 d&iacute;as.</small>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-person-badge text-info me-2"></i>Roles de Instancia</h5>
             <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-sm btn-info rounded-pill fw-bold text-white">
                 <i class="bi bi-gear me-1"></i>Gestionar Roles

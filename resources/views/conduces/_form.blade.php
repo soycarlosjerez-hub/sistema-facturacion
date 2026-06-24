@@ -183,18 +183,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Botones --}}
-    <div class="col-12">
-        <div class="d-flex gap-2 justify-content-end">
-            <a href="{{ route('conduces.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-x me-1"></i>Cancelar
-            </a>
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save me-1"></i>{{ $isEdit ? 'Actualizar' : 'Crear' }} Conduce
-            </button>
-        </div>
-    </div>
 </div>
 
 {{-- Modal: Buscar Productos --}}

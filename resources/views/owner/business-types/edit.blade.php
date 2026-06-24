@@ -41,6 +41,28 @@
     padding: 1rem;
     box-shadow: 0 2px 6px rgba(0,0,0,0.01);
 }
+.sticky-save-bar {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-width, 280px);
+    right: 0;
+    background: #fff;
+    border-top: 2px solid #22c55e;
+    padding: 0.75rem 1.5rem;
+    z-index: 1050;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+.sticky-save-bar .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+body.dark-mode .sticky-save-bar {
+    background: #0f172a;
+    border-top-color: #4ade80;
+}
+@media (max-width: 991.98px) {
+    .sticky-save-bar { left: 0; }
+}
 </style>
 @endpush
 
@@ -51,17 +73,12 @@
             <h2 class="fw-bold mb-1"><i class="bi bi-tags text-primary me-2"></i>Editar Tipo de Negocio</h2>
             <p class="text-muted mb-0">{{ $businessType->nombre }}</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('owner.business-types.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
-            <button type="submit" form="businessTypeForm" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-save me-2"></i>Guardar Todo
-            </button>
-        </div>
+        <a href="{{ route('owner.business-types.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+            <i class="bi bi-arrow-left me-2"></i>Volver
+        </a>
     </div>
 
-    <form method="POST" action="{{ route('owner.business-types.update', $businessType) }}" id="businessTypeForm">
+    <form method="POST" action="{{ route('owner.business-types.update', $businessType) }}" id="instanceForm">
         @csrf @method('PUT')
         
         <div class="row g-3">
@@ -91,7 +108,7 @@
                             <label class="form-label fw-bold small">Icono (Bootstrap Icons)</label>
                             <input type="text" name="icon" class="form-control rounded-pill" value="{{ old('icon', $businessType->icon) }}" placeholder="bi-building">
                         </div>
-                        <div class="row g-2 mb-4">
+                        <div class="row g-2">
                             <div class="col-6">
                                 <div class="form-check form-switch pt-2">
                                     <input type="checkbox" name="activo" class="form-check-input" value="1" id="activo" {{ old('activo', $businessType->activo) ? 'checked' : '' }}>
@@ -103,9 +120,6 @@
                                 <input type="number" name="orden" class="form-control rounded-pill" value="{{ old('orden', $businessType->orden) }}" min="0">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary rounded-pill w-100 fw-bold py-2 shadow-sm">
-                            <i class="bi bi-save me-2"></i>Guardar Todo
-                        </button>
                     </div>
                 </div>
             </div>
@@ -176,15 +190,26 @@
                             <span class="text-muted small">
                                 <span id="selectedCount">{{ $businessType->modules->where('visible', true)->count() }}</span> de {{ $modulesByCategory->flatten()->count() }} seleccionados
                             </span>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                                <i class="bi bi-save me-2"></i>Guardar Todo
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </form>
+</div>
+
+<div class="sticky-save-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-info-circle me-1"></i> Editando tipo de negocio: {{ $businessType->nombre }}
+        </span>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="{{ route('owner.business-types.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-save me-2"></i>Guardar Todo
+            </button>
+        </div>
+    </div>
 </div>
 @endsection
 

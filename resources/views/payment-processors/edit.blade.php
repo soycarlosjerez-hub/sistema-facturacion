@@ -1,5 +1,33 @@
 @extends('layouts.app')
 @section('title', 'Editar Procesador de Pago')
+
+@push('styles')
+<style>
+    .sticky-save-bar {
+        position: fixed;
+        bottom: 0;
+        left: var(--sidebar-width, 280px);
+        right: 0;
+        background: #fff;
+        border-top: 2px solid #8b5cf6;
+        padding: 0.75rem 1.5rem;
+        z-index: 1050;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+    .sticky-save-bar .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    body.dark-mode .sticky-save-bar {
+        background: #0f172a;
+        border-top-color: #a78bfa;
+    }
+    @media (max-width: 991.98px) {
+        .sticky-save-bar { left: 0; }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -12,7 +40,7 @@
 
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4">
-            <form action="{{ route('payment-processors.update', $paymentProcessor) }}" method="POST">
+            <form action="{{ route('payment-processors.update', $paymentProcessor) }}" method="POST" id="instanceForm">
                 @csrf @method('PUT')
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -91,11 +119,22 @@
                             <label class="form-check-label" for="activo">Activo</label>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <button class="btn btn-primary rounded-pill px-4"><i class="bi bi-save me-1"></i> Actualizar</button>
-                    </div>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="sticky-save-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-info-circle me-1"></i> Editando procesador: {{ $paymentProcessor->nombre }}
+        </span>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="{{ route('payment-processors.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-save me-2"></i>Guardar Cambios
+            </button>
         </div>
     </div>
 </div>

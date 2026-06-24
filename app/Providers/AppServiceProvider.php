@@ -10,6 +10,7 @@ use App\Policies\CategoryPolicy;
 use App\View\Composers\DashboardComposer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -84,5 +85,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('dashboard', DashboardComposer::class);
+
+        Event::listen(\Illuminate\Support\MessageLogged::class, \App\Listeners\LogErrorToDatabase::class);
     }
 }

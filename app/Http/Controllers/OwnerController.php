@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
+use App\Models\InstanceErrorLog;
 use App\Models\InstanceRole;
 use App\Models\InstanceRoleModule;
 use App\Models\Modulo;
@@ -382,7 +383,13 @@ class OwnerController extends Controller
             ->latest('mes_pagado')
             ->take(5)
             ->get();
-        return view('owner.instances.show', compact('instance', 'pagosRecientes'));
+        $errorCount = InstanceErrorLog::where('tenant_id', $id)->recent(7)->count();
+        $recentErrors = InstanceErrorLog::where('tenant_id', $id)
+            ->with('user')
+            ->latest()
+            ->take(5)
+            ->get();
+        return view('owner.instances.show', compact('instance', 'pagosRecientes', 'errorCount', 'recentErrors'));
     }
 
     public function instancesEdit($id)
@@ -799,6 +806,55 @@ class OwnerController extends Controller
             ->paginate(15);
         
         return view('owner.instances.users.index', compact('instance', 'users'));
+    }
+
+    public function instanceErrors($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $query = InstanceErrorLog::where('tenant_id', $id)->with('user');
+
+        if ($level = request('level')) {
+            $query->ofLevel($level);
+        }
+        if ($source = request('source')) {
+            $query->ofSource($source);
+        }
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('message', 'like', "%{$search}%");
+            });
+        }
+        if ($desde = request('desde')) {
+            $query->whereDate('created_at', '>=', $desde);
+        }
+        if ($hasta = request('hasta')) {
+            $query->whereDate('created_at', '<=', $hasta);
+        }
+
+        $errors = $query->latest()->paginate(30)->withQueryString();
+
+        $stats = [
+            'total' => InstanceErrorLog::where('tenant_id', $id)->count(),
+            'last_7d' => InstanceErrorLog::where('tenant_id', $id)->recent(7)->count(),
+            'errors' => InstanceErrorLog::where('tenant_id', $id)->ofLevel('error')->count(),
+            'warnings' => InstanceErrorLog::where('tenant_id', $id)->ofLevel('warning')->count(),
+            'criticals' => InstanceErrorLog::where('tenant_id', $id)->ofLevel('critical')->count(),
+        ];
+
+        return view('owner.instances.errors', compact('instance', 'errors', 'stats'));
+    }
+
+    public function clearErrors($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $deleted = InstanceErrorLog::where('tenant_id', $id)
+            ->where('created_at', '<', now()->subDays(30))
+            ->delete();
+
+        return back()->with('success', "Se eliminaron {$deleted} errores antiguos.");
     }
 
     private function getMesesDisponibles(BusinessInstance $instance): array

@@ -29,4 +29,29 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->view('errors.404', ['message' => $e->getMessage()], 404);
             }
         });
+
+        $exceptions->reportable(function (\Throwable $e) {
+            try {
+                $request = request();
+                \App\Models\InstanceErrorLog::create([
+                    'tenant_id' => \Illuminate\Support\Facades\Auth::user()?->business_instance_id,
+                    'level' => 'error',
+                    'title' => mb_substr($e->getMessage() ?: get_class($e), 0, 255),
+                    'message' => $e->getMessage() . "\n\n" . $e->getTraceAsString(),
+                    'context' => [
+                        'exception' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                    ],
+                    'source' => 'exception',
+                    'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+            } catch (\Throwable $dbEx) {
+                // Si la tabla no existe aún o hay error de BD, ignorar
+            }
+        });
     })->create();

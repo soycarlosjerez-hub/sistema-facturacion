@@ -34,6 +34,28 @@
         padding: 0.4em 0.8em; border-radius: 2rem;
         font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
     }
+    .sticky-save-bar {
+        position: fixed;
+        bottom: 0;
+        left: var(--sidebar-width, 280px);
+        right: 0;
+        background: #fff;
+        border-top: 2px solid #10b981;
+        padding: 0.75rem 1.5rem;
+        z-index: 1050;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+    .sticky-save-bar .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    body.dark-mode .sticky-save-bar {
+        background: #0f172a;
+        border-top-color: #34d399;
+    }
+    @media (max-width: 991.98px) {
+        .sticky-save-bar { left: 0; }
+    }
 </style>
 @endpush
 
@@ -72,7 +94,7 @@
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="card-header bg-white border-bottom border-light p-4"><h5 class="fw-bold mb-0 text-dark"><i class="bi bi-building me-2 text-primary"></i>Información de la Sucursal</h5></div>
                 <div class="card-body p-4">
-                    <form action="{{ route('sucursales.store') }}" method="POST">
+                    <form action="{{ route('sucursales.store') }}" method="POST" id="instanceForm">
                         @csrf
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -112,14 +134,22 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                            <a href="{{ route('sucursales.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                                <i class="bi bi-save me-2"></i>Guardar
-                            </button>
-                        </div>
                     </form>
                 </div>
             </div>
+</div>
+
+<div class="sticky-save-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-info-circle me-1"></i> Creando nueva sucursal
+        </span>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="{{ route('sucursales.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-save me-2"></i>Guardar Sucursal
+            </button>
+        </div>
+    </div>
 </div>
 @endsection

@@ -24,14 +24,27 @@
         background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
         border-radius: 50%;
     }
-    .sticky-save {
-        position: sticky;
+    .sticky-save-bar {
+        position: fixed;
         bottom: 0;
-        z-index: 1020;
-        background: rgba(255,255,255,0.95);
-        backdrop-filter: blur(12px);
-        border-top: 1px solid rgba(8,145,178,0.15);
-        padding: 1rem 2rem;
+        left: var(--sidebar-width, 280px);
+        right: 0;
+        background: #fff;
+        border-top: 2px solid #0891b2;
+        padding: 0.75rem 1.5rem;
+        z-index: 1050;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    }
+    .sticky-save-bar .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    body.dark-mode .sticky-save-bar {
+        background: #0f172a;
+        border-top-color: #06b6d4;
+    }
+    @media (max-width: 991.98px) {
+        .sticky-save-bar { left: 0; }
     }
 </style>
 @endpush
@@ -69,7 +82,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('cajas.store') }}" method="POST">
+            <form action="{{ route('cajas.store') }}" method="POST" id="instanceForm">
                 @csrf
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                     <div class="card-header bg-white border-bottom border-light p-4">
@@ -131,15 +144,21 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-light border-top border-light p-4 text-end">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                                <i class="bi bi-save me-1"></i>Guardar Caja
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </form>
+</div>
+
+<div class="sticky-save-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-info-circle me-1"></i> Creando nueva caja
+        </span>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="{{ route('cajas.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-save me-1"></i>Guardar Caja
+            </button>
+        </div>
+    </div>
 </div>
 @endsection

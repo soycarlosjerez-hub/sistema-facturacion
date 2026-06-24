@@ -72,6 +72,7 @@ Route::pattern('backup', '[0-9]+');
 Route::pattern('paymentProcessor', '[0-9]+');
 Route::pattern('lavador', '[0-9]+');
 Route::pattern('listaPrecio', '[0-9]+');
+Route::pattern('sucursal', '[0-9]+');
 
 // Dashboard
 Route::middleware('auth')->group(function () {
@@ -575,6 +576,9 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/instances/{instance}/roles/{role}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceRolesEdit'])->name('instances.roles.edit');
     Route::put('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesUpdate'])->name('instances.roles.update');
     Route::delete('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesDestroy'])->name('instances.roles.destroy');
+    // Instance error logs
+    Route::get('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'instanceErrors'])->name('instances.errors');
+    Route::delete('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'clearErrors'])->name('instances.errors.clear');
     // Owner role management (reuses RoleController)
     Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('roles.create');
