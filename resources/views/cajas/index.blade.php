@@ -289,31 +289,92 @@
 
             <!-- Modal Abrir Caja -->
             @if($caja->activo && $caja->estado == 'cerrada')
-            <div class="modal fade" id="modalAbrir{{ $caja->id }}" tabindex="-1">
+            <div class="modal fade" id="modalAbrir{{ $caja->id }}" tabindex="-1" data-bs-backdrop="static">
                 <div class="modal-dialog modal-dialog-centered modal-sm">
-                    <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-content border-0 shadow-xl rounded-4 overflow-hidden">
                         <form action="{{ route('cajas.abrir', $caja->id) }}" method="POST">
                             @csrf
-                            <div class="modal-header border-0 pb-0">
-                                <h5 class="fw-bold"><i class="bi bi-play-circle text-primary me-2"></i>Abrir Caja</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body p-4 text-center">
-                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
-                                    <i class="bi bi-cash-register" style="font-size: 2rem;"></i>
+                            <!-- Premium Header -->
+                            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <div class="d-flex align-items-center gap-3 text-white">
+                                    <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="bi bi-play-circle-fill fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold mb-0 text-white">Abrir Caja</h5>
+                                        <small class="text-white text-opacity-75">Iniciar nuevo turno</small>
+                                    </div>
                                 </div>
-                                <h5 class="fw-bold mb-1">{{ $caja->nombre }}</h5>
-                                @if($caja->codigo)<span class="badge bg-dark mb-3">{{ $caja->codigo }}</span>@endif
-                                <p class="text-muted small mb-3">Indica el fondo inicial (efectivo en la gaveta al iniciar el turno)</p>
-                                <label class="form-label small fw-bold text-muted text-uppercase">Fondo Inicial</label>
-                                <div class="input-group input-group-lg">
-                                    <span class="input-group-text bg-light border-0 fw-bold">RD$</span>
-                                    <input type="number" name="monto_inicial" class="form-control bg-light border-0 fw-bold" value="0" min="0" step="0.01" required autofocus>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            
+                            <div class="modal-body p-4">
+                                <!-- Caja Info Card -->
+                                <div class="bg-light rounded-4 p-3 mb-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                            <i class="bi bi-cash-register fs-4"></i>
+                                        </div>
+                                        <div class="flex-fill">
+                                            <h6 class="fw-bold mb-1">{{ $caja->nombre }}</h6>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                @if($caja->codigo)
+                                                    <span class="badge bg-dark rounded-pill px-3 py-1">{{ $caja->codigo }}</span>
+                                                @endif
+                                                @if($caja->ubicacion)
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-1">
+                                                        <i class="bi bi-geo-alt me-1"></i>{{ $caja->ubicacion }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-muted small text-center mb-4">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Indica el fondo inicial (efectivo en la gaveta al iniciar el turno)
+                                </p>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-muted small text-uppercase mb-2">
+                                        <i class="bi bi-cash me-1"></i>Fondo Inicial
+                                    </label>
+                                    <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
+                                        <span class="input-group-text bg-white border-end-0 fw-bold text-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                                            RD$
+                                        </span>
+                                        <input type="number" name="monto_inicial" id="montoInicial{{ $caja->id }}" class="form-control border-start-0 fw-bold fs-5 text-center" value="0" min="0" step="0.01" required autofocus
+                                            style="background: #f8fafc;"
+                                            placeholder="0.00">
+                                    </div>
+                                    <div class="form-text text-center text-muted small mt-2">
+                                        Presiona <kbd class="bg-dark text-white px-2 py-1 rounded">Enter</kbd> para confirmar
+                                    </div>
+                                </div>
+                                
+                                <!-- Quick amount buttons -->
+                                <div class="d-flex gap-2 justify-content-center mb-4">
+                                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 small" data-monto="0">
+                                        <i class="bi bi-dash-circle me-1"></i>Sin fondo
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 small" data-monto="100">
+                                        RD$ 100
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 small" data-monto="500">
+                                        RD$ 500
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary rounded-pill px-3 py-2 small" data-monto="1000">
+                                        RD$ 1,000
+                                    </button>
                                 </div>
                             </div>
-                            <div class="modal-footer border-0 p-4 pt-0">
-                                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                            
+                            <div class="modal-footer border-0 p-4 pt-0 bg-light rounded-bottom-4">
+                                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">
+                                    <i class="bi bi-x me-1"></i>Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
                                     <i class="bi bi-play-fill me-1"></i>Abrir Caja
                                 </button>
                             </div>
@@ -321,6 +382,32 @@
                     </div>
                 </div>
             </div>
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const modalEl = document.getElementById('modalAbrir{{ $caja->id }}');
+                const input = document.getElementById('montoInicial{{ $caja->id }}');
+                
+                // Quick amount buttons
+                modalEl.querySelectorAll('[data-monto]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        input.value = btn.dataset.monto;
+                        input.focus();
+                    });
+                });
+                
+                // Auto-select on focus
+                input.addEventListener('focus', () => {
+                    input.select();
+                });
+                
+                // Format on blur
+                input.addEventListener('blur', () => {
+                    const val = parseFloat(input.value) || 0;
+                    input.value = val.toFixed(2);
+                });
+            });
+            </script>
             @endif
         @endforeach
     </div>

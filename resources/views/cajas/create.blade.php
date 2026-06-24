@@ -92,7 +92,7 @@
                                 <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Código</label>
                                 <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
                                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-upc text-primary"></i></span>
-                                    <input type="text" name="codigo" class="form-control border-start-0 @error('codigo') is-invalid @enderror" placeholder="C01, C02..." value="{{ old('codigo') }}">
+                                    <input type="text" name="codigo" class="form-control border-start-0 @error('codigo') is-invalid @enderror" placeholder="C01, C02..." value="{{ old('codigo', $nextCode) }}">
                                 </div>
                                 <small class="text-muted">Identificador corto único.</small>
                                 @error('codigo')<div class="text-danger small mt-1">{{ $message }}</div>@enderror

@@ -6,6 +6,7 @@ use App\Models\Caja;
 use App\Models\Sucursal;
 use App\Services\CajaService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CajaController extends Controller
 {
@@ -22,14 +23,25 @@ class CajaController extends Controller
     {
         $caja = new Caja();
         $sucursales = Sucursal::orderBy('nombre')->get();
-        return view('cajas.create', compact('caja', 'sucursales'));
+
+        $lastCode = Caja::max('codigo');
+        $nextCode = 'C01';
+        if ($lastCode) {
+            $num = intval(substr($lastCode, 1)) + 1;
+            $nextCode = 'C' . str_pad($num, 2, '0', STR_PAD_LEFT);
+        }
+
+        return view('cajas.create', compact('caja', 'sucursales', 'nextCode'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'nombre'      => 'required|string|max:100',
-            'codigo'      => 'nullable|string|max:20|unique:cajas,codigo',
+            'codigo'      => [
+                'nullable', 'string', 'max:20',
+                Rule::unique('cajas', 'codigo')->where('tenant_id', auth()->user()->business_instance_id),
+            ],
             'ubicacion'   => 'nullable|string|max:100',
             'activo'      => 'boolean',
             'sucursal_id' => 'nullable|exists:sucursales,id',
@@ -54,7 +66,10 @@ class CajaController extends Controller
     {
         $data = $request->validate([
             'nombre'      => 'required|string|max:100',
-            'codigo'      => 'nullable|string|max:20|unique:cajas,codigo,' . $caja->id,
+            'codigo'      => [
+                'nullable', 'string', 'max:20',
+                Rule::unique('cajas', 'codigo')->ignore($caja->id)->where('tenant_id', auth()->user()->business_instance_id),
+            ],
             'ubicacion'   => 'nullable|string|max:100',
             'activo'      => 'boolean',
             'sucursal_id' => 'nullable|exists:sucursales,id',
