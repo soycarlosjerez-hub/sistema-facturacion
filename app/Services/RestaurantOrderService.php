@@ -23,6 +23,15 @@ use Illuminate\Support\Facades\Log;
 
 class RestaurantOrderService
 {
+    private function restauranteValidaStock(): bool
+    {
+        $user = Auth::user();
+        if (!$user || !$user->businessInstance) {
+            return true;
+        }
+        $config = $user->businessInstance->configuracion ?? [];
+        return ($config['restaurante_valida_stock'] ?? '1') === '1';
+    }
     public function getIndexData(): array
     {
         $this->autoOcuparMesasReservadas();
@@ -37,8 +46,9 @@ class RestaurantOrderService
 
         $servicioPorcentaje = (float) SystemSetting::get('servicio_porcentaje', 0);
         $servicioMinPersonas = (int) SystemSetting::get('servicio_min_personas', 8);
+        $restauranteValidaStock = $this->restauranteValidaStock();
 
-        return compact('mesas', 'cajas', 'sesionActiva', 'servicioPorcentaje', 'servicioMinPersonas');
+        return compact('mesas', 'cajas', 'sesionActiva', 'servicioPorcentaje', 'servicioMinPersonas', 'restauranteValidaStock');
     }
 
     public function autoOcuparMesasReservadas(): void
@@ -164,14 +174,14 @@ class RestaurantOrderService
     
         DB::beginTransaction();
         try {
-            // Validar stock del producto
-            if ($producto->stock < $cantidad) {
+            // Validar stock del solo si la config lo requiere
+            if ($this->restauranteValidaStock() && $producto->stock < $cantidad) {
                 DB::rollBack();
                 return ['error' => "Stock insuficiente del producto. Disponible: {$producto->stock}", 'code' => 422];
             }
             
-            // Validar stock de ingredientes
-            if ($errorIngrediente = $this->checkIngredientsStock($producto, $cantidad)) {
+            // Validar stock de ingredientes solo si la config lo requiere
+            if ($this->restauranteValidaStock() && $errorIngrediente = $this->checkIngredientsStock($producto, $cantidad)) {
                 DB::rollBack();
                 return ['error' => $errorIngrediente, 'code' => 422];
             }
@@ -284,7 +294,7 @@ class RestaurantOrderService
         $diferencia = $nuevaCantidad - $cantidadActual;
 
         $producto = $detalle->producto;
-        if ($producto && $diferencia > 0 && $producto->stock < $diferencia) {
+        if ($producto && $diferencia > 0 && $this->restauranteValidaStock() && $producto->stock < $diferencia) {
             return ['error' => "Stock insuficiente. Disponible: {$producto->stock}", 'code' => 422];
         }
 

@@ -22,6 +22,16 @@ class OrdenController extends Controller
         protected PrintService $printService,
     ) {}
 
+    private function restauranteValidaStock(): bool
+    {
+        $user = auth()->user();
+        if (!$user || !$user->businessInstance) {
+            return true;
+        }
+        $config = $user->businessInstance->configuracion ?? [];
+        return ($config['restaurante_valida_stock'] ?? '1') === '1';
+    }
+
     public function getMesa(Mesa $mesa)
     {
         $orden = $mesa->ordenActiva;
@@ -34,9 +44,13 @@ class OrdenController extends Controller
 
     public function catalogo()
     {
-        $productos = Producto::where('stock', '>', 0)
-            ->orderBy('nombre')
-            ->get(['id', 'nombre', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'codigo_barras', 'imagen', 'categoria_id']);
+        $query = Producto::orderBy('nombre');
+
+        if ($this->restauranteValidaStock()) {
+            $query->where('stock', '>', 0);
+        }
+
+        $productos = $query->get(['id', 'nombre', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'codigo_barras', 'imagen', 'categoria_id']);
 
         $categorias = \App\Models\Categoria::orderBy('nombre')->get(['id', 'nombre']);
 
@@ -49,13 +63,17 @@ class OrdenController extends Controller
         if (strlen($termino) < 2) {
             return response()->json([]);
         }
-        $productos = Producto::where(function ($q) use ($termino) {
+        $query = Producto::where(function ($q) use ($termino) {
             $q->where('nombre', 'like', "%{$termino}%")
               ->orWhere('codigo_barras', 'like', "%{$termino}%");
-        })
-        ->where('stock', '>', 0)
-        ->limit(20)
-        ->get(['id', 'nombre', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'codigo_barras', 'imagen', 'categoria_id']);
+        });
+
+        if ($this->restauranteValidaStock()) {
+            $query->where('stock', '>', 0);
+        }
+
+        $productos = $query->limit(20)
+            ->get(['id', 'nombre', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'codigo_barras', 'imagen', 'categoria_id']);
 
         return response()->json($productos);
     }

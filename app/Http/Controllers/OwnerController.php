@@ -472,7 +472,10 @@ class OwnerController extends Controller
             'prefijo_factura' => 'nullable|string|max:20',
             'prefijo_ncf' => 'nullable|string|max:10',
             'dias_credito' => 'nullable|integer|min:0|max:365',
+            'restaurante_valida_stock' => 'nullable|string',
         ]);
+
+        $data['restaurante_valida_stock'] = $request->has('restaurante_valida_stock') ? '1' : '0';
 
         $existingConfig = $instance->configuracion ?? [];
         $mergedConfig = array_merge($existingConfig, array_filter($data, fn($v) => !is_null($v)));

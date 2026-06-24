@@ -114,6 +114,34 @@
                         </div>
 
                         <hr>
+                        <h6 class="fw-bold text-muted mb-3"><i class="bi bi-shop me-2"></i>M&oacute;dulo Restaurante</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-4 border" style="background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.2) !important;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <label class="form-label fw-bold small mb-0">
+                                                Validar Stock en Restaurante
+                                                @if(isset($instanceConfig['restaurante_valida_stock']))
+                                                    <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill ms-1" style="font-size:.55rem;">personalizado</span>
+                                                @else
+                                                    <span class="badge bg-secondary bg-opacity-25 text-secondary rounded-pill ms-1" style="font-size:.55rem;">global</span>
+                                                @endif
+                                            </label>
+                                            <small class="text-muted d-block" style="font-size:.72rem;">
+                                                Si est&aacute; activo, solo se muestran productos con stock disponible.
+                                            </small>
+                                        </div>
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" name="restaurante_valida_stock" value="1"
+                                                   {{ ($instanceConfig['restaurante_valida_stock'] ?? '1') === '1' ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
                         <div class="d-flex justify-content-between align-items-center">
                             <small class="text-muted">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i>
