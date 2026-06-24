@@ -63,9 +63,15 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #198754 !important;">
-            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-        </div>
+        @if(session('deactivated'))
+            <div class="alert alert-warning rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #f59e0b !important;">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ session('success') }}
+            </div>
+        @else
+            <div class="alert alert-success rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #198754 !important;">
+                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+            </div>
+        @endif
     @endif
     @if(session('error'))
         <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
@@ -147,6 +153,16 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="d-flex justify-content-end mb-3">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="toggleInactivas" {{ session('hide_inactive') ? 'checked' : '' }}>
+            <label class="form-check-label fw-bold text-muted small" for="toggleInactivas">
+                <i class="bi bi-eye-slash me-1"></i>Ocultar inactivas
+            </label>
         </div>
     </div>
 
@@ -585,6 +601,16 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar Cambios';
         }
     });
+
+    // Toggle inactivas
+    const toggleInactivas = document.getElementById('toggleInactivas');
+    if (toggleInactivas) {
+        toggleInactivas.addEventListener('change', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('hide_inactive', toggleInactivas.checked ? '1' : '0');
+            window.location.href = url.toString();
+        });
+    }
 
     function showToast(msg, type) {
         const id = 'toast-' + Date.now();

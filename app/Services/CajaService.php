@@ -15,6 +15,9 @@ class CajaService
         if ($sucursalId = session('sucursal_id')) {
             $query->where('sucursal_id', $sucursalId);
         }
+        if (request()->boolean('hide_inactive')) {
+            $query->where('activo', true);
+        }
         $cajas = $query->get();
 
         if ($cajas->isEmpty()) {
