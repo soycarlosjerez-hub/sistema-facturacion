@@ -3,11 +3,9 @@
 namespace App\Services;
 
 use App\Models\Cliente;
-use App\Support\RncValidator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Validation\ValidationException;
 
 class ClienteService
 {
@@ -25,13 +23,11 @@ class ClienteService
 
     public function create(array $data): Cliente
     {
-        $this->validarRnc($data);
         return Cliente::create($data);
     }
 
     public function update(Cliente $cliente, array $data): Cliente
     {
-        $this->validarRnc($data);
         $cliente->update($data);
         return $cliente;
     }
@@ -64,18 +60,5 @@ class ClienteService
         $clientes = $query->latest()->get();
         $pdf = Pdf::loadView('clientes.pdf', compact('clientes'));
         return $pdf->stream('clientes.pdf');
-    }
-
-    protected function validarRnc(array &$data): void
-    {
-        if (!empty($data['rnc_cedula'])) {
-            $tipoDoc = $data['tipo_documento'] ?? RncValidator::inferirTipo($data['rnc_cedula']);
-            if (!RncValidator::validar($data['rnc_cedula'], $tipoDoc)) {
-                throw ValidationException::withMessages([
-                    'rnc_cedula' => "El {$tipoDoc} ingresado no es válido.",
-                ]);
-            }
-            $data['tipo_documento'] = $tipoDoc;
-        }
     }
 }

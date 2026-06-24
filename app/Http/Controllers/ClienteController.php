@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Services\ClienteService;
 use Illuminate\Http\Request;
+use App\Rules\RncValido;
 
 class ClienteController extends Controller
 {
@@ -27,7 +28,7 @@ class ClienteController extends Controller
     {
         $data = $request->validate([
             'nombre'        => 'required|string|max:255',
-            'rnc_cedula'    => 'nullable|digits_between:9,11',
+            'rnc_cedula'    => ['nullable', 'digits_between:9,11', new RncValido],
             'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte',
             'email'         => 'nullable|email',
             'telefono'      => 'nullable',
@@ -54,7 +55,7 @@ class ClienteController extends Controller
     {
         $data = $request->validate([
             'nombre'        => 'required|string|max:255',
-            'rnc_cedula'    => 'nullable|digits_between:9,11',
+            'rnc_cedula'    => ['nullable', 'digits_between:9,11', new RncValido],
             'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte',
             'email'         => 'nullable|email',
             'telefono'      => 'nullable',

@@ -426,6 +426,23 @@
             </script>
             @endif
         @endforeach
+        
+        @if($cajasConStats->isEmpty())
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body text-center py-5">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <i class="bi bi-cash-register fs-1"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">No hay cajas registradas</h4>
+                        <p class="text-muted mb-4">Crea tu primera caja para empezar a vender.</p>
+                        <a href="{{ route('cajas.create') }}" class="btn btn-primary rounded-pill px-5 py-3 fw-bold fs-6">
+                            <i class="bi bi-plus-circle me-2"></i>Crear Primera Caja
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -483,7 +500,7 @@
     </div>
 </div>
 
-@if($esAdmin)
+@if(auth()->user()->role === 'admin')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modalQuickEdit');

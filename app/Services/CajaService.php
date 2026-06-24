@@ -20,14 +20,6 @@ class CajaService
         }
         $cajas = $query->get();
 
-        if ($cajas->isEmpty()) {
-            $caja = Caja::firstOrCreate(
-                ['codigo' => 'C01', 'tenant_id' => auth()->user()->business_instance_id],
-                ['nombre' => 'Caja Principal', 'estado' => 'cerrada', 'activo' => true]
-            );
-            $cajas = collect([$caja]);
-        }
-
         $sesionActivaUsuario = SesionCaja::with('caja', 'user')
             ->where('user_id', auth()->id())
             ->where('estado', 'abierta')
