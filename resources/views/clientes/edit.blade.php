@@ -105,7 +105,17 @@ body.dark-mode .sticky-save-bar {
                                 <label class="form-label small fw-semibold">RNC / Cédula</label>
                                 <input type="text" name="rnc_cedula" class="form-control" maxlength="11" placeholder="RNC o Cédula" value="{{ old('rnc_cedula', $cliente->rnc_cedula ?? '') }}">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Tipo Documento</label>
+                                <select name="tipo_documento" class="form-select" id="tipoDoc">
+                                    <option value="">Auto-detectar</option>
+                                    <option value="rnc" {{ old('tipo_documento', $cliente->tipo_documento ?? '') == 'rnc' ? 'selected' : '' }}>RNC</option>
+                                    <option value="cedula" {{ old('tipo_documento', $cliente->tipo_documento ?? '') == 'cedula' ? 'selected' : '' }}>Cédula</option>
+                                    <option value="pasaporte" {{ old('tipo_documento', $cliente->tipo_documento ?? '') == 'pasaporte' ? 'selected' : '' }}>Pasaporte</option>
+                                    <option value="ninguno" {{ old('tipo_documento', $cliente->tipo_documento ?? '') == 'ninguno' ? 'selected' : '' }}>Ninguno</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
                                 <label class="form-label small fw-semibold">Email</label>
                                 <input type="email" name="email" class="form-control" value="{{ old('email', $cliente->email) }}">
                             </div>

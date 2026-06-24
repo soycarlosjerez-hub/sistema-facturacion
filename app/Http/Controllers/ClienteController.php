@@ -26,10 +26,17 @@ class ClienteController extends Controller
 
     public function store(Request $request)
     {
+        if (!$request->filled('rnc_cedula') && !$request->filled('tipo_documento')) {
+            $request->merge(['tipo_documento' => 'ninguno']);
+        } elseif ($request->filled('rnc_cedula') && !$request->filled('tipo_documento')) {
+            $clean = preg_replace('/[^0-9]/', '', $request->rnc_cedula);
+            $request->merge(['tipo_documento' => strlen($clean) === 11 ? 'rnc' : 'cedula']);
+        }
+
         $data = $request->validate([
             'nombre'        => 'required|string|max:255',
             'rnc_cedula'    => ['nullable', 'digits_between:9,11', new RncValido],
-            'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte',
+            'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte,ninguno',
             'email'         => 'nullable|email',
             'telefono'      => 'nullable',
             'direccion'     => 'nullable',
@@ -53,10 +60,17 @@ class ClienteController extends Controller
 
     public function update(Request $request, Cliente $cliente)
     {
+        if (!$request->filled('rnc_cedula') && !$request->filled('tipo_documento')) {
+            $request->merge(['tipo_documento' => 'ninguno']);
+        } elseif ($request->filled('rnc_cedula') && !$request->filled('tipo_documento')) {
+            $clean = preg_replace('/[^0-9]/', '', $request->rnc_cedula);
+            $request->merge(['tipo_documento' => strlen($clean) === 11 ? 'rnc' : 'cedula']);
+        }
+
         $data = $request->validate([
             'nombre'        => 'required|string|max:255',
             'rnc_cedula'    => ['nullable', 'digits_between:9,11', new RncValido],
-            'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte',
+            'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte,ninguno',
             'email'         => 'nullable|email',
             'telefono'      => 'nullable',
             'direccion'     => 'nullable',

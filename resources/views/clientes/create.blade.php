@@ -112,6 +112,7 @@ body.dark-mode .sticky-save-bar {
                                     <option value="rnc" {{ old('tipo_documento')=='rnc' ? 'selected' : '' }}>RNC</option>
                                     <option value="cedula" {{ old('tipo_documento')=='cedula' ? 'selected' : '' }}>Cédula</option>
                                     <option value="pasaporte" {{ old('tipo_documento')=='pasaporte' ? 'selected' : '' }}>Pasaporte</option>
+                                    <option value="ninguno" {{ old('tipo_documento')=='ninguno' ? 'selected' : '' }}>Ninguno</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
