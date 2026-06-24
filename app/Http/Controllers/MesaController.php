@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Mesa;
 use App\Models\MesaCategoria;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class MesaController extends Controller
 {

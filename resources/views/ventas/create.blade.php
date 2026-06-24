@@ -1459,6 +1459,67 @@ body:not(.dark-mode) {
         .pos-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
         .pos-right { border-left: none; border-top: 1px solid var(--pos-border); }
     }
+
+    /* ============ Modal Productos — Virtual Keyboard ============ */
+    #productosModal .modal-content { background: var(--pos-bg); color: var(--pos-text); }
+    #productosModal .modal-header { background: linear-gradient(135deg, var(--pos-accent), #0284c7); }
+    #productosModal .form-control { background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text); }
+    #productosModal .form-control::placeholder { color: var(--pos-text-muted); }
+    #productosModal .form-control:focus { border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); color: var(--pos-text); }
+
+    .tecla {
+        flex: 1; height: 38px; border-radius: 8px;
+        border: 1px solid var(--pos-border);
+        background: var(--pos-card); color: var(--pos-text);
+        font-size: .78rem; font-weight: 600; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        touch-action: manipulation; user-select: none; -webkit-user-select: none;
+        transition: background .08s, transform .08s; padding: 0 3px; min-width: 0;
+    }
+    .tecla:active { background: rgba(14,165,233,0.2); transform: scale(0.93); box-shadow: 0 0 0 2px rgba(14,165,233,0.2); }
+    .tecla-func { background: rgba(255,255,255,0.06); font-size: .72rem; }
+    .tecla-shift { flex: 1.6; }
+    .tecla-shift.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+    .tecla-backspace { flex: 1.3; }
+    .tecla-space { flex: 4; }
+    .tecla-enter { flex: 1.3; background: var(--pos-accent); color: #fff; border-color: var(--pos-accent); }
+    .tecla-punct { flex: 1; }
+    .tecla-func:active { background: rgba(14,165,233,0.2); }
+    .tecla-func.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+    .tecla-row { display: flex; gap: 4px; justify-content: center; margin-bottom: 4px; }
+    #teclado-rows { max-width: 100%; }
+    #teclado-rows::-webkit-scrollbar { height: 0; }
+
+    @media (max-width: 576px) {
+        .tecla { height: 34px; font-size: .7rem; border-radius: 6px; }
+    }
+
+    /* ============ Modal Productos — Product Cards ============ */
+    .modal-prod-card {
+        background: var(--pos-card); border: 1px solid var(--pos-border); border-radius: 14px;
+        padding: 10px; cursor: pointer; text-align: center; position: relative;
+        transition: transform .15s, box-shadow .15s; height: 100%; display: flex; flex-direction: column; align-items: center;
+    }
+    .modal-prod-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); border-color: var(--pos-accent); }
+    .modal-prod-card.out-of-stock { opacity: 0.4; cursor: not-allowed; }
+    .modal-prod-card.out-of-stock:hover { transform: none; box-shadow: none; }
+    .modal-prod-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,0.05); margin-bottom: 6px; }
+    .modal-prod-img-placeholder {
+        width: 64px; height: 64px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; font-weight: 800; margin-bottom: 6px;
+    }
+    .modal-prod-name { font-size: .75rem; font-weight: 600; color: var(--pos-text); line-height: 1.2; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+    .modal-prod-price { font-size: .8rem; font-weight: 800; color: var(--pos-accent); font-variant-numeric: tabular-nums; }
+    .modal-prod-stock-badge { font-size: .6rem; padding: 1px 6px; border-radius: 6px; font-weight: 700; position: absolute; top: 6px; right: 6px; }
+    .modal-prod-qty { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .modal-prod-qty button {
+        width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--pos-border);
+        background: rgba(255,255,255,0.06); color: var(--pos-text); font-weight: 700; font-size: .8rem;
+        display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s;
+    }
+    .modal-prod-qty button:hover { background: rgba(14,165,233,0.15); border-color: var(--pos-accent); }
+    .modal-prod-qty span { font-weight: 800; font-size: .85rem; min-width: 20px; text-align: center; color: var(--pos-text); }
 </style>
 
 <form id="pos-form" action="{{ route('ventas.store') }}" method="POST" autocomplete="off">
@@ -1881,6 +1942,36 @@ body:not(.dark-mode) {
     </div>
 </div>
 
+<!-- ============ Modal Productos con Teclado Virtual ============ -->
+<div class="modal fade" id="productosModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content rounded-4 border-0 shadow" style="max-height:95vh;">
+            <div class="modal-header border-0 rounded-top-4 py-2">
+                <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Producto</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="cerrarModalProductos()"></button>
+            </div>
+            <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
+                <div class="input-group shadow-sm rounded-3 mb-2">
+                    <span class="input-group-text" style="background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text-muted);"><i class="bi bi-search"></i></span>
+                    <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()">
+                    <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: var(--pos-text-muted);" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div id="modal-productos-grid" class="row g-2 overflow-auto mb-2" style="flex:1; min-height:0;"></div>
+                <div class="border-top pt-1 mt-1" id="teclado-virtual" style="border-color: var(--pos-border) !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-0">
+                        <small class="fw-semibold" style="font-size:.65rem; color: var(--pos-text-muted);">Teclado</small>
+                        <div class="btn-group btn-group-xs">
+                            <button class="btn btn-outline-secondary rounded-start-pill" style="font-size:.65rem;padding:1px 6px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('us')" id="btn-idioma-us">US</button>
+                            <button class="btn btn-outline-secondary rounded-end-pill" style="font-size:.65rem;padding:1px 6px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('es')" id="btn-idioma-es">ES</button>
+                        </div>
+                    </div>
+                    <div id="teclado-rows"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1200;">
     <div id="scanToast" class="toast align-items-center text-white border-0" role="alert">
@@ -1996,7 +2087,6 @@ body:not(.dark-mode) {
 
         clearScan() {
             $('scan-input').value = '';
-            $('search-input').focus;
             $('scan-input').focus();
             hideSearchResults();
         },
@@ -2128,6 +2218,216 @@ body:not(.dark-mode) {
         }
     };
     window.POS = POS;
+
+    // ============ Modal Productos + Teclado Virtual ============
+    const PALETA_COLORES_MODAL = [
+        { bg: '#fee2e2', fg: '#dc2626' }, { bg: '#ffedd5', fg: '#ea580c' },
+        { bg: '#fef9c3', fg: '#ca8a04' }, { bg: '#dcfce7', fg: '#16a34a' },
+        { bg: '#cffafe', fg: '#0891b2' }, { bg: '#dbeafe', fg: '#2563eb' },
+        { bg: '#ede9fe', fg: '#7c3aed' }, { bg: '#fce7f3', fg: '#db2777' },
+        { bg: '#ccfbf1', fg: '#0d9488' }, { bg: '#faf5ff', fg: '#a21caf' },
+    ];
+    const TECLADO_LAYOUTS = {
+        us: [['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m']],
+        es: [['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l','ñ'],['z','x','c','v','b','n','m']]
+    };
+    let tecladoIdiomaActual = 'es';
+    let teclaShiftActivo = false;
+    let cantidadesModal = {};
+
+    function colorProductoModal(nombre) {
+        let h = 0;
+        for (let i = 0; i < nombre.length; i++) h = nombre.charCodeAt(i) + ((h << 5) - h);
+        return PALETA_COLORES_MODAL[Math.abs(h) % PALETA_COLORES_MODAL.length];
+    }
+
+    function abrirModalProductos() {
+        const modalEl = $('productosModal');
+        const old = bootstrap.Modal.getInstance(modalEl);
+        if (old) old.dispose();
+        const modal = new bootstrap.Modal(modalEl, { keyboard: false });
+        $('modal-buscar-producto').value = '';
+        $('modal-btn-limpiar').style.display = 'none';
+        cantidadesModal = {};
+        teclaShiftActivo = false;
+        renderizarTecladoModal();
+        tecladoIdioma('es');
+        renderizarProductosModal('');
+        modal.show();
+        setTimeout(() => $('modal-buscar-producto').focus(), 300);
+    }
+
+    function cerrarModalProductos() {
+        const el = $('productosModal');
+        const m = bootstrap.Modal.getInstance(el);
+        if (m) m.hide();
+    }
+
+    function modalBuscarProductos() {
+        const q = $('modal-buscar-producto').value.trim();
+        $('modal-btn-limpiar').style.display = q.length > 0 ? 'inline-block' : 'none';
+        renderizarProductosModal(q);
+    }
+
+    function modalLimpiarBusqueda() {
+        $('modal-buscar-producto').value = '';
+        $('modal-btn-limpiar').style.display = 'none';
+        modalBuscarProductos();
+        $('modal-buscar-producto').focus();
+    }
+
+    function renderizarProductosModal(filtro) {
+        const container = $('modal-productos-grid');
+        const q = (filtro || '').toLowerCase();
+        const results = productos.filter(p =>
+            (p.nombre || '').toLowerCase().includes(q) ||
+            (p.codigo_barras || '').toLowerCase().includes(q)
+        );
+        if (results.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center py-4" style="color:var(--pos-text-muted);"><i class="bi bi-search" style="font-size:2.5rem;opacity:.4;display:block;margin-bottom:8px;"></i>Sin resultados</div>';
+            return;
+        }
+        let html = '';
+        results.forEach(p => {
+            const id = p.id;
+            if (cantidadesModal[id] === undefined) cantidadesModal[id] = 1;
+            const qty = cantidadesModal[id];
+            const c = colorProductoModal(p.nombre);
+            const initial = (p.nombre || '?').charAt(0).toUpperCase();
+            const stockCls = p.stock <= 0 ? 'bg-secondary' : p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark';
+            const stockTxt = p.stock <= 0 ? 'Agotado' : p.stock + ' uds';
+            const outCls = p.stock <= 0 ? ' out-of-stock' : '';
+            let imgHtml;
+            if (p.imagen_url) {
+                imgHtml = `<img class="modal-prod-img" src="${p.imagen_url}" alt="" onerror="this.onerror=null;this.remove();this.nextElementSibling.style.display='flex';">`;
+                imgHtml += `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};display:none;">${initial}</div>`;
+            } else {
+                imgHtml = `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};">${initial}</div>`;
+            }
+            html += `
+            <div class="col-4 col-md-3 col-lg-2">
+                <div class="modal-prod-card${outCls}" onclick="agregarProductoDesdeModal(${id})" ${p.stock <= 0 ? 'style="pointer-events:none;"' : ''}>
+                    <span class="modal-prod-stock-badge badge ${stockCls}">${stockTxt}</span>
+                    ${imgHtml}
+                    <div class="modal-prod-name">${escapeHtml(p.nombre)}</div>
+                    <div class="modal-prod-price">${fmt(p.precio)}</div>
+                    <div class="modal-prod-qty" onclick="event.stopPropagation()">
+                        <button type="button" onpointerdown="cambiarQtyModal(${id}, -1)">&#8722;</button>
+                        <span id="mqty-${id}">${qty}</span>
+                        <button type="button" onpointerdown="cambiarQtyModal(${id}, 1)">+</button>
+                    </div>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function cambiarQtyModal(productoId, delta) {
+        if (cantidadesModal[productoId] === undefined) cantidadesModal[productoId] = 1;
+        let nueva = cantidadesModal[productoId] + delta;
+        if (nueva < 1) nueva = 1;
+        if (nueva > 99) nueva = 99;
+        cantidadesModal[productoId] = nueva;
+        const span = $('mqty-' + productoId);
+        if (span) span.textContent = nueva;
+    }
+
+    function agregarProductoDesdeModal(id) {
+        const p = productos.find(x => x.id === id);
+        if (!p || p.stock <= 0) { showToast('Producto sin stock', 'danger'); return; }
+        const qty = cantidadesModal[id] || 1;
+        if (p.stock < qty) { showToast(`Solo hay ${p.stock} unidades disponibles`, 'warning'); return; }
+        const existing = cart.find(x => x.id === id);
+        if (existing) {
+            const totalQty = existing.qty + qty;
+            if (totalQty > p.stock) { showToast(`Stock máximo: ${p.stock}`, 'warning'); return; }
+            existing.qty = totalQty;
+        } else {
+            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: qty, stock: p.stock, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto' });
+        }
+        renderCart('add');
+        showToast(`+ ${qty}× ${p.nombre}`, 'success', 1200);
+        cerrarModalProductos();
+    }
+
+    // Teclado virtual
+    function renderizarTecladoModal() {
+        const container = $('teclado-rows');
+        if (!container) return;
+        const layout = TECLADO_LAYOUTS[tecladoIdiomaActual] || TECLADO_LAYOUTS.es;
+        let html = '<div class="tecla-row">';
+        ['1','2','3','4','5','6','7','8','9','0'].forEach(n => {
+            html += `<button class="tecla" onpointerdown="teclaPulsar('${n}')" type="button">${n}</button>`;
+        });
+        html += '</div>';
+        layout.forEach(fila => {
+            html += '<div class="tecla-row">';
+            fila.forEach(letra => {
+                const display = teclaShiftActivo ? letra.toUpperCase() : letra;
+                html += `<button class="tecla" onpointerdown="teclaPulsar('${letra}')" type="button">${display}</button>`;
+            });
+            html += '</div>';
+        });
+        html += '<div class="tecla-row">';
+        const shiftCls = teclaShiftActivo ? ' active' : '';
+        html += `<button class="tecla tecla-func tecla-shift${shiftCls}" onpointerdown="teclaMayusculas()" type="button"><i class="bi bi-arrow-up-short fs-5"></i></button>`;
+        ['z','x','c','v','b','n','m'].forEach(letra => {
+            const display = teclaShiftActivo ? letra.toUpperCase() : letra;
+            html += `<button class="tecla" onpointerdown="teclaPulsar('${letra}')" type="button">${display}</button>`;
+        });
+        html += `<button class="tecla tecla-func tecla-backspace" onpointerdown="teclaBorrar()" type="button"><i class="bi bi-backspace fs-5"></i></button>`;
+        html += '</div>';
+        html += '<div class="tecla-row">';
+        html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar(',')" type="button">,</button>`;
+        html += `<button class="tecla tecla-func tecla-space" onpointerdown="teclaPulsar(' ')" type="button"><span class="fw-normal">Espacio</span></button>`;
+        html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar('.')" type="button">.</button>`;
+        html += `<button class="tecla tecla-enter" onpointerdown="teclaEnter()" type="button"><i class="bi bi-arrow-return-left fs-5"></i></button>`;
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function tecladoIdioma(idioma) {
+        tecladoIdiomaActual = idioma;
+        const usBtn = $('btn-idioma-us');
+        const esBtn = $('btn-idioma-es');
+        if (usBtn) usBtn.classList.toggle('active', idioma === 'us');
+        if (esBtn) esBtn.classList.toggle('active', idioma === 'es');
+        renderizarTecladoModal();
+    }
+
+    function teclaPulsar(caracter) {
+        const input = $('modal-buscar-producto');
+        const start = input.selectionStart || input.value.length;
+        const end = input.selectionEnd || input.value.length;
+        const val = input.value;
+        const letra = teclaShiftActivo ? caracter.toUpperCase() : caracter;
+        input.value = val.substring(0, start) + letra + val.substring(end);
+        const newPos = start + letra.length;
+        input.setSelectionRange(newPos, newPos);
+        input.focus();
+        if (teclaShiftActivo) { teclaShiftActivo = false; renderizarTecladoModal(); }
+        modalBuscarProductos();
+    }
+
+    function teclaMayusculas() { teclaShiftActivo = !teclaShiftActivo; renderizarTecladoModal(); }
+
+    function teclaBorrar() {
+        const input = $('modal-buscar-producto');
+        const start = input.selectionStart || input.value.length;
+        const end = input.selectionEnd || input.value.length;
+        if (start === 0 && end === 0) return;
+        if (start !== end) {
+            input.value = input.value.substring(0, start) + input.value.substring(end);
+            input.setSelectionRange(start, start);
+        } else {
+            input.value = input.value.substring(0, start - 1) + input.value.substring(start);
+            input.setSelectionRange(start - 1, start - 1);
+        }
+        input.focus();
+        modalBuscarProductos();
+    }
+
+    function teclaEnter() { cerrarModalProductos(); }
 
     // ============ showConfirmModal ============
     function showConfirmModal(metodo) {
@@ -2555,7 +2855,7 @@ body:not(.dark-mode) {
         const inSearch = target.id === 'scan-input';
 
         if (e.key === 'F1') { e.preventDefault(); POS.toggleShortcutsHelp(); return; }
-        if (e.key === 'F2') { e.preventDefault(); $('scan-input').focus(); $('scan-input').select(); return; }
+        if (e.key === 'F2') { e.preventDefault(); if (scanMode === 'search') { abrirModalProductos(); } else { $('scan-input').focus(); $('scan-input').select(); } return; }
         if (e.key === 'F4' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('efectivo'); return; }
         if (e.key === 'F5' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('tarjeta'); return; }
         if (e.key === 'F6' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('fiado'); return; }
@@ -2579,6 +2879,20 @@ body:not(.dark-mode) {
         // Modo Escáner/Buscar
         $('mode-barcode').addEventListener('click', () => setScanMode('barcode'));
         $('mode-search').addEventListener('click', () => setScanMode('search'));
+
+        // Click en scan-input abre modal si modo búsqueda
+        $('scan-input').addEventListener('click', () => {
+            if (scanMode === 'search') abrirModalProductos();
+        });
+
+        // Dispose modal on close
+        const prodModalEl = $('productosModal');
+        if (prodModalEl) {
+            prodModalEl.addEventListener('hidden.bs.modal', function () {
+                const inst = bootstrap.Modal.getInstance(this);
+                if (inst) inst.dispose();
+            });
+        }
 
         // Tabs
         document.querySelectorAll('.pos-tab').forEach(tab => {
@@ -2662,11 +2976,12 @@ body:not(.dark-mode) {
         if (mode === 'barcode') {
             hint.innerHTML = '<i class="bi bi-info-circle"></i> Escanea código y presiona Enter';
             $('scan-input').placeholder = 'Escanea código de barras...';
+            $('scan-input').focus();
         } else {
-            hint.innerHTML = '<i class="bi bi-info-circle"></i> Escribe para buscar productos';
+            hint.innerHTML = '<i class="bi bi-info-circle"></i> Buscar productos por nombre o código';
             $('scan-input').placeholder = 'Buscar por nombre o código...';
+            abrirModalProductos();
         }
-        $('scan-input').focus();
     }
 
     // Init on DOMContentLoaded
