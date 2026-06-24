@@ -78,7 +78,7 @@ class CajaService
 
         if (Venta::where('caja_id', $caja->id)->exists()) {
             $caja->update(['activo' => false]);
-            return ['success' => true, 'message' => 'La caja tiene ventas asociadas, se desactivó en lugar de eliminarse.'];
+            return ['success' => true, 'deactivated' => true, 'message' => 'La caja tiene ventas asociadas, se desactivó en lugar de eliminarse.'];
         }
 
         $caja->delete();
