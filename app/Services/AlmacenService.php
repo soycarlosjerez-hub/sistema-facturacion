@@ -26,6 +26,7 @@ class AlmacenService
 
     public function createAlmacen(array $data): Almacen
     {
+        $data['tenant_id'] = Auth::user()->business_instance_id;
         return Almacen::create($data);
     }
 

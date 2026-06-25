@@ -18,11 +18,11 @@
                 <div class="text-muted small" style="font-size: 0.7rem;">{{ $m->created_at->format('h:i A') }}</div>
             </td>
             <td>
-                <div class="fw-bold text-dark small">{{ $m->producto->nombre }}</div>
-                <small class="text-muted" style="font-size: 0.7rem;">ID: {{ $m->producto->id }}</small>
+                <div class="fw-bold text-dark small">{{ $m->producto?->nombre ?? '—' }}</div>
+                <small class="text-muted" style="font-size: 0.7rem;">ID: {{ $m->producto?->id ?? '—' }}</small>
             </td>
             <td>
-                <span class="badge bg-light text-dark border-0 p-0 fw-bold">{{ $m->almacen->nombre }}</span>
+                <span class="badge bg-light text-dark border-0 p-0 fw-bold">{{ $m->almacen?->nombre ?? '—' }}</span>
             </td>
             <td>
                 @if($m->tipo === 'entrada')

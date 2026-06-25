@@ -12,20 +12,25 @@ class StockSeeder extends Seeder
 {
     public function run()
     {
+        $admin = User::first();
+        $tenantId = $admin?->business_instance_id;
+
         $almacen = Almacen::where('nombre', 'PRINCIPAL')->first();
         if (!$almacen) {
             $almacen = Almacen::create([
+                'tenant_id' => $tenantId,
                 'nombre' => 'PRINCIPAL',
                 'ubicacion' => 'Sede Central',
             ]);
+        } elseif (!$almacen->tenant_id && $tenantId) {
+            $almacen->update(['tenant_id' => $tenantId]);
         }
 
-        $admin = User::first();
         $productos = Producto::all();
 
         foreach ($productos as $producto) {
-            // Agregar 100 unidades de cada producto como inventario inicial
             AlmacenMovimiento::create([
+                'tenant_id' => $tenantId,
                 'producto_id' => $producto->id,
                 'almacen_id' => $almacen->id,
                 'tipo' => 'entrada',
