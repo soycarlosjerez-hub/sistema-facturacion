@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mesa;
 use App\Models\MesaCategoria;
+use App\Models\MesaUbicacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,14 +12,15 @@ class MesaController extends Controller
 {
     public function index()
     {
-        $mesas = Mesa::deSucursal()->with('categoria')->orderBy('numero')->get();
+        $mesas = Mesa::deSucursal()->with('categoria', 'ubicacion')->orderBy('numero')->get();
         $categorias = MesaCategoria::orderBy('nombre')->get();
-        return view('restaurante.mesas', compact('mesas', 'categorias'));
+        $ubicaciones = MesaUbicacion::orderBy('nombre')->get();
+        return view('restaurante.mesas', compact('mesas', 'categorias', 'ubicaciones'));
     }
 
     public function show(Mesa $mesa)
     {
-        return response()->json($mesa->load('categoria'));
+        return response()->json($mesa->load('categoria', 'ubicacion'));
     }
 
     public function store(Request $request)
@@ -27,7 +29,7 @@ class MesaController extends Controller
             'numero'       => 'required|string|max:20',
             'nombre'       => 'nullable|string|max:100',
             'capacidad'    => 'required|integer|min:1',
-            'ubicacion'    => 'nullable|string|max:100',
+            'ubicacion_id' => 'nullable|exists:mesa_ubicaciones,id',
             'categoria_id' => 'nullable|exists:mesa_categorias,id',
         ]);
 
@@ -46,7 +48,7 @@ class MesaController extends Controller
             'numero'       => 'required|string|max:20',
             'nombre'       => 'nullable|string|max:100',
             'capacidad'    => 'required|integer|min:1',
-            'ubicacion'    => 'nullable|string|max:100',
+            'ubicacion_id' => 'nullable|exists:mesa_ubicaciones,id',
             'estado'       => 'required|string|in:disponible,ocupada,reservada,inactiva',
             'categoria_id' => 'nullable|exists:mesa_categorias,id',
             'activa'       => 'nullable|boolean',

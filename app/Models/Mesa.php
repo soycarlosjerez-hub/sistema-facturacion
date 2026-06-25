@@ -14,7 +14,7 @@ class Mesa extends Model
 
     protected $fillable = [
         'sucursal_id', 'numero', 'nombre', 'capacidad',
-        'ubicacion', 'estado', 'activa', 'categoria_id', 'pos_x', 'pos_y', 'tenant_id',
+        'ubicacion', 'ubicacion_id', 'estado', 'activa', 'categoria_id', 'pos_x', 'pos_y', 'tenant_id',
     ];
 
     protected $casts = [
@@ -26,7 +26,12 @@ class Mesa extends Model
 
     public function categoria()
     {
-        return $this->belongsTo(Category::class, 'categoria_id');
+        return $this->belongsTo(MesaCategoria::class, 'categoria_id');
+    }
+
+    public function ubicacion()
+    {
+        return $this->belongsTo(MesaUbicacion::class, 'ubicacion_id');
     }
 
     public function sucursal()

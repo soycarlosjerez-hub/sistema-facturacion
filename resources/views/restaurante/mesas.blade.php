@@ -75,7 +75,7 @@
                             <td class="fw-semibold">{{ $mesa->numero }}</td>
                             <td>{{ $mesa->nombre ?: '—' }}</td>
                             <td><i class="bi bi-people me-1 text-muted"></i>{{ $mesa->capacidad }}</td>
-                            <td>{{ $mesa->ubicacion ?: '—' }}</td>
+                            <td>{{ $mesa->ubicacion ? $mesa->ubicacion->nombre : '—' }}</td>
                             <td>
                                 @if($mesa->categoria)
                                     <span class="badge rounded-pill" style="background:{{ $mesa->categoria->color }}20; color:{{ $mesa->categoria->color }};">
@@ -172,7 +172,12 @@
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold">Ubicación</label>
-                            <input type="text" name="ubicacion" id="mesa-ubicacion" class="form-control rounded-3" placeholder="Interior, terraza">
+                            <select name="ubicacion_id" id="mesa-ubicacion" class="form-select rounded-3">
+                                <option value="">Sin ubicación</option>
+                                @foreach($ubicaciones as $ubi)
+                                    <option value="{{ $ubi->id }}">{{ $ubi->nombre }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -225,7 +230,7 @@ function editarMesa(id) {
             document.getElementById('mesa-numero').value = mesa.numero;
             document.getElementById('mesa-nombre').value = mesa.nombre || '';
             document.getElementById('mesa-capacidad').value = mesa.capacidad;
-            document.getElementById('mesa-ubicacion').value = mesa.ubicacion || '';
+            document.getElementById('mesa-ubicacion').value = mesa.ubicacion_id || '';
             document.getElementById('mesa-categoria').value = mesa.categoria_id || '';
             document.getElementById('mesa-estado').value = mesa.estado;
             document.getElementById('mesa-estado-group').classList.remove('d-none');

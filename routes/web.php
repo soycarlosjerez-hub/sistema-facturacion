@@ -38,6 +38,7 @@ use App\Http\Controllers\RestauranteController;
 use App\Http\Controllers\OrdenController;
 use App\Http\Controllers\MesaController;
 use App\Http\Controllers\MesaCategoriaController;
+use App\Http\Controllers\MesaUbicacionController;
 use App\Http\Controllers\ReservacionController;
 use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\KdsController;
@@ -705,6 +706,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/restaurante/categorias', [MesaCategoriaController::class, 'store'])->name('restaurante.categorias.store')->middleware('permission:restaurante.categorias');
     Route::put('/restaurante/categorias/{categoria}', [MesaCategoriaController::class, 'update'])->name('restaurante.categorias.update')->middleware('permission:restaurante.categorias');
     Route::delete('/restaurante/categorias/{categoria}', [MesaCategoriaController::class, 'destroy'])->name('restaurante.categorias.destroy')->middleware('permission:restaurante.categorias');
+
+    // Ubicaciones de mesas
+    Route::get('/restaurante/ubicaciones', [MesaUbicacionController::class, 'index'])->name('restaurante.ubicaciones.index')->middleware('permission:restaurante.categorias');
+    Route::get('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'show'])->name('restaurante.ubicaciones.show')->middleware('permission:restaurante.categorias');
+    Route::post('/restaurante/ubicaciones', [MesaUbicacionController::class, 'store'])->name('restaurante.ubicaciones.store')->middleware('permission:restaurante.categorias');
+    Route::put('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'update'])->name('restaurante.ubicaciones.update')->middleware('permission:restaurante.categorias');
+    Route::delete('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'destroy'])->name('restaurante.ubicaciones.destroy')->middleware('permission:restaurante.categorias');
 
     // Reservaciones
     Route::get('/restaurante/reservaciones', [ReservacionController::class, 'index'])->name('restaurante.reservaciones.index')->middleware('permission:restaurante.reservaciones');

@@ -294,6 +294,13 @@ class Sidebar
                     'is_route' => 'restaurante.categorias.*',
                     'exact_route' => 'restaurante.categorias.index',
                 ];
+                $items[] = [
+                    'route' => 'restaurante.ubicaciones.index',
+                    'icon'  => 'bi-geo-alt',
+                    'label' => 'Ubicaciones',
+                    'is_route' => 'restaurante.ubicaciones.*',
+                    'exact_route' => 'restaurante.ubicaciones.index',
+                ];
             }
             if ($mod('restaurante-kds')) {
                 $items[] = [
