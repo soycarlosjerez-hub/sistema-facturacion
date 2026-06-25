@@ -24,7 +24,7 @@ class ProductoController extends Controller
 
     public function index(Request $request)
     {
-        $productos = $this->productoService->list($request->all());
+        $productos = $this->productoService->listAll($request->all());
         return view('productos.index', compact('productos'));
     }
 

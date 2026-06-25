@@ -10,11 +10,10 @@ class CategoriaController extends Controller
     public function index()
     {
         $query = Categoria::withCount('productos')->orderBy('nombre');
-        // Scope to current tenant
         if (auth()->check() && auth()->user()->business_instance_id !== null) {
             $query->where('tenant_id', auth()->user()->business_instance_id);
         }
-        $categorias = $query->paginate(10);
+        $categorias = $query->get();
         return view('categorias.index', compact('categorias'));
     }
 
@@ -57,7 +56,13 @@ class CategoriaController extends Controller
 
     public function edit(Categoria $categoria)
     {
-        return view('categorias.edit', compact('categoria'));
+        $tenantId = auth()->user()->business_instance_id;
+        $productos = \App\Models\Producto::select('id', 'nombre', 'categoria_id')
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->orderBy('nombre')
+            ->get();
+
+        return view('categorias.edit', compact('categoria', 'productos'));
     }
 
     public function update(Request $request, Categoria $categoria)
@@ -74,11 +79,26 @@ class CategoriaController extends Controller
             'nombre'      => $nombreRules,
             'descripcion' => 'nullable|string|max:255',
             'activa'      => 'boolean',
+            'productos'   => 'nullable|array',
+            'productos.*' => 'integer|exists:productos,id',
         ]);
 
         $data['activa'] = $request->boolean('activa');
+        unset($data['productos']);
 
         $categoria->update($data);
+
+        // Sync products: detach all from this category, then attach selected ones
+        $productosIds = $request->input('productos', []);
+        \App\Models\Producto::where('categoria_id', $categoria->id)
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->update(['categoria_id' => null]);
+
+        if (!empty($productosIds)) {
+            \App\Models\Producto::whereIn('id', $productosIds)
+                ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                ->update(['categoria_id' => $categoria->id]);
+        }
 
         return redirect()->route('categorias.index')
             ->with('success', 'Categoría actualizada correctamente.');

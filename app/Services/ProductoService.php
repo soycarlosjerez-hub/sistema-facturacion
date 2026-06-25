@@ -8,6 +8,7 @@ use App\Models\Producto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Intervention\Image\Laravel\Facades\Image;
 
@@ -47,6 +48,41 @@ class ProductoService
         }
         // Paginate and return results
         return $query->latest()->paginate(10)->appends($filters);
+    }
+
+    public function listAll(array $filters = []): Collection
+    {
+        $query = Producto::with('categoria');
+
+        if ($termino = $filters['nombre'] ?? null) {
+            $query->where(function ($q) use ($termino) {
+                $q->where('nombre', 'like', "%{$termino}%")
+                  ->orWhere('codigo_barras', 'like', "%{$termino}%");
+            });
+        }
+
+        if ($min = $filters['precio_min'] ?? null) {
+            $query->where('precio', '>=', (float) $min);
+        }
+
+        if ($max = $filters['precio_max'] ?? null) {
+            $query->where('precio', '<=', (float) $max);
+        }
+
+        if ($stockStatus = $filters['stock_status'] ?? null) {
+            match ($stockStatus) {
+                'critical' => $query->where('stock', '<=', 5),
+                'low'      => $query->whereBetween('stock', [6, 15]),
+                'ok'       => $query->where('stock', '>', 15),
+                default    => null,
+            };
+        }
+
+        if (auth()->check() && auth()->user()->business_instance_id !== null) {
+            $query->where('tenant_id', auth()->user()->business_instance_id);
+        }
+
+        return $query->latest()->get();
     }
 
     public function create(array $data, ?UploadedFile $imagen = null): Producto

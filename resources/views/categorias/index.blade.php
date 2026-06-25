@@ -1,157 +1,243 @@
 @extends('layouts.app')
-
 @section('title', 'Categorías')
 
 @push('styles')
 @include('partials.premium-ui')
+@include('partials.datatable-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
-    .avatar-circle {
-        width: 44px; height: 44px;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 600; font-size: 1.2rem;
-        transition: transform 0.2s;
-    }
-    tr:hover .avatar-circle { transform: scale(1.1); }
-    .status-badge {
-        padding: 0.4em 0.8em;
-        border-radius: 2rem;
-        font-weight: 500;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-    }
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%;
-        transition: background-color 0.2s;
-    }
-    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
+:root {
+    --dt-accent: #8b5cf6;
+    --dt-accent-gradient: linear-gradient(135deg, #8b5cf6, #a855f7);
+    --dt-accent-rgb: 139,92,246;
+}
+.premium-header {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
+    background-size: 300% 300%;
+    box-shadow: 0 8px 32px rgba(139,92,246,.25);
+}
+.premium-header::before {
+    background:
+        radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
+}
+.avatar-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 1.2rem;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+tr:hover .avatar-circle { transform: scale(1.1); }
+.status-badge {
+    padding: 0.4em 0.8em;
+    border-radius: 2rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+body.dark-mode .avatar-circle { color: #f1f5f9 !important; }
+body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
 </style>
 @endpush
 
 @section('content')
-<div class="premium-page">
-    <div class="container-fluid px-4 py-3">
-
-        <div class="premium-header d-flex justify-content-between align-items-center">
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="d-flex align-items-center gap-3 position-relative" style="z-index: 2;">
+<div class="container-fluid px-4 py-3 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
                 <div class="premium-avatar-circle">
                     <i class="bi bi-tags"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">Gestión de Categorías</h2>
-                    <p class="mb-0 opacity-75 fs-5">Clasifica y organiza tus productos e inventario</p>
+                    <h4 class="fw-bold mb-1 text-white">Gestión de Categorías</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-info-circle me-1"></i>Clasifica y organiza tus productos e inventario
+                    </small>
                 </div>
             </div>
             <div>
-                <a href="{{ route('categorias.create') }}" class="btn btn-light text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
-                    <i class="bi bi-plus-lg me-2"></i> Nueva Categoría
+                <a href="{{ route('categorias.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
                 </a>
             </div>
         </div>
+    </div>
 
-        <div class="table-responsive" style="min-height:400px;">
-            <table class="table table-hover align-middle mb-0 w-100">
-                <thead class="text-muted small text-uppercase tracking-wider" style="border-bottom: 2px solid #e2e8f0;">
+    <div class="premium-card" style="animation-delay:.15s;">
+        <div class="card-accent purple"></div>
+        <div class="card-body p-0">
+            <table id="categorias-table" class="table dt-table nowrap no-footer" style="width:100%">
+                <thead>
                     <tr>
-                        <th class="ps-4 pb-3">Categoría</th>
-                        <th class="pb-3">Descripción</th>
-                        <th class="text-center pb-3">Productos</th>
-                        <th class="text-center pb-3">Estado</th>
-                        <th class="text-end pe-4 pb-3">Acciones</th>
+                        <th class="ps-4" style="width:50px;">#</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th class="text-center">Productos</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse($categorias as $c)
-                    <tr>
-                        <td class="ps-4" style="max-width:250px;">
-                            <div class="d-flex align-items-center">
-                                @php
-                                    $nombreCat = $c->nombre ?? 'C';
-                                    $firstLetter = strtoupper(substr($nombreCat, 0, 1));
-                                    $colors = ['#f87171', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa', '#f472b6'];
-                                    $color = $colors[crc32($nombreCat) % count($colors)];
-                                @endphp
-                                <div class="avatar-circle text-white me-3 shadow-sm" style="background-color: {{ $color }};">
-                                    {{ $firstLetter }}
-                                </div>
-                                <div class="text-truncate">
-                                    <div class="fw-bold text-dark fs-6 text-truncate" title="{{ $c->nombre }}">{{ $c->nombre }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="text-muted small text-truncate" style="max-width:300px;" title="{{ $c->descripcion }}">{{ $c->descripcion ?? 'Sin descripción' }}</div>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge bg-light text-secondary border rounded-pill">
-                                <i class="bi bi-box-seam me-1"></i> {{ $c->productos_count }} prod.
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            @if($c->activa)
-                                <span class="status-badge bg-success bg-opacity-10 text-success">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Activa
-                                </span>
-                            @else
-                                <span class="status-badge bg-secondary bg-opacity-10 text-secondary">
-                                    <i class="bi bi-x-circle-fill me-1"></i> Inactiva
-                                </span>
-                            @endif
-                        </td>
-                        <td class="text-end pe-4">
-                            <div class="d-flex justify-content-end gap-1">
-                                <a href="{{ route('categorias.edit', $c) }}" class="premium-btn-edit" title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form action="{{ route('categorias.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar esta categoría? Solo es posible si no tiene productos asociados.')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="premium-btn-delete" title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-5">
-                            <div class="d-flex flex-column align-items-center justify-content-center p-5">
-                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-4" style="width:100px;height:100px;">
-                                    <i class="bi bi-tags text-muted opacity-50" style="font-size:3rem;"></i>
-                                </div>
-                                <h4 class="fw-bold text-dark mb-2">No hay categorías registradas</h4>
-                                <p class="text-muted mb-4 text-center" style="max-width:400px;">Aún no se han registrado categorías. Agrupa tus productos para una mejor organización.</p>
-                                <a href="{{ route('categorias.create') }}" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-                                    <i class="bi bi-plus-lg me-2"></i> Crear Categoría
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
-
-        @if($categorias->hasPages())
-        <div class="mt-4 d-flex justify-content-center" id="pagination-container">
-            {{ $categorias->withQueryString()->links() }}
-        </div>
-        @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(function() {
+    const data = @json($categorias);
+    const csrfToken = '{{ csrf_token() }}';
+
+    const table = $('#categorias-table').DataTable({
+        data: data,
+        columns: [
+            {
+                data: null,
+                className: 'text-center ps-4',
+                orderable: false,
+                searchable: false,
+                width: '50px',
+                render: function(data, type, row, meta) {
+                    return '<span class="text-muted fw-bold">' + (meta.row + meta.settings._iDisplayStart + 1) + '</span>';
+                }
+            },
+            {
+                data: null,
+                orderable: true,
+                searchable: true,
+                render: function(data) {
+                    const nombre = escapeHtml(data.nombre || '');
+                    const initial = nombre.charAt(0).toUpperCase();
+                    const colors = ['#f87171','#60a5fa','#34d399','#fbbf24','#a78bfa','#f472b6','#f97316','#14b8a6'];
+                    const color = colors[crc32(nombre) % colors.length];
+                    return '<div class="d-flex align-items-center">' +
+                        '<div class="avatar-circle text-white me-3 shadow-sm" style="background:' + color + ';">' + initial + '</div>' +
+                        '<div class="fw-bold text-dark fs-6">' + nombre + '</div>' +
+                    '</div>';
+                }
+            },
+            {
+                data: 'descripcion',
+                defaultContent: '<span class="text-muted small">Sin descripción</span>',
+                render: function(data) {
+                    if (!data) return '<span class="text-muted small">Sin descripción</span>';
+                    return '<div class="text-muted small text-truncate" style="max-width:300px;" title="' + escapeHtml(data) + '">' + escapeHtml(data) + '</div>';
+                }
+            },
+            {
+                data: 'productos_count',
+                className: 'text-center',
+                render: function(data) {
+                    const count = parseInt(data || 0);
+                    return '<span class="badge bg-light text-secondary border rounded-pill">' +
+                        '<i class="bi bi-box-seam me-1"></i> ' + count + ' prod.</span>';
+                }
+            },
+            {
+                data: 'activa',
+                className: 'text-center',
+                render: function(data) {
+                    return data
+                        ? '<span class="status-badge bg-success bg-opacity-10 text-success">' +
+                            '<i class="bi bi-check-circle-fill me-1"></i> Activa</span>'
+                        : '<span class="status-badge bg-secondary bg-opacity-10 text-secondary">' +
+                            '<i class="bi bi-x-circle-fill me-1"></i> Inactiva</span>';
+                }
+            },
+            {
+                data: null,
+                className: 'text-end pe-4',
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    return renderAcciones(data.id, {
+                        edit: '/categorias/' + data.id + '/edit',
+                        delete: '/categorias/' + data.id,
+                        csrf: csrfToken,
+                        nombre: data.nombre
+                    });
+                }
+            }
+        ],
+        language: {
+            search: '',
+            lengthMenu: '_MENU_',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ categorías',
+            infoEmpty: 'No hay categorías',
+            infoFiltered: '(de _MAX_ totales)',
+            paginate: {
+                first: '<i class="bi bi-chevron-double-left"></i>',
+                last: '<i class="bi bi-chevron-double-right"></i>',
+                next: '<i class="bi bi-chevron-right"></i>',
+                previous: '<i class="bi bi-chevron-left"></i>'
+            },
+            zeroRecords: '<div class="text-center py-5">' +
+                '<i class="bi bi-tags d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i>' +
+                '<p class="fw-semibold mb-1" style="color:#475569;">No se encontraron categorías</p>' +
+                '<p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>'
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+        order: [[1, 'asc']],
+        responsive: {
+            details: {
+                type: 'column',
+                target: 'tr',
+                renderer: function(api, rowIdx, columns) {
+                    let data = '';
+                    columns.forEach(function(col) {
+                        if (col.hidden) {
+                            data += '<li>' +
+                                '<span class="child-label">' + col.title + '</span>' +
+                                '<span class="child-value">' + col.data + '</span>' +
+                            '</li>';
+                        }
+                    });
+                    return data ? $('<ul class="d-flex flex-wrap gap-2 p-2 mb-0">' + data + '</ul>') : false;
+                }
+            }
+        },
+        dom: '<"row px-3 pt-2"<"col-sm-6"l><"col-sm-6"f>>' +
+             '<"row"<"col-12"tr>>' +
+             '<"row px-3 pb-2"<"col-sm-5"i><"col-sm-7"p>>'
+    });
+
+    function renderAcciones(id, opts) {
+        let html = '<div class="d-flex justify-content-end gap-1">';
+        html += '<a href="' + opts.edit + '" class="premium-btn-edit" title="Editar">' +
+            '<i class="bi bi-pencil"></i></a>';
+        if (opts.delete) {
+            html += '<form action="' + opts.delete + '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar la categoría ' + escapeHtml(opts.nombre || '') + '? Solo es posible si no tiene productos asociados.\');">' +
+                '<input type="hidden" name="_token" value="' + opts.csrf + '">' +
+                '<input type="hidden" name="_method" value="DELETE">' +
+                '<button type="submit" class="premium-btn-delete border-0" title="Eliminar">' +
+                '<i class="bi bi-trash"></i></button></form>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, function(c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+        });
+    }
+
+    function crc32(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return Math.abs(hash);
+    }
+});
+</script>
+@endpush
