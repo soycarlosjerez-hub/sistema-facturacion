@@ -20,11 +20,16 @@ class InstanceErrorLog extends Model
         'line',
         'ip_address',
         'user_agent',
+        'resolved',
+        'resolved_at',
+        'resolved_by',
     ];
 
     protected $casts = [
         'context' => 'array',
         'line' => 'integer',
+        'resolved' => 'boolean',
+        'resolved_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -37,6 +42,11 @@ class InstanceErrorLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function resolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 
     public function scopeOfTenant(Builder $query, int $tenantId): Builder
@@ -57,6 +67,16 @@ class InstanceErrorLog extends Model
     public function scopeRecent(Builder $query, int $days = 7): Builder
     {
         return $query->where('created_at', '>=', now()->subDays($days));
+    }
+
+    public function scopeResolved(Builder $query): Builder
+    {
+        return $query->where('resolved', true);
+    }
+
+    public function scopeUnresolved(Builder $query): Builder
+    {
+        return $query->where('resolved', false);
     }
 
     public function getLevelColorAttribute(): string

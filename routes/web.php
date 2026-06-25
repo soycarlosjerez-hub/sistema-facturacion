@@ -577,7 +577,9 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::put('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesUpdate'])->name('instances.roles.update');
     Route::delete('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesDestroy'])->name('instances.roles.destroy');
     // Instance error logs
+    Route::get('/errors', [\App\Http\Controllers\OwnerController::class, 'globalErrors'])->name('errors.index');
     Route::get('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'instanceErrors'])->name('instances.errors');
+    Route::patch('/instances/{instance}/errors/{errorLog}/resolve', [\App\Http\Controllers\OwnerController::class, 'resolveError'])->name('instances.errors.resolve');
     Route::delete('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'clearErrors'])->name('instances.errors.clear');
     // Owner role management (reuses RoleController)
     Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('roles.index');

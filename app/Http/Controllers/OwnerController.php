@@ -811,11 +811,55 @@ class OwnerController extends Controller
         return view('owner.instances.users.index', compact('instance', 'users'));
     }
 
+    public function globalErrors()
+    {
+        $query = InstanceErrorLog::with('user', 'resolvedBy', 'tenant');
+
+        if ($instanceId = request('instance_id')) {
+            $query->where('tenant_id', $instanceId);
+        }
+        if ($level = request('level')) {
+            $query->ofLevel($level);
+        }
+        if ($source = request('source')) {
+            $query->ofSource($source);
+        }
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('message', 'like', "%{$search}%");
+            });
+        }
+        if ($desde = request('desde')) {
+            $query->whereDate('created_at', '>=', $desde);
+        }
+        if ($hasta = request('hasta')) {
+            $query->whereDate('created_at', '<=', $hasta);
+        }
+        if (request()->has('resolved') && request('resolved') !== '') {
+            $query->where('resolved', request('resolved'));
+        }
+
+        $errorLogs = $query->latest()->paginate(30)->withQueryString();
+
+        $instances = BusinessInstance::orderBy('nombre')->get();
+
+        $stats = [
+            'total' => InstanceErrorLog::count(),
+            'last_7d' => InstanceErrorLog::recent(7)->count(),
+            'errors' => InstanceErrorLog::ofLevel('error')->count(),
+            'warnings' => InstanceErrorLog::ofLevel('warning')->count(),
+            'criticals' => InstanceErrorLog::ofLevel('critical')->count(),
+        ];
+
+        return view('owner.errors.index', compact('errorLogs', 'stats', 'instances'));
+    }
+
     public function instanceErrors($id)
     {
         $instance = BusinessInstance::findOrFail($id);
 
-        $query = InstanceErrorLog::where('tenant_id', $id)->with('user');
+        $query = InstanceErrorLog::where('tenant_id', $id)->with('user', 'resolvedBy', 'tenant');
 
         if ($level = request('level')) {
             $query->ofLevel($level);
@@ -834,6 +878,9 @@ class OwnerController extends Controller
         }
         if ($hasta = request('hasta')) {
             $query->whereDate('created_at', '<=', $hasta);
+        }
+        if (request()->has('resolved') && request('resolved') !== '') {
+            $query->where('resolved', request('resolved'));
         }
 
         $errorLogs = $query->latest()->paginate(30)->withQueryString();
@@ -858,6 +905,25 @@ class OwnerController extends Controller
             ->delete();
 
         return back()->with('success', "Se eliminaron {$deleted} errores antiguos.");
+    }
+
+    public function resolveError($instanceId, InstanceErrorLog $errorLog)
+    {
+        $instance = BusinessInstance::findOrFail($instanceId);
+
+        if ($errorLog->tenant_id !== (int) $instanceId) {
+            abort(404);
+        }
+
+        $errorLog->update([
+            'resolved' => !$errorLog->resolved,
+            'resolved_at' => $errorLog->resolved ? null : now(),
+            'resolved_by' => $errorLog->resolved ? null : auth()->id(),
+        ]);
+
+        $msg = $errorLog->resolved ? 'Error marcado como resuelto.' : 'Error reabierto.';
+
+        return back()->with('success', $msg);
     }
 
     private function getMesesDisponibles(BusinessInstance $instance): array

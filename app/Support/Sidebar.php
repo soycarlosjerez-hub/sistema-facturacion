@@ -96,6 +96,13 @@ class Sidebar
                     'exact_route' => 'owner.roles.index',
                 ];
             }
+            $items[] = [
+                'route' => 'owner.errors.index',
+                'icon'  => 'bi-bug',
+                'label' => 'Errores',
+                'is_route' => 'owner.errors.*',
+                'exact_route' => 'owner.errors.index',
+            ];
             // Owner also sees Configuración section to change system settings like "Colmado Premium"
             // Continue to show all other sections since owner has all permissions
         }
