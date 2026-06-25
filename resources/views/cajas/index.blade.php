@@ -246,9 +246,9 @@
                 </div>
                 <div>
                     <div class="small text-muted">Sesión activa</div>
-                    <strong>{{ $sesionActivaUsuario->caja->nombre }}</strong>
-                    @if($sesionActivaUsuario->caja->codigo)
-                        <span class="badge bg-dark ms-1">{{ $sesionActivaUsuario->caja->codigo }}</span>
+                    <strong>{{ $sesionActivaUsuario->caja?->nombre ?? 'Caja no disponible' }}</strong>
+                    @if($sesionActivaUsuario->caja?->codigo)
+                        <span class="badge bg-dark ms-1">{{ $sesionActivaUsuario->caja?->codigo }}</span>
                     @endif
                     <span class="text-muted small ms-2">desde {{ $sesionActivaUsuario->fecha_apertura->format('h:i A') }}</span>
                 </div>

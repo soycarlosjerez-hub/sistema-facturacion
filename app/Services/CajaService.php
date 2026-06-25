@@ -49,6 +49,7 @@ class CajaService
     public function create(array $data): Caja
     {
         $data['tenant_id'] = auth()->user()->business_instance_id;
+        $data['sucursal_id'] = $data['sucursal_id'] ?? session('sucursal_id');
         $data['activo'] = $data['activo'] ?? true;
         $data['estado'] = 'cerrada';
         return Caja::create($data);
