@@ -21,9 +21,14 @@ return new class extends Migration
         $firstInstance = DB::table('business_instances')->orderBy('id')->first();
         $fallbackId = $firstInstance?->id;
 
-        DB::statement("UPDATE conduce_items ci LEFT JOIN conduces c ON c.id = ci.conduce_id SET ci.tenant_id = COALESCE(c.tenant_id, ?) WHERE ci.tenant_id IS NULL", [$fallbackId]);
-        DB::statement("UPDATE cotizacion_items ci LEFT JOIN cotizaciones c ON c.id = ci.cotizacion_id SET ci.tenant_id = COALESCE(c.tenant_id, ?) WHERE ci.tenant_id IS NULL", [$fallbackId]);
-        DB::statement("UPDATE ecf_log_envios el LEFT JOIN ecf_documentos ed ON ed.id = el.ecf_documento_id SET el.tenant_id = COALESCE(ed.tenant_id, ?) WHERE el.tenant_id IS NULL", [$fallbackId]);
+        if ($fallbackId) {
+            DB::table('conduce_items')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(c.tenant_id, ' . $fallbackId . ') FROM conduces c WHERE c.id = conduce_items.conduce_id)')]);
+            DB::table('cotizacion_items')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(c.tenant_id, ' . $fallbackId . ') FROM cotizaciones c WHERE c.id = cotizacion_items.cotizacion_id)')]);
+            DB::table('ecf_log_envios')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(ed.tenant_id, ' . $fallbackId . ') FROM ecf_documentos ed WHERE ed.id = ecf_log_envios.ecf_documento_id)')]);
+        }
     }
 
     public function down(): void

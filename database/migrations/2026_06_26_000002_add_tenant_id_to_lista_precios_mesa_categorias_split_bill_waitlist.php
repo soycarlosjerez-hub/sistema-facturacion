@@ -27,9 +27,14 @@ return new class extends Migration
         $fallbackId = $firstInstance?->id;
 
         // Parent-JOIN backfill
-        DB::statement("UPDATE lista_precio_items li LEFT JOIN lista_precios lp ON lp.id = li.lista_precio_id SET li.tenant_id = COALESCE(lp.tenant_id, ?) WHERE li.tenant_id IS NULL", [$fallbackId]);
-        DB::statement("UPDATE split_bill_persons sb LEFT JOIN ventas v ON v.id = sb.venta_id SET sb.tenant_id = COALESCE(v.tenant_id, ?) WHERE sb.tenant_id IS NULL", [$fallbackId]);
-        DB::statement("UPDATE waitlist_entries we LEFT JOIN sucursales s ON s.id = we.sucursal_id SET we.tenant_id = COALESCE(s.tenant_id, ?) WHERE we.tenant_id IS NULL", [$fallbackId]);
+        if ($fallbackId) {
+            DB::table('lista_precio_items')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(lp.tenant_id, ' . $fallbackId . ') FROM lista_precios lp WHERE lp.id = lista_precio_items.lista_precio_id)')]);
+            DB::table('split_bill_persons')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(v.tenant_id, ' . $fallbackId . ') FROM ventas v WHERE v.id = split_bill_persons.venta_id)')]);
+            DB::table('waitlist_entries')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(s.tenant_id, ' . $fallbackId . ') FROM sucursales s WHERE s.id = waitlist_entries.sucursal_id)')]);
+        }
 
         foreach (['lista_precios', 'mesa_categorias'] as $table) {
             if ($fallbackId) {

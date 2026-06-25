@@ -42,9 +42,14 @@ return new class extends Migration
         $firstInstance = DB::table('business_instances')->orderBy('id')->first();
         $fallbackId = $firstInstance?->id;
 
-        DB::statement("UPDATE venta_detalles vd LEFT JOIN ventas v ON v.id = vd.venta_id SET vd.tenant_id = COALESCE(v.tenant_id, ?) WHERE vd.tenant_id IS NULL", [$fallbackId]);
-        DB::statement("UPDATE compra_detalles cd LEFT JOIN compras c ON c.id = cd.compra_id SET cd.tenant_id = COALESCE(c.tenant_id, ?) WHERE cd.tenant_id IS NULL", [$fallbackId]);
-        DB::statement("UPDATE ecf_documentos ed LEFT JOIN ventas v ON v.id = ed.venta_id SET ed.tenant_id = COALESCE(v.tenant_id, ?) WHERE ed.tenant_id IS NULL", [$fallbackId]);
+        if ($fallbackId) {
+            DB::table('venta_detalles')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(v.tenant_id, ' . $fallbackId . ') FROM ventas v WHERE v.id = venta_detalles.venta_id)')]);
+            DB::table('compra_detalles')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(c.tenant_id, ' . $fallbackId . ') FROM compras c WHERE c.id = compra_detalles.compra_id)')]);
+            DB::table('ecf_documentos')->whereNull('tenant_id')
+                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(v.tenant_id, ' . $fallbackId . ') FROM ventas v WHERE v.id = ecf_documentos.venta_id)')]);
+        }
 
         foreach (['ncf_sequences', 'secuencias_ecf', 'mesas', 'reservaciones', 'lavadero_citas', 'lavadero_servicios', 'lavadores'] as $table) {
             if ($fallbackId) {

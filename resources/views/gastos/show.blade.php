@@ -2,93 +2,117 @@
 
 @section('title', 'Detalle del Gasto')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+/* Gastos show-specific styles */
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-eye text-warning me-2"></i>
-                Detalle del Gasto
-            </h2>
-            <p class="text-muted mb-0">{{ $gasto->descripcion }}</p>
-        </div>
-        <div class="d-flex gap-2">
-            @can('gastos.edit')
-            <a href="{{ route('gastos.edit', $gasto) }}" class="btn btn-warning rounded-pill">
-                <i class="bi bi-pencil me-1"></i> Editar
-            </a>
-            @endcan
-            <a href="{{ route('gastos.index') }}" class="btn btn-outline-secondary rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
+<div class="container-fluid px-4 py-3 premium-page">
+
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-eye"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Detalle del Gasto</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-receipt me-1"></i>
+                        {{ $gasto->descripcion }}
+                    </small>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                @can('gastos.edit')
+                <a href="{{ route('gastos.edit', $gasto) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(245,158,11,.2);border:1.5px solid rgba(245,158,11,.35);color:#fff;">
+                    <i class="bi bi-pencil me-1"></i> Editar
+                </a>
+                @endcan
+                <a href="{{ route('gastos.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>Información del Gasto</h5>
+            <div class="premium-card" style="animation-delay:.1s;">
+                <div class="card-accent green"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-info-circle icon-green"></i>
+                    Información del Gasto
                 </div>
-                <div class="card-body p-4">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Descripción</div>
-                        <div class="col-md-8 fw-semibold">{{ $gasto->descripcion }}</div>
+                <div class="premium-card-subtitle">Datos completos del registro</div>
+                <div class="card-body">
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Descripción</div>
+                        <div class="premium-detail-value fw-semibold">{{ $gasto->descripcion }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Monto</div>
-                        <div class="col-md-8 fw-bold text-warning fs-5">RD$ {{ number_format($gasto->monto, 2) }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Monto</div>
+                        <div class="premium-detail-value fw-bold" style="color:#059669;font-size:1.2rem;">RD$ {{ number_format($gasto->monto, 2) }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Categoría</div>
-                        <div class="col-md-8">
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Categoría</div>
+                        <div class="premium-detail-value">
                             @if($gasto->categoria)
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">{{ \App\Models\Gasto::categorias()[$gasto->categoria] ?? $gasto->categoria }}</span>
+                                <span class="badge rounded-pill" style="background:rgba(16,185,129,.1);color:#059669;font-weight:600;">{{ \App\Models\Gasto::categorias()[$gasto->categoria] ?? $gasto->categoria }}</span>
                             @else
                                 <span class="text-muted">Sin categoría</span>
                             @endif
                         </div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Método de Pago</div>
-                        <div class="col-md-8">{{ $gasto->metodo_pago ? ucfirst($gasto->metodo_pago) : '—' }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Método de Pago</div>
+                        <div class="premium-detail-value">{{ $gasto->metodo_pago ? ucfirst($gasto->metodo_pago) : '—' }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">N° Comprobante</div>
-                        <div class="col-md-8">{{ $gasto->comprobante ?: '—' }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">N° Comprobante</div>
+                        <div class="premium-detail-value">
+                            @if($gasto->comprobante)
+                                <span class="badge rounded-pill" style="background:rgba(99,102,241,.1);color:#4f46e5;font-weight:600;">{{ $gasto->comprobante }}</span>
+                            @else
+                                —
+                            @endif
+                        </div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Fecha del Gasto</div>
-                        <div class="col-md-8">{{ $gasto->fecha_gasto->format('d/m/Y') }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Fecha del Gasto</div>
+                        <div class="premium-detail-value">{{ $gasto->fecha_gasto->format('d/m/Y') }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Notas</div>
-                        <div class="col-md-8">{{ $gasto->notas ?: '—' }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Notas</div>
+                        <div class="premium-detail-value">{{ $gasto->notas ?: '—' }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-person me-2"></i>Registrado por</h5>
+            <div class="premium-card" style="animation-delay:.15s;">
+                <div class="card-accent amber"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-person-badge icon-amber"></i>
+                    Registrado por
                 </div>
-                <div class="card-body p-4 text-center">
-                    <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center mx-auto mb-3" style="width:64px;height:64px;">
-                        <i class="bi bi-person-circle fs-2 text-warning"></i>
+                <div class="premium-card-subtitle">Información del usuario que creó el gasto</div>
+                <div class="card-body text-center">
+                    <div class="premium-user-avatar avatar-amber mx-auto mb-3">
+                        <i class="bi bi-person-circle fs-2" style="color:#d97706;"></i>
                     </div>
-                    <h6 class="fw-bold">{{ $gasto->user?->name ?? '—' }}</h6>
+                    <h6 class="fw-bold mb-1">{{ $gasto->user?->name ?? '—' }}</h6>
                     <small class="text-muted">{{ $gasto->created_at->format('d/m/Y h:i A') }}</small>
                     @if($gasto->caja)
                         <hr class="my-3">
                         <div class="text-start">
-                            <small class="text-muted d-block">Caja: <span class="fw-semibold">{{ $gasto->caja->nombre }}</span></small>
+                            <small class="text-muted d-block">Caja: <span class="fw-semibold" style="color:#059669;">{{ $gasto->caja->nombre }}</span></small>
                         </div>
                     @endif
                 </div>

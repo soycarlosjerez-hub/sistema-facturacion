@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::table('ventas', function (Blueprint $table) {
             // Add tenant_id column after primary key (assuming id is first column)
             $table->unsignedBigInteger('tenant_id')->nullable()->after('id');
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+            $table->foreign('tenant_id')->references('id')->on('business_instances')->onDelete('cascade');
         });
     }
 
