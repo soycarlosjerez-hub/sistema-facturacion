@@ -2,62 +2,37 @@
 @section('title', 'Nueva Secuencia NCF')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-.premium-header {
-    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-    border-radius: 1rem;
-    padding: 2rem;
-    color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4);
-    position: relative;
-    overflow: hidden;
-}
-.premium-header::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-.sticky-save-bar {
-    position: fixed;
-    bottom: 0;
-    left: var(--sidebar-width, 280px);
-    right: 0;
-    background: #fff;
-    border-top: 2px solid #0ea5e9;
-    padding: 0.75rem 1.5rem;
-    z-index: 1050;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-}
-.sticky-save-bar .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #38bdf8;
-}
-@media (max-width: 991.98px) {
-    .sticky-save-bar { left: 0; }
-}
+body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
+body.dark-mode .premium-sticky-bar { border-top-color: #f59e0b; }
+body.dark-mode .premium-sticky-bar .btn-save { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .premium-sticky-bar .btn-save:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
+body.dark-mode .premium-card .form-control:focus,
+body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+body.dark-mode .premium-card .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="premium-header d-flex justify-content-between align-items-center">
-        <div>
-            <h3 class="fw-bold mb-1"><i class="bi bi-file-earmark-text me-2"></i>Nuevo NCF</h3>
-            <p class="mb-0 opacity-75">Registra una nueva secuencia de comprobante fiscal</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1">Nuevo NCF</h3>
+                <p class="mb-0 opacity-75">Registra una nueva secuencia de comprobante fiscal</p>
+            </div>
         </div>
         <a href="{{ route('ncf.index') }}" class="btn btn-light rounded-pill text-dark fw-semibold">
             <i class="bi bi-arrow-left me-1"></i> Volver
         </a>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
     </div>
 
     @if (session('error'))
@@ -76,12 +51,13 @@ body.dark-mode .sticky-save-bar {
         </div>
     @endif
 
-    <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);">
+    <div class="premium-card mb-5">
+        <div class="card-accent amber"></div>
         <form id="ncfForm" action="{{ route('ncf.store') }}" method="POST">
             @csrf
             <div class="card-body p-4 p-md-5">
                 <div class="mb-4 pb-3 border-bottom">
-                    <h6 class="fw-bold mb-0" style="color: #0ea5e9;">
+                    <h6 class="fw-bold mb-0" style="color: #f59e0b;">
                         <i class="bi bi-info-circle me-2"></i>Información del NCF
                     </h6>
                 </div>
@@ -121,11 +97,11 @@ body.dark-mode .sticky-save-bar {
     </div>
 </div>
 
-<div id="stickySaveBar" class="sticky-save-bar d-flex justify-content-between align-items-center">
+<div id="stickySaveBar" class="premium-sticky-bar d-flex justify-content-between align-items-center">
     <div>
-        <span class="fw-semibold" style="color: #0ea5e9;"><i class="bi bi-file-earmark-text me-1"></i> Creando nueva secuencia NCF</span>
+        <span class="fw-semibold" style="color: #f59e0b;"><i class="bi bi-shield-check me-1"></i> Creando nueva secuencia NCF</span>
     </div>
-    <button type="submit" form="ncfForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+    <button type="submit" form="ncfForm" class="btn-save rounded-pill px-5 fw-bold shadow-sm">
         <i class="bi bi-check-circle me-1"></i> Guardar Secuencia
     </button>
 </div>

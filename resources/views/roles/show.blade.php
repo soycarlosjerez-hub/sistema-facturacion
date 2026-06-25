@@ -35,88 +35,98 @@
 
 @include('roles._styles')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .role-big-card { background: rgba(30,41,59,.95); }
+    body.dark-mode .role-big-card .role-name { color: #f1f5f9; }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Hero -->
-    <div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3"
-         style="background: {{ $cfg['gradient'] }}; box-shadow: 0 10px 30px {{ $cfg['color'] }}40;">
-        <div class="d-flex align-items-center gap-3" style="position: relative; z-index: 2;">
-            <div class="role-icon-lg" style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px);">
-                <i class="bi {{ $cfg['icon'] }}"></i>
-            </div>
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                        ROL
-                    </span>
-                    @if($isProtected)
-                        <span class="protected-badge"><i class="bi bi-lock-fill"></i>Protegido</span>
-                    @endif
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header" style="background: linear-gradient(135deg, {{ $cfg['color'] }}, {{ $cfg['color'] }}cc, {{ $cfg['color'] }}99, {{ $cfg['color'] }});">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi {{ $cfg['icon'] }}"></i>
                 </div>
-                <h2 class="fw-bold mb-0">{{ $cfg['label'] }}</h2>
-                <p class="mb-0 opacity-90 small">{{ $cfg['desc'] }}</p>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            ROL
+                        </span>
+                        @if($isProtected)
+                            <span class="protected-badge"><i class="bi bi-lock-fill"></i>Protegido</span>
+                        @endif
+                    </div>
+                    <h2 class="fw-bold mb-0">{{ $cfg['label'] }}</h2>
+                    <p class="mb-0 opacity-75 small">{{ $cfg['desc'] }}</p>
+                </div>
             </div>
-        </div>
-        <div class="d-flex gap-2" style="position: relative; z-index: 2;">
-            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i>Volver
-            </a>
-            <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="btn btn-dark rounded-pill px-3 fw-bold">
-                <i class="bi bi-pencil me-1"></i>Editar
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+                <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="btn btn-dark rounded-pill px-3 fw-bold">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Stats cards -->
     <div class="row g-3 mb-3">
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble" style="background: {{ $cfg['color'] }}20; color: {{ $cfg['color'] }};">
                         <i class="bi bi-key"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Permisos</div>
-                        <div class="fs-3 fw-bold" style="color: {{ $cfg['color'] }};">{{ $role->permissions->count() }}</div>
+                        <div class="stat-label">Permisos</div>
+                        <div class="stat-value" style="color: {{ $cfg['color'] }};">{{ $role->permissions->count() }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-info bg-opacity-10 text-info">
                         <i class="bi bi-percent"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Cobertura</div>
-                        <div class="fs-3 fw-bold">{{ $pct }}%</div>
+                        <div class="stat-label">Cobertura</div>
+                        <div class="stat-value">{{ $pct }}%</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-success bg-opacity-10 text-success">
                         <i class="bi bi-people"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Usuarios</div>
-                        <div class="fs-3 fw-bold text-success">{{ $users->count() }}</div>
+                        <div class="stat-label">Usuarios</div>
+                        <div class="stat-value text-success">{{ $users->count() }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-folder"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Módulos</div>
-                        <div class="fs-3 fw-bold">{{ $permisosGrouped->count() }}</div>
+                        <div class="stat-label">Módulos</div>
+                        <div class="stat-value">{{ $permisosGrouped->count() }}</div>
                     </div>
                 </div>
             </div>
@@ -124,20 +134,20 @@
     </div>
 
     <div class="row g-3">
-        <!-- Permisos -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <div>
-                        <h5 class="fw-bold mb-0"><i class="bi bi-key text-primary me-2"></i>Permisos Asignados</h5>
-                        <small class="text-muted">Acciones permitidas para los usuarios con este rol</small>
+            <div class="premium-card">
+                <div class="card-accent purple"></div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div>
+                            <h5 class="premium-card-title"><i class="bi bi-key icon-purple"></i>Permisos Asignados</h5>
+                            <small class="premium-card-subtitle">Acciones permitidas para los usuarios con este rol</small>
+                        </div>
+                        <div class="input-group" style="max-width: 280px;">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Filtrar permisos...">
+                        </div>
                     </div>
-                    <div class="input-group" style="max-width: 280px;">
-                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                        <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Filtrar permisos...">
-                    </div>
-                </div>
-                <div class="card-body p-4">
                     @forelse($permisosGrouped as $modulo => $perms)
                         <div class="perm-module-card mb-3" data-text="{{ strtolower($modulo) }}" style="--accent-color: {{ $cfg['color'] }};">
                             <div class="module-header">
@@ -178,14 +188,12 @@
             </div>
         </div>
 
-        <!-- Usuarios con este rol -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                    <h5 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Usuarios Asignados</h5>
-                    <small class="text-muted">{{ $users->count() }} {{ $users->count() == 1 ? 'persona' : 'personas' }} con este rol</small>
-                </div>
-                <div class="card-body p-4">
+            <div class="premium-card">
+                <div class="card-accent purple"></div>
+                <div class="card-body">
+                    <h5 class="premium-card-title"><i class="bi bi-people icon-purple"></i>Usuarios Asignados</h5>
+                    <small class="premium-card-subtitle">{{ $users->count() }} {{ $users->count() == 1 ? 'persona' : 'personas' }} con este rol</small>
                     @forelse($users as $user)
                         <div class="d-flex align-items-center gap-3 p-2 rounded-3">
                             <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 12px; background: {{ $cfg['gradient'] }}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">

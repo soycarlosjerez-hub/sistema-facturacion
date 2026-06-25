@@ -2,143 +2,99 @@
 @section('title', 'Crear Almacén')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        border-radius: 1rem; padding: 2rem; color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-        position: relative; overflow: hidden;
-    }
-    .premium-header::after {
-        content: ''; position: absolute; top: -50%; right: -20%;
-        width: 300px; height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
-    .filter-card {
-        background: rgba(255,255,255,0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
     .btn-icon-hover {
         width: 32px; height: 32px;
         display: inline-flex; align-items: center; justify-content: center;
         border-radius: 50%; transition: background-color 0.2s;
     }
     .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    .status-badge {
-        padding: 0.4em 0.8em; border-radius: 2rem;
-        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
-    }
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 280px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid #3b82f6;
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    .sticky-save-bar .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #60a5fa;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
+    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 premium-page">
 
-            {{-- Header --}}
-            <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1 d-flex align-items-center">
-                        <i class="bi bi-buildings me-3 fs-1 opacity-75"></i>Nuevo Almacén
-                    </h2>
-                    <p class="mb-0 opacity-75 fs-5">Registra un nuevo almacén en el sistema</p>
-                </div>
-                <div>
-                    <a href="{{ route('almacenes.index') }}" class="btn btn-light text-white bg-white bg-opacity-25 border-0 rounded-pill px-4 py-2 shadow-sm">
-                        <i class="bi bi-arrow-left me-1"></i>Volver
-                    </a>
-                </div>
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-building"></i>
             </div>
+            <div>
+                <h2 class="fw-bold mb-1">Nuevo Almacén</h2>
+                <p class="mb-0 opacity-75 fs-5">Registra un nuevo almacén en el sistema</p>
+            </div>
+        </div>
+        <div>
+            <a href="{{ route('almacenes.index') }}" class="btn btn-light text-white bg-white bg-opacity-25 border-0 rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
 
-            {{-- Session error --}}
-            @if (session('error'))
-                <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
-                    {{ session('error') }}
+    @if (session('error'))
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="premium-card">
+        <div class="card-accent blue"></div>
+        <h5 class="premium-card-title"><i class="bi bi-building icon-blue"></i> Información del Almacén</h5>
+
+        <form action="{{ route('almacenes.store') }}" method="POST" id="instanceForm">
+            @csrf
+            <div class="card-body">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Nombre</label>
+                    <input type="text" name="nombre" class="form-control" required>
                 </div>
-            @endif
-
-            {{-- Validation errors --}}
-            @if ($errors->any())
-                <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Ubicación</label>
+                    <input type="text" name="ubicacion" class="form-control">
+                </div>
+                @if(isset($sucursales) && $sucursales->count())
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Sucursal</label>
+                    <select name="sucursal_id" class="form-select">
+                        <option value="">Sin asignar</option>
+                        @foreach($sucursales as $s)
+                            <option value="{{ $s->id }}" {{ old('sucursal_id') == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
                         @endforeach
-                    </ul>
+                    </select>
                 </div>
-            @endif
-
-            {{-- Form Card --}}
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-white border-bottom border-light p-4">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-building me-2 text-primary"></i>Información del Almacén</h5>
-                </div>
-
-                <form action="{{ route('almacenes.store') }}" method="POST" id="instanceForm">
-                    @csrf
-                    <div class="card-body p-4">
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Nombre</label>
-                            <input type="text" name="nombre" class="form-control" required>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Ubicación</label>
-                            <input type="text" name="ubicacion" class="form-control">
-                        </div>
-                        @if(isset($sucursales) && $sucursales->count())
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Sucursal</label>
-                            <select name="sucursal_id" class="form-select">
-                                <option value="">Sin asignar</option>
-                                @foreach($sucursales as $s)
-                                    <option value="{{ $s->id }}" {{ old('sucursal_id') == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @endif
-                    </div>
-                </form>
+                @endif
             </div>
+        </form>
+    </div>
+</div>
+
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-info-circle me-1"></i> Creando nuevo almacén
+        </span>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="{{ route('almacenes.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-check-lg me-2"></i>Guardar Almacén
+            </button>
         </div>
     </div>
-
-    <div class="sticky-save-bar">
-        <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted small d-none d-md-inline">
-                <i class="bi bi-info-circle me-1"></i> Creando nuevo almacén
-            </span>
-            <div class="d-flex gap-2 ms-auto">
-                <a href="{{ route('almacenes.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-                <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                    <i class="bi bi-check-lg me-2"></i>Guardar Almacén
-                </button>
-            </div>
-        </div>
-    </div>
+</div>
 @endsection

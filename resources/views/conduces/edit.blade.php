@@ -3,47 +3,38 @@
 @section('title', 'Editar ' . $conduce->numero)
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 280px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid #f59e0b;
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    .sticky-save-bar .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #fbbf24;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
+body.dark-mode .sticky-save-bar {
+    background: #0f172a;
+    border-top-color: #fbbf24;
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="mb-1 fw-bold">
-                <i class="bi bi-pencil-square me-2 text-warning"></i>Editar Conduce
-            </h4>
-            <p class="text-muted small mb-0">
-                {{ $conduce->numero }} · Estado:
-                <span class="badge bg-{{ $conduce->estado_color }}">{{ $conduce->estado_label }}</span>
-            </p>
+<div class="container-fluid premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <h4 class="mb-1 fw-bold">Editar Conduce</h4>
+                    <p class="mb-0 opacity-75">
+                        {{ $conduce->numero }} · Estado:
+                        <span class="badge bg-{{ $conduce->estado_color }}">{{ $conduce->estado_label }}</span>
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('conduces.show', $conduce) }}" class="btn btn-outline-secondary rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
         </div>
-        <a href="{{ route('conduces.show', $conduce) }}" class="btn btn-outline-secondary rounded-pill">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
     </div>
 
     <form method="POST" action="{{ route('conduces.update', $conduce) }}" id="instanceForm">
@@ -59,7 +50,7 @@
             </span>
             <div class="d-flex gap-2 ms-auto">
                 <a href="{{ route('conduces.show', $conduce) }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-                <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none;">
                     <i class="bi bi-save me-2"></i>Guardar Cambios
                 </button>
             </div>

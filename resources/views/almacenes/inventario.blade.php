@@ -2,27 +2,8 @@
 @section('title', 'Inventario por Almacén')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        border-radius: 1rem; padding: 2rem; color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-        position: relative; overflow: hidden;
-    }
-    .premium-header::after {
-        content: ''; position: absolute; top: -50%; right: -20%;
-        width: 300px; height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
-    .filter-card {
-        background: rgba(255,255,255,0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
     .btn-icon-hover {
         width: 32px; height: 32px;
         display: inline-flex; align-items: center; justify-content: center;
@@ -33,19 +14,22 @@
         padding: 0.4em 0.8em; border-radius: 2rem;
         font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
     }
+    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3">
+<div class="container-fluid px-4 py-3 premium-page">
 
-    {{-- Header --}}
     <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1 d-flex align-items-center">
-                <i class="bi bi-box-seam me-3 fs-1 opacity-75"></i>Inventario por Almacén
-            </h2>
-            <p class="mb-0 opacity-75 fs-5">Consulta el stock y valor del inventario en cada almacén</p>
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-1">Inventario por Almacén</h2>
+                <p class="mb-0 opacity-75 fs-5">Consulta el stock y valor del inventario en cada almacén</p>
+            </div>
         </div>
         <div class="d-flex gap-3 text-white">
             @php
@@ -71,35 +55,39 @@
                 <span class="fw-bold fs-5">RD$ {{ number_format($totalValorGeneral, 2) }}</span>
             </div>
         </div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
     </div>
 
-    {{-- Filtros --}}
-    <div class="filter-card p-3 mb-4">
-        <form method="GET" class="row g-2 align-items-end">
-            <div class="col-lg-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                    <input type="text" name="buscar" id="buscar-instant" class="form-control border-start-0 ps-0" placeholder="Buscar producto por nombre o código..." value="{{ $buscar }}" autocomplete="off">
+    <div class="premium-card mb-4">
+        <div class="card-accent blue"></div>
+        <div class="card-body">
+            <form method="GET" class="row g-2 align-items-end">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" name="buscar" id="buscar-instant" class="form-control border-start-0 ps-0" placeholder="Buscar producto por nombre o código..." value="{{ $buscar }}" autocomplete="off">
+                    </div>
                 </div>
-            </div>
-            <div class="col-lg-3">
-                <select name="almacen_id" class="form-select bg-white" onchange="this.form.submit()">
-                    <option value="">Todos los almacenes</option>
-                    @foreach($almacenes as $a)
-                        <option value="{{ $a->id }}" {{ $almacenId == $a->id ? 'selected' : '' }}>{{ $a->nombre }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-lg-2">
-                <button class="btn btn-primary rounded-pill w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-            </div>
-            <div class="col-lg-2">
-                <a href="{{ route('almacenes.inventario') }}" class="btn btn-outline-secondary rounded-pill w-100">Limpiar</a>
-            </div>
-        </form>
+                <div class="col-lg-3">
+                    <select name="almacen_id" class="form-select bg-white" onchange="this.form.submit()">
+                        <option value="">Todos los almacenes</option>
+                        @foreach($almacenes as $a)
+                            <option value="{{ $a->id }}" {{ $almacenId == $a->id ? 'selected' : '' }}>{{ $a->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <button class="btn btn-primary rounded-pill w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                </div>
+                <div class="col-lg-2">
+                    <a href="{{ route('almacenes.inventario') }}" class="btn btn-outline-secondary rounded-pill w-100">Limpiar</a>
+                </div>
+            </form>
+        </div>
     </div>
 
-    {{-- Cards por almacén --}}
     @foreach($almacenes as $almacen)
         @if($almacenId && $almacenId != $almacen->id) @continue @endif
         @php
@@ -107,10 +95,10 @@
             $totalValor = 0;
             $totalUnidades = 0;
         @endphp
-        <div class="card shadow-sm rounded-4 border-0 mb-4 overflow-hidden">
-            {{-- Card header con color de sucursal --}}
-            <div class="card-header border-0 py-3" style="background: linear-gradient(135deg, #0d6efd0d, #0d6efd1a);">
-                <div class="d-flex flex-wrap justify-content-between align-items-center">
+        <div class="premium-card mb-4 overflow-hidden">
+            <div class="card-accent blue"></div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <div>
                         <h5 class="fw-bold mb-1">
                             <i class="bi bi-building me-2 text-primary"></i>{{ $almacen->nombre }}
@@ -128,9 +116,7 @@
                         </span>
                     </div>
                 </div>
-            </div>
 
-            <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light small text-uppercase text-muted">
@@ -148,7 +134,7 @@
                                 @php
                                     if ((int)$item->stock <= 0) continue;
                                     $producto = $productos->firstWhere('id', $item->producto_id);
-                                                    if (!$producto) continue;
+                                    if (!$producto) continue;
                                     $rowCount++;
                                     $totalValor += $item->stock * ($producto->precio_compra ?? 0);
                                     $totalUnidades += $item->stock;

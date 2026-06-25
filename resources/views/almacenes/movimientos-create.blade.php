@@ -2,205 +2,178 @@
 @section('title', 'Nuevo movimiento')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        border-radius: 1rem; padding: 2rem; color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
-        position: relative; overflow: hidden;
-    }
-    .premium-header::after {
-        content: ''; position: absolute; top: -50%; right: -20%;
-        width: 300px; height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
-    .filter-card {
-        background: rgba(255,255,255,0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
     .btn-icon-hover {
         width: 32px; height: 32px;
         display: inline-flex; align-items: center; justify-content: center;
         border-radius: 50%; transition: background-color 0.2s;
     }
     .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    .status-badge {
-        padding: 0.4em 0.8em; border-radius: 2rem;
-        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
-    }
+    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 premium-page">
 
-            {{-- Header --}}
-            <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1 d-flex align-items-center">
-                        <i class="bi bi-arrow-down-up me-3 fs-1 opacity-75"></i>Nuevo Movimiento
-                    </h2>
-                    <p class="mb-0 opacity-75 fs-5">Registra una entrada, salida o traslado de inventario</p>
-                </div>
-                <div>
-                    <a href="{{ route('almacenes.movimientos') }}" class="btn btn-light text-white bg-white bg-opacity-25 border-0 rounded-pill px-4 py-2 shadow-sm">
-                        <i class="bi bi-arrow-left me-1"></i>Volver
-                    </a>
-                </div>
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-building"></i>
             </div>
+            <div>
+                <h2 class="fw-bold mb-1">Nuevo Movimiento</h2>
+                <p class="mb-0 opacity-75 fs-5">Registra una entrada, salida o traslado de inventario</p>
+            </div>
+        </div>
+        <div>
+            <a href="{{ route('almacenes.movimientos') }}" class="btn btn-light text-white bg-white bg-opacity-25 border-0 rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+        </div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
 
-            {{-- Error general --}}
-            @error('error')
-                <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
-                    <i class="bi bi-exclamation-triangle me-1"></i> {{ $message }}
-                </div>
-            @enderror
+    @error('error')
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <i class="bi bi-exclamation-triangle me-1"></i> {{ $message }}
+        </div>
+    @enderror
 
-            {{-- Validation errors --}}
-            @if ($errors->any())
-                <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
+    @if ($errors->any())
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="premium-card">
+        <div class="card-accent blue"></div>
+        <h5 class="premium-card-title"><i class="bi bi-pencil-square icon-blue"></i> Detalles del movimiento</h5>
+
+        <form action="{{ route('almacenes.movimientos.store') }}" method="POST">
+            @csrf
+            <div class="card-body">
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Producto</label>
+                    <select name="producto_id" id="select-producto" class="form-select @error('producto_id') is-invalid @enderror" required>
+                        <option value="">Seleccione un producto</option>
+                        @foreach($productos as $producto)
+                            <option value="{{ $producto->id }}" @selected(old('producto_id') == $producto->id)>
+                                {{ $producto->nombre }}
+                            </option>
                         @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            {{-- Form --}}
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-white border-bottom border-light p-4">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-pencil-square me-2 text-primary"></i>Detalles del movimiento</h5>
+                    </select>
+                    @error('producto_id')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
-                <form action="{{ route('almacenes.movimientos.store') }}" method="POST">
-                    @csrf
-                    <div class="card-body p-4">
+                <div id="stock-info" class="mb-4 d-none">
+                    <div class="bg-light rounded-3 p-3 border">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-box-seam me-1"></i>Stock disponible por almacén</h6>
+                        <div id="stock-list" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
 
-                        {{-- Producto --}}
+                <div class="row g-3">
+                    <div class="col-md-6">
                         <div class="mb-4">
-                            <label class="form-label fw-semibold">Producto</label>
-                            <select name="producto_id" id="select-producto" class="form-select @error('producto_id') is-invalid @enderror" required>
-                                <option value="">Seleccione un producto</option>
-                                @foreach($productos as $producto)
-                                    <option value="{{ $producto->id }}" @selected(old('producto_id') == $producto->id)>
-                                        {{ $producto->nombre }}
-                                    </option>
-                                @endforeach
+                            <label class="form-label fw-semibold">Tipo de movimiento</label>
+                            <select name="tipo" id="select-tipo" class="form-select @error('tipo') is-invalid @enderror" required>
+                                <option value="entrada" @selected(old('tipo') == 'entrada')> Entrada</option>
+                                <option value="salida" @selected(old('tipo') == 'salida')> Salida</option>
+                                <option value="traslado" @selected(old('tipo') == 'traslado')> Traslado</option>
                             </select>
-                            @error('producto_id')
+                            @error('tipo')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        {{-- Stock info panel --}}
-                        <div id="stock-info" class="mb-4 d-none">
-                            <div class="bg-light rounded-3 p-3 border">
-                                <h6 class="fw-bold mb-2"><i class="bi bi-box-seam me-1"></i>Stock disponible por almacén</h6>
-                                <div id="stock-list" class="d-flex flex-wrap gap-2"></div>
-                            </div>
-                        </div>
-
-                        {{-- Tipo --}}
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold">Tipo de movimiento</label>
-                                    <select name="tipo" id="select-tipo" class="form-select @error('tipo') is-invalid @enderror" required>
-                                        <option value="entrada" @selected(old('tipo') == 'entrada')> Entrada</option>
-                                        <option value="salida" @selected(old('tipo') == 'salida')> Salida</option>
-                                        <option value="traslado" @selected(old('tipo') == 'traslado')> Traslado</option>
-                                    </select>
-                                    @error('tipo')
-                                        <div class="text-danger small mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold">Cantidad</label>
-                                    <input type="number" name="cantidad" id="input-cantidad" class="form-control @error('cantidad') is-invalid @enderror" min="1" value="{{ old('cantidad') }}" required placeholder="0">
-                                    @error('cantidad')
-                                        <div class="text-danger small mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Almacén (entrada/salida) --}}
-                        <div id="field-almacen-simple" class="mb-4">
-                            <label class="form-label fw-semibold">Almacén</label>
-                            <select name="almacen_id" class="form-select @error('almacen_id') is-invalid @enderror" required>
-                                <option value="">Seleccione un almacén</option>
-                                @foreach($almacenes as $a)
-                                    <option value="{{ $a->id }}" @selected(old('almacen_id') == $a->id)>
-                                        {{ $a->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('almacen_id')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        {{-- Almacén origen / destino (traslado) --}}
-                        <div id="field-almacen-traslado" class="row g-3 mb-4 d-none">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Almacén origen <i class="bi bi-arrow-right text-muted small"></i></label>
-                                <select name="almacen_origen_id" class="form-select @error('almacen_origen_id') is-invalid @enderror">
-                                    <option value="">Seleccione origen</option>
-                                    @foreach($almacenes as $a)
-                                        <option value="{{ $a->id }}" @selected(old('almacen_origen_id') == $a->id)>
-                                            {{ $a->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('almacen_origen_id')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold"><i class="bi bi-arrow-right text-muted small"></i> Almacén destino</label>
-                                <select name="almacen_destino_id" class="form-select @error('almacen_destino_id') is-invalid @enderror">
-                                    <option value="">Seleccione destino</option>
-                                    @foreach($almacenes as $a)
-                                        <option value="{{ $a->id }}" @selected(old('almacen_destino_id') == $a->id)>
-                                            {{ $a->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('almacen_destino_id')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        {{-- Nota --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Nota / Motivo</label>
-                            <input type="text" name="nota" class="form-control @error('nota') is-invalid @enderror" value="{{ old('nota') }}" placeholder="Ej: Ajuste de inventario, compra a proveedor, etc.">
-                            @error('nota')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
                     </div>
-
-                    <div class="card-footer bg-light border-top border-light p-4 text-end">
-                        <a href="{{ route('almacenes.movimientos') }}" class="btn btn-light rounded-pill px-4 fw-semibold me-2">
-                            Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" id="btn-submit">
-                            <i class="bi bi-check-lg me-2"></i>Guardar Movimiento
-                        </button>
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Cantidad</label>
+                            <input type="number" name="cantidad" id="input-cantidad" class="form-control @error('cantidad') is-invalid @enderror" min="1" value="{{ old('cantidad') }}" required placeholder="0">
+                            @error('cantidad')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
-                </form>
+                </div>
+
+                <div id="field-almacen-simple" class="mb-4">
+                    <label class="form-label fw-semibold">Almacén</label>
+                    <select name="almacen_id" class="form-select @error('almacen_id') is-invalid @enderror" required>
+                        <option value="">Seleccione un almacén</option>
+                        @foreach($almacenes as $a)
+                            <option value="{{ $a->id }}" @selected(old('almacen_id') == $a->id)>
+                                {{ $a->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('almacen_id')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div id="field-almacen-traslado" class="row g-3 mb-4 d-none">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Almacén origen <i class="bi bi-arrow-right text-muted small"></i></label>
+                        <select name="almacen_origen_id" class="form-select @error('almacen_origen_id') is-invalid @enderror">
+                            <option value="">Seleccione origen</option>
+                            @foreach($almacenes as $a)
+                                <option value="{{ $a->id }}" @selected(old('almacen_origen_id') == $a->id)>
+                                    {{ $a->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('almacen_origen_id')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold"><i class="bi bi-arrow-right text-muted small"></i> Almacén destino</label>
+                        <select name="almacen_destino_id" class="form-select @error('almacen_destino_id') is-invalid @enderror">
+                            <option value="">Seleccione destino</option>
+                            @foreach($almacenes as $a)
+                                <option value="{{ $a->id }}" @selected(old('almacen_destino_id') == $a->id)>
+                                    {{ $a->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('almacen_destino_id')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nota / Motivo</label>
+                    <input type="text" name="nota" class="form-control @error('nota') is-invalid @enderror" value="{{ old('nota') }}" placeholder="Ej: Ajuste de inventario, compra a proveedor, etc.">
+                    @error('nota')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
             </div>
+
+            <div class="card-footer bg-light border-top border-light p-4 text-end">
+                <a href="{{ route('almacenes.movimientos') }}" class="btn btn-light rounded-pill px-4 fw-semibold me-2">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" id="btn-submit">
+                    <i class="bi bi-check-lg me-2"></i>Guardar Movimiento
+                </button>
+            </div>
+        </form>
+    </div>
 
 </div>
 
@@ -295,7 +268,6 @@ document.getElementById('select-tipo').addEventListener('change', toggleTipo);
 
 document.querySelector('form').addEventListener('submit', validarFormulario);
 
-// Inicializar estado según old values
 toggleTipo();
 if (document.getElementById('select-producto').value) actualizarStock();
 </script>

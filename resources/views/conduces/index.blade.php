@@ -2,32 +2,52 @@
 
 @section('title', 'Conduces (Notas de Entrega)')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+body.dark-mode .table { color: #e2e8f0; }
+body.dark-mode .table-light { background: rgba(30,41,59,.8); }
+body.dark-mode .table-light th { color: #94a3b8; border-color: #334155; }
+body.dark-mode .table-hover tbody tr:hover { background: rgba(51,65,85,.3); }
+body.dark-mode .badge.bg-secondary { background: rgba(71,85,105,.5) !important; }
+body.dark-mode .card-footer { background: rgba(15,23,42,.8); border-color: #334155; }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid premium-page">
     {{-- Encabezado --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="mb-1 fw-bold">
-                <i class="bi bi-truck me-2 text-primary"></i>Conduces
-            </h4>
-            <p class="text-muted small mb-0">Notas de entrega y transporte de mercancía</p>
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <h4 class="mb-1 fw-bold">Conduces</h4>
+                    <p class="mb-0 opacity-75">Notas de entrega y transporte de mercancía</p>
+                </div>
+            </div>
+            @can('conduces.create')
+            <a href="{{ route('conduces.create') }}" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none;">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo Conduce
+            </a>
+            @endcan
         </div>
-        @can('conduces.create')
-        <a href="{{ route('conduces.create') }}" class="btn btn-primary rounded-pill px-4">
-            <i class="bi bi-plus-lg me-1"></i>Nuevo Conduce
-        </a>
-        @endcan
     </div>
 
     {{-- Estadísticas --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <small class="text-muted">Total</small>
-                            <h3 class="mb-0 fw-bold">{{ $stats['total'] }}</h3>
+                            <small class="stat-label">Total</small>
+                            <div class="stat-value">{{ $stats['total'] }}</div>
                         </div>
                         <i class="bi bi-files fs-1 text-secondary opacity-50"></i>
                     </div>
@@ -35,12 +55,12 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <small class="text-muted">En tránsito</small>
-                            <h3 class="mb-0 fw-bold text-info">{{ $stats['en_transito'] }}</h3>
+                            <small class="stat-label">En tránsito</small>
+                            <div class="stat-value text-info">{{ $stats['en_transito'] }}</div>
                         </div>
                         <i class="bi bi-truck fs-1 text-info opacity-50"></i>
                     </div>
@@ -48,12 +68,12 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <small class="text-muted">Entregados hoy</small>
-                            <h3 class="mb-0 fw-bold text-success">{{ $stats['entregados_hoy'] }}</h3>
+                            <small class="stat-label">Entregados hoy</small>
+                            <div class="stat-value text-success">{{ $stats['entregados_hoy'] }}</div>
                         </div>
                         <i class="bi bi-check-circle-fill fs-1 text-success opacity-50"></i>
                     </div>
@@ -61,12 +81,12 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <small class="text-muted">Vencidos</small>
-                            <h3 class="mb-0 fw-bold text-danger">{{ $stats['vencidos'] }}</h3>
+                            <small class="stat-label">Vencidos</small>
+                            <div class="stat-value text-danger">{{ $stats['vencidos'] }}</div>
                         </div>
                         <i class="bi bi-exclamation-triangle-fill fs-1 text-danger opacity-50"></i>
                     </div>
@@ -76,7 +96,8 @@
     </div>
 
     {{-- Filtros --}}
-    <div class="card border-0 shadow-sm mb-3">
+    <div class="premium-card mb-3">
+        <div class="card-accent purple"></div>
         <div class="card-body">
             <form method="GET" action="{{ route('conduces.index') }}" class="row g-3 align-items-end">
                 <div class="col-md-3">
@@ -125,7 +146,8 @@
     </div>
 
     {{-- Tabla --}}
-    <div class="card border-0 shadow-sm">
+    <div class="premium-card">
+        <div class="card-accent purple"></div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" role="table" aria-label="Lista de conduces">

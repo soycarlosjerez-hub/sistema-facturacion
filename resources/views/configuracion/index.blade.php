@@ -3,46 +3,44 @@
 @section('title', 'Configuración del Sistema')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
 .premium-header {
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-    border-radius: 1rem; padding: 2rem; color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(37,99,235,0.4);
-    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6, #a855f7, #7c3aed) !important;
+    background-size: 300% 300% !important;
+    box-shadow: 0 8px 32px rgba(139,92,246,.25) !important;
 }
-.premium-header::after {
-    content: ''; position: absolute; top: -50%; right: -20%;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
+.premium-card .form-control:focus,
+.premium-card .form-select:focus {
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.15) !important;
 }
-.btn-white {
-    background: white;
-    color: #2563eb;
-    border: none;
+.premium-card .btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+    box-shadow: 0 4px 14px rgba(139,92,246,.3) !important;
 }
-.btn-white:hover {
-    background: #f8fafc;
-    color: #1d4ed8;
+.premium-card .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(139,92,246,.45) !important;
 }
-.sticky-save-bar {
-    position: fixed;
-    bottom: 0;
-    left: var(--sidebar-width, 0px);
-    right: 0;
-    background: #fff;
-    border-top: 2px solid #2563eb;
-    padding: 0.75rem 1.5rem;
-    z-index: 1050;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+.premium-sticky-bar {
+    border-top-color: #8b5cf6 !important;
 }
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #38bdf8;
+.premium-sticky-bar .btn-save {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+    box-shadow: 0 4px 14px rgba(139,92,246,.3) !important;
 }
-@media (max-width: 991.98px) {
-    .sticky-save-bar { left: 0; }
+.premium-sticky-bar .btn-save:hover {
+    box-shadow: 0 6px 20px rgba(139,92,246,.45) !important;
+}
+body.dark-mode .premium-sticky-bar {
+    border-top-color: #a78bfa !important;
+}
+body.dark-mode .premium-sticky-bar .btn-save {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+}
+body.dark-mode .premium-card .form-control:focus,
+body.dark-mode .premium-card .form-select:focus {
+    border-color: #8b5cf6 !important;
 }
 </style>
 @endpush
@@ -55,11 +53,19 @@ body.dark-mode .sticky-save-bar {
     </div>
 @endif
 
-<div class="container-fluid px-4" style="padding-bottom: 80px;">
-    <div class="premium-header mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-gear-wide-connected me-2"></i>Parámetros del Sistema</h2>
-            <p class="text-muted mb-0">Personaliza la información de tu negocio y reglas de facturación</p>
+<div class="container-fluid px-4 py-3 premium-page" style="padding-bottom: 80px;">
+    <div class="premium-header mb-4" style="background: linear-gradient(135deg, #7c3aed, #8b5cf6, #a855f7, #7c3aed) !important; background-size: 300% 300% !important;">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-gear"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-1">Parámetros del Sistema</h2>
+                <p class="text-white-50 mb-0">Personaliza la información de tu negocio y reglas de facturación</p>
+            </div>
         </div>
     </div>
 
@@ -67,11 +73,11 @@ body.dark-mode .sticky-save-bar {
         @csrf
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-header border-0 bg-transparent py-3">
-                        <h6 class="fw-bold mb-0 text-primary"><i class="bi bi-shop me-2"></i>Información de Identidad</h6>
-                    </div>
-                    <div class="card-body p-4">
+                <div class="premium-card mb-4">
+                    <div class="card-accent purple"></div>
+                    <h5 class="premium-card-title"><i class="bi bi-shop icon-purple"></i>Información de Identidad</h5>
+                    <p class="premium-card-subtitle">Datos principales del establecimiento</p>
+                    <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold">Nombre del Establecimiento</label>
@@ -97,11 +103,11 @@ body.dark-mode .sticky-save-bar {
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header border-0 bg-transparent py-3">
-                        <h6 class="fw-bold mb-0 text-primary"><i class="bi bi-gear me-2"></i>Preferencias de Sistema</h6>
-                    </div>
-                    <div class="card-body p-4">
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
+                    <h5 class="premium-card-title"><i class="bi bi-gear icon-purple"></i>Preferencias de Sistema</h5>
+                    <p class="premium-card-subtitle">Configuración general del sistema de facturación</p>
+                    <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold">Impuesto Predeterminado (ITBIS %)</label>
@@ -120,17 +126,19 @@ body.dark-mode .sticky-save-bar {
             </div>
 
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary text-white">
+                <div class="premium-card mb-4">
+                    <div class="card-accent purple"></div>
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-3">Guardar Cambios</h5>
                         <p class="small opacity-75 mb-4">Asegúrate de revisar todos los campos. Estos cambios afectarán la impresión de facturas y los reportes fiscales.</p>
-                        <button type="submit" class="btn btn-white w-100 rounded-pill fw-bold py-2 shadow">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow">
                             <i class="bi bi-save me-2"></i> Actualizar Sistema
                         </button>
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3">Respaldo</h6>
                         <p class="text-muted small mb-3">Se recomienda realizar un respaldo de la base de datos antes de cambiar parámetros críticos.</p>
@@ -144,11 +152,11 @@ body.dark-mode .sticky-save-bar {
 
         <div class="row g-4 mt-2">
             <div class="col-12">
-                <div id="correo-smtp" class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header border-0 bg-transparent py-3">
-                        <h6 class="fw-bold mb-0 text-primary"><i class="bi bi-envelope-at me-2"></i>Correo Electrónico (SMTP)</h6>
-                    </div>
-                    <div class="card-body p-4">
+                <div id="correo-smtp" class="premium-card">
+                    <div class="card-accent purple"></div>
+                    <h5 class="premium-card-title"><i class="bi bi-envelope-at icon-purple"></i>Correo Electrónico (SMTP)</h5>
+                    <p class="premium-card-subtitle">Configuración del servidor de correo saliente</p>
+                    <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label small fw-bold">Controlador</label>
@@ -238,14 +246,14 @@ body.dark-mode .sticky-save-bar {
 </div>
 
 <!-- Sticky Bottom Save Bar -->
-<div id="stickySaveBar" class="sticky-save-bar">
+<div id="stickySaveBar" class="premium-sticky-bar">
     <div class="d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2" id="saveBarLeft">
             <i class="bi bi-info-circle text-primary"></i>
             <span class="fw-semibold d-none d-sm-inline">Configuración del Sistema</span>
         </div>
         <div class="d-flex gap-2">
-            <button type="submit" form="configForm" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+            <button type="submit" form="configForm" class="btn-save rounded-pill px-4 fw-bold shadow-sm">
                 <i class="bi bi-save me-1"></i>Guardar Cambios
             </button>
         </div>

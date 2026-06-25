@@ -15,7 +15,6 @@
         display: flex; align-items: center; justify-content: center;
         font-size: 1.3rem;
     }
-    body.dark-mode .role-stat-card { background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9)); }
 
     .role-big-card {
         background: var(--card-bg, white);
@@ -65,7 +64,6 @@
         border-radius: 999px;
         transition: width 0.5s;
     }
-    body.dark-mode .role-big-card { background: rgba(30,41,59,0.95); }
 
     .perm-module-card {
         background: var(--card-bg, white);
@@ -98,7 +96,6 @@
         background: var(--accent-color, #38bdf8);
         color: white;
     }
-    body.dark-mode .perm-module-card { background: rgba(30,41,59,0.95); }
 
     .perm-toggle {
         display: flex;
@@ -171,7 +168,6 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    body.dark-mode .matrix-table th { background: rgba(30,41,59,0.95); }
     .matrix-table td {
         padding: 6px 8px !important;
         vertical-align: middle;
@@ -184,7 +180,6 @@
         font-size: 0.7rem;
         letter-spacing: 0.5px;
     }
-    body.dark-mode .matrix-table .module-row td { background: rgba(15,23,42,0.3); }
     .matrix-table .perm-cell {
         text-align: center;
     }
@@ -205,23 +200,5 @@
     .matrix-table .perm-name-cell {
         font-size: 0.75rem;
         color: #475569;
-    }
-
-    .page-header-gradient {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        border-radius: 20px;
-        padding: 1.5rem 1.75rem;
-        color: white;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 10px 30px rgba(99,102,241,0.25);
-        position: relative;
-        overflow: hidden;
-    }
-    .page-header-gradient::after {
-        content: "";
-        position: absolute;
-        right: -50px; top: -50px;
-        width: 200px; height: 200px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
     }
 </style>

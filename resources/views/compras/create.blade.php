@@ -3,61 +3,32 @@
 @section('title', 'Nueva Compra')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-.premium-header {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    border-radius: 1rem;
-    padding: 2rem;
-    color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
-    position: relative;
-    overflow: hidden;
-}
-.premium-header::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-.sticky-save-bar {
-    position: fixed;
-    bottom: 0;
-    left: var(--sidebar-width, 280px);
-    right: 0;
-    background: #fff;
-    border-top: 2px solid #10b981;
-    padding: 0.75rem 1.5rem;
-    z-index: 1050;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-}
-.sticky-save-bar .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #34d399;
-}
-@media (max-width: 991.98px) {
-    .sticky-save-bar { left: 0; }
-}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid py-4" style="background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); border-radius: 1.5rem;">
-    <div class="premium-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="fw-bold mb-1"><i class="bi bi-cart-plus me-2"></i>Registrar Compra</h2>
-                <p class="mb-0 opacity-75">Registra una entrada de inventario desde un proveedor</p>
+<div class="container-fluid px-4 py-3 premium-page">
+
+    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+                    <i class="bi bi-cart-plus"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Registrar Compra</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-cart me-1"></i>
+                        Registra una entrada de inventario desde un proveedor
+                    </small>
+                </div>
             </div>
-            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                 <i class="bi bi-arrow-left me-2"></i>Volver
             </a>
         </div>
@@ -82,8 +53,12 @@ body.dark-mode .sticky-save-bar {
     <form action="{{ route('compras.store') }}" method="POST" id="compraForm">
         @csrf
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-            <div class="card-header bg-white border-bottom border-light p-4"><h5 class="fw-bold mb-0 text-dark"><i class="bi bi-cart me-2 text-primary"></i>Datos de la Compra</h5></div>
+        <div class="premium-card mb-4" style="animation-delay:.1s;">
+            <div class="card-accent blue"></div>
+            <div class="premium-card-title">
+                <i class="bi bi-cart icon-blue"></i>
+                Datos de la Compra
+            </div>
             <div class="card-body p-4">
                 <div class="row g-3">
                     <div class="col-md-3">
@@ -121,12 +96,11 @@ body.dark-mode .sticky-save-bar {
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>Detalle de la Compra</h5>
-                <button type="button" class="btn btn-success rounded-pill px-3" id="btnAgregarFila">
-                    <i class="bi bi-plus-lg me-1"></i>Agregar fila
-                </button>
+        <div class="premium-card mb-4" style="animation-delay:.15s;">
+            <div class="card-accent blue"></div>
+            <div class="premium-card-title">
+                <i class="bi bi-list-check icon-blue"></i>
+                Detalle de la Compra
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="detalleCompra">
@@ -208,15 +182,12 @@ body.dark-mode .sticky-save-bar {
     </form>
 </div>
 
-<div class="sticky-save-bar">
-    <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted"><i class="bi bi-info-circle me-1"></i>Registrando nueva compra</span>
-        <div class="d-flex gap-2">
-            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="compraForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                <i class="bi bi-save me-2"></i>Guardar Compra
-            </button>
-        </div>
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-end align-items-center">
+        <a href="{{ route('compras.index') }}" class="btn-cancel me-2">Cancelar</a>
+        <button type="submit" form="compraForm" class="btn-save">
+            <i class="bi bi-check-lg me-2"></i>Guardar Compra
+        </button>
     </div>
 </div>
 

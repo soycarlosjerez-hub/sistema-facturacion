@@ -2,49 +2,75 @@
 
 @section('title', 'Conduce ' . $conduce->numero)
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+body.dark-mode .table { color: #e2e8f0; }
+body.dark-mode .table-light { background: rgba(30,41,59,.8); }
+body.dark-mode .table-light th { color: #94a3b8; border-color: #334155; }
+body.dark-mode .table-hover tbody tr:hover { background: rgba(51,65,85,.3); }
+body.dark-mode dl dt { color: #94a3b8; }
+body.dark-mode dl dd { color: #e2e8f0; }
+body.dark-mode .modal-content { background: #1e293b; color: #e2e8f0; }
+body.dark-mode .modal-header { border-color: #334155; }
+body.dark-mode .modal-footer { border-color: #334155; }
+body.dark-mode .card-footer { background: rgba(15,23,42,.8); border-color: #334155; }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="mb-1 fw-bold">
-                <i class="bi bi-truck me-2 text-primary"></i>{{ $conduce->numero }}
-                <span class="badge bg-{{ $conduce->estado_color }} ms-2 align-middle">
-                    <i class="bi bi-{{ $conduce->estado_icon }} me-1" aria-hidden="true"></i>
-                    {{ $conduce->estado_label }}
-                </span>
-                @if($conduce->esta_vencido)
-                    <span class="badge bg-danger ms-1">
-                        <i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>Vencido
-                    </span>
-                @endif
-            </h4>
-            <p class="text-muted small mb-0">Creado {{ $conduce->created_at->diffForHumans() }}</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('conduces.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i>
-            </a>
-            <div class="btn-group">
-                <a href="{{ route('conduces.ticket', [$conduce, 'paper' => 80]) }}" target="_blank"
-                   class="btn btn-outline-primary" aria-label="Imprimir ticket 80mm">
-                    <i class="bi bi-printer me-1"></i>80mm
-                </a>
-                <a href="{{ route('conduces.ticket', [$conduce, 'paper' => 58]) }}" target="_blank"
-                   class="btn btn-outline-primary" aria-label="Imprimir ticket 58mm">
-                    <i class="bi bi-printer me-1"></i>58mm
-                </a>
+<div class="container-fluid premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <h4 class="mb-1 fw-bold">
+                        {{ $conduce->numero }}
+                        <span class="badge bg-{{ $conduce->estado_color }} ms-2 align-middle">
+                            <i class="bi bi-{{ $conduce->estado_icon }} me-1" aria-hidden="true"></i>
+                            {{ $conduce->estado_label }}
+                        </span>
+                        @if($conduce->esta_vencido)
+                            <span class="badge bg-danger ms-1">
+                                <i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>Vencido
+                            </span>
+                        @endif
+                    </h4>
+                    <p class="mb-0 opacity-75 small">Creado {{ $conduce->created_at->diffForHumans() }}</p>
+                </div>
             </div>
-            <a href="{{ route('conduces.pdf', $conduce) }}" class="btn btn-outline-danger"
-               aria-label="Descargar PDF">
-                <i class="bi bi-file-pdf me-1"></i>PDF
-            </a>
-            @if(in_array($conduce->estado, ['borrador', 'en_transito']))
-                @can('conduces.edit')
-                <a href="{{ route('conduces.edit', $conduce) }}" class="btn btn-outline-warning">
-                    <i class="bi bi-pencil me-1"></i>Editar
+            <div class="d-flex gap-2">
+                <a href="{{ route('conduces.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i>
                 </a>
-                @endcan
-            @endif
+                <div class="btn-group">
+                    <a href="{{ route('conduces.ticket', [$conduce, 'paper' => 80]) }}" target="_blank"
+                       class="btn btn-outline-primary" aria-label="Imprimir ticket 80mm">
+                        <i class="bi bi-printer me-1"></i>80mm
+                    </a>
+                    <a href="{{ route('conduces.ticket', [$conduce, 'paper' => 58]) }}" target="_blank"
+                       class="btn btn-outline-primary" aria-label="Imprimir ticket 58mm">
+                        <i class="bi bi-printer me-1"></i>58mm
+                    </a>
+                </div>
+                <a href="{{ route('conduces.pdf', $conduce) }}" class="btn btn-outline-danger"
+                   aria-label="Descargar PDF">
+                    <i class="bi bi-file-pdf me-1"></i>PDF
+                </a>
+                @if(in_array($conduce->estado, ['borrador', 'en_transito']))
+                    @can('conduces.edit')
+                    <a href="{{ route('conduces.edit', $conduce) }}" class="premium-btn-edit">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    @endcan
+                @endif
+            </div>
         </div>
     </div>
 
@@ -65,14 +91,13 @@
         {{-- Columna izquierda --}}
         <div class="col-lg-8">
             {{-- Items --}}
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="bi bi-box-seam me-1"></i>Productos a Entregar
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
+                <div class="card-body">
+                    <h6 class="premium-card-title">
+                        <i class="bi bi-box-seam icon-purple"></i>Productos a Entregar
                         <span class="badge bg-secondary ms-2">{{ $conduce->items->count() }} items</span>
                     </h6>
-                </div>
-                <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0" role="table">
                             <thead class="table-light">
@@ -124,9 +149,10 @@
 
             {{-- Notas --}}
             @if($conduce->observaciones)
-            <div class="card border-0 shadow-sm mb-3">
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
                 <div class="card-body">
-                    <h6 class="fw-bold"><i class="bi bi-chat-left-text me-1"></i>Observaciones</h6>
+                    <h6 class="premium-card-title"><i class="bi bi-chat-left-text icon-purple"></i>Observaciones</h6>
                     <p class="mb-0">{{ $conduce->observaciones }}</p>
                 </div>
             </div>
@@ -134,11 +160,10 @@
 
             {{-- Cambio de estado --}}
             @if(!in_array($conduce->estado, ['entregado', 'cancelado']))
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-arrow-left-right me-1"></i>Cambiar Estado</h6>
-                </div>
+            <div class="premium-card">
+                <div class="card-accent purple"></div>
                 <div class="card-body">
+                    <h6 class="premium-card-title"><i class="bi bi-arrow-left-right icon-purple"></i>Cambiar Estado</h6>
                     <form method="POST" action="{{ route('conduces.cambiarEstado', $conduce) }}">
                         @csrf
                         <div class="d-flex gap-2 flex-wrap">
@@ -162,11 +187,9 @@
         <div class="col-lg-4">
             {{-- Marcar como entregado --}}
             @if($conduce->puede_entregarse)
-            <div class="card border-0 shadow-sm mb-3 border-start border-success border-4">
+            <div class="premium-card mb-3 border-start border-success border-4">
                 <div class="card-body">
-                    <h6 class="fw-bold text-success mb-3">
-                        <i class="bi bi-check-circle me-1"></i>Marcar como Entregado
-                    </h6>
+                    <h6 class="premium-card-title"><i class="bi bi-check-circle icon-green"></i>Marcar como Entregado</h6>
                     <button type="button" class="btn btn-success w-100" data-bs-toggle="modal"
                             data-bs-target="#modalEntregar" aria-label="Abrir formulario de entrega">
                         <i class="bi bi-check2 me-1"></i>Confirmar Entrega
@@ -176,11 +199,10 @@
             @endif
 
             {{-- Info general --}}
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle me-1"></i>Información</h6>
-                </div>
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
                 <div class="card-body">
+                    <h6 class="premium-card-title"><i class="bi bi-info-circle icon-purple"></i>Información</h6>
                     <dl class="row mb-0 small">
                         <dt class="col-5 text-muted">Fecha emisión:</dt>
                         <dd class="col-7">{{ $conduce->fecha->format('d/m/Y') }}</dd>
@@ -227,11 +249,10 @@
             </div>
 
             {{-- Entrega --}}
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-geo-alt me-1"></i>Entrega</h6>
-                </div>
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
                 <div class="card-body">
+                    <h6 class="premium-card-title"><i class="bi bi-geo-alt icon-purple"></i>Entrega</h6>
                     <p class="small mb-2">
                         <i class="bi bi-house-door me-1 text-muted"></i>
                         {{ $conduce->direccion_entrega }}
@@ -256,11 +277,10 @@
 
             {{-- Transporte --}}
             @if($conduce->transportista || $conduce->chofer)
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-truck me-1"></i>Transporte</h6>
-                </div>
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
                 <div class="card-body">
+                    <h6 class="premium-card-title"><i class="bi bi-truck icon-purple"></i>Transporte</h6>
                     <dl class="row mb-0 small">
                         @if($conduce->transportista)
                         <dt class="col-5 text-muted">Empresa:</dt>
@@ -289,13 +309,10 @@
 
             {{-- Recepción --}}
             @if($conduce->estado === 'entregado')
-            <div class="card border-0 shadow-sm mb-3 border-start border-success border-4">
-                <div class="card-header bg-success text-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="bi bi-check-circle-fill me-1"></i>Recibido por
-                    </h6>
-                </div>
+            <div class="premium-card mb-3 border-start border-success border-4">
+                <div class="card-accent green"></div>
                 <div class="card-body">
+                    <h6 class="premium-card-title"><i class="bi bi-check-circle-fill icon-green"></i>Recibido por</h6>
                     <p class="mb-1 fw-bold">{{ $conduce->recibido_por }}</p>
                     @if($conduce->recibido_cedula)
                     <p class="small text-muted mb-1">Cédula: {{ $conduce->recibido_cedula }}</p>
@@ -312,12 +329,12 @@
             {{-- Eliminar --}}
             @if($conduce->estado !== 'entregado')
             @can('conduces.delete')
-            <div class="card border-0 shadow-sm">
+            <div class="premium-card">
                 <div class="card-body">
                     <form method="POST" action="{{ route('conduces.destroy', $conduce) }}"
                           onsubmit="return confirm('¿Eliminar el conduce {{ $conduce->numero }}?')">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger w-100">
+                        <button type="submit" class="premium-btn-delete w-100">
                             <i class="bi bi-trash me-1"></i>Eliminar Conduce
                         </button>
                     </form>

@@ -2,6 +2,76 @@
 
 @section('title', $usuario->name)
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    .premium-header-amber {
+        background: linear-gradient(135deg, #f59e0b, #f97316, #f59e0b, #d97706);
+        background-size: 300% 300%;
+        animation: premiumGradientShift 6s ease infinite;
+        border-radius: 1.2rem;
+        padding: 2.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        box-shadow: 0 8px 32px rgba(245,158,11,.25);
+    }
+    .premium-header-amber::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background:
+            radial-gradient(circle at 30% 40%, rgba(255,255,255,.1) 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, rgba(255,255,255,.07) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    .premium-header-amber .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+        pointer-events: none;
+    }
+    .premium-header-amber .bubble:nth-child(1) {
+        width: 80px; height: 80px; top: -20px; right: 10%;
+        animation: premiumFloat 4s ease-in-out infinite;
+    }
+    .premium-header-amber .bubble:nth-child(2) {
+        width: 50px; height: 50px; bottom: 10px; right: 28%;
+        animation: premiumFloat 5s ease-in-out infinite 1s;
+    }
+    .premium-header-amber .bubble:nth-child(3) {
+        width: 100px; height: 100px; bottom: -30px; right: 5%;
+        animation: premiumFloat 6s ease-in-out infinite .5s;
+    }
+    .profile-avatar {
+        width: 120px; height: 120px; border-radius: 28px;
+        background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 3rem; font-weight: 800;
+        border: 4px solid rgba(255,255,255,0.3);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .perm-section {
+        background: rgba(15,23,42,0.03);
+        border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+    }
+    body.dark-mode .perm-section { background: rgba(15,23,42,0.3); }
+    .perm-section-title {
+        font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
+        font-weight: 800; color: {{ $cfg['color'] ?? '#f59e0b' }};
+        margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .perm-pill {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 9px; font-size: 0.7rem; font-weight: 600; border-radius: 6px;
+        background: rgba(56,189,248,0.1); color: #0284c7; margin: 2px;
+    }
+    .perm-pill.write { background: rgba(245,158,11,0.1); color: #d97706; }
+    .perm-pill.delete { background: rgba(239,68,68,0.1); color: #dc2626; }
+</style>
+@endpush
+
 @section('content')
 @php
     $rolConfig = [
@@ -18,83 +88,13 @@
     $isSelf = $usuario->id === auth()->id();
 @endphp
 
-<style>
-    .profile-hero {
-        background: {{ $cfg['gradient'] ?? 'linear-gradient(135deg, #64748b 0%, #475569 100%)' }};
-        border-radius: 24px;
-        padding: 2.5rem 2rem;
-        color: white;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        position: relative;
-        overflow: hidden;
-    }
-    .profile-hero::after {
-        content: "";
-        position: absolute;
-        right: -100px; top: -100px;
-        width: 300px; height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-    }
-    .profile-avatar {
-        width: 120px; height: 120px;
-        border-radius: 28px;
-        background: rgba(255,255,255,0.2);
-        backdrop-filter: blur(10px);
-        display: flex; align-items: center; justify-content: center;
-        color: white;
-        font-size: 3rem;
-        font-weight: 800;
-        border: 4px solid rgba(255,255,255,0.3);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-    }
-    .info-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.25rem 1.5rem;
-        border: 1px solid rgba(15,23,42,0.06);
-        box-shadow: 0 4px 12px rgba(15,23,42,0.04);
-        height: 100%;
-    }
-    body.dark-mode .info-card { background: rgba(30,41,59,0.95); border-color: rgba(255,255,255,0.05); }
-    .perm-section {
-        background: rgba(15,23,42,0.03);
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-    }
-    body.dark-mode .perm-section { background: rgba(15,23,42,0.3); }
-    .perm-section-title {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 800;
-        color: {{ $cfg['color'] ?? '#38bdf8' }};
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .perm-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 9px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        border-radius: 6px;
-        background: rgba(56,189,248,0.1);
-        color: #0284c7;
-        margin: 2px;
-    }
-    .perm-pill.write { background: rgba(245,158,11,0.1); color: #d97706; }
-    .perm-pill.delete { background: rgba(239,68,68,0.1); color: #dc2626; }
-</style>
+<div class="container-fluid px-4 premium-page">
 
-<div class="container-fluid px-4">
-    <!-- Hero / Profile header -->
-    <div class="profile-hero position-relative">
-        <div class="row align-items-center">
+    <div class="premium-header-amber mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="row align-items-center" style="position:relative; z-index:2;">
             <div class="col-md-auto text-center text-md-start mb-3 mb-md-0">
                 <div class="profile-avatar mx-auto mx-md-0">
                     {{ strtoupper(substr($usuario->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', $usuario->name)[1] ?? '', 0, 1)) }}
@@ -129,58 +129,49 @@
         </div>
     </div>
 
-    <!-- Info Cards -->
     <div class="row g-3 mb-3">
         <div class="col-md-3 col-6">
-            <div class="info-card">
-                <div class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-shield-check me-1"></i>Permisos
-                </div>
-                <div class="fs-3 fw-bold">{{ $permisos->count() }}</div>
+            <div class="premium-stat-card p-3">
+                <div class="stat-label"><i class="bi bi-shield-check me-1"></i>Permisos</div>
+                <div class="stat-value text-primary">{{ $permisos->count() }}</div>
                 <small class="text-muted">de {{ Spatie\Permission\Models\Permission::count() }} totales</small>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="info-card">
-                <div class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-diagram-3 me-1"></i>Módulos
-                </div>
-                <div class="fs-3 fw-bold">{{ $permGrouped->count() }}</div>
+            <div class="premium-stat-card p-3">
+                <div class="stat-label"><i class="bi bi-diagram-3 me-1"></i>Módulos</div>
+                <div class="stat-value text-info">{{ $permGrouped->count() }}</div>
                 <small class="text-muted">con acceso</small>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="info-card">
-                <div class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-calendar-plus me-1"></i>Miembro desde
-                </div>
-                <div class="fs-5 fw-bold">{{ $usuario->created_at->format('d M Y') }}</div>
+            <div class="premium-stat-card p-3">
+                <div class="stat-label"><i class="bi bi-calendar-plus me-1"></i>Miembro desde</div>
+                <div class="stat-value text-success">{{ $usuario->created_at->format('d M Y') }}</div>
                 <small class="text-muted">{{ $usuario->created_at->diffForHumans() }}</small>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="info-card">
-                <div class="text-muted small fw-bold text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-clock-history me-1"></i>Última edición
-                </div>
-                <div class="fs-5 fw-bold">{{ $usuario->updated_at->format('d M Y') }}</div>
+            <div class="premium-stat-card p-3">
+                <div class="stat-label"><i class="bi bi-clock-history me-1"></i>Última edición</div>
+                <div class="stat-value text-warning">{{ $usuario->updated_at->format('d M Y') }}</div>
                 <small class="text-muted">{{ $usuario->updated_at->diffForHumans() }}</small>
             </div>
         </div>
     </div>
 
-    <!-- Permisos detallados -->
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h5 class="fw-bold mb-0"><i class="bi bi-key text-primary me-2"></i>Permisos del Usuario</h5>
-                <small class="text-muted">Acciones permitidas a través del rol asignado</small>
+    <div class="premium-card">
+        <div class="card-accent amber"></div>
+        <div class="premium-card-title d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-key icon-amber"></i> Permisos del Usuario
             </div>
             <div class="input-group" style="max-width: 280px;">
                 <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
                 <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Filtrar permisos...">
             </div>
         </div>
+        <div class="premium-card-subtitle">Acciones permitidas a través del rol asignado</div>
         <div class="card-body p-4">
             @forelse($permGrouped as $modulo => $perms)
                 <div class="perm-section perm-filterable" data-text="{{ strtolower($modulo) }}">
@@ -195,7 +186,7 @@
                                 $cls = in_array($action, ['delete','destroy','anular']) ? 'delete' : (in_array($action, ['create','store','update','edit','anular','abrir','cerrar']) ? 'write' : '');
                             @endphp
                             <span class="perm-pill {{ $cls }} perm-filterable" data-text="{{ strtolower($p->name) }}">
-                                <i class="bi bi-check2"></i> {{ str_replace($modulo.'.', '', $p->name) }}
+                                <i class="bi bi-check2"></i> {{ str_replace($module.'.', '', $p->name) }}
                             </span>
                         @endforeach
                     </div>

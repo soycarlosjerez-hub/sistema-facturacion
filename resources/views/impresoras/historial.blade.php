@@ -2,22 +2,38 @@
 
 @section('title', 'Historial de Impresión')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .premium-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-clock-history text-primary me-2"></i>Historial de Impresión</h2>
-            <p class="text-muted mb-0">Registro de todos los documentos impresos</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">Historial de Impresión</h3>
+                    <p class="mb-0 opacity-75">Registro de todos los documentos impresos</p>
+                </div>
+            </div>
+            <a href="{{ route('impresoras.index') }}" class="btn btn-light rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i> Impresoras
+            </a>
         </div>
-        <a href="{{ route('impresoras.index') }}" class="btn btn-outline-primary rounded-pill">
-            <i class="bi bi-arrow-left me-1"></i> Impresoras
-        </a>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent blue"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;">
                         <th class="ps-4 py-3">Fecha</th>
                         <th>Documento</th>

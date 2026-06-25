@@ -2,6 +2,51 @@
 
 @section('title', 'Crear Usuario')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    .premium-header-amber {
+        background: linear-gradient(135deg, #f59e0b, #f97316, #f59e0b, #d97706);
+        background-size: 300% 300%;
+        animation: premiumGradientShift 6s ease infinite;
+        border-radius: 1.2rem;
+        padding: 2rem 2.5rem;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        box-shadow: 0 8px 32px rgba(245,158,11,.25);
+    }
+    .premium-header-amber::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background:
+            radial-gradient(circle at 30% 40%, rgba(255,255,255,.1) 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, rgba(255,255,255,.07) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    .premium-header-amber .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+        pointer-events: none;
+    }
+    .premium-header-amber .bubble:nth-child(1) {
+        width: 80px; height: 80px; top: -20px; right: 10%;
+        animation: premiumFloat 4s ease-in-out infinite;
+    }
+    .premium-header-amber .bubble:nth-child(2) {
+        width: 50px; height: 50px; bottom: 10px; right: 28%;
+        animation: premiumFloat 5s ease-in-out infinite 1s;
+    }
+    .premium-header-amber .bubble:nth-child(3) {
+        width: 100px; height: 100px; bottom: -30px; right: 5%;
+        animation: premiumFloat 6s ease-in-out infinite .5s;
+    }
+</style>
+@endpush
+
 @section('content')
 @php
     $rolSeleccionado = old('role', 'vendedor');
@@ -17,21 +62,29 @@
 @include('usuarios._rol_config')
 @include('usuarios._styles')
 
+<div class="premium-page">
 
-<div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4"
-    style="background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);">
-        <div style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-person-plus-fill me-1"></i>NUEVO USUARIO
-                </span>
+    <div class="premium-header-amber mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position:relative; z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div>
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                        <i class="bi bi-person-plus-fill me-1"></i>NUEVO USUARIO
+                    </span>
+                    <h2 class="fw-bold mb-1">Crear Usuario</h2>
+                    <p class="mb-0 opacity-75">Agrega un nuevo miembro al sistema y asigna su nivel de acceso</p>
+                </div>
             </div>
-            <h2 class="fw-bold mb-1">Crear Usuario</h2>
-            <p class="mb-0 opacity-75">Agrega un nuevo miembro al sistema y asigna su nivel de acceso</p>
+            <a href="{{ route('usuarios.index') }}" class="btn btn-light rounded-pill px-4 fw-bold" style="position: relative; z-index: 2;">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
         </div>
-        <a href="{{ route('usuarios.index') }}" class="btn btn-light rounded-pill px-4 fw-bold" style="position: relative; z-index: 2;">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
     </div>
 
     @if (session('error'))
@@ -53,14 +106,13 @@
     <form action="{{ route('usuarios.store') }}" method="POST">
         @csrf
         <div class="row g-4">
-            <!-- Columna izquierda: datos del usuario -->
             <div class="col-lg-7">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-person-vcard text-primary me-2"></i>Información del Usuario</h5>
-                    </div>
+                <div class="premium-card h-100">
+                    <div class="card-accent amber"></div>
+                    <div class="premium-card-title"><i class="bi bi-person-vcard icon-amber"></i> Información del Usuario</div>
                     <div class="card-body p-4">
                         @include('usuarios._form_fields')
+                    </div>
                     <div class="card-footer bg-light border-top border-light p-4 text-end">
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{{ route('usuarios.index') }}" class="btn btn-light rounded-pill px-4">
@@ -74,13 +126,11 @@
                 </div>
             </div>
 
-            <!-- Columna derecha: selector de rol -->
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-shield-fill-check text-primary me-2"></i>Asignar Rol</h5>
-                        <small class="text-muted">Selecciona el nivel de acceso del usuario</small>
-                    </div>
+                <div class="premium-card h-100">
+                    <div class="card-accent amber"></div>
+                    <div class="premium-card-title"><i class="bi bi-shield-fill-check icon-amber"></i> Asignar Rol</div>
+                    <div class="premium-card-subtitle">Selecciona el nivel de acceso del usuario</div>
                     <div class="card-body p-4">
                         <div class="role-picker" id="rolePicker">
                             @foreach($roles as $rol)
@@ -109,12 +159,10 @@
                     </div>
                 </div>
 
-                <!-- Preview de permisos del rol seleccionado -->
-                <div class="card border-0 shadow-sm rounded-4 mt-3" id="permPreviewCard">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-key text-primary me-2"></i>Vista previa de permisos</h6>
-                        <small class="text-muted">Estos son los accesos que tendrá el usuario</small>
-                    </div>
+                <div class="premium-card mt-3" id="permPreviewCard">
+                    <div class="card-accent amber"></div>
+                    <div class="premium-card-title"><i class="bi bi-key icon-amber"></i> Vista previa de permisos</div>
+                    <div class="premium-card-subtitle">Estos son los accesos que tendrá el usuario</div>
                     <div class="card-body p-4">
                         <div class="permission-preview" id="permPreview">
                             @foreach($roles as $rol)
@@ -144,8 +192,20 @@
                 </div>
             </div>
         </div>
-
     </form>
+
+    <div class="premium-sticky-bar">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle text-primary"></i>
+                <span class="fw-semibold d-none d-sm-inline">Crear Usuario</span>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('usuarios.index') }}" class="btn btn-cancel">Cancelar</a>
+                <button type="submit" form="" class="btn btn-save"><i class="bi bi-save me-2"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -159,7 +219,6 @@
         });
     });
 
-    // Password strength meter
     const passInput = document.getElementById('password');
     const strengthBar = document.getElementById('strengthBar');
     if (passInput && strengthBar) {

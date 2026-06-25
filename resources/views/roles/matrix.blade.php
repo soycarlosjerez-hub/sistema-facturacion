@@ -14,32 +14,51 @@
 
 @include('roles._styles')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .role-big-card { background: rgba(30,41,59,.95); }
+    body.dark-mode .role-big-card .role-name { color: #f1f5f9; }
+    body.dark-mode .matrix-table th { background: rgba(30,41,59,.95); }
+    body.dark-mode .matrix-table .module-row td { background: rgba(15,23,42,.3); }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Header -->
-    <div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-grid-3x3-gap me-1"></i>VISUALIZACIÓN
-                </span>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-grid-3x3-gap me-1"></i>VISUALIZACIÓN
+                        </span>
+                    </div>
+                    <h2 class="fw-bold mb-1">Matriz de Permisos</h2>
+                    <p class="mb-0 opacity-75">Vista comparativa de todos los roles y sus permisos</p>
+                </div>
             </div>
-            <h2 class="fw-bold mb-1">Matriz de Permisos</h2>
-            <p class="mb-0 opacity-75">Vista comparativa de todos los roles y sus permisos</p>
-        </div>
-        <div class="d-flex gap-2" style="position: relative; z-index: 2;">
-            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i>Volver
-            </a>
-            <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-dark rounded-pill px-3 fw-bold">
-                <i class="bi bi-plus-lg me-1"></i>Nuevo
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+                <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-dark rounded-pill px-3 fw-bold">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Leyenda -->
-    <div class="card border-0 shadow-sm rounded-4 mb-3">
-        <div class="card-body p-3 d-flex flex-wrap gap-3 align-items-center">
+    <div class="premium-card mb-3">
+        <div class="card-accent purple"></div>
+        <div class="card-body d-flex flex-wrap gap-3 align-items-center">
             <span class="d-flex align-items-center gap-2 small">
                 <span class="perm-check on" style="display: inline-block; width: 22px; height: 22px; border-radius: 6px; background: rgba(34,197,94,0.15); color: #16a34a; text-align: center; line-height: 22px;">
                     <i class="bi bi-check-lg"></i>
@@ -58,7 +77,8 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent purple"></div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table matrix-table mb-0">

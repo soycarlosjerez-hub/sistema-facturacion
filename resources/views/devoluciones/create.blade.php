@@ -1,56 +1,39 @@
 @extends('layouts.app')
 
+@section('title', 'Nueva Devolución')
+
 @push('styles')
+@include('partials.premium-ui')
 <style>
-.premium-header {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-    border-radius: 1rem;
-    padding: 2rem;
-    color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.4);
-    position: relative;
-    overflow: hidden;
+.devoluciones-create-table {
+    --bs-table-bg: transparent;
+    margin: 0;
 }
-.premium-header::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
+.devoluciones-create-table thead th {
+    background: rgba(241,245,249,.8);
+    color: #64748b;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 700;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
 }
-.sticky-save-bar {
-    position: fixed;
-    bottom: 0;
-    left: var(--sidebar-width, 280px);
-    right: 0;
-    background: #fff;
-    border-top: 2px solid #f97316;
-    padding: 0.75rem 1.5rem;
-    z-index: 1050;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+body.dark-mode .devoluciones-create-table thead th {
+    background: rgba(15,23,42,.5);
+    color: #94a3b8;
+    border-color: #1e293b;
 }
-.sticky-save-bar .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #fb923c;
-}
-@media (max-width: 991.98px) {
-    .sticky-save-bar { left: 0; }
+body.dark-mode .devoluciones-create-table tbody td {
+    border-bottom-color: #1e293b;
+    color: #cbd5e1;
 }
 </style>
 @endpush
 
-@section('title', 'Nueva Devoluci&oacute;n')
-
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 premium-page">
+
     @if (session('error'))
         <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
             {{ session('error') }}
@@ -67,25 +50,45 @@ body.dark-mode .sticky-save-bar {
         </div>
     @endif
 
-    <div class="premium-header d-flex justify-content-between align-items-center">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-arrow-return-left me-2"></i>Nueva Devoluci&oacute;n</h2>
-            <p class="mb-0 opacity-90">Registra la devoluci&oacute;n de productos de una venta.</p>
+    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#ef4444,#f97316,#ef4444);box-shadow:0 8px 32px rgba(239,68,68,.25);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+                    <i class="bi bi-arrow-return-left"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Nueva Devolución</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-arrow-return-left me-1"></i>
+                        Registra la devolución de productos de una venta
+                    </small>
+                </div>
+            </div>
+            <div>
+                <a href="{{ route('devoluciones.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
         </div>
-        <a href="{{ route('devoluciones.index') }}" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm">
-            <i class="bi bi-arrow-left me-2"></i>Volver
-        </a>
     </div>
 
     <form action="{{ route('devoluciones.store') }}" method="POST" id="formDevolucion">
         @csrf
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-            <div class="card-header bg-white border-bottom border-light p-4"><h5 class="fw-bold mb-0 text-dark"><i class="bi bi-arrow-return-left me-2 text-primary"></i>Datos de la Devolución</h5></div>
+        <div class="premium-card mb-4" style="animation-delay:.1s;">
+            <div class="card-accent red"></div>
+            <div class="premium-card-title">
+                <i class="bi bi-arrow-return-left icon-red"></i>
+                Datos de la Devolución
+            </div>
+            <div class="premium-card-subtitle">Información general de la devolución</div>
             <div class="card-body p-4">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label small fw-semibold">Buscar Venta</label>
+                        <label class="form-label">Buscar Venta</label>
                         <div class="input-group">
                             <input type="text" id="buscarVenta" class="form-control" placeholder="# de venta o nombre cliente" autocomplete="off">
                             <input type="hidden" name="venta_id" id="venta_id" value="{{ $venta?->id }}">
@@ -94,7 +97,7 @@ body.dark-mode .sticky-save-bar {
                         <div id="resultadosVenta" class="list-group mt-1" style="position:absolute;z-index:10;max-height:200px;overflow-y:auto;display:none;"></div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label small fw-semibold">Cliente <span class="text-danger">*</span></label>
+                        <label class="form-label">Cliente <span class="text-danger">*</span></label>
                         <select name="cliente_id" class="form-select" required>
                             <option value="">Seleccionar cliente</option>
                             @foreach($clientes as $c)
@@ -103,11 +106,11 @@ body.dark-mode .sticky-save-bar {
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-semibold">Fecha</label>
+                        <label class="form-label">Fecha</label>
                         <input type="date" name="fecha" class="form-control" value="{{ old('fecha', date('Y-m-d')) }}" required>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small fw-semibold">Tipo</label>
+                        <label class="form-label">Tipo</label>
                         <select name="tipo" class="form-select" required>
                             <option value="parcial">Parcial</option>
                             <option value="total">Total</option>
@@ -116,60 +119,67 @@ body.dark-mode .sticky-save-bar {
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
-                        <label class="form-label small fw-semibold">Motivo <span class="text-danger">*</span></label>
+                        <label class="form-label">Motivo <span class="text-danger">*</span></label>
                         <textarea name="motivo" class="form-control" rows="2" required minlength="5">{{ old('motivo') }}</textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><i class="bi bi-box-seam text-primary me-2"></i>Productos a Devolver</h5>
-                <button type="button" class="btn btn-success rounded-pill px-3" id="btnAgregarFila">
-                    <i class="bi bi-plus-lg me-1"></i>Agregar producto
-                </button>
+        <div class="premium-card mb-4" style="animation-delay:.2s;">
+            <div class="card-accent red"></div>
+            <div class="premium-card-title">
+                <i class="bi bi-box-seam icon-red"></i>
+                Productos a Devolver
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="tablaItems">
-                    <thead class="table-light">
-                        <tr class="text-muted text-uppercase small">
-                            <th>Producto</th>
-                            <th style="width:100px;">Cantidad</th>
-                            <th style="width:130px;">Precio Unit.</th>
-                            <th style="width:80px;">ITBIS %</th>
-                            <th style="width:130px;">Subtotal</th>
-                            <th style="width:60px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="items-body"></tbody>
-                    <tfoot class="bg-light bg-opacity-50">
-                        <tr>
-                            <td colspan="4" class="text-end fw-bold">Subtotal:</td>
-                            <td class="fw-bold text-end" id="subtotal-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colspan="4" class="text-end fw-bold">ITBIS:</td>
-                            <td class="fw-bold text-end" id="itbis-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colspan="4" class="text-end fw-bold fs-5">TOTAL:</td>
-                            <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
+            <div class="premium-card-subtitle">Detalle de los productos incluidos en la devolución</div>
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-end px-4 pt-3">
+                    <button type="button" class="btn btn-primary rounded-pill px-3" id="btnAgregarFila">
+                        <i class="bi bi-plus-lg me-1"></i>Agregar producto
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table devoluciones-create-table align-middle mb-0" id="tablaItems">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th style="width:100px;">Cantidad</th>
+                                <th style="width:130px;">Precio Unit.</th>
+                                <th style="width:80px;">ITBIS %</th>
+                                <th style="width:130px;">Subtotal</th>
+                                <th style="width:60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body"></tbody>
+                        <tfoot class="bg-light bg-opacity-50">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Subtotal:</td>
+                                <td class="fw-bold text-end" id="subtotal-display">RD$ 0.00</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">ITBIS:</td>
+                                <td class="fw-bold text-end" id="itbis-display">RD$ 0.00</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold fs-5">TOTAL:</td>
+                                <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ 0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
     </form>
 
-    <div class="sticky-save-bar d-flex justify-content-end align-items-center gap-3">
-        <span class="text-muted small d-none d-md-inline"><i class="bi bi-info-circle me-1"></i>Registrando nueva devoluci&oacute;n</span>
-        <a href="{{ route('devoluciones.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-        <button type="submit" form="formDevolucion" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-            <i class="bi bi-save me-2"></i>Registrar Devoluci&oacute;n
+    <div class="premium-sticky-bar d-flex justify-content-end align-items-center gap-3">
+        <span class="text-muted small d-none d-md-inline"><i class="bi bi-info-circle me-1"></i>Registrando nueva devolución</span>
+        <a href="{{ route('devoluciones.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
+        <button type="submit" form="formDevolucion" class="btn btn-save rounded-pill px-5 fw-bold">
+            <i class="bi bi-save me-2"></i>Registrar Devolución
         </button>
     </div>
 </div>
@@ -295,7 +305,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Busqueda de venta
     const inputVenta = document.getElementById('buscarVenta');
     const resultados = document.getElementById('resultadosVenta');
     let timer = null;
@@ -308,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(r => r.json())
                 .then(data => {
                     if (!data.length) { resultados.style.display = 'none'; return; }
-                    resultados.innerHTML = data.map(v => 
+                    resultados.innerHTML = data.map(v =>
                         `<a href="#" class="list-group-item list-group-item-action py-2 small" data-venta='${JSON.stringify(v)}'>${v.label} - RD$ ${v.total.toFixed(2)}</a>`
                     ).join('');
                     resultados.style.display = 'block';
@@ -324,7 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('venta_id').value = venta.id;
         inputVenta.value = venta.label;
         resultados.style.display = 'none';
-        // Cargar detalles como items
         if (venta.detalles) {
             tbody.innerHTML = '';
             venta.detalles.forEach((item, i) => {

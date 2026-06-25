@@ -2,45 +2,43 @@
 @section('title', 'Resumen de Compras')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
 .premium-header {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    border-radius: 1rem; padding: 2rem; color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(245,158,11,0.4);
-    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #06b6d4 100%) !important;
+    background-size: 300% 300% !important;
+    animation: premiumGradientShift 6s ease infinite !important;
+    box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
 }
-.premium-header::after {
-    content: ''; position: absolute; top: -50%; right: -20%;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-.filter-card {
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
+body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
+body.dark-mode .premium-card-title { color: #f1f5f9; }
+body.dark-mode .premium-card-subtitle { color: #94a3b8; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 premium-page">
     <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-cart-check text-success me-2"></i>Resumen de Compras</h2>
-            <p class="text-muted mb-0">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} compra(s)</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('reportes.compras.csv', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn btn-success rounded-pill"><i class="bi bi-download me-1"></i> CSV</a>
-            <a href="{{ route('reportes.compras.pdf', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn btn-danger rounded-pill"><i class="bi bi-file-pdf me-1"></i> PDF</a>
-            <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative w-100" style="z-index:2;">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line text-white me-2"></i>Resumen de Compras</h2>
+                <p class="text-white-50 mb-0">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} compra(s)</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a href="{{ route('reportes.compras.csv', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn btn-success rounded-pill"><i class="bi bi-download me-1"></i> CSV</a>
+                <a href="{{ route('reportes.compras.pdf', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn btn-danger rounded-pill"><i class="bi bi-file-pdf me-1"></i> PDF</a>
+                <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
+                <div class="premium-avatar-circle ms-2">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="filter-card p-3 mb-4">
+    <div class="premium-card card-accent blue p-3 mb-4">
         <form method="GET" class="row g-2 align-items-center">
             <div class="col-auto"><label class="form-label small fw-semibold mb-0">Desde</label></div>
             <div class="col-auto"><input type="date" name="desde" class="form-control border-0 bg-white" value="{{ $desde }}"></div>
@@ -51,13 +49,13 @@
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-md-3"><div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Cantidad</small><h4 class="fw-bold mb-0 mt-1">{{ $cantidad }}</h4></div></div></div>
-        <div class="col-md-3"><div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Total General</small><h4 class="fw-bold mb-0 mt-1 text-primary">RD$ {{ number_format($totalGeneral, 2) }}</h4></div></div></div>
-        <div class="col-md-3"><div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">ITBIS</small><h4 class="fw-bold mb-0 mt-1 text-warning">RD$ {{ number_format($totalItbis, 2) }}</h4></div></div></div>
-        <div class="col-md-3"><div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Retenciones</small><h4 class="fw-bold mb-0 mt-1 text-danger">RD$ {{ number_format($totalRetenciones, 2) }}</h4></div></div></div>
+        <div class="col-md-3"><div class="premium-card card-accent blue h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Cantidad</small><h4 class="fw-bold mb-0 mt-1">{{ $cantidad }}</h4></div></div></div>
+        <div class="col-md-3"><div class="premium-card card-accent blue h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Total General</small><h4 class="fw-bold mb-0 mt-1 text-primary">RD$ {{ number_format($totalGeneral, 2) }}</h4></div></div></div>
+        <div class="col-md-3"><div class="premium-card card-accent blue h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">ITBIS</small><h4 class="fw-bold mb-0 mt-1 text-warning">RD$ {{ number_format($totalItbis, 2) }}</h4></div></div></div>
+        <div class="col-md-3"><div class="premium-card card-accent blue h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Retenciones</small><h4 class="fw-bold mb-0 mt-1 text-danger">RD$ {{ number_format($totalRetenciones, 2) }}</h4></div></div></div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="premium-card overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">

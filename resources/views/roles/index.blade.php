@@ -31,21 +31,41 @@
 
 @include('roles._styles')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .role-big-card { background: rgba(30,41,59,.95); }
+    body.dark-mode .role-big-card .role-name { color: #f1f5f9; }
+    body.dark-mode .matrix-table th { background: rgba(30,41,59,.95); }
+    body.dark-mode .matrix-table .module-row td { background: rgba(15,23,42,.3); }
+    body.dark-mode .perm-module-card { background: rgba(30,41,59,.95); }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-shield-shaded text-primary me-2"></i>Manejador de Roles</h2>
-            <p class="text-muted mb-0">Define roles y asigna permisos granulares a cada uno</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route($routePrefix . 'roles.matrix') }}" class="btn btn-outline-primary rounded-pill">
-                <i class="bi bi-grid-3x3-gap me-1"></i>Matriz
-            </a>
-            <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-primary rounded-pill">
-                <i class="bi bi-plus-lg me-1"></i>Nuevo Rol
-            </a>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Manejador de Roles</h2>
+                    <p class="mb-0 opacity-75">Define roles y asigna permisos granulares a cada uno</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route($routePrefix . 'roles.matrix') }}" class="btn btn-light rounded-pill px-3">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Matriz
+                </a>
+                <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-light rounded-pill px-3 fw-bold">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo Rol
+                </a>
+            </div>
         </div>
     </div>
 
@@ -62,63 +82,61 @@
         </div>
     @endif
 
-    <!-- Stats -->
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-shield-shaded"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Roles</div>
-                        <div class="fs-3 fw-bold">{{ $stats['total'] }}</div>
+                        <div class="stat-label">Roles</div>
+                        <div class="stat-value">{{ $stats['total'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-info bg-opacity-10 text-info">
                         <i class="bi bi-key"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Permisos</div>
-                        <div class="fs-3 fw-bold">{{ $stats['permisos'] }}</div>
+                        <div class="stat-label">Permisos</div>
+                        <div class="stat-value">{{ $stats['permisos'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-success bg-opacity-10 text-success">
                         <i class="bi bi-people"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Usuarios</div>
-                        <div class="fs-3 fw-bold">{{ $stats['usuarios'] }}</div>
+                        <div class="stat-label">Usuarios</div>
+                        <div class="stat-value">{{ $stats['usuarios'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="role-stat-card">
+            <div class="premium-stat-card">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-warning bg-opacity-10 text-warning">
                         <i class="bi bi-person-check"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Con Usuarios</div>
-                        <div class="fs-3 fw-bold">{{ $stats['con_usuarios'] }}</div>
+                        <div class="stat-label">Con Usuarios</div>
+                        <div class="stat-value">{{ $stats['con_usuarios'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Roles grid -->
     <div class="row g-3">
         @forelse($roles as $rol)
             @php
@@ -157,16 +175,16 @@
                             <small class="text-muted">{{ $rol->users_count == 1 ? 'usuario' : 'usuarios' }}</small>
                         </div>
                         <div class="d-flex gap-1">
-                            <a href="{{ route($routePrefix . 'roles.show', $rol) }}" class="role-action-btn view" title="Ver detalle">
+                            <a href="{{ route($routePrefix . 'roles.show', $rol) }}" class="premium-btn-edit" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route($routePrefix . 'roles.edit', $rol) }}" class="role-action-btn edit" title="Editar permisos">
+                            <a href="{{ route($routePrefix . 'roles.edit', $rol) }}" class="premium-btn-edit" title="Editar permisos">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @if($rol->name !== 'admin' && $rol->users_count == 0)
                                 <form action="{{ route($routePrefix . 'roles.destroy', $rol) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $rol->name }}&quot;?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="role-action-btn delete" title="Eliminar">
+                                    <button type="submit" class="premium-btn-delete" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -177,7 +195,8 @@
             </div>
         @empty
             <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
                     <div class="card-body text-center py-5">
                         <i class="bi bi-shield display-1 text-muted d-block mb-3"></i>
                         <h5 class="fw-bold">No hay roles definidos</h5>

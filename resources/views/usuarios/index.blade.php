@@ -2,6 +2,101 @@
 
 @section('title', 'Gestión de Usuarios')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    .role-filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1.5px solid transparent;
+        color: #64748b;
+        background: rgba(15,23,42,0.04);
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .role-filter-pill:hover { background: rgba(15,23,42,0.08); color: #1e293b; transform: translateY(-1px); }
+    .role-filter-pill.active { background: var(--accent-color, #38bdf8); color: white; border-color: transparent; }
+    .role-filter-pill .count {
+        background: rgba(255,255,255,0.3);
+        border-radius: 999px;
+        padding: 1px 8px;
+        font-size: 0.7rem;
+    }
+    .role-filter-pill:not(.active) .count { background: rgba(15,23,42,0.1); }
+    body.dark-mode .role-filter-pill { background: rgba(255,255,255,0.06); color: #94a3b8; }
+    body.dark-mode .role-filter-pill:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
+    body.dark-mode .role-filter-pill:not(.active) .count { background: rgba(255,255,255,0.1); }
+
+    .user-row { transition: background 0.15s; }
+    .user-row:hover { background: rgba(245,158,11,0.05) !important; }
+
+    .premium-header-amber {
+        background: linear-gradient(135deg, #f59e0b, #f97316, #f59e0b, #d97706);
+        background-size: 300% 300%;
+        animation: premiumGradientShift 6s ease infinite;
+        border-radius: 1.2rem;
+        padding: 2rem 2.5rem;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        box-shadow: 0 8px 32px rgba(245,158,11,.25);
+    }
+    .premium-header-amber::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background:
+            radial-gradient(circle at 30% 40%, rgba(255,255,255,.1) 0%, transparent 50%),
+            radial-gradient(circle at 70% 60%, rgba(255,255,255,.07) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    .premium-header-amber .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+        pointer-events: none;
+    }
+    .premium-header-amber .bubble:nth-child(1) {
+        width: 80px; height: 80px; top: -20px; right: 10%;
+        animation: premiumFloat 4s ease-in-out infinite;
+    }
+    .premium-header-amber .bubble:nth-child(2) {
+        width: 50px; height: 50px; bottom: 10px; right: 28%;
+        animation: premiumFloat 5s ease-in-out infinite 1s;
+    }
+    .premium-header-amber .bubble:nth-child(3) {
+        width: 100px; height: 100px; bottom: -30px; right: 5%;
+        animation: premiumFloat 6s ease-in-out infinite .5s;
+    }
+
+    .user-avatar {
+        width: 56px; height: 56px; border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 1.4rem; font-weight: 800; flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.10);
+    }
+    .role-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 10px; border-radius: 999px;
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .user-action-btn {
+        width: 32px; height: 32px; border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(15,23,42,0.04); color: #64748b; border: 0;
+        transition: all 0.2s;
+    }
+    .user-action-btn:hover { transform: translateY(-1px); }
+    .user-action-btn.view:hover { background: rgba(16,185,129,0.15); color: #059669; }
+</style>
+@endpush
+
 @php
     $rolConfig = [
         'admin'    => ['color' => 'danger',  'icon' => 'bi-shield-lock-fill',   'label' => 'Admin',            'gradient' => 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'],
@@ -28,124 +123,26 @@
 @endphp
 
 @section('content')
-<div class="container-fluid px-4">
-    <style>
-        .user-stat-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 1.1rem 1.25rem;
-            border: 1px solid rgba(15,23,42,0.06);
-            box-shadow: 0 4px 12px rgba(15,23,42,0.04);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        .user-stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(15,23,42,0.10); }
-        .user-stat-card .icon-bubble {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-        }
-        body.dark-mode .user-stat-card { background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9)); }
+<div class="container-fluid px-4 premium-page">
 
-        .role-filter-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 14px;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border: 1.5px solid transparent;
-            color: #64748b;
-            background: rgba(15,23,42,0.04);
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .role-filter-pill:hover { background: rgba(15,23,42,0.08); color: #1e293b; transform: translateY(-1px); }
-        .role-filter-pill.active { background: var(--accent-color, #38bdf8); color: white; border-color: transparent; }
-        .role-filter-pill .count {
-            background: rgba(255,255,255,0.3);
-            border-radius: 999px;
-            padding: 1px 8px;
-            font-size: 0.7rem;
-        }
-        .role-filter-pill:not(.active) .count { background: rgba(15,23,42,0.1); }
-
-        .user-card {
-            background: var(--card-bg, white);
-            border-radius: 20px;
-            border: 1px solid rgba(15,23,42,0.06);
-            box-shadow: 0 4px 12px rgba(15,23,42,0.04);
-            transition: all 0.3s;
-            overflow: hidden;
-            position: relative;
-        }
-        .user-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(15,23,42,0.10); }
-        body.dark-mode .user-card { background: rgba(30,41,59,0.95); border-color: rgba(255,255,255,0.05); }
-
-        .user-avatar {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.4rem;
-            font-weight: 800;
-            flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.10);
-        }
-        body.dark-mode .user-card { background: rgba(30,41,59,0.95); }
-
-        .role-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .user-action-btn {
-            width: 32px; height: 32px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(15,23,42,0.04);
-            color: #64748b;
-            border: 0;
-            transition: all 0.2s;
-        }
-        .user-action-btn:hover { transform: translateY(-1px); }
-        .user-action-btn.edit:hover { background: rgba(56,189,248,0.15); color: #0284c7; }
-        .user-action-btn.view:hover { background: rgba(34,197,94,0.15); color: #16a34a; }
-        .user-action-btn.delete:hover { background: rgba(239,68,68,0.15); color: #dc2626; }
-
-        .user-row {
-            transition: background 0.15s;
-        }
-        .user-row:hover {
-            background: rgba(56, 189, 248, 0.05) !important;
-        }
-    </style>
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-            <h2 class="mb-1 fw-bold"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Gestión de Usuarios</h2>
-            <p class="text-muted mb-0">Administra el personal del sistema y sus niveles de acceso</p>
+    <div class="premium-header-amber mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position:relative; z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div>
+                    <h2 class="mb-1 fw-bold">Gestión de Usuarios</h2>
+                    <p class="mb-0 opacity-75">Administra el personal del sistema y sus niveles de acceso</p>
+                </div>
+            </div>
+            <a href="{{ route('usuarios.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
+            </a>
         </div>
-        <a href="{{ route('usuarios.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
-        </a>
     </div>
 
     @if(session('success'))
@@ -161,90 +158,89 @@
         </div>
     @endif
 
-    <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="user-stat-card">
+            <div class="premium-stat-card p-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-primary bg-opacity-10 text-primary">
+                    <div class="icon-bubble bg-primary bg-opacity-10 text-primary" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-people-fill"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Total</div>
-                        <div class="fs-3 fw-bold">{{ $stats['total'] }}</div>
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value text-primary">{{ $stats['total'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="user-stat-card">
+            <div class="premium-stat-card p-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-danger bg-opacity-10 text-danger">
+                    <div class="icon-bubble bg-danger bg-opacity-10 text-danger" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-shield-lock-fill"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Admins</div>
-                        <div class="fs-3 fw-bold text-danger">{{ $stats['admin'] }}</div>
+                        <div class="stat-label">Admins</div>
+                        <div class="stat-value text-danger">{{ $stats['admin'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="user-stat-card">
+            <div class="premium-stat-card p-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-warning bg-opacity-10 text-warning">
+                    <div class="icon-bubble bg-warning bg-opacity-10 text-warning" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-person-badge-fill"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Gerentes</div>
-                        <div class="fs-3 fw-bold text-warning">{{ $stats['gerente'] }}</div>
+                        <div class="stat-label">Gerentes</div>
+                        <div class="stat-value text-warning">{{ $stats['gerente'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="user-stat-card">
+            <div class="premium-stat-card p-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-info bg-opacity-10 text-info">
+                    <div class="icon-bubble bg-info bg-opacity-10 text-info" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-cart-check-fill"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Vendedores</div>
-                        <div class="fs-3 fw-bold text-info">{{ $stats['vendedor'] }}</div>
+                        <div class="stat-label">Vendedores</div>
+                        <div class="stat-value text-info">{{ $stats['vendedor'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="user-stat-card">
+            <div class="premium-stat-card p-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-success bg-opacity-10 text-success">
+                    <div class="icon-bubble bg-success bg-opacity-10 text-success" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-box-seam-fill"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Almacén</div>
-                        <div class="fs-3 fw-bold text-success">{{ $stats['almacen'] }}</div>
+                        <div class="stat-label">Almacén</div>
+                        <div class="stat-value text-success">{{ $stats['almacen'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="user-stat-card">
+            <div class="premium-stat-card p-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-bubble bg-secondary bg-opacity-10 text-secondary">
+                    <div class="icon-bubble bg-secondary bg-opacity-10 text-secondary" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-calculator-fill"></i>
                     </div>
                     <div>
-                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.5px;">Contadores</div>
-                        <div class="fs-3 fw-bold">{{ $stats['contador'] }}</div>
+                        <div class="stat-label">Contadores</div>
+                        <div class="stat-value">{{ $stats['contador'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="premium-card mb-4">
+        <div class="card-accent amber"></div>
         <div class="card-body p-3">
             <form method="GET" class="d-flex align-items-center gap-3 flex-wrap">
                 <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1">
@@ -273,8 +269,8 @@
         </div>
     </div>
 
-    <!-- Tabla de Usuarios -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="premium-card overflow-hidden">
+        <div class="card-accent amber"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead style="background: rgba(15,23,42,0.03);">
@@ -340,13 +336,13 @@
                                 <a href="{{ route('usuarios.show', $user->id) }}" class="user-action-btn view me-1" title="Ver perfil">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ route('usuarios.edit', $user->id) }}" class="user-action-btn edit me-1" title="Editar">
+                                <a href="{{ route('usuarios.edit', $user->id) }}" class="premium-btn-edit me-1" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 @if($user->id !== auth()->id())
                                     <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar al usuario &quot;{{ $user->name }}&quot;? Esta acción no se puede deshacer.')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="user-action-btn delete" title="Eliminar">
+                                        <button type="submit" class="premium-btn-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

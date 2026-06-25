@@ -2,39 +2,30 @@
 @section('title', 'Centro de Reportes')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
 .premium-header {
-    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-    border-radius: 1rem; padding: 2rem; color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(79,70,229,0.4);
-    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #06b6d4 100%) !important;
+    background-size: 300% 300% !important;
+    animation: premiumGradientShift 6s ease infinite !important;
+    box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
 }
-.premium-header::after {
-    content: ''; position: absolute; top: -50%; right: -20%;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-.filter-card {
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
-.report-card { transition: all 0.3s; border: 1px solid rgba(15,23,42,0.06) !important; }
-.report-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(15,23,42,0.10) !important; border-color: rgba(56,189,248,0.3) !important; }
+body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
+body.dark-mode .premium-card-title { color: #f1f5f9; }
+body.dark-mode .premium-card-subtitle { color: #94a3b8; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 premium-page">
     <div class="premium-header mb-4">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
             <div>
-                <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line text-primary me-2"></i>Centro de Reportes</h2>
-                <p class="text-muted mb-0">
+                <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line text-white me-2"></i>Centro de Reportes</h2>
+                <p class="text-white-50 mb-0">
                     @if($sucursalActiva)
                         Sucursal: <strong>{{ $sucursalActiva->nombre }}</strong>
                     @else
@@ -43,11 +34,14 @@
                     &middot; {{ now()->format('d/m/Y') }}
                 </p>
             </div>
+            <div class="premium-avatar-circle">
+                <i class="bi bi-bar-chart-line"></i>
+            </div>
         </div>
 
-        <div class="row g-3 mt-3">
+        <div class="row g-3 mt-3 position-relative" style="z-index:2;">
             <div class="col-md-3 col-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="premium-card card-accent blue h-100">
                     <div class="card-body p-3 text-center">
                         <div class="text-success mb-2"><i class="bi bi-cart-check fs-2"></i></div>
                         <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Ventas Hoy</small>
@@ -56,7 +50,7 @@
                 </div>
             </div>
             <div class="col-md-3 col-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="premium-card card-accent blue h-100">
                     <div class="card-body p-3 text-center">
                         <div class="text-primary mb-2"><i class="bi bi-graph-up-arrow fs-2"></i></div>
                         <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Ventas del Mes</small>
@@ -65,7 +59,7 @@
                 </div>
             </div>
             <div class="col-md-3 col-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="premium-card card-accent blue h-100">
                     <div class="card-body p-3 text-center">
                         <div class="text-warning mb-2"><i class="bi bi-cart-check fs-2"></i></div>
                         <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Compras del Mes</small>
@@ -74,7 +68,7 @@
                 </div>
             </div>
             <div class="col-md-3 col-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="premium-card card-accent blue h-100">
                     <div class="card-body p-3 text-center">
                         <div class="text-info mb-2"><i class="bi bi-cash-stack fs-2"></i></div>
                         <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Utilidad del Mes</small>
@@ -88,7 +82,7 @@
     <div class="row g-4">
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.ventas') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-primary bg-opacity-10 text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
                             <i class="bi bi-receipt fs-2"></i>
@@ -101,7 +95,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.compras') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-success bg-opacity-10 text-success mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
                             <i class="bi bi-cart-check fs-2"></i>
@@ -114,7 +108,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.stock') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-warning bg-opacity-10 text-warning mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
                             <i class="bi bi-box-seam fs-2"></i>
@@ -130,7 +124,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.caja') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-info bg-opacity-10 text-info mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
                             <i class="bi bi-cash-stack fs-2"></i>
@@ -146,7 +140,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.utilidades') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-danger bg-opacity-10 text-danger mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
                             <i class="bi bi-graph-up fs-2"></i>
@@ -159,7 +153,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.fiscales') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-secondary bg-opacity-10 text-secondary mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
                             <i class="bi bi-file-earmark-text fs-2"></i>
@@ -172,7 +166,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.retenciones') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-purple bg-opacity-10 mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;color:#7c3aed;background:rgba(124,58,237,0.1);">
                             <i class="bi bi-percent fs-2"></i>
@@ -185,7 +179,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.restaurante') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-warning bg-opacity-10 mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;color:#d97706;background:rgba(217,119,6,0.1);">
                             <i class="bi bi-cup-straw fs-2"></i>
@@ -198,7 +192,7 @@
         </div>
         <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.resumen') }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">
                         <div class="rounded-circle bg-primary bg-opacity-10 text-primary mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
                             <i class="bi bi-bar-chart-line fs-2"></i>

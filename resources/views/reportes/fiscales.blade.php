@@ -3,61 +3,59 @@
 @section('title', $titulo)
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
 .premium-header {
-    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-    border-radius: 1rem; padding: 2rem; color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(100,116,139,0.4);
-    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #06b6d4 100%) !important;
+    background-size: 300% 300% !important;
+    animation: premiumGradientShift 6s ease infinite !important;
+    box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
 }
-.premium-header::after {
-    content: ''; position: absolute; top: -50%; right: -20%;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-.filter-card {
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-}
+body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
+body.dark-mode .premium-card-title { color: #f1f5f9; }
+body.dark-mode .premium-card-subtitle { color: #94a3b8; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 premium-page">
     <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-file-earmark-text text-danger me-2"></i>
-                {{ $titulo }}
-            </h2>
-            <p class="text-muted mb-0">Período: {{ ucfirst($periodo->translatedFormat('F Y')) }}</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('reportes.fiscales', ['tipo' => $tipo === '607' ? '606' : '607', 'mes' => $mes, 'anio' => $anio]) }}" 
-               class="btn btn-outline-info rounded-pill">
-                <i class="bi bi-arrow-left-right me-1"></i> Cambiar a {{ $tipo === '607' ? '606 (Compras)' : '607 (Ventas)' }}
-            </a>
-            <a href="{{ route('reportes.fiscales.export', request()->all()) }}" class="btn btn-success rounded-pill">
-                <i class="bi bi-download me-1"></i> CSV DGII
-            </a>
-            <a href="{{ route('reportes.fiscales.txt', request()->all()) }}" class="btn btn-warning rounded-pill">
-                <i class="bi bi-filetype-txt me-1"></i> TXT DGII
-            </a>
-            <a href="{{ route('reportes.fiscales.pdf', request()->all()) }}" class="btn btn-danger rounded-pill">
-                <i class="bi bi-file-pdf me-1"></i> PDF
-            </a>
-            <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill">
-                <i class="bi bi-grid me-1"></i> Reportes
-            </a>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative w-100" style="z-index:2;">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    <i class="bi bi-bar-chart-line text-white me-2"></i>
+                    {{ $titulo }}
+                </h2>
+                <p class="text-white-50 mb-0">Período: {{ ucfirst($periodo->translatedFormat('F Y')) }}</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a href="{{ route('reportes.fiscales', ['tipo' => $tipo === '607' ? '606' : '607', 'mes' => $mes, 'anio' => $anio]) }}" 
+                   class="btn btn-outline-info rounded-pill">
+                    <i class="bi bi-arrow-left-right me-1"></i> Cambiar a {{ $tipo === '607' ? '606 (Compras)' : '607 (Ventas)' }}
+                </a>
+                <a href="{{ route('reportes.fiscales.export', request()->all()) }}" class="btn btn-success rounded-pill">
+                    <i class="bi bi-download me-1"></i> CSV DGII
+                </a>
+                <a href="{{ route('reportes.fiscales.txt', request()->all()) }}" class="btn btn-warning rounded-pill">
+                    <i class="bi bi-filetype-txt me-1"></i> TXT DGII
+                </a>
+                <a href="{{ route('reportes.fiscales.pdf', request()->all()) }}" class="btn btn-danger rounded-pill">
+                    <i class="bi bi-file-pdf me-1"></i> PDF
+                </a>
+                <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill">
+                    <i class="bi bi-grid me-1"></i> Reportes
+                </a>
+                <div class="premium-avatar-circle ms-2">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="filter-card p-3 mb-4">
+    <div class="premium-card card-accent blue p-3 mb-4">
         <form method="GET" action="{{ route('reportes.fiscales') }}" class="row g-2 align-items-center">
             <input type="hidden" name="tipo" value="{{ $tipo }}">
             <div class="col-auto">
@@ -87,7 +85,7 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card card-accent blue h-100">
                 <div class="card-body p-3 text-center">
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Registros</small>
                     <h4 class="fw-bold mb-0 mt-1">{{ number_format($cantidad) }}</h4>
@@ -95,7 +93,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card card-accent blue h-100">
                 <div class="card-body p-3 text-center">
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Monto Facturado</small>
                     <h4 class="fw-bold mb-0 mt-1 text-primary">RD$ {{ number_format($total_monto, 2) }}</h4>
@@ -103,7 +101,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card card-accent blue h-100">
                 <div class="card-body p-3 text-center">
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">ITBIS</small>
                     <h4 class="fw-bold mb-0 mt-1 text-warning">RD$ {{ number_format($total_itbis, 2) }}</h4>
@@ -111,7 +109,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card card-accent blue h-100">
                 <div class="card-body p-3 text-center">
                     <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Total General</small>
                     <h4 class="fw-bold mb-0 mt-1 text-success">RD$ {{ number_format($total_general, 2) }}</h4>
@@ -120,7 +118,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="premium-card overflow-hidden">
         <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-bold">
                 <i class="bi bi-list-table me-2"></i>Detalle de {{ $tipo === '607' ? 'Ventas' : 'Compras' }}
@@ -174,7 +172,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mt-4">
+    <div class="premium-card card-accent blue mt-4">
         <div class="card-body p-4">
             <div class="d-flex align-items-center gap-3">
                 <div class="icon-bubble bg-soft-danger flex-shrink-0" style="width:52px;height:52px;font-size:1.3rem;">

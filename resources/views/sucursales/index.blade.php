@@ -3,78 +3,99 @@
 @section('title', 'Sucursales')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border-radius: 1rem; padding: 2rem; color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
-        position: relative; overflow: hidden;
-    }
-    .premium-header::after {
-        content: ''; position: absolute; top: -50%; right: -20%;
-        width: 300px; height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
-    .filter-card {
-        background: rgba(255,255,255,0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%; transition: background-color 0.2s;
-    }
-    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    .status-badge {
-        padding: 0.4em 0.8em; border-radius: 2rem;
-        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
-    }
+.sucursales-table {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: rgba(139,92,246,.04);
+    margin: 0;
+}
+.sucursales-table thead th {
+    background: rgba(241,245,249,.8);
+    color: #64748b;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 700;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+.sucursales-table tbody td {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: .9rem;
+}
+.sucursales-table tbody tr:last-child td { border-bottom: none; }
+.sucursales-table tbody tr { transition: background .15s; }
+.sucursales-table tbody tr:hover { background: rgba(139,92,246,.03); }
+
+body.dark-mode .sucursales-table thead th {
+    background: rgba(15,23,42,.5);
+    color: #94a3b8;
+    border-color: #1e293b;
+}
+body.dark-mode .sucursales-table tbody td {
+    border-bottom-color: #1e293b;
+    color: #cbd5e1;
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center">
-        <div>
-            <h2 class="fw-bold mb-1 d-flex align-items-center">
-                <i class="bi bi-geo-alt me-3 fs-1 opacity-75"></i>Gestión de Sucursales
-            </h2>
-            <p class="mb-0 opacity-75 fs-5">Administra las sucursales, ubicaciones y datos de contacto</p>
-        </div>
-        <div>
-            @can('sucursales.create')
-            <a href="{{ route('sucursales.create') }}" class="btn btn-light text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
-                <i class="bi bi-plus-lg me-2"></i> Nueva Sucursal
-            </a>
-            @endcan
-        </div>
-    </div>
+<div class="container-fluid px-4 py-3 premium-page">
 
-    <div class="filter-card p-3 mb-4">
-        <form method="GET" action="{{ route('sucursales.index') }}" class="row g-2 align-items-end">
-            <div class="col-lg-5">
-                <label class="form-label text-muted small fw-bold text-uppercase tracking-wider mb-1">Buscar</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                    <input type="text" name="buscar" class="form-control border-start-0 ps-0" placeholder="Nombre, dirección o teléfono..." value="{{ request('buscar') }}" autocomplete="off">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-geo-alt"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Gestión de Sucursales</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        Administra las sucursales, ubicaciones y datos de contacto
+                    </small>
                 </div>
             </div>
-            <div class="col-lg-3 d-flex gap-2 align-items-end">
-                <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel me-2"></i>Filtrar</button>
-                <a href="{{ route('sucursales.index') }}" class="btn btn-outline-secondary rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;" title="Limpiar"><i class="bi bi-arrow-counterclockwise"></i></a>
+            <div>
+                @can('sucursales.create')
+                <a href="{{ route('sucursales.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Sucursal
+                </a>
+                @endcan
             </div>
-        </form>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card mb-4" style="animation-delay:.1s;">
+        <div class="card-accent purple"></div>
+        <div class="card-body p-3">
+            <form method="GET" action="{{ route('sucursales.index') }}" class="row g-2 align-items-end">
+                <div class="col-lg-5">
+                    <label class="form-label small fw-bold text-muted">Buscar</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="buscar" class="form-control" placeholder="Nombre, dirección o teléfono..." value="{{ request('buscar') }}" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-lg-3 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel me-2"></i>Filtrar</button>
+                    <a href="{{ route('sucursales.index') }}" class="btn btn-outline-secondary rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;" title="Limpiar"><i class="bi bi-arrow-counterclockwise"></i></a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="premium-card" style="animation-delay:.2s;">
+        <div class="card-accent purple"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="table sucursales-table align-middle mb-0">
+                <thead>
                     <tr>
                         <th class="ps-4">C&oacute;digo</th>
                         <th>Nombre</th>
@@ -89,25 +110,25 @@
                 <tbody>
                     @forelse($sucursales as $s)
                     <tr>
-                        <td class="ps-4"><span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">{{ $s->codigo }}</span></td>
+                        <td class="ps-4"><span class="premium-badge">{{ $s->codigo }}</span></td>
                         <td class="fw-bold">
                             <a href="{{ route('sucursales.show', $s) }}" class="text-decoration-none">{{ $s->nombre }}</a>
                         </td>
-                        <td class="text-center"><span class="badge bg-info bg-opacity-10 text-info rounded-pill">{{ $s->almacenes_count }}</span></td>
-                        <td class="text-center"><span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">{{ $s->cajas_count }}</span></td>
+                        <td class="text-center"><span class="premium-badge">{{ $s->almacenes_count }}</span></td>
+                        <td class="text-center"><span class="premium-badge">{{ $s->cajas_count }}</span></td>
                         <td>{{ $s->telefono ?? '—' }}</td>
                         <td class="text-center">
                             @if($s->es_matriz)
-                                <span class="badge bg-primary rounded-pill px-3"><i class="bi bi-star-fill me-1"></i>Matriz</span>
+                                <span class="premium-badge active"><i class="bi bi-star-fill me-1"></i>Matriz</span>
                             @else
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
                         <td class="text-center">
                             @if($s->activa)
-                                <span class="badge bg-success rounded-pill px-3"><i class="bi bi-check-circle me-1"></i>Activa</span>
+                                <span class="premium-badge active"><i class="bi bi-check-circle me-1"></i>Activa</span>
                             @else
-                                <span class="badge bg-danger rounded-pill px-3"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
+                                <span class="premium-badge"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
                             @endif
                         </td>
                         <td class="text-end pe-4">
@@ -115,14 +136,14 @@
                                 <i class="bi bi-eye"></i>
                             </a>
                             @can('sucursales.edit')
-                            <a href="{{ route('sucursales.edit', $s) }}" class="btn btn-icon-hover text-primary border-0 bg-transparent" title="Editar">
+                            <a href="{{ route('sucursales.edit', $s) }}" class="premium-btn-edit" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @endcan
                             @can('sucursales.delete')
                             <form action="{{ route('sucursales.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la sucursal {{ $s->nombre }}?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-icon-hover text-danger border-0 bg-transparent" title="Eliminar">
+                                <button class="premium-btn-delete" title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -138,7 +159,7 @@
             </table>
         </div>
         @if($sucursales->hasPages())
-        <div class="card-footer bg-transparent border-0 py-3 px-4">
+        <div class="border-0 py-3 px-4" style="background:transparent;">
             {{ $sucursales->links() }}
         </div>
         @endif

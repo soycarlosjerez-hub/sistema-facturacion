@@ -2,23 +2,39 @@
 
 @section('title', 'Impresoras')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    .filter-card { background: rgba(255,255,255,.7); backdrop-filter: blur(20px); border-radius: 1.2rem; border: 1px solid rgba(255,255,255,.8); padding: 1rem 1.5rem; margin-bottom: 1.5rem; }
+    body.dark-mode .filter-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-printer text-primary me-2"></i>Impresoras</h2>
-            <p class="text-muted mb-0">Configuración de impresoras térmicas y documentos</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('impresoras.historial') }}" class="btn btn-outline-secondary rounded-pill">
-                <i class="bi bi-clock-history me-1"></i> Historial
-            </a>
-            <a href="{{ route('impresoras.plantillas') }}" class="btn btn-outline-info rounded-pill">
-                <i class="bi bi-file-earmark-text me-1"></i> Plantillas
-            </a>
-            <a href="{{ route('impresoras.create') }}" class="btn btn-primary rounded-pill">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Impresora
-            </a>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-printer"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">Impresoras</h3>
+                    <p class="mb-0 opacity-75">Configuración de impresoras térmicas y documentos</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('impresoras.historial') }}" class="btn btn-light rounded-pill">
+                    <i class="bi bi-clock-history me-1"></i> Historial
+                </a>
+                <a href="{{ route('impresoras.plantillas') }}" class="btn btn-light rounded-pill">
+                    <i class="bi bi-file-earmark-text me-1"></i> Plantillas
+                </a>
+                <a href="{{ route('impresoras.create') }}" class="btn btn-light rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Impresora
+                </a>
+            </div>
         </div>
     </div>
 
@@ -31,43 +47,40 @@
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-3">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Total</small>
-                    <h3 class="fw-bold mb-0">{{ $stats['total'] }}</h3>
-                </div>
+            <div class="premium-stat-card p-3">
+                <div class="card-accent blue"></div>
+                <small class="stat-label">Total</small>
+                <h3 class="fw-bold mb-0 stat-value">{{ $stats['total'] }}</h3>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-3">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Activas</small>
-                    <h3 class="fw-bold text-success mb-0">{{ $stats['activas'] }}</h3>
-                </div>
+            <div class="premium-stat-card p-3">
+                <div class="card-accent blue"></div>
+                <small class="stat-label">Activas</small>
+                <h3 class="fw-bold text-success mb-0 stat-value">{{ $stats['activas'] }}</h3>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-3">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Red</small>
-                    <h3 class="fw-bold text-info mb-0">{{ $stats['red'] }}</h3>
-                </div>
+            <div class="premium-stat-card p-3">
+                <div class="card-accent blue"></div>
+                <small class="stat-label">Red</small>
+                <h3 class="fw-bold text-info mb-0 stat-value">{{ $stats['red'] }}</h3>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body p-3">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Auto-Ventas</small>
-                    <h3 class="fw-bold text-warning mb-0">{{ $stats['auto_ventas'] }}</h3>
-                </div>
+            <div class="premium-stat-card p-3">
+                <div class="card-accent blue"></div>
+                <small class="stat-label">Auto-Ventas</small>
+                <h3 class="fw-bold text-warning mb-0 stat-value">{{ $stats['auto_ventas'] }}</h3>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent blue"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;">
                         <th class="ps-4 py-3">Impresora</th>
                         <th>Tipo</th>

@@ -2,66 +2,33 @@
 @section('title', 'Editar Producto')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-        border-radius: 1rem;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-    .premium-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 280px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid #4f46e5;
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    .sticky-save-bar .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #38bdf8;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
+/* Productos form-specific styles */
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="premium-header">
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+<div class="container-fluid px-4 py-3 premium-page">
+
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
             <div class="d-flex align-items-center gap-3">
-                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-                    <i class="bi bi-pencil-square fs-2 text-white"></i>
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-pencil-square"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Editar Producto</h2>
-                    <p class="text-white text-opacity-75 mb-0">Actualiza la información del producto en el inventario</p>
+                    <h4 class="fw-bold mb-1 text-white">Editar Producto</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-pencil me-1"></i>
+                        Actualiza la información del producto en el inventario
+                    </small>
                 </div>
             </div>
-            <a href="{{ route('productos.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+            <a href="{{ route('productos.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                 <i class="bi bi-arrow-left me-2"></i>Volver
             </a>
         </div>
@@ -77,35 +44,37 @@
         </div>
     @endif
 
-    <div class="alert border-0 rounded-4 shadow-sm mb-4" style="background: rgba(79, 70, 229, 0.05); border-left: 4px solid #4f46e5 !important;">
+    <div class="alert rounded-4 shadow-sm border-0 mb-4" style="background:rgba(99,102,241,.05);border-left:4px solid #4f46e5 !important;">
         <div class="d-flex align-items-center">
-            <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; color: #4f46e5; background: rgba(79, 70, 229, 0.1);">
+            <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;color:#4f46e5;background:rgba(99,102,241,.1);">
                 <i class="bi bi-info-circle fs-5"></i>
             </div>
             <div>
                 <span class="text-muted">Estás editando el producto:</span>
-                <strong class="text-dark d-block" style="font-size: 1.1rem;">{{ $producto->nombre }}</strong>
+                <strong class="d-block" style="font-size:1.1rem;color:#1e293b;">{{ $producto->nombre }}</strong>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5" style="background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px);">
+    <div class="premium-card" style="animation-delay:.1s;">
+        <div class="card-accent blue"></div>
         <form id="productForm" action="{{ route('productos.update', $producto) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
-
             @include('productos.form')
         </form>
     </div>
+
+    <div style="height: 80px;"></div>
 </div>
 
-<div id="stickySaveBar" class="sticky-save-bar">
-    <div class="d-flex align-items-center justify-content-between">
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle text-primary"></i>
+            <i class="bi bi-info-circle" style="color:#4f46e5;"></i>
             <span class="fw-semibold d-none d-sm-inline">Editando: {{ $producto->nombre }}</span>
         </div>
-        <button type="submit" form="productForm" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+        <button type="submit" form="productForm" class="btn-save">
             <i class="bi bi-cloud-arrow-up me-1"></i>Guardar Cambios
         </button>
     </div>
@@ -119,9 +88,7 @@
         }
         const input = document.getElementById('codigo_barras');
         let codigo = '200';
-        for (let i = 0; i < 9; i++) {
-            codigo += Math.floor(Math.random() * 10);
-        }
+        for (let i = 0; i < 9; i++) { codigo += Math.floor(Math.random() * 10); }
         let suma = 0;
         for (let i = 0; i < 12; i++) {
             const digito = parseInt(codigo.charAt(i));

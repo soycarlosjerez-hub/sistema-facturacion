@@ -2,24 +2,44 @@
 
 @section('title', 'Gestión de Comprobantes Fiscales')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
+body.dark-mode .prefijo-box { background: rgba(245,158,11,.15); color: #fbbf24; }
+body.dark-mode .progress { background: #1e293b !important; }
+body.dark-mode .bg-light { background: rgba(30,41,59,.6) !important; }
+body.dark-mode .text-dark { color: #f1f5f9 !important; }
+body.dark-mode .card { background: rgba(15,23,42,.8); }
+body.dark-mode .card .bg-light { background: rgba(30,41,59,.6) !important; }
+body.dark-mode .dropdown-menu { background: #1e293b; border-color: #334155; }
+body.dark-mode .dropdown-item { color: #94a3b8; }
+body.dark-mode .dropdown-item:hover { background: #334155; color: #f1f5f9; }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-file-earmark-text text-primary me-2"></i>
-                Control de Comprobantes (NCF)
-            </h2>
-            <p class="text-muted mb-0">Configuración de secuencias fiscales para la DGII</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-1">Control de Comprobantes (NCF)</h2>
+                <p class="mb-0 opacity-75">Configuración de secuencias fiscales para la DGII</p>
+            </div>
         </div>
         <div>
-            <a href="{{ route('ncf.create') }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+            <a href="{{ route('ncf.create') }}" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-sm">
                 <i class="bi bi-plus-lg me-2"></i> Nueva Secuencia
             </a>
         </div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
     </div>
 
-    <!-- Lista de Secuencias -->
     <div class="row g-4">
         @forelse($sequences as $ncf)
         <div class="col-xl-3 col-md-6">
@@ -39,7 +59,7 @@
                                     <form action="{{ route('ncf.toggle', $ncf) }}" method="POST">
                                         @csrf
                                         <button class="dropdown-item {{ $ncf->activo ? 'text-danger' : 'text-success' }}">
-                                            <i class="bi {{ $ncf->activo ? 'bi-slash-circle' : 'bi-check-circle' }} me-2"></i> 
+                                            <i class="bi {{ $ncf->activo ? 'bi-slash-circle' : 'bi-check-circle' }} me-2"></i>
                                             {{ $ncf->activo ? 'Desactivar' : 'Activar' }}
                                         </button>
                                     </form>
@@ -54,18 +74,18 @@
                             </ul>
                         </div>
                     </div>
-                    
+
                     <h6 class="fw-bold text-dark mb-1">{{ $ncf->nombre }}</h6>
                     <p class="text-muted small mb-4"><i class="bi bi-calendar-event me-1"></i> Vence: {{ \Carbon\Carbon::parse($ncf->fecha_vencimiento)->format('d/m/Y') }}</p>
-                    
+
                     <div class="mb-2 d-flex justify-content-between align-items-end">
                         <small class="text-muted fw-bold" style="font-size: 0.65rem;">CONSUMO ACTUAL</small>
                         <span class="fw-bold small">{{ number_format(($ncf->actual / $ncf->hasta) * 100, 1) }}%</span>
                     </div>
-                    
+
                     <div class="progress rounded-pill mb-4" style="height: 8px; background-color: #f1f5f9;">
                         @php $usage = ($ncf->actual / $ncf->hasta) * 100; @endphp
-                        <div class="progress-bar {{ $usage > 85 ? 'bg-danger' : ($usage > 60 ? 'bg-warning' : 'bg-success') }}" 
+                        <div class="progress-bar {{ $usage > 85 ? 'bg-danger' : ($usage > 60 ? 'bg-warning' : 'bg-success') }}"
                              style="width: {{ $usage }}%"></div>
                     </div>
 
@@ -80,7 +100,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 @if(!$ncf->activo)
                 <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style="z-index: 2;">
                     <span class="badge bg-secondary rounded-pill px-4 py-2 shadow-sm fw-bold">DESACTIVADO</span>

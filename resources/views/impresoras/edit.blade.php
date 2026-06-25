@@ -3,45 +3,34 @@
 @section('title', 'Editar ' . $impresora->nombre)
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 280px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid #6366f1;
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    .sticky-save-bar .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #818cf8;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
+    body.dark-mode .premium-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="mb-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{{ route('impresoras.index') }}">Impresoras</a></li>
-                <li class="breadcrumb-item active">{{ $impresora->nombre }}</li>
-            </ol>
-        </nav>
-        <h3 class="fw-bold mb-0"><i class="bi bi-pencil-square text-primary me-2"></i>Editar Impresora</h3>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-printer"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">Editar Impresora</h3>
+                    <p class="mb-0 opacity-75">{{ $impresora->nombre }}</p>
+                </div>
+            </div>
+            <a href="{{ route('impresoras.index') }}" class="btn btn-light rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent blue"></div>
         <div class="card-body p-4">
             <form method="POST" action="{{ route('impresoras.update', $impresora) }}" id="instanceForm">
                 @csrf @method('PUT')
@@ -128,14 +117,14 @@
     </div>
 </div>
 
-<div class="sticky-save-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
         <span class="text-muted small d-none d-md-inline">
             <i class="bi bi-info-circle me-1"></i> Editando impresora: {{ $impresora->nombre }}
         </span>
         <div class="d-flex gap-2 ms-auto">
             <a href="{{ route('impresoras.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+            <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold">
                 <i class="bi bi-save me-2"></i>Guardar Cambios
             </button>
         </div>

@@ -30,35 +30,46 @@
 
 @include('roles._styles')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .role-big-card { background: rgba(30,41,59,.95); }
+    body.dark-mode .role-big-card .role-name { color: #f1f5f9; }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Header gradiente (warning para edición) -->
-    <div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3"
-         style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); box-shadow: 0 10px 30px rgba(245,158,11,0.25);">
-        <div class="d-flex align-items-center gap-3" style="position: relative; z-index: 2;">
-            <div class="role-icon-lg" style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px);">
-                <i class="bi {{ $cfg['icon'] }}"></i>
-            </div>
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                        <i class="bi bi-pencil-square me-1"></i>EDITANDO
-                    </span>
-                    @if($isProtected)
-                        <span class="protected-badge"><i class="bi bi-lock-fill"></i>Protegido</span>
-                    @endif
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header" style="background: linear-gradient(135deg, #f59e0b, #ea580c, #d97706, #f59e0b);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi {{ $cfg['icon'] }}"></i>
                 </div>
-                <h2 class="fw-bold mb-0">{{ $role->name }}</h2>
-                <p class="mb-0 opacity-90 small">{{ $permisosAsignados ? count($permisosAsignados) . ' permisos asignados' : 'Sin permisos' }}</p>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-pencil-square me-1"></i>EDITANDO
+                        </span>
+                        @if($isProtected)
+                            <span class="protected-badge"><i class="bi bi-lock-fill"></i>Protegido</span>
+                        @endif
+                    </div>
+                    <h2 class="fw-bold mb-0">{{ $role->name }}</h2>
+                    <p class="mb-0 opacity-75 small">{{ $permisosAsignados ? count($permisosAsignados) . ' permisos asignados' : 'Sin permisos' }}</p>
+                </div>
             </div>
-        </div>
-        <div class="d-flex gap-2" style="position: relative; z-index: 2;">
-            <a href="{{ route($routePrefix . 'roles.show', $role) }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-eye me-1"></i>Ver
-            </a>
-            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i>Volver
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route($routePrefix . 'roles.show', $role) }}" class="btn btn-light rounded-pill px-3">
+                    <i class="bi bi-eye me-1"></i>Ver
+                </a>
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -75,13 +86,11 @@
         @csrf @method('PUT')
 
         <div class="row g-4">
-            <!-- Columna izquierda: nombre del rol + plantillas -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 mb-3">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-tag text-primary me-2"></i>Nombre del Rol</h5>
-                    </div>
-                    <div class="card-body p-4">
+                <div class="premium-card mb-3">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body">
+                        <h5 class="premium-card-title"><i class="bi bi-tag icon-purple"></i>Nombre del Rol</h5>
                         <div class="form-floating-modern">
                             <i class="bi bi-shield form-icon"></i>
                             <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
@@ -99,11 +108,10 @@
                 </div>
 
                 @if(!$isProtected)
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-stars text-primary me-2"></i>Plantillas Rápidas</h6>
-                    </div>
-                    <div class="card-body p-3">
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body">
+                        <h6 class="premium-card-title"><i class="bi bi-stars icon-purple"></i>Plantillas Rápidas</h6>
                         <div class="d-grid gap-2">
                             <button type="button" class="btn btn-outline-primary text-start rounded-3 py-2 perm-template" data-template="readonly">
                                 <div class="d-flex align-items-center gap-2">
@@ -137,29 +145,30 @@
                 </div>
                 @endif
 
-                <div class="card border-0 shadow-sm rounded-4 mt-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(79,70,229,0.05));">
-                    <div class="card-body p-3 text-center">
-                        <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Permisos Seleccionados</div>
-                        <div class="fs-1 fw-bold" id="permCount" style="color: #4f46e5;">{{ count($oldPerms) }}</div>
+                <div class="premium-card mt-3">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body text-center">
+                        <div class="stat-label">Permisos Seleccionados</div>
+                        <div class="stat-value" style="color: #8b5cf6;">{{ count($oldPerms) }}</div>
                         <small class="text-muted">de {{ Permission::count() }} disponibles</small>
                     </div>
                 </div>
             </div>
 
-            <!-- Columna derecha: permission picker -->
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <div>
-                            <h5 class="fw-bold mb-0"><i class="bi bi-key text-primary me-2"></i>Permisos</h5>
-                            <small class="text-muted">Modifica los permisos asignados a este rol</small>
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <h5 class="premium-card-title"><i class="bi bi-key icon-purple"></i>Permisos</h5>
+                                <small class="premium-card-subtitle">Modifica los permisos asignados a este rol</small>
+                            </div>
+                            <div class="input-group" style="max-width: 280px;">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                                <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Buscar permiso...">
+                            </div>
                         </div>
-                        <div class="input-group" style="max-width: 280px;">
-                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                            <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Buscar permiso...">
-                        </div>
-                    </div>
-                    <div class="card-body p-4">
                         @foreach($modulos as $modulo => $perms)
                             <div class="perm-module-card mb-3 perm-filterable" data-text="{{ strtolower($modulo) }}" style="--accent-color: {{ $modulosColores[$modulo] ?? '#38bdf8' }};">
                                 <div class="module-header">
@@ -201,12 +210,11 @@
             </div>
         </div>
 
-        <!-- Botones -->
         <div class="d-flex justify-content-between align-items-center mt-4 mb-4 flex-wrap gap-2">
             @if($role->name !== 'admin' && $role->users()->count() == 0)
                 <form action="{{ route($routePrefix . 'roles.destroy', $role) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
                     @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                    <button type="submit" class="premium-btn-delete rounded-pill px-4">
                         <i class="bi bi-trash me-1"></i>Eliminar Rol
                     </button>
                 </form>
@@ -219,12 +227,25 @@
                     @endif
                 </div>
             @endif
-
         </div>
     </form>
 </div>
 
 @if(!$isProtected)
+<div class="premium-sticky-bar" id="stickySaveBar">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span class="fw-semibold d-none d-sm-inline">Editar Rol</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" form="roleForm" class="btn-save">
+                <i class="bi bi-save me-1"></i>Guardar Cambios
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     const updateCount = () => {
         const n = document.querySelectorAll('input[name="permissions[]"]:checked').length;
@@ -296,41 +317,5 @@
         });
     });
 </script>
-
-<!-- Sticky Bottom Save Bar -->
-<div id="stickySaveBar" class="sticky-save-bar">
-    <div class="d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-2" id="saveBarLeft">
-            <i class="bi bi-info-circle text-primary"></i>
-            <span class="fw-semibold d-none d-sm-inline">Editar Rol</span>
-        </div>
-        <div class="d-flex gap-2">
-            <button type="submit" form="roleForm" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
-                <i class="bi bi-save me-1"></i>Guardar Cambios
-            </button>
-        </div>
-    </div>
-</div>
-
-<style>
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 0px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid var(--bs-primary, #0d6efd);
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #38bdf8;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
-</style>
 @endif
 @endsection

@@ -3,208 +3,192 @@
 @section('title', 'Editar Cotización ' . $cotizacion->numero)
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
 .premium-header {
     background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    border-radius: 1rem;
-    padding: 2rem;
-    color: white;
-    margin-bottom: 2rem;
     box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4);
-    position: relative;
-    overflow: hidden;
 }
-.premium-header::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
+.premium-card .form-control:focus,
+.premium-card .form-select:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.15);
 }
-.sticky-save-bar {
-    position: fixed;
-    bottom: 0;
-    left: var(--sidebar-width, 280px);
-    right: 0;
-    background: #fff;
-    border-top: 2px solid #8b5cf6;
-    padding: 0.75rem 1.5rem;
-    z-index: 1050;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+.premium-sticky-bar {
+    border-top-color: #8b5cf6;
 }
-.sticky-save-bar .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+.premium-sticky-bar .btn-save {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 4px 14px rgba(139,92,246,.3);
 }
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #a78bfa;
-}
-@media (max-width: 991.98px) {
-    .sticky-save-bar { left: 0; }
+.premium-sticky-bar .btn-save:hover {
+    box-shadow: 0 6px 20px rgba(139,92,246,.45);
 }
 </style>
 @endpush
 
 @section('content')
-<div class="premium-header">
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <h3 class="fw-bold mb-1">
-                <i class="bi bi-pencil-square me-2"></i>
-                Editar Cotización
-            </h3>
-            <p class="mb-0 opacity-75">{{ $cotizacion->numero }}</p>
+<div class="container-fluid premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">Editar Cotización</h3>
+                    <p class="mb-0 opacity-75">{{ $cotizacion->numero }}</p>
+                </div>
+            </div>
+            <a href="{{ route('cotizaciones.show', $cotizacion) }}" class="btn btn-light rounded-pill px-3">
+                <i class="bi bi-x-lg me-1"></i> Cancelar
+            </a>
         </div>
-        <a href="{{ route('cotizaciones.show', $cotizacion) }}" class="btn btn-light rounded-pill px-3">
-            <i class="bi bi-x-lg me-1"></i> Cancelar
-        </a>
     </div>
-</div>
 
-<form id="cotizacion-form" action="{{ route('cotizaciones.update', $cotizacion) }}" method="POST" autocomplete="off">
-    @csrf
-    @method('PUT')
+    <form id="cotizacion-form" action="{{ route('cotizaciones.update', $cotizacion) }}" method="POST" autocomplete="off">
+        @csrf
+        @method('PUT')
 
-    <div class="row g-3">
-        <!-- Columna izquierda -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-info-circle text-primary me-2"></i>
+        <div class="row g-3">
+            <!-- Columna izquierda -->
+            <div class="col-lg-8">
+                <div class="premium-card mb-3">
+                    <div class="card-accent purple"></div>
+                    <div class="premium-card-title">
+                        <i class="bi bi-info-circle icon-purple"></i>
                         Información General
-                    </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Número</label>
+                                <input type="text" class="form-control" value="{{ $cotizacion->numero }}" disabled>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-semibold">Cliente</label>
+                                <select name="cliente_id" class="form-select">
+                                    <option value="">-- Consumidor Final --</option>
+                                    @foreach($clientes as $cliente)
+                                        <option value="{{ $cliente->id }}" {{ old('cliente_id', $cotizacion->cliente_id) == $cliente->id ? 'selected' : '' }}>
+                                            {{ $cliente->nombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold">Fecha</label>
+                                <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $cotizacion->fecha->format('Y-m-d')) }}" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold">Válida hasta</label>
+                                <input type="date" name="fecha_validez" class="form-control" value="{{ old('fecha_validez', $cotizacion->fecha_validez->format('Y-m-d')) }}" required>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Número</label>
-                            <input type="text" class="form-control" value="{{ $cotizacion->numero }}" disabled>
+
+                <div class="premium-card mb-3">
+                    <div class="card-accent purple"></div>
+                    <div class="premium-card-title">
+                        <i class="bi bi-box-seam icon-purple"></i>
+                        Productos
+                        <span class="badge bg-primary bg-opacity-10 text-primary ms-auto" id="items-count">0 items</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="position-relative mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="buscar-producto" class="form-control border-start-0" placeholder="Buscar productos...">
+                            </div>
+                            <div id="resultados-busqueda" class="position-absolute w-100 bg-white border rounded shadow-lg" style="z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
                         </div>
-                        <div class="col-md-5">
-                            <label class="form-label small fw-semibold">Cliente</label>
-                            <select name="cliente_id" class="form-select">
-                                <option value="">-- Consumidor Final --</option>
-                                @foreach($clientes as $cliente)
-                                    <option value="{{ $cliente->id }}" {{ old('cliente_id', $cotizacion->cliente_id) == $cliente->id ? 'selected' : '' }}>
-                                        {{ $cliente->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th style="width: 100px;">Cantidad</th>
+                                        <th style="width: 120px;">Precio</th>
+                                        <th style="width: 100px;">ITBIS %</th>
+                                        <th style="width: 100px;">Desc.</th>
+                                        <th class="text-end" style="width: 120px;">Total</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="items-tbody"></tbody>
+                            </table>
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-semibold">Fecha</label>
-                            <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $cotizacion->fecha->format('Y-m-d')) }}" required>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-semibold">Válida hasta</label>
-                            <input type="date" name="fecha_validez" class="form-control" value="{{ old('fecha_validez', $cotizacion->fecha_validez->format('Y-m-d')) }}" required>
+                    </div>
+                </div>
+
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold"><i class="bi bi-sticky me-1"></i> Notas</label>
+                                <textarea name="notas" class="form-control" rows="3">{{ old('notas', $cotizacion->notas) }}</textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold"><i class="bi bi-file-text me-1"></i> Términos y Condiciones</label>
+                                <textarea name="condiciones" class="form-control" rows="3">{{ old('condiciones', $cotizacion->condiciones) }}</textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-0 py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold">
-                            <i class="bi bi-box-seam text-primary me-2"></i>
-                            Productos
-                        </h5>
-                        <span class="badge bg-primary bg-opacity-10 text-primary" id="items-count">0 items</span>
+            <!-- Columna derecha: resumen -->
+            <div class="col-lg-4">
+                <div class="premium-card sticky-top" style="top: 20px;">
+                    <div class="card-accent purple"></div>
+                    <div class="premium-card-title">
+                        <i class="bi bi-calculator icon-purple"></i>
+                        Resumen
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="position-relative mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" id="buscar-producto" class="form-control border-start-0" placeholder="Buscar productos...">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal:</span>
+                            <span class="fw-semibold" id="subtotal-display">RD$0.00</span>
                         </div>
-                        <div id="resultados-busqueda" class="position-absolute w-100 bg-white border rounded shadow-lg" style="z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Producto</th>
-                                    <th style="width: 100px;">Cantidad</th>
-                                    <th style="width: 120px;">Precio</th>
-                                    <th style="width: 100px;">ITBIS %</th>
-                                    <th style="width: 100px;">Desc.</th>
-                                    <th class="text-end" style="width: 120px;">Total</th>
-                                    <th style="width: 50px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="items-tbody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold"><i class="bi bi-sticky me-1"></i> Notas</label>
-                            <textarea name="notas" class="form-control" rows="3">{{ old('notas', $cotizacion->notas) }}</textarea>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">ITBIS:</span>
+                            <span class="fw-semibold" id="itbis-display">RD$0.00</span>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold"><i class="bi bi-file-text me-1"></i> Términos y Condiciones</label>
-                            <textarea name="condiciones" class="form-control" rows="3">{{ old('condiciones', $cotizacion->condiciones) }}</textarea>
+                        <div class="d-flex justify-content-between mb-2 align-items-center">
+                            <span class="text-muted">Descuento:</span>
+                            <div class="input-group input-group-sm" style="width: 130px;">
+                                <span class="input-group-text bg-white">RD$</span>
+                                <input type="number" name="descuento" id="descuento" class="form-control text-end" 
+                                       value="{{ old('descuento', $cotizacion->descuento) }}" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold fs-5">Total:</span>
+                            <span class="fw-bold fs-4 text-primary" id="total-display">RD$0.00</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </form>
 
-        <!-- Columna derecha: resumen -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
-                <div class="card-header bg-primary text-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-calculator me-2"></i> Resumen</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Subtotal:</span>
-                        <span class="fw-semibold" id="subtotal-display">RD$0.00</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">ITBIS:</span>
-                        <span class="fw-semibold" id="itbis-display">RD$0.00</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2 align-items-center">
-                        <span class="text-muted">Descuento:</span>
-                        <div class="input-group input-group-sm" style="width: 130px;">
-                            <span class="input-group-text bg-white">RD$</span>
-                            <input type="number" name="descuento" id="descuento" class="form-control text-end" 
-                                   value="{{ old('descuento', $cotizacion->descuento) }}" min="0" step="0.01">
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold fs-5">Total:</span>
-                        <span class="fw-bold fs-4 text-primary" id="total-display">RD$0.00</span>
-                    </div>
-                </div>
-            </div>
+    <!-- Sticky Save Bar -->
+    <div class="premium-sticky-bar">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small d-none d-md-inline">Editando: {{ $cotizacion->numero }}</span>
+            <button type="submit" form="cotizacion-form" class="btn btn-save rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-save me-1"></i> Actualizar Cotización
+            </button>
         </div>
-    </div>
-</form>
-
-<!-- Sticky Save Bar -->
-<div class="sticky-save-bar">
-    <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small d-none d-md-inline">Editando: {{ $cotizacion->numero }}</span>
-        <button type="submit" form="cotizacion-form" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-            <i class="bi bi-save me-1"></i> Actualizar Cotización
-        </button>
     </div>
 </div>
 

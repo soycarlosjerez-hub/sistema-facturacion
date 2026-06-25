@@ -32,22 +32,39 @@
 
 @include('roles._styles')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .role-big-card { background: rgba(30,41,59,.95); }
+    body.dark-mode .role-big-card .role-name { color: #f1f5f9; }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Header gradiente -->
-    <div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                    <i class="bi bi-shield-plus me-1"></i>NUEVO ROL
-                </span>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-shield-plus me-1"></i>NUEVO ROL
+                        </span>
+                    </div>
+                    <h2 class="fw-bold mb-1">Crear Rol</h2>
+                    <p class="mb-0 opacity-75">Define un nuevo rol y selecciona los permisos que tendrá</p>
+                </div>
             </div>
-            <h2 class="fw-bold mb-1">Crear Rol</h2>
-            <p class="mb-0 opacity-75">Define un nuevo rol y selecciona los permisos que tendrá</p>
+            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4 fw-bold">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
         </div>
-        <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4 fw-bold" style="position: relative; z-index: 2;">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
     </div>
 
     @if (session('error'))
@@ -70,13 +87,11 @@
         @csrf
 
         <div class="row g-4">
-            <!-- Columna izquierda: nombre del rol + plantillas -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 mb-3">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-tag text-primary me-2"></i>Nombre del Rol</h5>
-                    </div>
-                    <div class="card-body p-4">
+                <div class="premium-card mb-3">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body">
+                        <h5 class="premium-card-title"><i class="bi bi-tag icon-purple"></i>Nombre del Rol</h5>
                         <div class="form-floating-modern">
                             <i class="bi bi-shield form-icon"></i>
                             <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
@@ -90,12 +105,11 @@
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-stars text-primary me-2"></i>Plantillas Rápidas</h6>
-                        <small class="text-muted">Inicia con permisos predefinidos</small>
-                    </div>
-                    <div class="card-body p-3">
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body">
+                        <h6 class="premium-card-title"><i class="bi bi-stars icon-purple"></i>Plantillas Rápidas</h6>
+                        <small class="premium-card-subtitle">Inicia con permisos predefinidos</small>
                         <div class="d-grid gap-2">
                             <button type="button" class="btn btn-outline-primary text-start rounded-3 py-2 perm-template" data-template="readonly">
                                 <div class="d-flex align-items-center gap-2">
@@ -128,30 +142,30 @@
                     </div>
                 </div>
 
-                <!-- Contador -->
-                <div class="card border-0 shadow-sm rounded-4 mt-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(79,70,229,0.05));">
-                    <div class="card-body p-3 text-center">
-                        <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Permisos Seleccionados</div>
-                        <div class="fs-1 fw-bold" id="permCount" style="color: #4f46e5;">0</div>
+                <div class="premium-card mt-3">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body text-center">
+                        <div class="stat-label">Permisos Seleccionados</div>
+                        <div class="stat-value" style="color: #8b5cf6;">0</div>
                         <small class="text-muted">de {{ Permission::count() }} disponibles</small>
                     </div>
                 </div>
             </div>
 
-            <!-- Columna derecha: permission picker -->
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <div>
-                            <h5 class="fw-bold mb-0"><i class="bi bi-key text-primary me-2"></i>Asignar Permisos</h5>
-                            <small class="text-muted">Marca los permisos que tendrá este rol</small>
+                <div class="premium-card">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <h5 class="premium-card-title"><i class="bi bi-key icon-purple"></i>Asignar Permisos</h5>
+                                <small class="premium-card-subtitle">Marca los permisos que tendrá este rol</small>
+                            </div>
+                            <div class="input-group" style="max-width: 280px;">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                                <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Buscar permiso...">
+                            </div>
                         </div>
-                        <div class="input-group" style="max-width: 280px;">
-                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                            <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Buscar permiso...">
-                        </div>
-                    </div>
-                    <div class="card-body p-4">
                         @foreach($modulos as $modulo => $perms)
                             <div class="perm-module-card mb-3 perm-filterable" data-text="{{ strtolower($modulo) }}" style="--accent-color: {{ $modulosColores[$modulo] ?? '#38bdf8' }};">
                                 <div class="module-header">
@@ -187,20 +201,25 @@
                                 </div>
                             </div>
                         @endforeach
-                    <div class="card-footer bg-light border-top border-light p-4 text-end">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4">
-                                <i class="bi bi-x-lg me-1"></i>Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: 0;">
-                                <i class="bi bi-check-lg me-1"></i>Crear Rol
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </form>
+</div>
+
+<div class="premium-sticky-bar" id="stickySaveBar">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span class="fw-semibold d-none d-sm-inline">Crear Rol</span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" form="roleForm" class="btn-save">
+                <i class="bi bi-save me-1"></i>Crear Rol
+            </button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -222,7 +241,6 @@
         updateCount();
     };
 
-    // Perm toggle change
     document.querySelectorAll('input[name="permissions[]"]').forEach(cb => {
         cb.addEventListener('change', () => {
             updateVisual(cb);
@@ -234,7 +252,6 @@
         });
     });
 
-    // Module "select all" toggle
     document.querySelectorAll('.module-check').forEach(mc => {
         mc.addEventListener('change', () => {
             const mod = mc.dataset.module;
@@ -246,7 +263,6 @@
         });
     });
 
-    // Templates
     document.querySelectorAll('.perm-template').forEach(btn => {
         btn.addEventListener('click', () => {
             const t = btn.dataset.template;
@@ -270,7 +286,6 @@
         });
     });
 
-    // Filtro
     document.getElementById('permFilter')?.addEventListener('input', function(e) {
         const q = e.target.value.toLowerCase();
         document.querySelectorAll('.perm-filterable').forEach(el => {

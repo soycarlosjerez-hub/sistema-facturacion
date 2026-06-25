@@ -2,32 +2,51 @@
 
 @section('title', 'Plantillas de Impresión')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .premium-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-file-earmark-text text-info me-2"></i>Plantillas de Impresión</h2>
-            <p class="text-muted mb-0">Personaliza el encabezado, pie y opciones de cada tipo de documento</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">Plantillas de Impresión</h3>
+                    <p class="mb-0 opacity-75">Personaliza el encabezado, pie y opciones de cada tipo de documento</p>
+                </div>
+            </div>
+            <a href="{{ route('impresoras.index') }}" class="btn btn-light rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i> Impresoras
+            </a>
         </div>
-        <div class="d-flex gap-2">
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
             <form method="GET" class="d-inline">
-                <select name="modulo" class="form-select border-0 bg-light" onchange="this.form.submit()">
+                <select name="modulo" class="form-select border-0 bg-light rounded-pill" onchange="this.form.submit()">
                     <option value="">Todos los módulos</option>
                     @foreach($modulos as $k => $v)
                         <option value="{{ $k }}" {{ request('modulo')==$k ? 'selected' : '' }}>{{ $v }}</option>
                     @endforeach
                 </select>
             </form>
-            <a href="{{ route('impresoras.index') }}" class="btn btn-outline-primary rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i> Impresoras
-            </a>
         </div>
     </div>
 
     <div class="row g-3">
         @forelse($plantillas as $p)
         <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent blue"></div>
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
@@ -90,7 +109,8 @@
         </div>
         @empty
         <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent blue"></div>
                 <div class="card-body text-center py-5 text-muted">
                     <i class="bi bi-file-earmark fs-1 d-block mb-2"></i>
                     No hay plantillas para este módulo

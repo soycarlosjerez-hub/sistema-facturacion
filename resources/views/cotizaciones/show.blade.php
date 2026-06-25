@@ -2,41 +2,58 @@
 
 @section('title', 'Cotización ' . $cotizacion->numero)
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+.premium-header {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4);
+}
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid premium-page">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-file-earmark-text text-primary me-2"></i>
-                {{ $cotizacion->numero }}
-            </h2>
-            <p class="text-muted mb-0">
-                Creada {{ $cotizacion->created_at->diffForHumans() }}
-                @if($cotizacion->user)
-                    por <strong>{{ $cotizacion->user->name }}</strong>
-                @endif
-            </p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('cotizaciones.index') }}" class="btn btn-outline-secondary rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
-            <a href="{{ route('cotizaciones.pdf', $cotizacion) }}" class="btn btn-outline-primary rounded-pill" target="_blank">
-                <i class="bi bi-file-pdf me-1"></i> PDF
-            </a>
-            @if($cotizacion->puede_convertirse && auth()->user()->can('cotizaciones.convertir'))
-                <button type="button" class="btn btn-success rounded-pill" onclick="confirmarConvertir()">
-                    <i class="bi bi-arrow-right-circle me-1"></i> Convertir a Venta
-                </button>
-            @endif
-            @can('cotizaciones.edit')
-                @if(!in_array($cotizacion->estado, ['convertida', 'anulada']))
-                <a href="{{ route('cotizaciones.edit', $cotizacion) }}" class="btn btn-warning rounded-pill">
-                    <i class="bi bi-pencil me-1"></i> Editar
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">{{ $cotizacion->numero }}</h2>
+                    <p class="mb-0 opacity-75">
+                        Creada {{ $cotizacion->created_at->diffForHumans() }}
+                        @if($cotizacion->user)
+                            por <strong>{{ $cotizacion->user->name }}</strong>
+                        @endif
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('cotizaciones.index') }}" class="btn btn-light rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
                 </a>
+                <a href="{{ route('cotizaciones.pdf', $cotizacion) }}" class="btn btn-light rounded-pill" target="_blank">
+                    <i class="bi bi-file-pdf me-1"></i> PDF
+                </a>
+                @if($cotizacion->puede_convertirse && auth()->user()->can('cotizaciones.convertir'))
+                    <button type="button" class="btn btn-success rounded-pill" onclick="confirmarConvertir()">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Convertir a Venta
+                    </button>
                 @endif
-            @endcan
+                @can('cotizaciones.edit')
+                    @if(!in_array($cotizacion->estado, ['convertida', 'anulada']))
+                    <a href="{{ route('cotizaciones.edit', $cotizacion) }}" class="btn btn-warning rounded-pill">
+                        <i class="bi bi-pencil me-1"></i> Editar
+                    </a>
+                    @endif
+                @endcan
+            </div>
         </div>
     </div>
 
@@ -44,7 +61,8 @@
         <!-- Columna principal -->
         <div class="col-lg-8">
             <!-- Estado y datos -->
-            <div class="card border-0 shadow-sm mb-3">
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-3">
@@ -90,12 +108,11 @@
             </div>
 
             <!-- Items -->
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-box-seam text-primary me-2"></i>
-                        Items de la Cotización
-                    </h5>
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-box-seam icon-purple"></i>
+                    Items de la Cotización
                 </div>
                 <div class="table-responsive">
                     <table class="table align-middle mb-0">
@@ -133,7 +150,8 @@
             <div class="row g-3">
                 @if($cotizacion->notas)
                 <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="premium-card h-100">
+                        <div class="card-accent purple"></div>
                         <div class="card-body">
                             <h6 class="fw-bold">
                                 <i class="bi bi-sticky me-1"></i> Notas
@@ -145,7 +163,8 @@
                 @endif
                 @if($cotizacion->condiciones)
                 <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
+                    <div class="premium-card h-100">
+                        <div class="card-accent purple"></div>
                         <div class="card-body">
                             <h6 class="fw-bold">
                                 <i class="bi bi-file-text me-1"></i> Términos y Condiciones
@@ -162,12 +181,11 @@
         <!-- Columna derecha: resumen y acciones -->
         <div class="col-lg-4">
             @if($cotizacion->cliente && $cotizacion->cliente->email && !in_array($cotizacion->estado, ['convertida', 'anulada']))
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-info text-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-envelope me-2"></i>
-                        Enviar por Email
-                    </h5>
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-envelope icon-purple"></i>
+                    Enviar por Email
                 </div>
                 <div class="card-body">
                     <p class="text-muted small mb-3">
@@ -175,7 +193,7 @@
                         Enviar esta cotización al cliente con un PDF adjunto
                     </p>
                     <button type="button" 
-                            class="btn btn-info w-100 mb-2" 
+                            class="btn btn-primary w-100 mb-2" 
                             data-bs-toggle="modal" 
                             data-bs-target="#modalEnviarEmail"
                             aria-label="Abrir formulario para enviar cotización por email">
@@ -185,13 +203,13 @@
                     <div class="btn-group w-100" role="group" aria-label="Opciones de impresión">
                         <a href="{{ route('cotizaciones.ticket', [$cotizacion, 'paper' => 80]) }}" 
                            target="_blank"
-                           class="btn btn-outline-primary"
+                           class="btn btn-outline-secondary"
                            aria-label="Imprimir ticket en 80mm">
                             <i class="bi bi-printer me-1"></i>Ticket 80mm
                         </a>
                         <a href="{{ route('cotizaciones.ticket', [$cotizacion, 'paper' => 58]) }}" 
                            target="_blank"
-                           class="btn btn-outline-primary"
+                           class="btn btn-outline-secondary"
                            aria-label="Imprimir ticket en 58mm">
                             <i class="bi bi-printer me-1"></i>58mm
                         </a>
@@ -205,12 +223,11 @@
             </div>
             @endif
 
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-primary text-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-calculator me-2"></i>
-                        Totales
-                    </h5>
+            <div class="premium-card mb-3">
+                <div class="card-accent purple"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-calculator icon-purple"></i>
+                    Totales
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
@@ -237,11 +254,11 @@
 
             <!-- Cambiar estado -->
             @if(!in_array($cotizacion->estado, ['convertida', 'anulada']))
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 py-3">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="bi bi-arrow-left-right me-1"></i> Cambiar Estado
-                    </h6>
+            <div class="premium-card">
+                <div class="card-accent purple"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-arrow-left-right icon-purple"></i>
+                    Cambiar Estado
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('cotizaciones.cambiarEstado', $cotizacion) }}">
