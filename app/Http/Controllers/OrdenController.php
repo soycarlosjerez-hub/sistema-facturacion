@@ -410,15 +410,15 @@ class OrdenController extends Controller
         $sucursalId = session('sucursal_id');
         $productos = Producto::where('tiene_almacen', true)
             ->where('activo', true)
-            ->where('precio_venta', '>', 0)
+            ->where('precio', '>', 0)
             ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->orderBy('ventas_count', 'desc')
             ->take(12)
-            ->get(['id', 'nombre', 'precio_venta', 'imagen', 'stock'])
+            ->get(['id', 'nombre', 'precio', 'imagen', 'stock'])
             ->map(fn($p) => [
                 'id'          => $p->id,
                 'nombre'      => $p->nombre,
-                'precio'      => (float) $p->precio_venta,
+                'precio'      => (float) $p->precio,
                 'imagen'      => $p->imagen_url,
                 'iniciales'   => strtoupper(substr($p->nombre, 0, 2)),
                 'stock'       => (int) $p->stock,
