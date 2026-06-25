@@ -1,22 +1,37 @@
 @extends('layouts.app')
 @section('title', 'Nuevo Tipo de Negocio')
+
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-tags text-success me-2"></i>Nuevo Tipo de Negocio</h2>
-            <p class="text-muted mb-0">Crea un nuevo tipo de negocio con sus m&oacute;dulos disponibles</p>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Nuevo Tipo de Negocio</h2>
+                    <p class="mb-0 opacity-75">Crea un nuevo tipo de negocio con sus m&oacute;dulos disponibles</p>
+                </div>
+            </div>
+            <a href="{{ route('owner.business-types.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
         </div>
-        <a href="{{ route('owner.business-types.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-arrow-left me-2"></i>Volver
-        </a>
     </div>
 
     <form method="POST" action="{{ route('owner.business-types.store') }}">
         @csrf
         <div class="row g-3">
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="premium-card h-100">
+                    <div class="card-accent purple"></div>
                     <div class="card-header bg-transparent border-0 p-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Informaci&oacute;n General</h5>
                     </div>
@@ -62,7 +77,8 @@
                 </div>
             </div>
             <div class="col-lg-7">
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="premium-card h-100">
+                    <div class="card-accent green"></div>
                     <div class="card-header bg-transparent border-0 p-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-puzzle text-success me-2"></i>M&oacute;dulos Disponibles</h5>
                     </div>
@@ -99,6 +115,7 @@
             </div>
         </div>
     </form>
+</div>
 </div>
 @endsection
 

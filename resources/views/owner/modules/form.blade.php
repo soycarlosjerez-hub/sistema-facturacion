@@ -1,27 +1,41 @@
 @extends('layouts.app')
 @section('title', isset($modulo) ? "Editar Módulo - {$modulo->label}" : 'Nuevo Módulo')
+
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi {{ isset($modulo) ? 'bi-pencil' : 'bi-plus-circle' }} text-info me-2"></i>
-                {{ isset($modulo) ? 'Editar Módulo' : 'Nuevo Módulo' }}
-            </h2>
-            @if(isset($modulo))
-                <p class="text-muted mb-0">{{ $modulo->key }} &middot; {{ $modulo->label }}</p>
-            @else
-                <p class="text-muted mb-0">Crea un nuevo módulo para asignar a tipos de negocio y roles.</p>
-            @endif
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-grid"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">
+                        {{ isset($modulo) ? 'Editar Módulo' : 'Nuevo Módulo' }}
+                    </h2>
+                    @if(isset($modulo))
+                        <p class="mb-0 opacity-75">{{ $modulo->key }} &middot; {{ $modulo->label }}</p>
+                    @else
+                        <p class="mb-0 opacity-75">Crea un nuevo módulo para asignar a tipos de negocio y roles.</p>
+                    @endif
+                </div>
+            </div>
+            <a href="{{ route('owner.modules.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
         </div>
-        <a href="{{ route('owner.modules.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-arrow-left me-2"></i>Volver
-        </a>
     </div>
 
     <div class="row justify-content-center">
         <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent purple"></div>
                 <div class="card-body p-4">
                     <form method="POST" action="{{ isset($modulo) ? route('owner.modules.update', $modulo) : route('owner.modules.store') }}">
                         @csrf
@@ -94,5 +108,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

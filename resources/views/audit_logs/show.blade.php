@@ -3,84 +3,75 @@
 @section('title', 'Detalle de Auditoría')
 
 @push('styles')
-<style>
-.premium-header {
-    background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
-    border-radius: 1rem; padding: 2rem; color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(8,145,178,0.4);
-    position: relative; overflow: hidden;
-}
-.premium-header::after {
-    content: ''; position: absolute; top: -50%; right: -20%;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-</style>
+@include('partials.premium-ui')
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-info-circle text-info me-2"></i>Detalle de Auditoría</h2>
-            <p class="text-muted mb-0">#{{ $auditLog->id }}</p>
+<div class="container-fluid px-4 py-3 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Detalle de Auditoría</h4>
+                    <small class="text-white opacity-75">#{{ $auditLog->id }}</small>
+                </div>
+            </div>
+            <a href="{{ route('audit-logs.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
         </div>
-        <a href="{{ route('audit-logs.index') }}" class="btn btn-outline-light rounded-pill">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>Información</h5>
+            <div class="premium-card h-100" style="animation-delay:.1s;">
+                <div class="card-accent red"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-clock-history icon-red"></i>
+                    Información
                 </div>
-                <div class="card-body p-4">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Descripción</div>
-                        <div class="col-md-8">{{ $auditLog->description }}</div>
+                <div class="card-body pt-0">
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Descripción</div>
+                        <div class="premium-detail-value">{{ $auditLog->description }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Acción</div>
-                        <div class="col-md-8">
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Acción</div>
+                        <div class="premium-detail-value">
                             @php $badge = match($auditLog->action) { 'created' => 'success', 'updated' => 'warning', 'deleted' => 'danger', default => 'info' }; @endphp
                             <span class="badge bg-{{ $badge }} bg-opacity-10 text-{{ $badge }} rounded-pill px-3 py-1">{{ ucfirst($auditLog->action) }}</span>
                         </div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Módulo</div>
-                        <div class="col-md-8">{{ class_basename($auditLog->model_type) }} #{{ $auditLog->model_id }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Módulo</div>
+                        <div class="premium-detail-value">{{ class_basename($auditLog->model_type) }} #{{ $auditLog->model_id }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Modelo completo</div>
-                        <div class="col-md-8"><small class="font-monospace text-muted">{{ $auditLog->model_type }}</small></div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Modelo completo</div>
+                        <div class="premium-detail-value"><small class="font-monospace text-muted">{{ $auditLog->model_type }}</small></div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Usuario</div>
-                        <div class="col-md-8 fw-semibold">{{ $auditLog->user?->name ?? '—' }} (#{{ $auditLog->user_id }})</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Usuario</div>
+                        <div class="premium-detail-value fw-semibold">{{ $auditLog->user?->name ?? '—' }} (#{{ $auditLog->user_id }})</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Fecha/Hora</div>
-                        <div class="col-md-8">{{ $auditLog->created_at->format('d/m/Y h:i:s A') }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Fecha/Hora</div>
+                        <div class="premium-detail-value">{{ $auditLog->created_at->format('d/m/Y h:i:s A') }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">Dirección IP</div>
-                        <div class="col-md-8"><span class="font-monospace">{{ $auditLog->ip_address }}</span></div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Dirección IP</div>
+                        <div class="premium-detail-value"><span class="font-monospace">{{ $auditLog->ip_address }}</span></div>
                     </div>
                     @if($auditLog->user_agent)
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-4 text-muted small fw-semibold">User Agent</div>
-                        <div class="col-md-8"><small class="text-muted font-monospace" style="word-break:break-all;">{{ $auditLog->user_agent }}</small></div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">User Agent</div>
+                        <div class="premium-detail-value"><small class="text-muted font-monospace" style="word-break:break-all;">{{ $auditLog->user_agent }}</small></div>
                     </div>
                     @endif
                 </div>
@@ -88,22 +79,26 @@
         </div>
         <div class="col-lg-4">
             @if($auditLog->old_values && count($auditLog->old_values) > 0)
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold text-danger"><i class="bi bi-arrow-left-circle me-2"></i>Valores Anteriores</h5>
+            <div class="premium-card mb-4" style="animation-delay:.15s;">
+                <div class="card-accent red"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-arrow-left-circle icon-red"></i>
+                    Valores Anteriores
                 </div>
-                <div class="card-body p-4 pt-0">
+                <div class="card-body pt-0">
                     <pre class="mb-0" style="font-size:.75rem;max-height:300px;overflow-y:auto;">{{ json_encode($auditLog->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
             </div>
             @endif
 
             @if($auditLog->new_values && count($auditLog->new_values) > 0)
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold text-success"><i class="bi bi-arrow-right-circle me-2"></i>Valores Nuevos</h5>
+            <div class="premium-card" style="animation-delay:.2s;">
+                <div class="card-accent red"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-arrow-right-circle icon-red"></i>
+                    Valores Nuevos
                 </div>
-                <div class="card-body p-4 pt-0">
+                <div class="card-body pt-0">
                     <pre class="mb-0" style="font-size:.75rem;max-height:300px;overflow-y:auto;">{{ json_encode($auditLog->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
             </div>

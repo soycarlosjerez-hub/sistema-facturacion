@@ -1,50 +1,34 @@
 @extends('layouts.app')
 @section('title', 'Gestión de Mesas')
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-        border-radius: 1rem;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-    .premium-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
-    .status-badge {
-        padding: 0.4em 0.8em;
-        border-radius: 2rem;
-        font-weight: 500;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-    }
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%;
-        transition: all 0.2s;
-    }
-    .btn-icon-hover:hover { transform: scale(1.15); }
+.status-badge {
+    padding: 0.4em 0.8em;
+    border-radius: 2rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+.btn-icon-hover {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+.btn-icon-hover:hover { transform: scale(1.15); }
 </style>
 @endpush
 @section('content')
-<div class="container-fluid px-4">
-    <div class="premium-header">
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
         <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
             <div class="d-flex align-items-center gap-3">
-                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-                    <i class="bi bi-grid-3x3-gap fs-2 text-white"></i>
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-cup-straw"></i>
                 </div>
                 <div>
                     <h2 class="fw-bold mb-0 text-white">Gestión de Mesas</h2>
@@ -68,7 +52,8 @@
         </div>
     @endif
 
-    <div class="card shadow-sm rounded-4 border-0">
+    <div class="premium-card">
+        <div class="card-accent green"></div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -121,7 +106,7 @@
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary rounded-start-pill"
+                                    <button class="premium-btn-edit"
                                         onclick="editarMesa({{ $mesa->id }})" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </button>
@@ -130,12 +115,12 @@
                                         onsubmit="return confirm('¿Eliminar la mesa {{ $mesa->numero }}?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger rounded-end-pill" title="Eliminar">
+                                        <button type="submit" class="premium-btn-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                     @else
-                                    <button class="btn btn-outline-danger rounded-end-pill" disabled title="No se puede eliminar una mesa ocupada">
+                                    <button class="premium-btn-delete" disabled title="No se puede eliminar una mesa ocupada">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                     @endif

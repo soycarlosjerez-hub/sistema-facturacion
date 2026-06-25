@@ -1,23 +1,37 @@
 @extends('layouts.app')
 @section('title', 'Vehículo - ' . $vehiculo->nombre_completo)
+@push('styles')
+@include('partials.premium-ui')
+@endpush
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{{ route('lavadero.vehiculos.index') }}" class="text-decoration-none text-muted small mb-1 d-inline-block">
-                <i class="bi bi-arrow-left me-1"></i> Volver a vehículos
-            </a>
-            <h2 class="fw-bold mb-1"><i class="bi bi-car-front text-primary me-2"></i>{{ $vehiculo->nombre_completo }}</h2>
-            <p class="text-muted mb-0">{{ $vehiculo->cliente?->nombre ?? 'Sin cliente' }}</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-droplet"></i>
+                </div>
+                <div>
+                    <a href="{{ route('lavadero.vehiculos.index') }}" class="text-decoration-none text-white-50 small mb-1 d-inline-block">
+                        <i class="bi bi-arrow-left me-1"></i> Volver a vehículos
+                    </a>
+                    <h2 class="fw-bold mb-0 text-white">{{ $vehiculo->nombre_completo }}</h2>
+                    <p class="text-white text-opacity-75 mb-0">{{ $vehiculo->cliente?->nombre ?? 'Sin cliente' }}</p>
+                </div>
+            </div>
+            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#editVehiculoModal">
+                <i class="bi bi-pencil me-1"></i> Editar
+            </button>
         </div>
-        <button class="btn btn-outline-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#editVehiculoModal">
-            <i class="bi bi-pencil me-1"></i> Editar
-        </button>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent green"></div>
                 <div class="card-body">
                     <h6 class="fw-bold mb-3">Información del Vehículo</h6>
                     <dl class="row mb-0 small">
@@ -43,7 +57,8 @@
         </div>
 
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent green"></div>
                 <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
                     <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Historial de Servicios</h6>
                 </div>

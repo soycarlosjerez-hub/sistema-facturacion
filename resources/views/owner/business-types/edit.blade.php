@@ -2,6 +2,7 @@
 @section('title', 'Editar Tipo de Negocio')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
 .module-check {
     border: 1px solid rgba(0,0,0,0.06);
@@ -41,41 +42,31 @@
     padding: 1rem;
     box-shadow: 0 2px 6px rgba(0,0,0,0.01);
 }
-.sticky-save-bar {
-    position: fixed;
-    bottom: 0;
-    left: var(--sidebar-width, 280px);
-    right: 0;
-    background: #fff;
-    border-top: 2px solid #22c55e;
-    padding: 0.75rem 1.5rem;
-    z-index: 1050;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-}
-.sticky-save-bar .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #4ade80;
-}
-@media (max-width: 991.98px) {
-    .sticky-save-bar { left: 0; }
+body.dark-mode .category-section {
+    background: rgba(15,23,42,.6);
 }
 </style>
 @endpush
 
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-tags text-primary me-2"></i>Editar Tipo de Negocio</h2>
-            <p class="text-muted mb-0">{{ $businessType->nombre }}</p>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Editar Tipo de Negocio</h2>
+                    <p class="mb-0 opacity-75">{{ $businessType->nombre }}</p>
+                </div>
+            </div>
+            <a href="{{ route('owner.business-types.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
         </div>
-        <a href="{{ route('owner.business-types.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-arrow-left me-2"></i>Volver
-        </a>
     </div>
 
     <form method="POST" action="{{ route('owner.business-types.update', $businessType) }}" id="instanceForm">
@@ -83,7 +74,8 @@ body.dark-mode .sticky-save-bar {
         
         <div class="row g-3">
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="premium-card h-100">
+                    <div class="card-accent purple"></div>
                     <div class="card-header bg-transparent border-0 p-4 pb-0">
                         <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Información General</h5>
                     </div>
@@ -125,7 +117,8 @@ body.dark-mode .sticky-save-bar {
             </div>
 
             <div class="col-lg-7">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="premium-card h-100">
+                    <div class="card-accent green"></div>
                     <div class="card-header bg-transparent border-0 p-4 pb-0">
                         <h5 class="fw-bold mb-0"><i class="bi bi-puzzle text-success me-2"></i>Módulos Disponibles</h5>
                     </div>
@@ -198,18 +191,19 @@ body.dark-mode .sticky-save-bar {
     </form>
 </div>
 
-<div class="sticky-save-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
         <span class="text-muted small d-none d-md-inline">
             <i class="bi bi-info-circle me-1"></i> Editando tipo de negocio: {{ $businessType->nombre }}
         </span>
         <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('owner.business-types.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+            <a href="{{ route('owner.business-types.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold shadow-sm">
                 <i class="bi bi-save me-2"></i>Guardar Todo
             </button>
         </div>
     </div>
+</div>
 </div>
 @endsection
 
@@ -223,7 +217,6 @@ function updateCount() {
         selectedCountEl.textContent = count;
     }
     
-    // Update category counts
     document.querySelectorAll('.category-section').forEach(section => {
         const cat = section.id.replace('cat_section_', '');
         const checked = section.querySelectorAll('.module-input:checked').length;
@@ -242,7 +235,6 @@ function updateCount() {
     });
 }
 
-// Handle module checkbox changes (triggered by label click)
 document.addEventListener('change', function(e) {
     if (e.target.matches('.module-input')) {
         const card = e.target.closest('.module-check');
@@ -283,7 +275,6 @@ document.getElementById('deselectAll')?.addEventListener('click', function(e) {
     updateCount();
 });
 
-// Category select/deselect
 document.querySelectorAll('.select-category').forEach(btn => {
     btn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -316,7 +307,6 @@ document.querySelectorAll('.deselect-category').forEach(btn => {
     });
 });
 
-// Keyboard support for module cards
 document.addEventListener('keydown', function(e) {
     if (e.target.matches('.module-check') && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
@@ -328,7 +318,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Initialize count on load
 document.addEventListener('DOMContentLoaded', function() {
     updateCount();
 });

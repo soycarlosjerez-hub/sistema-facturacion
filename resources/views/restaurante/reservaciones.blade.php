@@ -3,58 +3,37 @@
 @section('title', 'Reservaciones')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
-        border-radius: 1rem;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-    .premium-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
-    .filter-card {
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    }
-    .status-badge {
-        padding: 0.4em 0.8em;
-        border-radius: 2rem;
-        font-weight: 500;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-    }
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%;
-        transition: all 0.2s;
-    }
-    .btn-icon-hover:hover { transform: scale(1.15); }
+.status-badge {
+    padding: 0.4em 0.8em;
+    border-radius: 2rem;
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+.btn-icon-hover {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+.btn-icon-hover:hover { transform: scale(1.15); }
+.table > :not(caption) > * > * { padding: 0.85rem 0.5rem; }
+.table thead th { font-weight: 700; letter-spacing: 0.03em; border-bottom: 1px solid #e2e8f0; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="premium-header">
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
         <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
             <div class="d-flex align-items-center gap-3">
-                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-                    <i class="bi bi-calendar-check fs-2 text-white"></i>
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-cup-straw"></i>
                 </div>
                 <div>
                     <h2 class="fw-bold mb-0 text-white">Reservaciones</h2>
@@ -80,7 +59,8 @@
     </div>
     @endif
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+    <div class="premium-card mb-4">
+        <div class="card-accent green"></div>
         <div class="card-body p-3 bg-light bg-opacity-50">
             <form method="GET" action="{{ route('restaurante.reservaciones.index') }}" id="filtros-form" class="row g-2 align-items-center">
                 <div class="col-lg-4">
@@ -107,7 +87,8 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="premium-card">
+        <div class="card-accent green"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -148,11 +129,11 @@
                         <td><small class="text-muted">{{ Str::limit($r->notas, 30) ?: '—' }}</small></td>
                         <td class="text-end pe-4">
                             <div class="btn-group">
-                                <a class="btn btn-sm btn-outline-primary rounded-pill me-1" href="#" title="Ver detalles"
+                                <a class="premium-btn-edit" href="#" title="Ver detalles"
                                    onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono), @js($r->cliente_email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a class="btn btn-sm btn-outline-warning rounded-pill me-1" href="#" title="Editar"
+                                <a class="premium-btn-edit" href="#" title="Editar"
                                    onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono), @js($r->cliente_email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
                                     <i class="bi bi-pencil"></i>
                                 </a>
@@ -187,7 +168,7 @@
                                 <form action="{{ route('restaurante.reservaciones.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la reservación de ' + @js($r->cliente_nombre) + '? Esta acción no se puede deshacer.')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill" title="Eliminar">
+                                    <button class="premium-btn-delete" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -327,11 +308,6 @@
         </form>
     </div>
 </div>
-
-<style>
-.table > :not(caption) > * > * { padding: 0.85rem 0.5rem; }
-.table thead th { font-weight: 700; letter-spacing: 0.03em; border-bottom: 1px solid #e2e8f0; }
-</style>
 @endsection
 
 @push('scripts')

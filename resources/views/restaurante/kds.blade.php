@@ -2,47 +2,31 @@
 @section('title', 'Pantalla de Cocina — KDS')
 @section('content_class', 'px-0')
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-        border-radius: 1rem;
-        padding: 1.25rem 2rem;
-        color: white;
-        margin-bottom: 1.25rem;
-        box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-    .premium-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
-    }
     .kds-card { transition: all .2s ease; border-left: 4px solid #eab308; }
-.kds-card.urgent { border-left-color: #ef4444; animation: kds-pulse 2s infinite; }
-.kds-card.done { border-left-color: #22c55e; opacity: .7; }
-.kds-item { border-left: 3px solid transparent; padding: 4px 8px; margin: 2px 0; border-radius: 4px; font-size: .9rem; }
-.kds-item.entrada { border-left-color: #3b82f6; background: rgba(59,130,246,.05); }
-.kds-item.fuerte { border-left-color: #eab308; background: rgba(234,179,8,.05); }
-.kds-item.postre { border-left-color: #ec4899; background: rgba(236,72,153,.05); }
-.kds-item.bebida { border-left-color: #06b6d4; background: rgba(6,182,212,.05); }
-@keyframes kds-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); } 50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); } }
-.kds-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
-.kds-btn-group .btn { font-size: .7rem; padding: 2px 8px; }
+    .kds-card.urgent { border-left-color: #ef4444; animation: kds-pulse 2s infinite; }
+    .kds-card.done { border-left-color: #22c55e; opacity: .7; }
+    .kds-item { border-left: 3px solid transparent; padding: 4px 8px; margin: 2px 0; border-radius: 4px; font-size: .9rem; }
+    .kds-item.entrada { border-left-color: #3b82f6; background: rgba(59,130,246,.05); }
+    .kds-item.fuerte { border-left-color: #eab308; background: rgba(234,179,8,.05); }
+    .kds-item.postre { border-left-color: #ec4899; background: rgba(236,72,153,.05); }
+    .kds-item.bebida { border-left-color: #06b6d4; background: rgba(6,182,212,.05); }
+    @keyframes kds-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); } 50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); } }
+    .kds-btn-group { display: flex; gap: 4px; flex-wrap: wrap; }
+    .kds-btn-group .btn { font-size: .7rem; padding: 2px 8px; }
 </style>
 @endpush
 @section('content')
-<div class="container-fluid py-3 px-4">
-    <div class="premium-header">
+<div class="container-fluid py-3 px-4 premium-page">
+    <div class="premium-header mb-3">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
         <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
             <div class="d-flex align-items-center gap-3">
-                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                    <i class="bi bi-egg-fried fs-3 text-white"></i>
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-cup-straw"></i>
                 </div>
                 <div>
                     <h2 class="fw-bold mb-0 text-white">Pantalla de Cocina</h2>
@@ -142,7 +126,8 @@ function cargarKds() {
 
                 return `
                 <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 kds-card ${tienePendientes ? 'urgent' : todosListos ? 'done' : ''}">
+                    <div class="premium-card h-100 kds-card ${tienePendientes ? 'urgent' : todosListos ? 'done' : ''}">
+                        <div class="card-accent green"></div>
                         <div class="card-header bg-white rounded-top-4 border-0 d-flex justify-content-between align-items-center pt-3 px-3 pb-2">
                             <div>
                                 <h5 class="fw-bold mb-0">${o.mesa}</h5>

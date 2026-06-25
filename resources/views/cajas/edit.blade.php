@@ -3,26 +3,11 @@
 @section('title', 'Editar Caja')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
     .premium-header {
-        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
-        border-radius: 1rem;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-    .premium-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
     }
     .sticky-save-bar {
         position: fixed;
@@ -30,7 +15,7 @@
         left: var(--sidebar-width, 280px);
         right: 0;
         background: #fff;
-        border-top: 2px solid #0891b2;
+        border-top: 2px solid #f59e0b;
         padding: 0.75rem 1.5rem;
         z-index: 1050;
         box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
@@ -41,7 +26,7 @@
     }
     body.dark-mode .sticky-save-bar {
         background: #0f172a;
-        border-top-color: #22d3ee;
+        border-top-color: #f59e0b;
     }
     @media (max-width: 991.98px) {
         .sticky-save-bar { left: 0; }

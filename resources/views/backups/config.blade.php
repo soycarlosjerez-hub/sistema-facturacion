@@ -3,65 +3,59 @@
 @section('title', 'Config. Backups')
 
 @push('styles')
-<style>
-.premium-header {
-    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
-    border-radius: 1rem; padding: 2rem; color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(2,132,199,0.4);
-    position: relative; overflow: hidden;
-}
-.premium-header::after {
-    content: ''; position: absolute; top: -50%; right: -20%;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-</style>
+@include('partials.premium-ui')
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-gear text-secondary me-2"></i>Configuración de Backups</h2>
-            <p class="text-muted mb-0">Información del sistema de respaldo</p>
+<div class="container-fluid px-4 py-3 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-database"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Configuración de Backups</h4>
+                    <small class="text-white opacity-75">Información del sistema de respaldo</small>
+                </div>
+            </div>
+            <a href="{{ route('backups.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
         </div>
-        <a href="{{ route('backups.index') }}" class="btn btn-outline-light rounded-pill">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>Información del Sistema</h5>
+            <div class="premium-card h-100" style="animation-delay:.1s;">
+                <div class="card-accent red"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-database icon-red"></i>
+                    Información del Sistema
                 </div>
-                <div class="card-body p-4">
-                    <div class="row mb-3">
-                        <div class="col-md-5 text-muted small fw-semibold">Directorio de backups</div>
-                        <div class="col-md-7"><code class="small">{{ $backupDir }}</code></div>
+                <div class="card-body pt-0">
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Directorio de backups</div>
+                        <div class="premium-detail-value"><code class="small">{{ $backupDir }}</code></div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-5 text-muted small fw-semibold">Ruta mysqldump</div>
-                        <div class="col-md-7"><code class="small">{{ $mysqldumpPath }}</code></div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Ruta mysqldump</div>
+                        <div class="premium-detail-value"><code class="small">{{ $mysqldumpPath }}</code></div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-5 text-muted small fw-semibold">Base de datos</div>
-                        <div class="col-md-7"><code>{{ config('database.connections.mysql.database') }}</code></div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Base de datos</div>
+                        <div class="premium-detail-value"><code>{{ config('database.connections.mysql.database') }}</code></div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-5 text-muted small fw-semibold">Total backups</div>
-                        <div class="col-md-7 fw-semibold">{{ $backupCount }}</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Total backups</div>
+                        <div class="premium-detail-value fw-semibold">{{ $backupCount }}</div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-5 text-muted small fw-semibold">Espacio total usado</div>
-                        <div class="col-md-7 fw-semibold">
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Espacio total usado</div>
+                        <div class="premium-detail-value fw-semibold">
                             @php
                                 $bytes = $totalSize;
                                 $units = ['B','KB','MB','GB'];
@@ -71,10 +65,9 @@
                             {{ round($bytes, 2) }} {{ $units[$i] }}
                         </div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-5 text-muted small fw-semibold">Último backup</div>
-                        <div class="col-md-7">
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Último backup</div>
+                        <div class="premium-detail-value">
                             @if($lastBackup)
                                 <span>{{ $lastBackup->created_at->format('d/m/Y h:i A') }}</span>
                                 <br><small class="text-muted">{{ $lastBackup->filename }}</small>
@@ -83,21 +76,22 @@
                             @endif
                         </div>
                     </div>
-                    <hr class="my-2">
-                    <div class="row mb-3">
-                        <div class="col-md-5 text-muted small fw-semibold">Retención automática</div>
-                        <div class="col-md-7">30 días</div>
+                    <div class="premium-detail-row">
+                        <div class="premium-detail-label">Retención automática</div>
+                        <div class="premium-detail-value">30 días</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-clock me-2"></i>Backup Automático (Cron)</h5>
+            <div class="premium-card mb-4" style="animation-delay:.15s;">
+                <div class="card-accent red"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-clock icon-red"></i>
+                    Backup Automático (Cron)
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body pt-0">
                     <p class="text-muted small">Para activar backups automáticos diarios, agrega esta tarea al cron del servidor:</p>
                     <div class="bg-dark text-white rounded-3 p-3 mb-3">
                         <code class="small" style="color:#a5f3fc;">
@@ -111,11 +105,13 @@
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-question-circle me-2"></i>Comandos Artisan</h5>
+            <div class="premium-card" style="animation-delay:.2s;">
+                <div class="card-accent red"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-question-circle icon-red"></i>
+                    Comandos Artisan
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body pt-0">
                     <div class="mb-3">
                         <label class="small fw-semibold text-muted d-block mb-1">Backup manual:</label>
                         <code class="small">php artisan backup:run --type=manual</code>

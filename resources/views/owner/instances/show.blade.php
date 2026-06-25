@@ -1,92 +1,106 @@
 @extends('layouts.app')
 @section('title', $instance->nombre)
+
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-building text-primary me-2"></i>{{ $instance->nombre }}
-                @if(!$instance->activo)
-                    <span class="badge bg-secondary rounded-pill px-3 ms-2" style="font-size:.6rem;">Inactiva</span>
-                @elseif($instance->bloqueado)
-                    <span class="badge bg-danger rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-lock-fill me-1"></i>Bloqueada</span>
-                @elseif($instance->estaAlDia())
-                    <span class="badge bg-success rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
-                @else
-                    <span class="badge bg-warning text-dark rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es) atrasado</span>
-                @endif
-            </h2>
-            <p class="text-muted mb-0">{{ $instance->businessType?->nombre ?? 'Sin tipo' }} &middot; {{ $instance->slug }}</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('owner.instances.edit', $instance) }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-pencil me-2"></i>Editar
-            </a>
-            <a href="{{ route('owner.instances.config', $instance) }}" class="btn btn-warning rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-gear me-2"></i>Configuraci&oacute;n
-            </a>
-            <a href="{{ route('owner.instances.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">
+                        {{ $instance->nombre }}
+                        @if(!$instance->activo)
+                            <span class="badge bg-secondary rounded-pill px-3 ms-2" style="font-size:.6rem;">Inactiva</span>
+                        @elseif($instance->bloqueado)
+                            <span class="badge bg-danger rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-lock-fill me-1"></i>Bloqueada</span>
+                        @elseif($instance->estaAlDia())
+                            <span class="badge bg-success rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
+                        @else
+                            <span class="badge bg-warning text-dark rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es) atrasado</span>
+                        @endif
+                    </h2>
+                    <p class="mb-0 opacity-75">{{ $instance->businessType?->nombre ?? 'Sin tipo' }} &middot; {{ $instance->slug }}</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('owner.instances.edit', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-pencil me-2"></i>Editar
+                </a>
+                <a href="{{ route('owner.instances.config', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-gear me-2"></i>Configuraci&oacute;n
+                </a>
+                <a href="{{ route('owner.instances.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-people text-primary fs-5"></i>
                         </div>
                         <div>
-                            <small class="text-muted d-block fw-bold text-uppercase" style="font-size:.65rem;letter-spacing:.5px;">Usuarios</small>
-                            <h3 class="fw-bold mb-0">{{ $instance->users->count() }}</h3>
+                            <small class="stat-label d-block">Usuarios</small>
+                            <h3 class="stat-value mb-0">{{ $instance->users->count() }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-tag fs-5 text-{{ $instance->businessType?->color ?? 'secondary' }}"></i>
                         </div>
                         <div>
-                            <small class="text-muted d-block fw-bold text-uppercase" style="font-size:.65rem;letter-spacing:.5px;">Tipo</small>
-                            <h3 class="fw-bold mb-0" style="font-size:.9rem;">{{ $instance->businessType?->nombre ?? '—' }}</h3>
+                            <small class="stat-label d-block">Tipo</small>
+                            <h3 class="stat-value mb-0" style="font-size:.9rem;">{{ $instance->businessType?->nombre ?? '—' }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-currency-dollar text-success fs-5"></i>
                         </div>
                         <div>
-                            <small class="text-muted d-block fw-bold text-uppercase" style="font-size:.65rem;letter-spacing:.5px;">Costo Mensual</small>
-                            <h3 class="fw-bold mb-0" style="font-size:.9rem;">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</h3>
+                            <small class="stat-label d-block">Costo Mensual</small>
+                            <h3 class="stat-value mb-0" style="font-size:.9rem;">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-calendar text-warning fs-5"></i>
                         </div>
                         <div>
-                            <small class="text-muted d-block fw-bold text-uppercase" style="font-size:.65rem;letter-spacing:.5px;">Vencimiento</small>
-                            <h3 class="fw-bold mb-0" style="font-size:.85rem;">{{ $instance->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha' }}</h3>
+                            <small class="stat-label d-block">Vencimiento</small>
+                            <h3 class="stat-value mb-0" style="font-size:.85rem;">{{ $instance->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha' }}</h3>
                         </div>
                     </div>
                 </div>
@@ -96,7 +110,8 @@
 
     <div class="row g-3 mb-4">
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent blue"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Informaci&oacute;n General</h5>
                 </div>
@@ -125,7 +140,8 @@
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent red"></div>
                 <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold mb-0"><i class="bi bi-shield-lock text-danger me-2"></i>Bloqueo de Instancia</h5>
                     @if($instance->bloqueado)
@@ -161,7 +177,8 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="premium-card mb-4">
+        <div class="card-accent green"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-cash-coin text-success me-2"></i>Historial de Pagos</h5>
             <div class="d-flex gap-2">
@@ -237,7 +254,8 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="premium-card mb-4">
+        <div class="card-accent red"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0">
                 <i class="bi bi-exclamation-triangle text-danger me-2"></i>Errores Recientes
@@ -287,7 +305,8 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="premium-card mb-4">
+        <div class="card-accent purple"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-person-badge text-info me-2"></i>Roles de Instancia</h5>
             <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-sm btn-info rounded-pill fw-bold text-white">
@@ -309,7 +328,7 @@
                         <small class="text-muted d-block">{{ $role->users_count }} usuario(s) &middot; {{ $role->visibleModules()->count() }} módulo(s)</small>
                     </div>
                 </div>
-                <a href="{{ route('owner.instances.roles.edit', [$instance, $role]) }}" class="btn btn-sm btn-outline-info rounded-pill" title="Editar módulos">
+                <a href="{{ route('owner.instances.roles.edit', [$instance, $role]) }}" class="premium-btn-edit" title="Editar módulos">
                     <i class="bi bi-pencil"></i>
                 </a>
             </div>
@@ -325,7 +344,8 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent blue"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Usuarios Asignados</h5>
             <div class="d-flex gap-2 align-items-center">
@@ -351,12 +371,12 @@
                     @foreach($user->roles as $role)
                         <span class="badge bg-info bg-opacity-10 text-info rounded-pill me-1">{{ $role->name }}</span>
                     @endforeach
-                    <a href="{{ route('owner.instances.users.edit', [$instance, $user]) }}" class="btn btn-sm btn-outline-warning rounded-pill ms-2" title="Editar">
+                    <a href="{{ route('owner.instances.users.edit', [$instance, $user]) }}" class="premium-btn-edit ms-2" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </a>
                     <form method="POST" action="{{ route('owner.instances.users.destroy', [$instance, $user]) }}" onsubmit="return confirm('&iquest;Eliminar a {{ $user->name }} de {{ $instance->nombre }}? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Eliminar">
+                        <button type="submit" class="premium-btn-delete" title="Eliminar">
                             <i class="bi bi-trash"></i>
                         </button>
                     </form>
@@ -373,5 +393,6 @@
             @endforelse
         </div>
     </div>
+</div>
 </div>
 @endsection

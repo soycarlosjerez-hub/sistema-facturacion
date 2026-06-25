@@ -1,45 +1,55 @@
 @extends('layouts.app')
+
 @section('title', 'Editar Procesador de Pago')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 280px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid #8b5cf6;
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    .sticky-save-bar .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #a78bfa;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
+.premium-header {
+    background: linear-gradient(135deg, #f59e0b, #f97316, #f59e0b, #d97706);
+    background-size: 300% 300%;
+    animation: premiumGradientShift 6s ease infinite;
+}
+.premium-header::before {
+    background:
+        radial-gradient(circle at 30% 40%, rgba(255,255,255,.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,.07) 0%, transparent 50%);
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-credit-card text-warning me-2"></i>Editar Procesador</h2>
-            <p class="text-muted mb-0">{{ $paymentProcessor->nombre }}</p>
+<div class="container-fluid px-4 py-3 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <div>
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                        <i class="bi bi-pencil me-1"></i>EDITANDO
+                    </span>
+                    <h4 class="fw-bold mb-1 text-white">Editar Procesador</h4>
+                    <small class="text-white opacity-75">{{ $paymentProcessor->nombre }}</small>
+                </div>
+            </div>
+            <a href="{{ route('payment-processors.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
         </div>
-        <a href="{{ route('payment-processors.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-arrow-left me-1"></i> Volver</a>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body p-4">
+    <div class="premium-card overflow-hidden mb-5" style="animation-delay:.1s;">
+        <div class="card-accent amber"></div>
+        <div class="premium-card-title">
+            <i class="bi bi-credit-card icon-amber"></i>
+            Configuración del Procesador
+        </div>
+        <div class="card-body pt-0">
             <form action="{{ route('payment-processors.update', $paymentProcessor) }}" method="POST" id="instanceForm">
                 @csrf @method('PUT')
                 <div class="row g-3">
@@ -125,14 +135,15 @@
     </div>
 </div>
 
-<div class="sticky-save-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small d-none d-md-inline">
-            <i class="bi bi-info-circle me-1"></i> Editando procesador: {{ $paymentProcessor->nombre }}
-        </span>
+        <div class="d-none d-md-flex align-items-center gap-2">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span class="fw-semibold d-none d-sm-inline">Editando procesador: {{ $paymentProcessor->nombre }}</span>
+        </div>
         <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('payment-processors.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+            <a href="{{ route('payment-processors.index') }}" class="btn btn-cancel">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-save">
                 <i class="bi bi-save me-2"></i>Guardar Cambios
             </button>
         </div>

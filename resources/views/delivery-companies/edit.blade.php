@@ -3,34 +3,31 @@
 @section('title', 'Editar Empresa de Delivery')
 
 @push('styles')
-<style>
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 280px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid #f97316;
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    .sticky-save-bar .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #fb923c;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
-</style>
+@include('partials.premium-ui')
 @endpush
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Editar Empresa de Delivery</h2>
+                    <p class="text-white text-opacity-75 mb-0">{{ $company->nombre }}</p>
+                </div>
+            </div>
+            <a href="{{ route('delivery-companies.index') }}" class="btn btn-light rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-lg-6">
 
@@ -44,20 +41,8 @@
                 </div>
             @endif
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1">
-                        <i class="bi bi-pencil-square text-warning me-2"></i>
-                        Editar Empresa de Delivery
-                    </h2>
-                    <p class="text-muted mb-0">{{ $company->nombre }}</p>
-                </div>
-                <a href="{{ route('delivery-companies.index') }}" class="btn btn-outline-secondary rounded-pill">
-                    <i class="bi bi-arrow-left me-1"></i> Volver
-                </a>
-            </div>
-
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent green"></div>
                 <div class="card-body p-4">
                     <form method="POST" action="{{ route('delivery-companies.update', $company) }}" id="instanceForm">
                         @csrf @method('PUT')
@@ -94,14 +79,14 @@
     </div>
 </div>
 
-<div class="sticky-save-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
         <span class="text-muted small d-none d-md-inline">
             <i class="bi bi-info-circle me-1"></i> Editando empresa: {{ $company->nombre }}
         </span>
         <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('delivery-companies.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+            <a href="{{ route('delivery-companies.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold shadow-sm">
                 <i class="bi bi-save me-2"></i>Guardar Cambios
             </button>
         </div>

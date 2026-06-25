@@ -1,24 +1,38 @@
 @extends('layouts.app')
 @section('title', 'Citas / Turnos')
+@push('styles')
+@include('partials.premium-ui')
+@endpush
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-calendar-event text-primary me-2"></i>Citas / Turnos</h2>
-            <p class="text-muted mb-0">Programación de servicios</p>
-        </div>
-        <div class="d-flex gap-2">
-            <form method="GET" class="d-flex gap-2">
-                <input type="date" name="fecha" class="form-control rounded-3" value="{{ $fecha }}">
-                <button class="btn btn-primary rounded-pill px-3">Ver</button>
-            </form>
-            <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#citaModal">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Cita
-            </button>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-droplet"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Citas / Turnos</h2>
+                    <p class="text-white text-opacity-75 mb-0">Programación de servicios</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <form method="GET" class="d-flex gap-2">
+                    <input type="date" name="fecha" class="form-control rounded-3" value="{{ $fecha }}">
+                    <button class="btn btn-light rounded-pill px-3 fw-bold">Ver</button>
+                </form>
+                <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#citaModal">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Cita
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent green"></div>
         <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
             <h6 class="fw-bold mb-0">Citas del {{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}</h6>
         </div>

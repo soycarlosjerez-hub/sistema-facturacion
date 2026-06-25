@@ -1,15 +1,32 @@
 @extends('layouts.app')
 @section('title', 'Servicios de Lavado')
+@push('styles')
+@include('partials.premium-ui')
+@endpush
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold"><i class="bi bi-card-checklist text-primary me-2"></i>Servicios de Lavado</h2>
-        <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#servicioModal">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo Servicio
-        </button>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-droplet"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Servicios de Lavado</h2>
+                    <p class="text-white text-opacity-75 mb-0">Catálogo de servicios disponibles</p>
+                </div>
+            </div>
+            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#servicioModal">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo Servicio
+            </button>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent green"></div>
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="table-light small">
@@ -37,10 +54,10 @@
                             </span>
                         </td>
                         <td class="text-end">
-                            <a href="#" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-toggle="modal" data-bs-target="#editModal{{ $s->id }}">Editar</a>
+                            <a href="#" class="premium-btn-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $s->id }}">Editar</a>
                             <form action="{{ route('lavadero.servicios.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger rounded-pill">Eliminar</button>
+                                <button class="premium-btn-delete">Eliminar</button>
                             </form>
                         </td>
                     </tr>

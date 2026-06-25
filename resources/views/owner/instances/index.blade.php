@@ -1,19 +1,34 @@
 @extends('layouts.app')
 @section('title', 'Instancias de Negocio')
+
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-building text-primary me-2"></i>Instancias de Negocio</h2>
-            <p class="text-muted mb-0">Gesti&oacute;n de todas las instancias multi-tenant.</p>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Instancias de Negocio</h2>
+                    <p class="mb-0 opacity-75">Gesti&oacute;n de todas las instancias multi-tenant.</p>
+                </div>
+            </div>
+            <a href="{{ route('owner.instances.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <i class="bi bi-plus-lg me-2"></i>Nueva Instancia
+            </a>
         </div>
-        <a href="{{ route('owner.instances.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-plus-lg me-2"></i>Nueva Instancia
-        </a>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-        <div class="card-body p-3 bg-light bg-opacity-50">
+    <div class="premium-card mb-4">
+        <div class="card-accent blue"></div>
+        <div class="card-body p-3">
             <form method="GET" action="{{ route('owner.instances.index') }}" class="row g-2 align-items-center">
                 <div class="col-lg-4">
                     <div class="input-group input-group-merge">
@@ -47,7 +62,8 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent blue"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -107,7 +123,7 @@
                             @if($instance->activo)
                             <form action="{{ route('owner.instances.destroy', $instance) }}" method="POST" class="d-inline" onsubmit="return confirm('Desactivar la instancia {{ $instance->nombre }}?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger rounded-pill" title="Desactivar"><i class="bi bi-power"></i></button>
+                                <button class="premium-btn-delete" title="Desactivar"><i class="bi bi-power"></i></button>
                             </form>
                             @endif
                         </td>
@@ -126,5 +142,6 @@
         </div>
         @endif
     </div>
+</div>
 </div>
 @endsection

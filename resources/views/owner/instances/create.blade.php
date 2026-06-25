@@ -2,59 +2,23 @@
 @section('title', 'Nueva Instancia')
 
 @push('styles')
-<style>
-.premium-header {
-    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-    border-radius: 1rem;
-    padding: 2rem;
-    color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.4);
-    position: relative;
-    overflow: hidden;
-}
-.premium-header::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -20%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-.sticky-save-bar {
-    position: fixed;
-    bottom: 0;
-    left: var(--sidebar-width, 280px);
-    right: 0;
-    background: #fff;
-    border-top: 2px solid #0ea5e9;
-    padding: 0.75rem 1.5rem;
-    z-index: 1050;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-}
-.sticky-save-bar .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-}
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #38bdf8;
-}
-@media (max-width: 991.98px) {
-    .sticky-save-bar { left: 0; }
-}
-</style>
+@include('partials.premium-ui')
 @endpush
 
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="premium-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h3 class="fw-bold mb-1"><i class="bi bi-plus-circle me-2"></i>Nueva Instancia</h3>
-                <p class="mb-0 opacity-75">Crear una nueva instancia de negocio multi-tenant</p>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">Nueva Instancia</h3>
+                    <p class="mb-0 opacity-75">Crear una nueva instancia de negocio multi-tenant</p>
+                </div>
             </div>
             <a href="{{ route('owner.instances.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
                 <i class="bi bi-arrow-left me-2"></i>Volver
@@ -62,7 +26,8 @@ body.dark-mode .sticky-save-bar {
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+    <div class="premium-card" style="background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+        <div class="card-accent blue"></div>
         <div class="card-body p-4">
             <h5 class="fw-bold mb-4"><i class="bi bi-info-circle me-2"></i>Información de la Instancia</h5>
             <form method="POST" action="{{ route('owner.instances.store') }}" id="instanceForm">
@@ -174,13 +139,14 @@ body.dark-mode .sticky-save-bar {
     </div>
 </div>
 
-<div class="sticky-save-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
         <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Creando nueva instancia</span>
-        <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+        <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold shadow-sm">
             <i class="bi bi-save me-2"></i>Crear Instancia
         </button>
     </div>
+</div>
 </div>
 @endsection
 

@@ -732,6 +732,8 @@
     </div>
 </div>
 
+@push('styles')
+@include('partials.premium-ui')
 <style>
 /* ============ Premium Cobrar Modal ============ */
 @keyframes cobrarGradientShift {
@@ -1246,6 +1248,7 @@
     font-size: 1rem;
 }
 </style>
+@endpush
 
 <script>
 let mesaActual = null;

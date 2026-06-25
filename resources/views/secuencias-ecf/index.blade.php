@@ -2,89 +2,111 @@
 
 @section('title', 'Secuencias de e-CF')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
+body.dark-mode .card { background: rgba(15,23,42,.8); }
+body.dark-mode .dropdown-menu { background: #1e293b; border-color: #334155; }
+body.dark-mode .dropdown-item { color: #94a3b8; }
+body.dark-mode .dropdown-item:hover { background: #334155; color: #f1f5f9; }
+body.dark-mode .bg-light { background: rgba(30,41,59,.6) !important; }
+body.dark-mode .progress { background: #1e293b !important; }
+body.dark-mode .alert-success { background: rgba(16,185,129,.15); color: #6ee7b7; }
+body.dark-mode .alert-warning { background: rgba(245,158,11,.15); color: #fcd34d; }
+body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; }
+body.dark-mode .premium-card .form-control:focus,
+body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="row align-items-center mb-4">
-        <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none">e-CF</a></li>
-                    <li class="breadcrumb-item active">Secuencias</li>
-                </ol>
-            </nav>
-            <h3 class="fw-bold mb-0"><i class="bi bi-shield-check me-2"></i>Secuencias de Comprobantes Electrónicos</h3>
-            <p class="text-muted mb-0">Numeración autorizada por la DGII para emisión de e-CF</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-list-ol"></i>
+            </div>
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
+                        <li class="breadcrumb-item active text-white">Secuencias</li>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold mb-0">Secuencias de Comprobantes Electrónicos</h3>
+                <p class="mb-0 opacity-75">Numeración autorizada por la DGII para emisión de e-CF</p>
+            </div>
         </div>
-        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <div class="d-flex gap-2">
             <a href="{{ route('ecf.index') }}" class="btn btn-light rounded-pill px-3">
                 <i class="bi bi-receipt me-1"></i>Ver Documentos
             </a>
-            <a href="{{ route('secuencias-ecf.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <a href="{{ route('secuencias-ecf.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm text-dark fw-semibold">
                 <i class="bi bi-plus-lg me-1"></i>Nueva Secuencia
             </a>
         </div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
     </div>
-
-    <style>
-        .icon-bubble { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; }
-    </style>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-primary bg-opacity-10 text-primary">
+                        <div class="icon-bubble bg-primary bg-opacity-10 text-primary" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-shield-check"></i>
                         </div>
                         <div>
-                            <small class="text-muted text-uppercase fw-bold" style="font-size:0.7rem;">Total Secuencias</small>
-                            <h3 class="fw-bold mb-0 mt-1">{{ $stats['total'] }}</h3>
+                            <div class="stat-label">Total Secuencias</div>
+                            <div class="stat-value">{{ $stats['total'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-success bg-opacity-10 text-success">
+                        <div class="icon-bubble bg-success bg-opacity-10 text-success" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-check-circle"></i>
                         </div>
                         <div>
-                            <small class="text-muted text-uppercase fw-bold" style="font-size:0.7rem;">Activas</small>
-                            <h3 class="fw-bold mb-0 mt-1">{{ $stats['activas'] }}</h3>
+                            <div class="stat-label">Activas</div>
+                            <div class="stat-value">{{ $stats['activas'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-warning bg-opacity-10 text-warning">
+                        <div class="icon-bubble bg-warning bg-opacity-10 text-warning" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-clock-history"></i>
                         </div>
                         <div>
-                            <small class="text-muted text-uppercase fw-bold" style="font-size:0.7rem;">Vencidas</small>
-                            <h3 class="fw-bold mb-0 mt-1">{{ $stats['vencidas'] }}</h3>
+                            <div class="stat-label">Vencidas</div>
+                            <div class="stat-value">{{ $stats['vencidas'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-danger bg-opacity-10 text-danger">
+                        <div class="icon-bubble bg-danger bg-opacity-10 text-danger" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-exclamation-triangle"></i>
                         </div>
                         <div>
-                            <small class="text-muted text-uppercase fw-bold" style="font-size:0.7rem;">Agotadas</small>
-                            <h3 class="fw-bold mb-0 mt-1">{{ $stats['agotadas'] }}</h3>
+                            <div class="stat-label">Agotadas</div>
+                            <div class="stat-value">{{ $stats['agotadas'] }}</div>
                         </div>
                     </div>
                 </div>
@@ -95,9 +117,9 @@
     <div class="row g-3">
         @forelse($secuencias as $sec)
         <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden position-relative
+            <div class="premium-card h-100 overflow-hidden position-relative
                 {{ $sec->vencida() ? 'border-top border-4 border-warning' : ($sec->agotada() ? 'border-top border-4 border-danger' : 'border-top border-4 border-primary') }}">
-
+                <div class="card-accent amber"></div>
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>

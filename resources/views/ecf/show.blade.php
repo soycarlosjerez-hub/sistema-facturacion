@@ -2,6 +2,32 @@
 
 @section('title', 'e-CF ' . $ecf->encf)
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
+body.dark-mode .card { background: rgba(15,23,42,.8); }
+body.dark-mode .table { color: #cbd5e1; }
+body.dark-mode .table-light { background: rgba(30,41,59,.6); }
+body.dark-mode .table-light th { color: #94a3b8; border-color: #334155; }
+body.dark-mode .table td { border-color: #1e293b; }
+body.dark-mode .bg-light { background: rgba(30,41,59,.6) !important; }
+body.dark-mode .text-dark { color: #f1f5f9 !important; }
+body.dark-mode .alert-success { background: rgba(16,185,129,.15); color: #6ee7b7; }
+body.dark-mode .alert-warning { background: rgba(245,158,11,.15); color: #fcd34d; }
+body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; }
+body.dark-mode .alert-info { background: rgba(59,130,246,.15); color: #93c5fd; }
+body.dark-mode .premium-card .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
+body.dark-mode .premium-card .btn-success { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16,185,129,.3); }
+body.dark-mode .premium-card .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 14px rgba(239,68,68,.3); }
+body.dark-mode .premium-card .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .premium-card .form-control:focus,
+body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2rem .4rem; border-radius: .25rem; }
+</style>
+@endpush
+
 @section('content')
 @php
     $estadoInfo = $ecf->estado_info;
@@ -9,18 +35,23 @@
     $cliente = $venta?->cliente;
 @endphp
 
-<div class="container-fluid px-4 animate__animated animate__fadeIn">
-    <div class="row align-items-center mb-4">
-        <div class="col-md-7">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none">e-CF</a></li>
-                    <li class="breadcrumb-item active">{{ $ecf->encf }}</li>
-                </ol>
-            </nav>
-            <h3 class="fw-bold mb-0">Detalle del Comprobante Electrónico</h3>
+<div class="container-fluid px-4 premium-page animate__animated animate__fadeIn">
+    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="premium-avatar-circle">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
+                        <li class="breadcrumb-item active text-white">{{ $ecf->encf }}</li>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold mb-0">Detalle del Comprobante Electrónico</h3>
+            </div>
         </div>
-        <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
+        <div class="d-flex gap-2 flex-wrap justify-content-end">
             <a href="{{ route('ventas.show', $ecf->venta_id) }}" class="btn btn-light rounded-pill px-3">
                 <i class="bi bi-receipt me-1"></i>Ver Venta
             </a>
@@ -33,6 +64,9 @@
             </a>
             @endif
         </div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
     </div>
 
     @if(session('success'))
@@ -47,7 +81,8 @@
 
     <div class="row g-3">
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent amber"></div>
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <small class="text-muted text-uppercase fw-bold" style="font-size:0.7rem;">Comprobante</small>
@@ -170,10 +205,9 @@
         </div>
 
         <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4 mb-3">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-person me-2"></i>Datos del Cliente</h6>
-                </div>
+            <div class="premium-card mb-3">
+                <div class="card-accent amber"></div>
+                <div class="premium-card-title"><i class="bi bi-person icon-amber"></i> Datos del Cliente</div>
                 <div class="card-body p-4">
                     @if($cliente)
                     <div class="row g-2 small">
@@ -189,10 +223,9 @@
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4 mb-3">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-cash-stack me-2"></i>Totales</h6>
-                </div>
+            <div class="premium-card mb-3">
+                <div class="card-accent amber"></div>
+                <div class="premium-card-title"><i class="bi bi-cash-stack icon-amber"></i> Totales</div>
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between mb-1"><span class="text-muted">Monto Gravado</span><span>RD$ {{ number_format($ecf->monto_gravado_total, 2) }}</span></div>
                     <div class="d-flex justify-content-between mb-1"><span class="text-muted">Monto Exento</span><span>RD$ {{ number_format($ecf->monto_exento_total, 2) }}</span></div>
@@ -201,10 +234,9 @@
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4 mb-3">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-list-ul me-2"></i>Items del Comprobante</h6>
-                </div>
+            <div class="premium-card mb-3">
+                <div class="card-accent amber"></div>
+                <div class="premium-card-title"><i class="bi bi-list-ul icon-amber"></i> Items del Comprobante</div>
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
@@ -241,10 +273,9 @@
             @endif
 
             @if($ecf->logs->count())
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-transparent border-0 pt-3 pb-0">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-list-task me-2"></i>Historial de Operaciones</h6>
-                </div>
+            <div class="premium-card">
+                <div class="card-accent amber"></div>
+                <div class="premium-card-title"><i class="bi bi-list-task icon-amber"></i> Historial de Operaciones</div>
                 <div class="table-responsive">
                     <table class="table table-sm mb-0">
                         <thead class="table-light">

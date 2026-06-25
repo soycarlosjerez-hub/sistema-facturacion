@@ -1,18 +1,32 @@
 @extends('layouts.app')
 @section('title', 'Lavadores')
+@push('styles')
+@include('partials.premium-ui')
+@endpush
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-people text-primary me-2"></i>Lavadores</h2>
-            <p class="text-muted mb-0">Gestión de empleados del lavadero</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-droplet"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Lavadores</h2>
+                    <p class="text-white text-opacity-75 mb-0">Gestión de empleados del lavadero</p>
+                </div>
+            </div>
+            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#lavadorModal">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo Lavador
+            </button>
         </div>
-        <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#lavadorModal">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo Lavador
-        </button>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent green"></div>
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="table-light small">
@@ -44,12 +58,12 @@
                             </span>
                         </td>
                         <td class="text-end">
-                            <button class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-toggle="modal" data-bs-target="#editModal{{ $l->id }}">
+                            <button class="premium-btn-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $l->id }}">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <form action="{{ route('lavadero.lavadores.destroy', $l) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este lavador?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger rounded-pill"><i class="bi bi-trash"></i></button>
+                                <button class="premium-btn-delete"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
                     </tr>

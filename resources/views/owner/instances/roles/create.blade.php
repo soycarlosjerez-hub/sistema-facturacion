@@ -17,30 +17,36 @@
     $selectedMods = old('modulos', []);
 @endphp
 
+@push('styles')
+@include('partials.premium-ui')
 @include('roles._styles')
+@endpush
 
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="page-header-gradient d-flex justify-content-between align-items-center flex-wrap gap-3"
-         style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); box-shadow: 0 10px 30px rgba(34,197,94,0.25);">
-        <div class="d-flex align-items-center gap-3" style="position: relative; z-index: 2;">
-            <div class="role-icon-lg" style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px);">
-                <i class="bi bi-plus-circle"></i>
-            </div>
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                        <i class="bi bi-plus-circle me-1"></i>NUEVO
-                    </span>
+    <div class="premium-header" style="margin-bottom: 2rem; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-shield"></i>
                 </div>
-                <h2 class="fw-bold mb-0">Nuevo Rol</h2>
-                <p class="mb-0 opacity-90 small">{{ $instance->nombre }}</p>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                            <i class="bi bi-plus-circle me-1"></i>NUEVO
+                        </span>
+                    </div>
+                    <h2 class="fw-bold mb-0">Nuevo Rol</h2>
+                    <p class="mb-0 opacity-75 small">{{ $instance->nombre }}</p>
+                </div>
             </div>
-        </div>
-        <div class="d-flex gap-2" style="position: relative; z-index: 2;">
-            <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i>Volver
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-light rounded-pill px-3 text-dark">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -53,7 +59,8 @@
 
         <div class="row g-4">
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 mb-3">
+                <div class="premium-card mb-3">
+                    <div class="card-accent purple"></div>
                     <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-tag text-primary me-2"></i>Nombre del Rol</h5>
                     </div>
@@ -68,7 +75,8 @@
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="premium-card">
+                    <div class="card-accent green"></div>
                     <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
                         <h6 class="fw-bold mb-0"><i class="bi bi-stars text-primary me-2"></i>Acciones Rápidas</h6>
                     </div>
@@ -96,7 +104,7 @@
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4 mt-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(79,70,229,0.05));">
+                <div class="premium-card mt-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(79,70,229,0.05));">
                     <div class="card-body p-3 text-center">
                         <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Módulos Seleccionados</div>
                         <div class="fs-1 fw-bold" id="modCount" style="color: #4f46e5;">0</div>
@@ -106,7 +114,8 @@
             </div>
 
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="premium-card">
+                    <div class="card-accent blue"></div>
                     <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h5 class="fw-bold mb-0"><i class="bi bi-grid text-primary me-2"></i>Módulos</h5>
@@ -158,40 +167,20 @@
     </form>
 </div>
 
-<div id="stickySaveBar" class="sticky-save-bar">
+<div id="stickySaveBar" class="premium-sticky-bar">
     <div class="d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2" id="saveBarLeft">
             <i class="bi bi-info-circle text-primary"></i>
             <span class="fw-semibold d-none d-sm-inline">Nuevo Rol de Instancia</span>
         </div>
         <div class="d-flex gap-2">
-            <button type="submit" form="roleForm" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+            <button type="submit" form="roleForm" class="btn btn-save rounded-pill px-4 fw-bold shadow-sm">
                 <i class="bi bi-check-lg me-1"></i>Crear Rol
             </button>
         </div>
     </div>
 </div>
-
-<style>
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 0px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid var(--bs-primary, #0d6efd);
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #38bdf8;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
-    }
-</style>
+</div>
 
 <script>
     const updateCount = () => {

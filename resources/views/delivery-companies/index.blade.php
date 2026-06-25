@@ -2,19 +2,28 @@
 
 @section('title', 'Empresas de Delivery')
 
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-truck text-warning me-2"></i>
-                Empresas de Delivery
-            </h2>
-            <p class="text-muted mb-0">Configuración de plataformas de delivery y sus comisiones</p>
-        </div>
-        <div>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Empresas de Delivery</h2>
+                    <p class="text-white text-opacity-75 mb-0">Configuración de plataformas de delivery y sus comisiones</p>
+                </div>
+            </div>
             @can('delivery-companies.create')
-            <a href="{{ route('delivery-companies.create') }}" class="btn btn-primary rounded-pill px-4">
+            <a href="{{ route('delivery-companies.create') }}" class="btn btn-light rounded-pill px-4 fw-bold">
                 <i class="bi bi-plus-lg me-1"></i> Nueva Empresa
             </a>
             @endcan
@@ -27,7 +36,8 @@
         </div>
     @endif
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="premium-card">
+        <div class="card-accent green"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -53,12 +63,12 @@
                             @endif
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('delivery-companies.edit', $company) }}" class="btn btn-sm btn-warning rounded-pill">
+                            <a href="{{ route('delivery-companies.edit', $company) }}" class="premium-btn-edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <form action="{{ route('delivery-companies.destroy', $company) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta empresa? Las ventas asociadas no se verán afectadas.')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-danger rounded-pill" type="submit">
+                                <button class="premium-btn-delete" type="submit">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>

@@ -1,63 +1,88 @@
 @extends('layouts.app')
 @section('title', 'Panel de Control - Dueño del Sistema')
+
+@push('styles')
+@include('partials.premium-ui')
+<style>
+.stat-card-icon {
+    width: 48px; height: 48px; border-radius: .75rem;
+    display: flex; align-items: center; justify-content: center;
+}
+</style>
+@endpush
+
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i>Panel de Control</h2>
-            <p class="text-muted mb-0">Resumen general de todas las instancias de negocio.</p>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Panel de Control</h2>
+                    <p class="mb-0 opacity-75">Resumen general de todas las instancias de negocio.</p>
+                </div>
+            </div>
+            <a href="{{ route('owner.instances.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <i class="bi bi-plus-lg me-2"></i>Nueva Instancia
+            </a>
         </div>
-        <a href="{{ route('owner.instances.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-plus-lg me-2"></i>Nueva Instancia
-        </a>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-2">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-3 text-center">
-                    <small class="text-muted d-block fw-bold text-uppercase" style="font-size:.6rem;letter-spacing:.5px;">Total</small>
-                    <h3 class="fw-bold mb-0 display-6">{{ $totalInstancias }}</h3>
+                    <small class="stat-label d-block">Total</small>
+                    <h3 class="stat-value mb-0">{{ $totalInstancias }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-success bg-opacity-10">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-3 text-center">
-                    <small class="text-success d-block fw-bold text-uppercase" style="font-size:.6rem;letter-spacing:.5px;">Al D&iacute;a</small>
-                    <h3 class="fw-bold mb-0 text-success display-6">{{ $instancias->filter(fn($i) => $i->activo && !$i->bloqueado && $i->estaAlDia())->count() }}</h3>
+                    <div class="stat-card-icon bg-success bg-opacity-10 text-success mx-auto mb-2"><i class="bi bi-check-circle fs-5"></i></div>
+                    <small class="stat-label d-block text-success">Al D&iacute;a</small>
+                    <h3 class="stat-value mb-0 text-success">{{ $instancias->filter(fn($i) => $i->activo && !$i->bloqueado && $i->estaAlDia())->count() }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-warning bg-opacity-10">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-3 text-center">
-                    <small class="text-warning d-block fw-bold text-uppercase" style="font-size:.6rem;letter-spacing:.5px;">Atrasadas</small>
-                    <h3 class="fw-bold mb-0 text-warning display-6">{{ $instanciasConAtraso->count() }}</h3>
+                    <div class="stat-card-icon bg-warning bg-opacity-10 text-warning mx-auto mb-2"><i class="bi bi-exclamation-triangle fs-5"></i></div>
+                    <small class="stat-label d-block text-warning">Atrasadas</small>
+                    <h3 class="stat-value mb-0 text-warning">{{ $instanciasConAtraso->count() }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-danger bg-opacity-10">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-3 text-center">
-                    <small class="text-danger d-block fw-bold text-uppercase" style="font-size:.6rem;letter-spacing:.5px;">Bloqueadas</small>
-                    <h3 class="fw-bold mb-0 text-danger display-6">{{ $bloqueadas }}</h3>
+                    <div class="stat-card-icon bg-danger bg-opacity-10 text-danger mx-auto mb-2"><i class="bi bi-lock-fill fs-5"></i></div>
+                    <small class="stat-label d-block text-danger">Bloqueadas</small>
+                    <h3 class="stat-value mb-0 text-danger">{{ $bloqueadas }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-info bg-opacity-10">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-3 text-center">
-                    <small class="text-info d-block fw-bold text-uppercase" style="font-size:.6rem;letter-spacing:.5px;">Por Vencer</small>
-                    <h3 class="fw-bold mb-0 text-info display-6">{{ $porVencer }}</h3>
+                    <div class="stat-card-icon bg-info bg-opacity-10 text-info mx-auto mb-2"><i class="bi bi-clock fs-5"></i></div>
+                    <small class="stat-label d-block text-info">Por Vencer</small>
+                    <h3 class="stat-value mb-0 text-info">{{ $porVencer }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-secondary bg-opacity-10">
+            <div class="premium-stat-card h-100">
                 <div class="card-body p-3 text-center">
-                    <small class="text-secondary d-block fw-bold text-uppercase" style="font-size:.6rem;letter-spacing:.5px;">Vencidas</small>
-                    <h3 class="fw-bold mb-0 text-secondary display-6">{{ $vencidas }}</h3>
+                    <div class="stat-card-icon bg-secondary bg-opacity-10 text-secondary mx-auto mb-2"><i class="bi bi-x-circle fs-5"></i></div>
+                    <small class="stat-label d-block text-secondary">Vencidas</small>
+                    <h3 class="stat-value mb-0 text-secondary">{{ $vencidas }}</h3>
                 </div>
             </div>
         </div>
@@ -65,7 +90,8 @@
 
     <div class="row g-3 mb-4">
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent purple"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart text-primary me-2"></i>Distribuci&oacute;n por Tipo</h5>
                 </div>
@@ -91,7 +117,8 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent blue"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Pr&oacute;ximos Vencimientos</h5>
                 </div>
@@ -114,7 +141,8 @@
             </div>
         </div>
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent green"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-cash-coin text-success me-2"></i>Resumen Financiero</h5>
                 </div>
@@ -146,7 +174,7 @@
     </div>
 
     @if($instanciasConAtraso->isNotEmpty())
-    <div class="card border-0 shadow-sm rounded-4 mb-4 border-start border-warning border-4">
+    <div class="premium-card mb-4" style="border-left: 4px solid #f59e0b !important;">
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0 text-warning"><i class="bi bi-clock-history me-2"></i>Instancias con Atraso en Pagos</h5>
             <span class="badge bg-warning rounded-pill">{{ $instanciasConAtraso->count() }}</span>
@@ -198,7 +226,8 @@
     </div>
     @endif
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="premium-card">
+        <div class="card-accent purple"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i>Todas las Instancias</h5>
             <a href="{{ route('owner.instances.index') }}" class="text-decoration-none small fw-bold">Ver todas</a>
@@ -268,5 +297,6 @@
             </table>
         </div>
     </div>
+</div>
 </div>
 @endsection

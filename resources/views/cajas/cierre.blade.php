@@ -3,26 +3,11 @@
 @section('title', 'Cierre de Caja')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
     .premium-header {
-        background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-        border-radius: 1rem;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-    .premium-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
     }
 </style>
 @endpush

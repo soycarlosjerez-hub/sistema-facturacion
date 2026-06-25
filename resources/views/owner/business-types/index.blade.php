@@ -1,26 +1,41 @@
 @extends('layouts.app')
 @section('title', 'Tipos de Negocio')
+
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-tags text-primary me-2"></i>Tipos de Negocio</h2>
-            <p class="text-muted mb-0">Gesti&oacute;n de tipos de negocio y sus m&oacute;dulos disponibles.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('owner.business-types.create') }}" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-plus-lg me-2"></i>Nuevo Tipo
-            </a>
-            <a href="{{ route('owner.dashboard') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-arrow-left me-2"></i>Volver al Panel
-            </a>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Tipos de Negocio</h2>
+                    <p class="mb-0 opacity-75">Gesti&oacute;n de tipos de negocio y sus m&oacute;dulos disponibles.</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('owner.business-types.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-plus-lg me-2"></i>Nuevo Tipo
+                </a>
+                <a href="{{ route('owner.dashboard') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Panel
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-3">
         @forelse($businessTypes as $type)
         <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent purple"></div>
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width:52px;height:52px;background-color:var(--bs-{{ $type->color ?? 'secondary' }});">
@@ -53,7 +68,7 @@
                         </a>
                         <form method="POST" action="{{ route('owner.business-types.destroy', $type) }}" onsubmit="return confirm('&iquest;Eliminar el tipo de negocio &quot;{{ $type->nombre }}&quot;? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger rounded-pill" title="Eliminar">
+                            <button type="submit" class="premium-btn-delete" title="Eliminar">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
@@ -63,7 +78,7 @@
         </div>
         @empty
         <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
                 <div class="card-body text-center py-5 text-muted">
                     <i class="bi bi-inbox fs-1"></i>
                     <p class="mt-2 mb-0">No hay tipos de negocio registrados.</p>
@@ -72,5 +87,6 @@
         </div>
         @endforelse
     </div>
+</div>
 </div>
 @endsection

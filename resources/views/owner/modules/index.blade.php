@@ -1,21 +1,33 @@
 @extends('layouts.app')
 @section('title', 'Módulos del Sistema')
+
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-grid text-info me-2"></i>Módulos del Sistema
-            </h2>
-            <p class="text-muted mb-0">Gestiona los módulos disponibles para asignar a Tipos de Negocio y Roles de Instancia.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('owner.modules.create') }}" class="btn btn-info rounded-pill px-4 shadow-sm fw-bold text-white">
-                <i class="bi bi-plus-lg me-2"></i>Nuevo Módulo
-            </a>
-            <a href="{{ route('owner.dashboard') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+    <div class="premium-header" style="margin-bottom: 2rem;">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-grid"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Módulos del Sistema</h2>
+                    <p class="mb-0 opacity-75">Gestiona los módulos disponibles para asignar a Tipos de Negocio y Roles de Instancia.</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('owner.modules.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-plus-lg me-2"></i>Nuevo Módulo
+                </a>
+                <a href="{{ route('owner.dashboard') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -27,7 +39,8 @@
     @endif
 
     @foreach($modulos->groupBy('categoria') as $categoria => $modulosCat)
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="premium-card mb-4">
+        <div class="card-accent purple"></div>
         <div class="card-header bg-transparent border-0 p-4 pb-3">
             <h5 class="fw-bold mb-0 text-uppercase text-muted small">{{ $categoria }}</h5>
         </div>
@@ -62,13 +75,13 @@
                                 @endif
                             </td>
                             <td class="text-end pe-4">
-                                <a href="{{ route('owner.modules.edit', $modulo) }}" class="btn btn-sm btn-outline-warning rounded-pill me-1" title="Editar">
+                                <a href="{{ route('owner.modules.edit', $modulo) }}" class="premium-btn-edit me-1" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 @if($modulo->activo)
                                 <form method="POST" action="{{ route('owner.modules.destroy', $modulo) }}" class="d-inline" onsubmit="return confirm('¿Desactivar el módulo {{ $modulo->label }}?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Desactivar">
+                                    <button type="submit" class="premium-btn-delete" title="Desactivar">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </form>
@@ -82,5 +95,6 @@
         </div>
     </div>
     @endforeach
+</div>
 </div>
 @endsection

@@ -1,23 +1,39 @@
 @extends('layouts.app')
 @section('title', 'Nuevo Usuario - ' . $instance->nombre)
-@section('content')
+
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @php
     $hasInstanceRoles = $instanceRoles->isNotEmpty();
 @endphp
+
+@section('content')
+<div class="premium-page">
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-person-plus text-success me-2"></i>Nuevo Usuario</h2>
-            <p class="text-muted mb-0">{{ $instance->nombre }} &middot; {{ $instance->businessType?->nombre ?? 'Sin tipo' }}</p>
+    <div class="premium-header" style="margin-bottom: 2rem; background: linear-gradient(135deg, #f59e0b, #f97316, #ef4444, #f59e0b);">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-person"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Nuevo Usuario</h2>
+                    <p class="mb-0 opacity-75">{{ $instance->nombre }} &middot; {{ $instance->businessType?->nombre ?? 'Sin tipo' }}</p>
+                </div>
+            </div>
+            <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
         </div>
-        <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-            <i class="bi bi-arrow-left me-2"></i>Volver
-        </a>
     </div>
 
     <div class="row justify-content-center">
         <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent amber"></div>
                 <div class="card-body p-4">
                     <form method="POST" action="{{ route('owner.instances.users.store', $instance) }}">
                         @csrf
@@ -77,6 +93,5 @@
         </div>
     </div>
 </div>
+</div>
 @endsection
-
-

@@ -3,26 +3,11 @@
 @section('title', 'Gestión de Cajas')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
     .premium-header {
-        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
-        border-radius: 1rem;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-    .premium-header::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -20%;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
     }
     .avatar-circle {
         width: 44px; height: 44px;
@@ -61,7 +46,7 @@
         animation: modalSlideUp 0.35s ease-out;
     }
     .modal-premium .modal-header-premium {
-        background: linear-gradient(135deg, #10b981, #06b6d4, #10b981);
+        background: linear-gradient(135deg, #f59e0b, #d97706, #f59e0b);
         background-size: 200% 200%;
         animation: modalGradientShift 5s ease infinite;
         padding: 1.75rem 1.5rem 2.5rem;
@@ -116,13 +101,13 @@
         min-height: 64px;
     }
     .modal-premium .input-fondo:focus {
-        border-color: #10b981;
-        box-shadow: 0 0 0 4px rgba(16,185,129,0.12), 0 4px 12px rgba(16,185,129,0.08);
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 4px rgba(245,158,11,0.12), 0 4px 12px rgba(245,158,11,0.08);
         background: #fff;
         outline: none;
     }
     .modal-premium .prefix-badge {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         color: white;
         border: none;
         border-radius: 0.75rem 0 0 0.75rem;
@@ -136,34 +121,34 @@
         background: rgba(255,255,255,0.7);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        border: 1.5px solid rgba(16,185,129,0.2);
+        border: 1.5px solid rgba(245,158,11,0.2);
         border-radius: 2rem;
         padding: 0.85rem 1.25rem;
         font-weight: 600;
         font-size: 1rem;
-        color: #059669;
+        color: #d97706;
         transition: all 0.2s ease;
         white-space: nowrap;
         min-height: 56px;
     }
     .modal-premium .btn-quick:hover {
-        background: rgba(16,185,129,0.1);
-        border-color: rgba(16,185,129,0.4);
+        background: rgba(245,158,11,0.1);
+        border-color: rgba(245,158,11,0.4);
         transform: translateY(-2px) scale(1.03);
-        box-shadow: 0 4px 14px rgba(16,185,129,0.12);
-        color: #047857;
+        box-shadow: 0 4px 14px rgba(245,158,11,0.12);
+        color: #b45309;
     }
     .modal-premium .btn-quick:active {
         transform: translateY(0) scale(0.98);
     }
     .modal-premium .btn-quick.active-amount {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         color: white;
         border-color: transparent;
-        box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+        box-shadow: 0 4px 14px rgba(245,158,11,0.3);
     }
     .modal-premium .btn-open {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         border: none;
         border-radius: 2rem;
         padding: 1rem 2.5rem;
@@ -171,13 +156,13 @@
         font-size: 1.15rem;
         color: white;
         transition: all 0.25s ease;
-        box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+        box-shadow: 0 4px 14px rgba(245,158,11,0.3);
         min-height: 56px;
     }
     .modal-premium .btn-open:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16,185,129,0.4);
-        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 6px 20px rgba(245,158,11,0.4);
+        background: linear-gradient(135deg, #d97706, #b45309);
     }
     .modal-premium .btn-open:active {
         transform: translateY(0);
@@ -198,8 +183,8 @@
         backdrop-filter: blur(4px);
     }
     .modal-premium .info-hint {
-        background: rgba(16,185,129,0.06);
-        border: 1px solid rgba(16,185,129,0.12);
+        background: rgba(245,158,11,0.06);
+        border: 1px solid rgba(245,158,11,0.12);
         border-radius: 0.5rem;
         padding: 0.5rem 0.75rem;
         font-size: 0.75rem;
@@ -230,7 +215,7 @@
                     <p class="text-white text-opacity-75 mb-0">Administra múltiples cajas registradoras. Cada cajero abre su propia caja al iniciar el turno.</p>
                 </div>
             </div>
-            <a href="{{ route('cajas.create') }}" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-sm text-cyan-800">
+            <a href="{{ route('cajas.create') }}" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-sm text-amber-800">
                 <i class="bi bi-plus-circle me-2"></i>Nueva Caja
             </a>
         </div>

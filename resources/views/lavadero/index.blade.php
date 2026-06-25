@@ -1,11 +1,24 @@
 @extends('layouts.app')
 @section('title', 'Terminal Lavadero')
+@push('styles')
+@include('partials.premium-ui')
+@endpush
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-droplet text-primary me-2"></i>Terminal de Lavado</h2>
-            <p class="text-muted mb-0">Registro de servicios de lavado y detallado</p>
+<div class="container-fluid px-4 premium-page">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-droplet"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-0 text-white">Terminal de Lavado</h2>
+                    <p class="text-white text-opacity-75 mb-0">Registro de servicios de lavado y detallado</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -13,7 +26,8 @@
         {{-- Panel izquierdo: Cliente + Vehículo + Servicios --}}
         <div class="col-lg-8">
             {{-- Cliente --}}
-            <div class="card border-0 shadow-sm rounded-4 mb-3">
+            <div class="premium-card mb-3">
+                <div class="card-accent green"></div>
                 <div class="card-body">
                     <h6 class="fw-bold mb-3"><i class="bi bi-person me-2"></i>Cliente</h6>
                     <div class="row g-2">
@@ -37,7 +51,8 @@
             </div>
 
             {{-- Vehículo --}}
-            <div class="card border-0 shadow-sm rounded-4 mb-3" id="vehiculo-card" style="display:none;">
+            <div class="premium-card mb-3" id="vehiculo-card" style="display:none;">
+                <div class="card-accent green"></div>
                 <div class="card-body">
                     <h6 class="fw-bold mb-3"><i class="bi bi-car-front me-2"></i>Vehículo</h6>
                     <div class="row g-2">
@@ -74,7 +89,8 @@
             </div>
 
             {{-- Servicios --}}
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent green"></div>
                 <div class="card-body">
                     <h6 class="fw-bold mb-3"><i class="bi bi-card-checklist me-2"></i>Servicios</h6>
                     <div class="row g-2" id="servicios-grid">
@@ -101,7 +117,8 @@
 
         {{-- Panel derecho: Resumen de venta --}}
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="premium-card">
+                <div class="card-accent green"></div>
                 <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
                     <h6 class="fw-bold mb-0"><i class="bi bi-receipt me-2"></i>Resumen</h6>
                 </div>
@@ -143,7 +160,8 @@
             </div>
 
             {{-- Citas del día --}}
-            <div class="card border-0 shadow-sm rounded-4 mt-3">
+            <div class="premium-card mt-3">
+                <div class="card-accent green"></div>
                 <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
                     <h6 class="fw-bold mb-0"><i class="bi bi-calendar-event me-2"></i>Citas de Hoy</h6>
                 </div>
