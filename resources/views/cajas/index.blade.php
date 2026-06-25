@@ -49,7 +49,7 @@
         background: linear-gradient(135deg, #f59e0b, #d97706, #f59e0b);
         background-size: 200% 200%;
         animation: modalGradientShift 5s ease infinite;
-        padding: 1.75rem 1.5rem 2.5rem;
+        padding: 2rem 1.75rem 3rem;
         position: relative;
         overflow: hidden;
     }
@@ -57,9 +57,9 @@
         content: '';
         position: absolute;
         top: -30%;
-        right: -15%;
-        width: 180px;
-        height: 180px;
+        right: -10%;
+        width: 240px;
+        height: 240px;
         background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
         border-radius: 50%;
         animation: modalPulse 4s ease-in-out infinite;
@@ -67,42 +67,44 @@
     .modal-premium .modal-header-premium::after {
         content: '';
         position: absolute;
-        bottom: -40%;
-        left: -10%;
-        width: 140px;
-        height: 140px;
+        bottom: -50%;
+        left: -5%;
+        width: 200px;
+        height: 200px;
         background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
         border-radius: 50%;
+        animation: modalPulse 5s ease-in-out infinite 1s;
     }
     .modal-premium .glass-body {
         background: rgba(255,255,255,0.75);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-top: 1px solid rgba(255,255,255,0.5);
-        padding: 1.5rem 1.75rem 1.25rem;
+        padding: 1.75rem 2rem 1.5rem;
     }
     .modal-premium .caja-info-glass {
-        background: rgba(255,255,255,0.6);
+        background: rgba(255,255,255,0.65);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.4);
-        border-radius: 0.75rem;
-        padding: 0.875rem 1rem;
+        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
     .modal-premium .input-fondo {
         border: 2px solid #e2e8f0;
         border-radius: 0.75rem;
-        padding: 1.1rem 1.25rem;
-        font-size: 2rem;
-        font-weight: 700;
+        padding: 1.25rem 1.5rem;
+        font-size: 2.5rem;
+        font-weight: 800;
         text-align: center;
         transition: all 0.25s ease;
         background: rgba(255,255,255,0.8);
-        min-height: 64px;
+        min-height: 76px;
     }
     .modal-premium .input-fondo:focus {
         border-color: #f59e0b;
-        box-shadow: 0 0 0 4px rgba(245,158,11,0.12), 0 4px 12px rgba(245,158,11,0.08);
+        box-shadow: 0 0 0 5px rgba(245,158,11,0.15), 0 6px 20px rgba(245,158,11,0.08);
         background: #fff;
         outline: none;
     }
@@ -111,41 +113,130 @@
         color: white;
         border: none;
         border-radius: 0.75rem 0 0 0.75rem;
-        padding: 1.1rem 1.25rem;
-        font-weight: 700;
-        font-size: 1.15rem;
+        padding: 1.25rem 1.5rem;
+        font-weight: 800;
+        font-size: 1.35rem;
         display: flex;
         align-items: center;
+        letter-spacing: 1px;
     }
-    .modal-premium .btn-quick {
-        background: rgba(255,255,255,0.7);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1.5px solid rgba(245,158,11,0.2);
-        border-radius: 2rem;
-        padding: 0.85rem 1.25rem;
-        font-weight: 600;
-        font-size: 1rem;
-        color: #d97706;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-        min-height: 56px;
+    /* === Banknote-style Cards === */
+    @keyframes billPop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1.02); }
     }
-    .modal-premium .btn-quick:hover {
-        background: rgba(245,158,11,0.1);
-        border-color: rgba(245,158,11,0.4);
-        transform: translateY(-2px) scale(1.03);
-        box-shadow: 0 4px 14px rgba(245,158,11,0.12);
-        color: #b45309;
+    .modal-premium .billete-card {
+        position: relative;
+        min-height: 100px;
+        border-radius: 14px;
+        border: 2px solid rgba(255,255,255,0.6);
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        user-select: none;
     }
-    .modal-premium .btn-quick:active {
-        transform: translateY(0) scale(0.98);
+    .modal-premium .billete-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+        border-radius: 12px;
     }
-    .modal-premium .btn-quick.active-amount {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
-        border-color: transparent;
-        box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+    .modal-premium .billete-card::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        height: 2px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 2px;
+    }
+    .modal-premium .billete-card .billete-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        opacity: 0.8;
+        position: relative;
+        z-index: 1;
+    }
+    .modal-premium .billete-card .billete-monto {
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1.1;
+        position: relative;
+        z-index: 1;
+    }
+    .modal-premium .billete-card .billete-icon {
+        font-size: 1.2rem;
+        margin-bottom: 2px;
+        position: relative;
+        z-index: 1;
+    }
+    .modal-premium .billete-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+        border-color: rgba(255,255,255,0.9);
+    }
+    .modal-premium .billete-card:active {
+        transform: translateY(0) scale(0.97);
+    }
+    .modal-premium .billete-card.active {
+        transform: scale(1.02);
+        border-color: #fff;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 0 0 3px rgba(255,255,255,0.3);
+        animation: billPop 0.3s ease;
+    }
+
+    /* Color variants */
+    .modal-premium .billete-sin-fondo {
+        background: linear-gradient(135deg, #64748b, #475569);
+        color: #fff;
+    }
+    .modal-premium .billete-sin-fondo.active {
+        box-shadow: 0 8px 24px rgba(100,116,139,0.4), 0 0 0 3px rgba(100,116,139,0.3);
+    }
+    .modal-premium .billete-100 {
+        background: linear-gradient(135deg, #2e7d32, #1b5e20);
+        color: #fff;
+    }
+    .modal-premium .billete-100.active {
+        box-shadow: 0 8px 24px rgba(46,125,50,0.5), 0 0 0 3px rgba(46,125,50,0.3);
+    }
+    .modal-premium .billete-200 {
+        background: linear-gradient(135deg, #1565c0, #0d47a1);
+        color: #fff;
+    }
+    .modal-premium .billete-200.active {
+        box-shadow: 0 8px 24px rgba(21,101,192,0.5), 0 0 0 3px rgba(21,101,192,0.3);
+    }
+    .modal-premium .billete-500 {
+        background: linear-gradient(135deg, #e65100, #bf360c);
+        color: #fff;
+    }
+    .modal-premium .billete-500.active {
+        box-shadow: 0 8px 24px rgba(230,81,0,0.5), 0 0 0 3px rgba(230,81,0,0.3);
+    }
+    .modal-premium .billete-1000 {
+        background: linear-gradient(135deg, #c62828, #b71c1c);
+        color: #fff;
+    }
+    .modal-premium .billete-1000.active {
+        box-shadow: 0 8px 24px rgba(198,40,40,0.5), 0 0 0 3px rgba(198,40,40,0.3);
+    }
+    .modal-premium .billete-2000 {
+        background: linear-gradient(135deg, #00838f, #006064);
+        color: #fff;
+    }
+    .modal-premium .billete-2000.active {
+        box-shadow: 0 8px 24px rgba(0,131,143,0.5), 0 0 0 3px rgba(0,131,143,0.3);
     }
     .modal-premium .btn-open {
         background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -476,26 +567,26 @@
             <!-- Modal Abrir Caja — Premium UI -->
             @if($caja->activo && $caja->estado == 'cerrada')
             <div class="modal fade modal-premium" id="modalAbrir{{ $caja->id }}" tabindex="-1" data-bs-backdrop="static">
-                <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 760px;">
                     <div class="modal-content">
                         <form action="{{ route('cajas.abrir', $caja->id) }}" method="POST" id="formAbrir{{ $caja->id }}">
                             @csrf
 
                             <!-- Premium Animated Header -->
                             <div class="modal-header-premium text-white position-relative" style="z-index:2;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
-                                        <i class="bi bi-play-circle-fill" style="font-size:2rem;"></i>
+                                <div class="d-flex align-items-center gap-4">
+                                    <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width:72px;height:72px;">
+                                        <i class="bi bi-play-circle-fill" style="font-size:2.4rem;"></i>
                                     </div>
                                     <div>
-                                        <h4 class="fw-bold mb-0" style="font-size:1.35rem;">Abrir Caja</h4>
+                                        <h3 class="fw-bold mb-0" style="font-size:1.6rem;">Abrir Caja</h3>
                                         <div class="d-flex align-items-center gap-2 mt-1">
-                                            <small class="text-white text-opacity-75" style="font-size:.85rem;">Iniciar nuevo turno</small>
+                                            <small class="text-white text-opacity-75" style="font-size:.9rem;">Iniciar nuevo turno</small>
                                             <span class="turno-badge" id="turnoBadge{{ $caja->id }}"></span>
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" class="btn-close btn-close-white position-absolute" style="top:1rem;right:1rem;width:32px;height:32px;" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                <button type="button" class="btn-close btn-close-white position-absolute" style="top:1.25rem;right:1.25rem;width:34px;height:34px;" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                             </div>
 
                             <!-- Glass Body -->
@@ -540,26 +631,42 @@
                                     </div>
                                 </div>
 
-                                <!-- Quick Amount Buttons -->
+                                <!-- Quick Amount Banknote Cards -->
                                 <div class="row g-2 mb-3">
-                                    <div class="col-6">
-                                        <button type="button" class="btn-quick w-100" data-monto="0">
-                                            <i class="bi bi-dash-circle me-1" style="font-size:.85rem;"></i>Sin fondo
+                                    <div class="col-4">
+                                        <button type="button" class="billete-card billete-sin-fondo w-100" data-monto="0">
+                                            <div class="billete-icon"><i class="bi bi-dash-circle"></i></div>
+                                            <div class="billete-monto" style="font-size:1.1rem;">Sin fondo</div>
                                         </button>
                                     </div>
-                                    <div class="col-6">
-                                        <button type="button" class="btn-quick w-100" data-monto="100">
-                                            RD$ 100
+                                    <div class="col-4">
+                                        <button type="button" class="billete-card billete-100 w-100" data-monto="100">
+                                            <div class="billete-label">RD$</div>
+                                            <div class="billete-monto">100</div>
                                         </button>
                                     </div>
-                                    <div class="col-6">
-                                        <button type="button" class="btn-quick w-100" data-monto="500">
-                                            RD$ 500
+                                    <div class="col-4">
+                                        <button type="button" class="billete-card billete-200 w-100" data-monto="200">
+                                            <div class="billete-label">RD$</div>
+                                            <div class="billete-monto">200</div>
                                         </button>
                                     </div>
-                                    <div class="col-6">
-                                        <button type="button" class="btn-quick w-100" data-monto="1000">
-                                            RD$ 1,000
+                                    <div class="col-4">
+                                        <button type="button" class="billete-card billete-500 w-100" data-monto="500">
+                                            <div class="billete-label">RD$</div>
+                                            <div class="billete-monto">500</div>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="billete-card billete-1000 w-100" data-monto="1000">
+                                            <div class="billete-label">RD$</div>
+                                            <div class="billete-monto">1,000</div>
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" class="billete-card billete-2000 w-100" data-monto="2000">
+                                            <div class="billete-label">RD$</div>
+                                            <div class="billete-monto">2,000</div>
                                         </button>
                                     </div>
                                 </div>
@@ -573,10 +680,10 @@
 
                             <!-- Footer -->
                             <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:rgba(248,250,252,0.9);border-top:1px solid rgba(0,0,0,0.04);">
-                                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal" style="font-size:1rem;min-height:54px;">
+                                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm" data-bs-dismiss="modal" style="font-size:1.1rem;min-height:58px;">
                                     <i class="bi bi-x-lg me-1"></i>Cancelar
                                 </button>
-                                <button type="submit" class="btn btn-open" id="btnAbrir{{ $caja->id }}">
+                                <button type="submit" class="btn btn-open" id="btnAbrir{{ $caja->id }}" style="min-height:58px;padding:1rem 3rem;font-size:1.2rem;">
                                     <i class="bi bi-play-fill me-1"></i>Abrir Caja
                                 </button>
                             </div>
@@ -611,14 +718,14 @@
                 updateHora();
                 setInterval(updateHora, 30000);
 
-                // Quick amount buttons
+                // Quick amount banknote cards
                 let activeQuickBtn = null;
                 modalEl.querySelectorAll('[data-monto]').forEach(btn => {
                     btn.addEventListener('click', () => {
                         input.value = parseFloat(btn.dataset.monto).toFixed(2);
                         input.focus();
-                        if (activeQuickBtn) activeQuickBtn.classList.remove('active-amount');
-                        btn.classList.add('active-amount');
+                        if (activeQuickBtn) activeQuickBtn.classList.remove('active');
+                        btn.classList.add('active');
                         activeQuickBtn = btn;
                     });
                 });
@@ -626,7 +733,7 @@
                 // Clear active state when user types manually
                 input.addEventListener('input', () => {
                     if (activeQuickBtn) {
-                        activeQuickBtn.classList.remove('active-amount');
+                        activeQuickBtn.classList.remove('active');
                         activeQuickBtn = null;
                     }
                 });
@@ -652,7 +759,7 @@
                 modalEl.addEventListener('show.bs.modal', () => {
                     updateHora();
                     if (activeQuickBtn) {
-                        activeQuickBtn.classList.remove('active-amount');
+                        activeQuickBtn.classList.remove('active');
                         activeQuickBtn = null;
                     }
                     btnAbrir.disabled = false;
