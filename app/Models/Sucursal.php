@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use App\Traits\HasWizardStep;
 use App\Traits\TenantScope;
 
 class Sucursal extends Model
 {
     use SoftDeletes;
     use Auditable;
-    use TenantScope;
+    use HasWizardStep, TenantScope;
 
     protected $table = 'sucursales';
 

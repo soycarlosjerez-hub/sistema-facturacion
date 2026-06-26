@@ -16,9 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'             => \App\Http\Middleware\RoleMiddleware::class,
             'permission'       => \App\Http\Middleware\PermissionMiddleware::class,
             'instance.blocked' => \App\Http\Middleware\CheckInstanceBlocked::class,
+            'setup.wizard'     => \App\Http\Middleware\CheckSetupWizard::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckInstanceBlocked::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckSetupWizard::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {

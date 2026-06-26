@@ -318,6 +318,7 @@
                 @endif
             </div>
             <div class="modal-footer border-0">
+                @if($log->tenant_id)
                 <form method="POST" action="{{ route('owner.instances.errors.resolve', [$log->tenant_id, $log]) }}" class="me-auto">
                     @csrf @method('PATCH')
                     <button type="submit" class="btn {{ $log->resolved ? 'btn-warning' : 'btn-success' }} rounded-pill resolve-btn">
@@ -325,6 +326,7 @@
                         {{ $log->resolved ? 'Reabrir' : 'Marcar como resuelto' }}
                     </button>
                 </form>
+                @endif
                 <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>

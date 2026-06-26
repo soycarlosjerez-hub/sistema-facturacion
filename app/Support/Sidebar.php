@@ -103,8 +103,7 @@ class Sidebar
                 'is_route' => 'owner.errors.*',
                 'exact_route' => 'owner.errors.index',
             ];
-            // Owner also sees Configuración section to change system settings like "Colmado Premium"
-            // Continue to show all other sections since owner has all permissions
+            return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
         }
 
         $items[] = [
@@ -120,6 +119,16 @@ class Sidebar
             'label' => 'Cambiar Contraseña',
             'is_route' => 'profile.edit',
         ];
+
+        if ($user->instanceRole && ($user->instanceRole->name === 'admin' || !$user->businessInstance?->setup_completed)) {
+            $items[] = [
+                'route' => 'setup.wizard',
+                'icon'  => 'bi-magic',
+                'label' => 'Configuración Inicial',
+                'is_route' => 'setup.*',
+                'exact_route' => 'setup.wizard',
+            ];
+        }
 
         // Inventario
         if (

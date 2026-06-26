@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -13,8 +14,9 @@ class ConfigurationController extends Controller
     public function index()
     {
         $settings = SystemSetting::allCached();
+        $businessInstance = Auth::user()->businessInstance;
         
-        return view('configuracion.index', compact('settings'));
+        return view('configuracion.index', compact('settings', 'businessInstance'));
     }
 
     public function update(Request $request)

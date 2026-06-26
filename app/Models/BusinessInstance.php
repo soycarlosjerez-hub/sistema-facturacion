@@ -26,12 +26,14 @@ class BusinessInstance extends Model
         'bloqueado',
         'motivo_bloqueo',
         'bloqueado_en',
+        'setup_completed',
     ];
 
     protected $casts = [
         'configuracion' => 'array',
         'activo' => 'boolean',
         'bloqueado' => 'boolean',
+        'setup_completed' => 'boolean',
         'fecha_vencimiento' => 'datetime',
         'bloqueado_en' => 'datetime',
         'costo_mensual' => 'decimal:2',

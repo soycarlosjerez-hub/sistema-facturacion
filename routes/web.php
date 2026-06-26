@@ -774,4 +774,14 @@ Route::get('/instancia-bloqueada', function () {
     return view('errors.instancia-bloqueada');
 })->name('instancia-bloqueada');
 
+// Setup Wizard
+Route::middleware(['auth', 'instance.blocked'])->prefix('setup')->name('setup.')->group(function () {
+    Route::get('/wizard', [\App\Http\Controllers\SetupWizardController::class, 'index'])->name('wizard');
+    Route::post('/wizard/step', [\App\Http\Controllers\SetupWizardController::class, 'processStep'])->name('step');
+    Route::post('/wizard/skip', [\App\Http\Controllers\SetupWizardController::class, 'skipStep'])->name('skip');
+    Route::post('/wizard/complete', [\App\Http\Controllers\SetupWizardController::class, 'complete'])->name('complete');
+    Route::get('/wizard/restart', [\App\Http\Controllers\SetupWizardController::class, 'restart'])->name('restart');
+    Route::get('/wizard/abrir-caja', [\App\Http\Controllers\SetupWizardController::class, 'abrirCaja'])->name('abrir-caja');
+});
+
 require __DIR__ . '/auth.php';

@@ -147,6 +147,36 @@ body.dark-mode .premium-card .form-select:focus {
                         </button>
                     </div>
                 </div>
+
+                <div class="premium-card mt-3">
+                    <div class="card-accent purple"></div>
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-magic me-2"></i>Configuración Inicial</h6>
+                        <p class="text-muted small mb-3">
+                            Completa los pasos para tener todo listo y empezar a facturar en esta instancia.
+                        </p>
+                        @if(!$businessInstance->setup_completed)
+                            <div class="alert alert-warning rounded-3 p-2 small mb-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <span>Setup pendiente</span>
+                            </div>
+                        @endif
+                        <a href="{{ route('setup.wizard') }}" class="btn btn-outline-primary w-100 rounded-pill fw-bold">
+                            <i class="bi bi-arrow-right-circle me-1"></i> Abrir Wizard
+                        </a>
+                        @if($businessInstance->setup_completed)
+                            <div class="mt-2 small text-success text-center">
+                                <i class="bi bi-check-circle"></i> Completado
+                            </div>
+                            <div class="mt-2 text-center">
+                                <a href="{{ route('setup.restart') }}" class="text-muted small"
+                                   onclick="return confirm('¿Reiniciar la configuración?')">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reiniciar
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
 
