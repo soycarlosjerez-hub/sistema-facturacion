@@ -111,7 +111,7 @@ class Sidebar
             'route' => 'dashboard',
             'icon'  => 'bi-speedometer2',
             'label' => 'Dashboard',
-            'show'  => $can('dashboard.view'),
+            'show'  => $mod('dashboard') && $can('dashboard.view'),
             'exact_route' => 'dashboard',
         ];
         $items[] = [

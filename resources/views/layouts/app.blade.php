@@ -511,12 +511,12 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         <?php $sectionId = str_replace(' ', '-', strtolower($sectionTitle)); ?>
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="heading-{{ $sectionId }}">
-                                <button class="accordion-button {{ $sectionId === $activeSectionId ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $sectionId }}" aria-expanded="{{ $sectionId === $activeSectionId ? 'true' : 'false' }}" aria-controls="collapse-{{ $sectionId }}">
+                                <button class="accordion-button {{ $sectionId === $activeSectionId ? '' : 'collapsed' }}" type="button" data-bs-target="#collapse-{{ $sectionId }}" aria-expanded="{{ $sectionId === $activeSectionId ? 'true' : 'false' }}" aria-controls="collapse-{{ $sectionId }}">
                                     <span class="accordion-text">{{ $sectionTitle }}</span>
                                     <i class="bi bi-chevron-down accordion-icon"></i>
                                 </button>
                             </h2>
-                            <div id="collapse-{{ $sectionId }}" class="accordion-collapse collapse {{ $sectionId === $activeSectionId ? 'show' : '' }}" aria-labelledby="heading-{{ $sectionId }}" data-bs-parent="#sidebarAccordion">
+                            <div id="collapse-{{ $sectionId }}" class="accordion-collapse collapse {{ $sectionId === $activeSectionId ? 'show' : '' }}" aria-labelledby="heading-{{ $sectionId }}">
                                 <div class="accordion-body">
                                     <nav class="nav flex-column">
                                         @foreach($items as $item)
@@ -744,6 +744,30 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
             if (errorToast) {
                 const toast = new bootstrap.Toast(errorToast, { delay: 6000 });
                 toast.show();
+            }
+
+            // Sidebar accordion with toggle: click opens/closes, only one open at a time
+            const sidebarAccordion = document.getElementById('sidebarAccordion');
+            if (sidebarAccordion) {
+                sidebarAccordion.querySelectorAll('.accordion-button').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const targetId = this.getAttribute('data-bs-target');
+                        if (!targetId) return;
+                        const target = document.querySelector(targetId);
+                        if (!target) return;
+                        const isOpen = target.classList.contains('show');
+                        // Close all sections
+                        sidebarAccordion.querySelectorAll('.accordion-collapse.show').forEach(function (el) {
+                            const instance = bootstrap.Collapse.getInstance(el);
+                            if (instance) instance.hide();
+                        });
+                        // If clicked section was closed, open it
+                        if (!isOpen) {
+                            const instance = bootstrap.Collapse.getOrCreateInstance(target);
+                            instance.show();
+                        }
+                    });
+                });
             }
         });
     </script>

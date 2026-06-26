@@ -11,6 +11,8 @@ class ModuloSeeder extends Seeder
     {
         $modulos = [
             // Core
+            ['key' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'bi-speedometer2', 'categoria' => 'core', 'orden' => 0,
+             'sidebar_route' => 'dashboard', 'sidebar_exact_route' => 'dashboard', 'sidebar_permission' => 'dashboard.view'],
             ['key' => 'inventario', 'label' => 'Inventario', 'icon' => 'bi-box-seam', 'categoria' => 'core', 'orden' => 1,
              'sidebar_route' => 'productos.index', 'sidebar_is_route' => 'productos.*', 'sidebar_exact_route' => 'productos.index', 'sidebar_permission' => 'productos.view'],
             ['key' => 'compras', 'label' => 'Compras', 'icon' => 'bi-cart-check', 'categoria' => 'core', 'orden' => 2,

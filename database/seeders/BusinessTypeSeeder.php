@@ -20,7 +20,7 @@ class BusinessTypeSeeder extends Seeder
                 'activo' => true,
                 'orden' => 1,
                 'modulos' => [
-                    'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
+                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
                     'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
                     'clientes', 'cajas', 'sucursales', 'almacenes', 'reportes-caja', 'reportes-restaurante', 'reportes-resumen',
                 ],
@@ -34,7 +34,7 @@ class BusinessTypeSeeder extends Seeder
                 'activo' => true,
                 'orden' => 2,
                 'modulos' => [
-                    'inventario', 'compras', 'proveedores', 'kardex',
+                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex',
                     'ventas', 'devoluciones',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
@@ -49,7 +49,7 @@ class BusinessTypeSeeder extends Seeder
                 'activo' => true,
                 'orden' => 3,
                 'modulos' => [
-                    'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
+                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
                     'ventas', 'conduces',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
@@ -64,13 +64,13 @@ class BusinessTypeSeeder extends Seeder
                 'activo' => true,
                 'orden' => 4,
                 'modulos' => [
-                    'inventario',
+                    'dashboard', 'inventario',
                     'cotizaciones', 'gastos',
                     'clientes', 'cobros', 'cajas',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
                 ],
             ],
-['slug' => 'lavadero',
+            ['slug' => 'lavadero',
                  'nombre' => 'Lavadero de Carro',
                  'descripcion' => 'Servicio de lavado y detallado de vehículos',
                  'color' => 'primary',
@@ -78,7 +78,7 @@ class BusinessTypeSeeder extends Seeder
                  'activo' => true,
                  'orden' => 5,
                  'modulos' => [
-                     'lavadero', 'lavadero-servicios', 'lavadero-vehiculos', 'lavadero-citas', 'lavadero-lavadores',
+                     'dashboard', 'lavadero', 'lavadero-servicios', 'lavadero-vehiculos', 'lavadero-citas', 'lavadero-lavadores',
                      'clientes', 'cajas', 'gastos',
                      'inventario', 'compras', 'proveedores',
                      'reportes-ventas', 'reportes-caja', 'reportes-stock',
@@ -94,27 +94,27 @@ class BusinessTypeSeeder extends Seeder
                  'icon' => 'bi-grid',
                  'activo' => true,
                  'orden' => 6,
-                 'modulos' => [
-                     'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
-                     'ventas', 'devoluciones',
-                     'cotizaciones', 'conduces', 'gastos',
-                     'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
-                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
-                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-restaurante', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
-                 ],
-             ],
-             [
-                 'slug' => 'while-pone-el-restaurante',
+                'modulos' => [
+                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
+                    'ventas', 'devoluciones',
+                    'cotizaciones', 'conduces', 'gastos',
+                    'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
+                    'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
+                    'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-restaurante', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                ],
+            ],
+            [
+                'slug' => 'while-pone-el-restaurante',
                  'nombre' => 'while pon el restaurante',
                  'descripcion' => 'while pon el restaurante',
                  'color' => 'info',
                  'icon' => 'bi-cup-straw',
                  'activo' => true,
                  'orden' => 7,
-                 'modulos' => [
-                     'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
-                 ],
-             ],
+                'modulos' => [
+                    'dashboard', 'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
+                ],
+            ],
         ];
 
         foreach ($tipos as $tipoData) {
