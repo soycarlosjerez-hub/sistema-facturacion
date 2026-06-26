@@ -34,6 +34,7 @@ class OrdenController extends Controller
 
     public function getMesa(Mesa $mesa)
     {
+        $mesa->load('ubicacion');
         $orden = $mesa->ordenActiva;
         if ($orden) {
             $orden->load('detalles.producto', 'cliente', 'usuario', 'deliveryCompany');

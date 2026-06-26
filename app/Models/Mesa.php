@@ -14,7 +14,7 @@ class Mesa extends Model
 
     protected $fillable = [
         'sucursal_id', 'numero', 'nombre', 'capacidad',
-        'ubicacion', 'ubicacion_id', 'estado', 'activa', 'categoria_id', 'pos_x', 'pos_y', 'tenant_id',
+        'ubicacion_id', 'estado', 'activa', 'categoria_id', 'pos_x', 'pos_y', 'tenant_id',
     ];
 
     protected $casts = [

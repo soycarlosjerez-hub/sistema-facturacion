@@ -26,8 +26,20 @@
             <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
             <input type="text" id="buscar-mesa" class="form-control border-0" placeholder="Buscar mesa...">
         </div>
-        <div class="row g-2" id="mesas-grid">
-            @foreach($mesas as $mesa)
+        <div class="mesas-por-ubicacion" id="mesas-grid">
+            @foreach($mesasAgrupadas as $ubicacionNombre => $grupoMesas)
+                <div class="ubicacion-group mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-2 px-1">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:30px;height:30px;background:rgba(16,185,129,.1);color:#10b981;flex-shrink:0;">
+                            <i class="bi bi-geo-alt fs-6"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0 text-uppercase" style="font-size:.85rem;letter-spacing:.5px;">
+                            {{ $ubicacionNombre === '__sin_ubicacion__' ? 'Sin ubicación' : $ubicacionNombre }}
+                        </h6>
+                        <span class="badge bg-light text-muted rounded-pill ms-auto">{{ $grupoMesas->count() }} mesa{{ $grupoMesas->count() !== 1 ? 's' : '' }}</span>
+                    </div>
+                    <div class="row g-2">
+            @foreach($grupoMesas as $mesa)
             @php
                 $catColor = $mesa->categoria->color ?? null;
                 $reservacion = $mesa->reservacion;
@@ -92,6 +104,9 @@
                     </div>
                 </button>
             </div>
+            @endforeach
+                    </div>
+                </div>
             @endforeach
         </div>
         {{-- Mapa de mesas (oculto por defecto) --}}
@@ -327,7 +342,7 @@
                     <option value="">Seleccionar mesa destino...</option>
                     @foreach($mesas as $m)
                         @if(!$m->ordenActiva && $m->estado !== 'inactiva')
-                        <option value="{{ $m->id }}">{{ $m->nombre ?? 'Mesa '.$m->numero }} (Cap. {{ $m->capacidad }})</option>
+                        <option value="{{ $m->id }}">{{ $m->nombre ?? 'Mesa '.$m->numero }} (Cap. {{ $m->capacidad }})@if($m->ubicacion) - {{ $m->ubicacion->nombre }}@endif</option>
                         @endif
                     @endforeach
                 </select>
@@ -1541,7 +1556,7 @@ function cargarMesa(mesaId) {
                 const dc = deliveryCompanies.find(d => d.id === orden.delivery_company_id);
                 if (dc) deliveryBadge = ` <span class="badge bg-dark rounded-pill"><i class="bi bi-truck me-1"></i>${dc.nombre}</span>`;
             }
-            document.getElementById('orden-subtitulo').innerHTML = '# Cap. ' + mesa.capacidad + ' · ' + (mesa.ubicacion || '') + tipoBadge + deliveryBadge;
+            document.getElementById('orden-subtitulo').innerHTML = '# Cap. ' + mesa.capacidad + ' · ' + (mesa.ubicacion?.nombre || '') + tipoBadge + deliveryBadge;
             
             if (!orden && mesa.estado === 'reservada') {
                 const diffMs = data.reservacion ? new Date(data.reservacion.fecha_hora + 'Z') - new Date() : 0;
@@ -1888,6 +1903,13 @@ document.getElementById('buscar-mesa').addEventListener('input', function () {
     document.querySelectorAll('.mesa-btn').forEach(btn => {
         const text = (btn.textContent || '').toLowerCase();
         btn.closest('.col-6').style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+    document.querySelectorAll('.ubicacion-group').forEach(group => {
+        const cols = group.querySelectorAll('.col-6');
+        const anyVisible = cols.length === 0 || [...cols].some(
+            col => col.style.display !== 'none'
+        );
+        group.style.display = anyVisible ? '' : 'none';
     });
 });
 
