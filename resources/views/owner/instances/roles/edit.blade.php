@@ -170,21 +170,20 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mt-4 mb-4 flex-wrap gap-2">
-            @if($role->users()->count() == 0)
-                <form action="{{ route('owner.instances.roles.destroy', [$instance, $role]) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
-                        <i class="bi bi-trash me-1"></i>Eliminar Rol
-                    </button>
-                </form>
-            @else
-                <div class="text-muted small">
-                    <i class="bi bi-info-circle"></i> {{ $role->users()->count() }} usuario(s) con este rol, no se puede eliminar
-                </div>
-            @endif
-        </div>
     </form>
+
+    @if($role->users()->count() == 0)
+    <form action="{{ route('owner.instances.roles.destroy', [$instance, $role]) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
+        @csrf @method('DELETE')
+        <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+            <i class="bi bi-trash me-1"></i>Eliminar Rol
+        </button>
+    </form>
+    @else
+    <div class="text-muted small mt-4 mb-4">
+        <i class="bi bi-info-circle"></i> {{ $role->users()->count() }} usuario(s) con este rol, no se puede eliminar
+    </div>
+    @endif
 </div>
 
 <div id="stickySaveBar" class="premium-sticky-bar">
