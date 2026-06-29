@@ -6,6 +6,7 @@ use App\Models\WizardStep;
 use App\Models\Sucursal;
 use App\Models\Caja;
 use App\Models\Almacen;
+use App\Models\Categoria;
 use App\Models\Producto;
 use App\Models\NcfSequence;
 use App\Models\MesaUbicacion;
@@ -13,6 +14,9 @@ use App\Models\MesaCategoria;
 use App\Models\Mesa;
 use App\Models\LavaderoServicio;
 use App\Models\Lavador;
+use App\Models\Cliente;
+use App\Models\Proveedor;
+use App\Models\SystemSetting;
 use Illuminate\Database\Seeder;
 
 class WizardStepSeeder extends Seeder
@@ -20,6 +24,16 @@ class WizardStepSeeder extends Seeder
     public function run(): void
     {
         $steps = [
+            [
+                'key'          => 'parametros',
+                'module_key'   => 'configuracion-general',
+                'label'        => 'Parámetros del Sistema',
+                'icon'         => 'bi-gear',
+                'required'     => true,
+                'skipable'     => false,
+                'entity_class' => SystemSetting::class,
+                'orden'        => 5,
+            ],
             [
                 'key' => 'sucursal',
                 'module_key' => 'sucursales',
@@ -51,14 +65,44 @@ class WizardStepSeeder extends Seeder
                 'orden' => 30,
             ],
             [
-                'key' => 'producto',
-                'module_key' => 'inventario',
-                'label' => 'Productos',
-                'icon' => 'bi-box-seam',
-                'required' => true,
-                'skipable' => true,
+                'key'          => 'categoria-producto',
+                'module_key'   => 'inventario',
+                'label'        => 'Categoría de Productos',
+                'icon'         => 'bi-tags',
+                'required'     => false,
+                'skipable'     => true,
+                'entity_class' => Categoria::class,
+                'orden'        => 35,
+            ],
+            [
+                'key'          => 'producto',
+                'module_key'   => 'inventario',
+                'label'        => 'Productos',
+                'icon'         => 'bi-box-seam',
+                'required'     => true,
+                'skipable'     => true,
                 'entity_class' => Producto::class,
-                'orden' => 40,
+                'orden'        => 40,
+            ],
+            [
+                'key'          => 'proveedor',
+                'module_key'   => 'proveedores',
+                'label'        => 'Proveedores',
+                'icon'         => 'bi-truck',
+                'required'     => false,
+                'skipable'     => true,
+                'entity_class' => Proveedor::class,
+                'orden'        => 45,
+            ],
+            [
+                'key'          => 'cliente',
+                'module_key'   => 'clientes',
+                'label'        => 'Clientes',
+                'icon'         => 'bi-people',
+                'required'     => false,
+                'skipable'     => true,
+                'entity_class' => Cliente::class,
+                'orden'        => 48,
             ],
             [
                 'key' => 'ncf',

@@ -59,7 +59,7 @@ body.dark-mode .final-checklist .check-item.skipped { background: #422006; }
         <div class="alert alert-success rounded-4 border-0 shadow-sm mb-4">{{ session('success') }}</div>
     @endif
 
-    @if(session('setup_completed'))
+    @if(session('setup_completed') || (Auth::user()->businessInstance->setup_completed ?? false))
         {{-- Pantalla final --}}
         <div class="row justify-content-center">
             <div class="col-lg-8">

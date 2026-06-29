@@ -1,7 +1,7 @@
 <h5 class="fw-bold mb-2"><i class="bi bi-box-seam me-2 text-primary"></i>Productos</h5>
 <p class="text-muted small mb-4">Agrega al menos un producto para poder facturar.</p>
 
-<form action="{{ route('setup.step') }}" method="POST" class="row g-3">
+<form action="{{ route('setup.step') }}" method="POST" class="row g-3" id="form-producto">
     @csrf
     <input type="hidden" name="step" value="producto">
     <div class="col-md-6">
@@ -23,16 +23,19 @@
         <label class="form-label small fw-bold">Stock Inicial</label>
         <input type="number" name="stock" class="form-control rounded-3" placeholder="0">
     </div>
-    <div class="col-12 d-flex justify-content-between mt-4">
-        <form action="{{ route('setup.skip') }}" method="POST" class="d-inline">
-            @csrf
-            <input type="hidden" name="step" value="producto">
-            <button type="submit" class="btn btn-outline-secondary btn-wizard-skip">
-                <i class="bi bi-arrow-right me-1"></i> Omitir paso
-            </button>
-        </form>
-        <button type="submit" class="btn btn-wizard-next">
+    <div class="col-12 mt-4 text-end">
+        <button type="submit" class="btn btn-wizard-next" form="form-producto">
             <i class="bi bi-check-lg me-1"></i> Guardar y Siguiente
         </button>
     </div>
 </form>
+
+<div class="d-flex justify-content-start mt-3">
+    <form action="{{ route('setup.skip') }}" method="POST">
+        @csrf
+        <input type="hidden" name="step" value="producto">
+        <button type="submit" class="btn btn-outline-secondary btn-wizard-skip">
+            <i class="bi bi-arrow-right me-1"></i> Omitir paso
+        </button>
+    </form>
+</div>

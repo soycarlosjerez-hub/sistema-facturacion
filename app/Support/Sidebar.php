@@ -14,7 +14,7 @@ class Sidebar
             return [];
         }
 
-        $isAdmin = $user->hasRole('admin') || $user->hasRole('admin-business') || $user->hasRole('root');
+        $isAdmin = $user->role === 'admin' || $user->hasRole('admin') || $user->hasRole('admin-business') || $user->hasRole('root');
         $can = fn(string $p) => $isAdmin || $user->can($p);
 
         ///dd(session('business_type_slug'));

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Almacen;
 use App\Models\Caja;
+use App\Models\Categoria;
+use App\Models\Cliente;
 use App\Models\LavaderoServicio;
 use App\Models\Lavador;
 use App\Models\Mesa;
@@ -11,7 +13,9 @@ use App\Models\MesaCategoria;
 use App\Models\MesaUbicacion;
 use App\Models\NcfSequence;
 use App\Models\Producto;
+use App\Models\Proveedor;
 use App\Models\Sucursal;
+use App\Models\SystemSetting;
 use App\Services\CajaService;
 use App\Services\SetupWizardService;
 use Illuminate\Http\RedirectResponse;
@@ -45,7 +49,9 @@ class SetupWizardController extends Controller
         $data = $request->validate($rules);
         $data['tenant_id'] = $user->business_instance_id;
 
-        $this->createEntity($step, $data);
+        $this->createEntity($step, $data, $data['tenant_id']);
+
+        session()->forget("setup_skipped_{$step}");
 
         return redirect()->route('setup.wizard');
     }
@@ -85,6 +91,12 @@ class SetupWizardController extends Controller
         $user->businessInstance->update(['setup_completed' => false]);
         session()->forget('setup_completed');
 
+        foreach (session()->all() as $key => $v) {
+            if (str_starts_with($key, 'setup_skipped_')) {
+                session()->forget($key);
+            }
+        }
+
         return redirect()->route('setup.wizard');
     }
 
@@ -111,6 +123,12 @@ class SetupWizardController extends Controller
     protected function rulesFor(string $step): array
     {
         return match ($step) {
+            'parametros' => [
+                'empresa_nombre'   => 'required|string|max:255',
+                'empresa_telefono' => 'nullable|string|max:50',
+                'moneda_simbolo'   => 'required|string|max:10',
+                'impuesto_itbis'   => 'required|numeric|min:0',
+            ],
             'sucursal' => [
                 'nombre' => 'required|string|max:255',
                 'codigo' => 'required|string|max:50',
@@ -122,11 +140,28 @@ class SetupWizardController extends Controller
             'almacen' => [
                 'nombre' => 'required|string|max:255',
             ],
+            'categoria-producto' => [
+                'nombre'      => 'required|string|max:255',
+                'descripcion' => 'nullable|string|max:500',
+                'color'       => 'nullable|string|max:20',
+            ],
             'producto' => [
                 'nombre' => 'required|string|max:255',
                 'precio' => 'required|numeric|min:0',
-                'itbis_porcentaje' => 'required|numeric|min:0|max:100',
-                'stock' => 'nullable|integer|min:0',
+                'itbis_porcentaje' => 'required|numeric|min:0',
+                'stock' => 'nullable|numeric|min:0',
+            ],
+            'cliente' => [
+                'nombre'       => 'required|string|max:255',
+                'rnc_cedula'   => 'nullable|string|max:20',
+                'tipo_cliente' => 'required|string|in:consumo,credito_fiscal,gubernamental,especial',
+                'telefono'     => 'nullable|string|max:50',
+            ],
+            'proveedor' => [
+                'nombre'   => 'required|string|max:255',
+                'rnc'      => 'nullable|string|max:20',
+                'telefono' => 'nullable|string|max:50',
+                'email'    => 'nullable|email|max:255',
             ],
             'ncf' => [
                 'tipo_comprobante' => 'required|string|max:10',
@@ -142,10 +177,11 @@ class SetupWizardController extends Controller
                 'nombre' => 'required|string|max:255',
             ],
             'mesa' => [
-                'nombre' => 'required|string|max:255',
+                'numero'       => 'nullable|string|max:20',
+                'nombre'       => 'nullable|string|max:255',
                 'ubicacion_id' => 'required|exists:mesa_ubicaciones,id',
                 'categoria_id' => 'required|exists:mesa_categorias,id',
-                'capacidad' => 'nullable|integer|min:1',
+                'capacidad'    => 'nullable|integer|min:1',
             ],
             'servicio-lavado' => [
                 'nombre' => 'required|string|max:255',
@@ -159,12 +195,22 @@ class SetupWizardController extends Controller
         };
     }
 
-    protected function createEntity(string $step, array $data): void
+    protected function createEntity(string $step, array $data, int $tenantId)
     {
-        $user = Auth::user();
-        $tenantId = $user->business_instance_id;
+        if ($step === 'parametros') {
+            foreach ($data as $key => $value) {
+                if ($key === 'step' || $key === 'tenant_id') {
+                    continue;
+                }
+                SystemSetting::updateOrCreate(
+                    ['key' => $key, 'tenant_id' => $tenantId],
+                    ['value' => $value ?? '']
+                );
+            }
+            return true; 
+        }
 
-        match ($step) {
+        return match ($step) {
             'sucursal' => Sucursal::create([
                 'nombre' => $data['nombre'],
                 'codigo' => $data['codigo'],
@@ -177,8 +223,15 @@ class SetupWizardController extends Controller
                 'tenant_id' => $tenantId,
             ]),
             'almacen' => Almacen::create([
-                'nombre' => $data['nombre'],
+                'nombre'    => $data['nombre'],
                 'tenant_id' => $tenantId,
+            ]),
+            'categoria-producto' => Categoria::create([
+                'nombre'      => $data['nombre'],
+                'descripcion' => $data['descripcion'] ?? null,
+                'color'       => $data['color'] ?? '#3b82f6',
+                'activa'      => true,
+                'tenant_id'   => $tenantId,
             ]),
             'producto' => Producto::create([
                 'nombre' => $data['nombre'],
@@ -187,7 +240,24 @@ class SetupWizardController extends Controller
                 'stock' => $data['stock'] ?? 0,
                 'tenant_id' => $tenantId,
             ]),
+            'cliente' => Cliente::create([
+                'nombre'       => $data['nombre'],
+                'rnc_cedula'   => $data['rnc_cedula'] ?? null,
+                'rnc'          => $data['rnc_cedula'] ?? null,
+                'tipo_cliente' => $data['tipo_cliente'],
+                'tipo_documento'=> '1', // Por defecto cédula/rnc
+                'telefono'     => $data['telefono'] ?? null,
+                'tenant_id'    => $tenantId,
+            ]),
+            'proveedor' => Proveedor::create([
+                'nombre'    => $data['nombre'],
+                'rnc'       => $data['rnc'] ?? null,
+                'telefono'  => $data['telefono'] ?? null,
+                'email'     => $data['email'] ?? null,
+                'tenant_id' => $tenantId,
+            ]),
             'ncf' => NcfSequence::create([
+                'nombre' => 'Secuencia ' . ($data['prefijo'] ?? 'NCF') . ' - Tipo ' . $data['tipo_comprobante'],
                 'tipo_comprobante' => $data['tipo_comprobante'],
                 'prefijo' => $data['prefijo'],
                 'desde' => $data['desde'],
@@ -206,11 +276,15 @@ class SetupWizardController extends Controller
                 'tenant_id' => $tenantId,
             ]),
             'mesa' => Mesa::create([
-                'nombre' => $data['nombre'],
+                'numero'       => $data['numero'] ?? str_pad(
+                    Mesa::where('tenant_id', $tenantId)->count() + 1,
+                    2, '0', STR_PAD_LEFT
+                ),
+                'nombre'       => $data['nombre'] ?? null,
                 'ubicacion_id' => $data['ubicacion_id'],
                 'categoria_id' => $data['categoria_id'],
-                'capacidad' => $data['capacidad'] ?? 4,
-                'tenant_id' => $tenantId,
+                'capacidad'    => $data['capacidad'] ?? 4,
+                'tenant_id'    => $tenantId,
             ]),
             'servicio-lavado' => LavaderoServicio::create([
                 'nombre' => $data['nombre'],

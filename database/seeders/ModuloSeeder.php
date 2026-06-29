@@ -91,6 +91,30 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'reportes.fiscales', 'sidebar_is_route' => 'reportes.fiscales*', 'sidebar_exact_route' => 'reportes.fiscales'],
             ['key' => 'reportes-resumen', 'label' => 'Resumen Anual', 'icon' => 'bi-bar-chart-line', 'categoria' => 'reportes', 'orden' => 58,
              'sidebar_route' => 'reportes.resumen', 'sidebar_is_route' => 'reportes.resumen*', 'sidebar_exact_route' => 'reportes.resumen'],
+
+            // Configuración
+            ['key' => 'configuracion-general', 'label' => 'Ajustes / Parámetros', 'icon' => 'bi-gear', 'categoria' => 'configuracion', 'orden' => 60,
+             'sidebar_route' => 'settings.index', 'sidebar_is_route' => 'settings.*', 'sidebar_exact_route' => 'settings.index', 'sidebar_permission' => 'configuracion.view'],
+
+            // Sistema e Integraciones
+            ['key' => 'ncf', 'label' => 'Comprobantes (NCF)', 'icon' => 'bi-receipt', 'categoria' => 'sistema', 'orden' => 63,
+             'sidebar_route' => 'ncf.index', 'sidebar_is_route' => 'ncf.*', 'sidebar_exact_route' => 'ncf.index', 'sidebar_permission' => 'ncf.view'],
+            ['key' => 'ecf', 'label' => 'Facturación Electrónica (e-CF)', 'icon' => 'bi-cloud-arrow-up', 'categoria' => 'sistema', 'orden' => 64,
+             'sidebar_route' => 'ecf.index', 'sidebar_is_route' => 'ecf.*', 'sidebar_exact_route' => 'ecf.index', 'sidebar_permission' => 'ecf.view'],
+            ['key' => 'secuencias-ecf', 'label' => 'Secuencias e-CF', 'icon' => 'bi-hash', 'categoria' => 'sistema', 'orden' => 64,
+             'sidebar_route' => 'secuencias-ecf.index', 'sidebar_is_route' => 'secuencias-ecf.*', 'sidebar_exact_route' => 'secuencias-ecf.index', 'sidebar_permission' => 'ecf.manage'],
+            ['key' => 'certificados-digitales', 'label' => 'Certificados Digitales', 'icon' => 'bi-key', 'categoria' => 'sistema', 'orden' => 64,
+             'sidebar_route' => 'certificados-digitales.index', 'sidebar_is_route' => 'certificados-digitales.*', 'sidebar_exact_route' => 'certificados-digitales.index', 'sidebar_permission' => 'ecf.certificados'],
+            ['key' => 'impresoras', 'label' => 'Impresoras y Plantillas', 'icon' => 'bi-printer', 'categoria' => 'configuracion', 'orden' => 65,
+             'sidebar_route' => 'impresoras.index', 'sidebar_is_route' => 'impresoras.*', 'sidebar_exact_route' => 'impresoras.index', 'sidebar_permission' => 'impresoras.view'],
+            ['key' => 'payment-processors', 'label' => 'Métodos de Pago', 'icon' => 'bi-credit-card', 'categoria' => 'configuracion', 'orden' => 66,
+             'sidebar_route' => 'payment-processors.index', 'sidebar_is_route' => 'payment-processors.*', 'sidebar_exact_route' => 'payment-processors.index', 'sidebar_permission' => 'payment-processors.view'],
+            ['key' => 'delivery-companies', 'label' => 'Delivery / Plataformas', 'icon' => 'bi-truck', 'categoria' => 'configuracion', 'orden' => 66,
+             'sidebar_route' => 'delivery-companies.index', 'sidebar_is_route' => 'delivery-companies.*', 'sidebar_exact_route' => 'delivery-companies.index', 'sidebar_permission' => 'delivery-companies.view'],
+            ['key' => 'auditoria', 'label' => 'Registro de Auditoría', 'icon' => 'bi-clipboard-check', 'categoria' => 'sistema', 'orden' => 67,
+             'sidebar_route' => 'auditoria.index', 'sidebar_is_route' => 'auditoria.*', 'sidebar_exact_route' => 'auditoria.index', 'sidebar_permission' => 'auditoria.view'],
+            ['key' => 'backups', 'label' => 'Copias de Seguridad', 'icon' => 'bi-database-down', 'categoria' => 'sistema', 'orden' => 68,
+             'sidebar_route' => 'backups.index', 'sidebar_is_route' => 'backups.*', 'sidebar_exact_route' => 'backups.index', 'sidebar_permission' => 'backups.view'],
         ];
 
         foreach ($modulos as $modulo) {

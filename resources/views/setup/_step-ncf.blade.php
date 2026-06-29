@@ -1,7 +1,7 @@
 <h5 class="fw-bold mb-2"><i class="bi bi-receipt-cutoff me-2 text-primary"></i>Secuencias NCF</h5>
 <p class="text-muted small mb-4">Configura una secuencia de comprobante fiscal para facturación electrónica.</p>
 
-<form action="{{ route('setup.step') }}" method="POST" class="row g-3">
+<form action="{{ route('setup.step') }}" method="POST" class="row g-3" id="form-ncf">
     @csrf
     <input type="hidden" name="step" value="ncf">
     <div class="col-md-4">
@@ -31,16 +31,19 @@
         <label class="form-label small fw-bold">Fecha de Vencimiento</label>
         <input type="date" name="fecha_vencimiento" class="form-control rounded-3" required>
     </div>
-    <div class="col-12 d-flex justify-content-between mt-4">
-        <form action="{{ route('setup.skip') }}" method="POST" class="d-inline">
-            @csrf
-            <input type="hidden" name="step" value="ncf">
-            <button type="submit" class="btn btn-outline-secondary btn-wizard-skip">
-                <i class="bi bi-arrow-right me-1"></i> Omitir paso
-            </button>
-        </form>
-        <button type="submit" class="btn btn-wizard-next">
+    <div class="col-12 mt-4 text-end">
+        <button type="submit" class="btn btn-wizard-next" form="form-ncf">
             <i class="bi bi-check-lg me-1"></i> Guardar y Siguiente
         </button>
     </div>
 </form>
+
+<div class="d-flex justify-content-start mt-3">
+    <form action="{{ route('setup.skip') }}" method="POST">
+        @csrf
+        <input type="hidden" name="step" value="ncf">
+        <button type="submit" class="btn btn-outline-secondary btn-wizard-skip">
+            <i class="bi bi-arrow-right me-1"></i> Omitir paso
+        </button>
+    </form>
+</div>
