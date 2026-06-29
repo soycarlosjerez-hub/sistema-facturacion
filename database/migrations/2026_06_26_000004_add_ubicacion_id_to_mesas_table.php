@@ -10,11 +10,15 @@ return new class extends Migration
     public function up(): void
     {
         // Extract unique ubicaciones from existing mesas and create records
-        $ubicaciones = DB::table('mesas')
-            ->whereNotNull('ubicacion')
-            ->where('ubicacion', '!=', '')
-            ->distinct()
-            ->pluck('ubicacion');
+        if (Schema::hasColumn('mesas', 'ubicacion')) {
+            $ubicaciones = DB::table('mesas')
+                ->whereNotNull('ubicacion')
+                ->where('ubicacion', '!=', '')
+                ->distinct()
+                ->pluck('ubicacion');
+        } else {
+            $ubicaciones = collect();
+        }
 
         $ubicacionMap = [];
         foreach ($ubicaciones as $nombre) {
@@ -34,7 +38,7 @@ return new class extends Migration
         });
 
         // Migrate existing data
-        if (!empty($ubicacionMap)) {
+        if (!empty($ubicacionMap) && Schema::hasColumn('mesas', 'ubicacion')) {
             foreach ($ubicacionMap as $nombre => $id) {
                 DB::table('mesas')
                     ->where('ubicacion', $nombre)
