@@ -499,32 +499,97 @@ class OwnerController extends Controller
         DB::transaction(function () use ($tenantId) {
             DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
+            // Orden: detalles primero, luego cabeceras, luego maestros
             $tables = [
-                'split_bill_persons', 'venta_detalles', 'pagos', 'ecf_log_envios',
-                'ecf_documentos', 'conduce_items', 'conduces',
-                'detalles_devolucion', 'devoluciones',
-                'compra_detalles', 'compras', 'gastos',
-                'cotizacion_items', 'cotizaciones',
-                'almacen_movimientos', 'almacenes',
-                'ncf_sequences', 'secuencias_ecf',
-                'lavadero_citas', 'lavadero_servicios', 'lavadores',
-                'sesion_cajas', 'cajas',
-                'mesas', 'mesa_categorias', 'reservaciones',
+                // Ventas y sus relaciones
+                'split_bill_persons',
+                'venta_detalles',
+                'pagos',
+                'ventas',
+
+                // ECF / NCF
+                'ecf_log_envios',
+                'ecf_documentos',
+                'secuencias_ecf',
+                'ncf_sequences',
+
+                // Conduces
+                'conduce_items',
+                'conduces',
+
+                // Devoluciones
+                'detalles_devolucion',
+                'devoluciones',
+
+                // Compras
+                'detalle_compras',   // tabla nueva (alias)
+                'compra_detalles',
+                'compras',
+
+                // Gastos
+                'gastos',
+
+                // Cotizaciones
+                'cotizacion_items',
+                'cotizaciones',
+
+                // Almacenes
+                'almacen_movimientos',
+                'almacenes',
+
+                // Restaurante
+                'reservaciones',
                 'waitlist_entries',
-                'lista_precio_items', 'lista_precios',
-                'proveedores', 'clientes', 'productos', 'categorias',
+                'mesas',
+                'mesa_ubicaciones',  // nueva
+                'mesa_categorias',
+                'categories',        // categorías extra (restaurante/lavadero)
+
+                // Lavadero
+                'lavadero_citas',
+                'lavadero_servicios',
+                'lavadores',
+
+                // Cajas
+                'sesion_cajas',
+                'cajas',
+
+                // Listas de precio
+                'lista_precio_items',
+                'lista_precios',
+
+                // Maestros operacionales
+                'proveedores',
+                'clientes',
+                'productos',
+                'categorias',
                 'sucursales',
+
+                // Configuración operacional de la instancia
+                'system_settings',
+
+                // Logs de errores de la instancia
+                'instance_error_logs',
             ];
 
             foreach ($tables as $table) {
-                DB::table($table)->where('tenant_id', $tenantId)->delete();
+                // Verificar que la tabla exista antes de intentar limpiar
+                if (DB::getSchemaBuilder()->hasTable($table)) {
+                    DB::table($table)->where('tenant_id', $tenantId)->delete();
+                }
             }
+
+            // Resetear setup_completed para que vuelva a hacer el wizard
+            \App\Models\BusinessInstance::where('id', $tenantId)->update([
+                'setup_completed' => false,
+            ]);
 
             DB::statement('SET FOREIGN_KEY_CHECKS=1');
         });
 
         return redirect()->route('owner.instances.show', $instance)
-            ->with('success', "Todos los datos operacionales de {$instance->nombre} han sido eliminados. La instancia está limpia.");
+            ->with('success', "Todos los datos operacionales de {$instance->nombre} han sido eliminados. El wizard de configuración se reiniciará en el próximo inicio de sesión.");
+
     }
 
     public function alternarBloqueo(Request $request, $id)

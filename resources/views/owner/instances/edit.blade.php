@@ -115,11 +115,29 @@
                 <div>
                     <h6 class="fw-bold mb-1">Limpiar todos los datos de la instancia</h6>
                     <p class="text-muted small mb-0">
-                        Esta acción eliminará <strong>todos los datos operacionales</strong> de <strong>{{ $instance->nombre }}</strong>:
-                        productos, clientes, proveedores, ventas, compras, cotizaciones, conduces, devoluciones,
-                        gastos, almacenes, cajas, mesas, reservaciones, datos de lavadero, listas de precio,
-                        sucursales, secuencias NCF/ECF, y más.
+                        Esta acción eliminará <strong>todos los datos operacionales</strong> de
+                        <strong>{{ $instance->nombre }}</strong> y reiniciará el wizard de configuración.
                     </p>
+                    <div class="mt-2">
+                        <small class="text-muted d-block"><i class="bi bi-x-circle-fill text-danger me-1"></i><strong>Se eliminarán:</strong></small>
+                        <div class="row row-cols-2 row-cols-md-3 g-1 mt-1">
+                            @foreach([
+                                'Ventas y pagos','Detalles de ventas','Compras y detalles',
+                                'Cotizaciones','Conduces','Devoluciones',
+                                'Gastos','Almacenes y movimientos','Cajas y sesiones',
+                                'Productos','Categorías','Clientes',
+                                'Proveedores','Sucursales','NCF / ECF / Secuencias',
+                                'Mesas y reservaciones','Lavadero (citas/servicios)','Listas de precio',
+                                'Parámetros del sistema','Logs de errores','Datos restaurante',
+                            ] as $item)
+                            <div class="col">
+                                <span class="badge bg-danger bg-opacity-10 text-danger fw-normal px-2 py-1 rounded-pill w-100 text-start">
+                                    <i class="bi bi-dash-circle me-1 opacity-75"></i>{{ $item }}
+                                </span>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -127,11 +145,13 @@
                 <div class="d-flex align-items-start gap-2">
                     <i class="bi bi-info-circle text-danger mt-1"></i>
                     <div class="small">
-                        <strong class="text-danger">Se conservarán:</strong> usuarios, roles de instancia, 
-                        visibilidad de módulos, historial de pagos y configuración de la instancia.
-                        <br>
-                        <strong class="text-danger">No se puede deshacer.</strong> Asegúrate de haber hecho 
-                        un backup antes de continuar.
+                        <strong class="text-danger">Se conservarán:</strong> usuarios de la instancia, roles y permisos,
+                        módulos habilitados, historial de pagos y configuración general de la instancia.
+                        <br class="mb-1">
+                        <strong class="text-warning">⚠ El wizard de configuración inicial se reiniciará</strong> — el usuario
+                        deberá completarlo nuevamente al ingresar.
+                        <br class="mb-1">
+                        <strong class="text-danger">No se puede deshacer.</strong> Realiza un backup antes de continuar.
                     </div>
                 </div>
             </div>
