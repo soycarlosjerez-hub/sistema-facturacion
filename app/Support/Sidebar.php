@@ -103,6 +103,13 @@ class Sidebar
                 'is_route' => 'owner.errors.*',
                 'exact_route' => 'owner.errors.index',
             ];
+            $items[] = [
+                'route' => 'owner.online.index',
+                'icon'  => 'bi-wifi',
+                'label' => 'Online',
+                'is_route' => 'owner.online.*',
+                'exact_route' => 'owner.online.index',
+            ];
             return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
         }
 

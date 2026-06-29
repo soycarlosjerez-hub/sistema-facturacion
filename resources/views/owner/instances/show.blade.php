@@ -350,6 +350,9 @@
             <h5 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Usuarios Asignados</h5>
             <div class="d-flex gap-2 align-items-center">
                 <small class="text-muted">{{ $instance->users->count() }} usuario(s)</small>
+                <a href="{{ route('owner.instances.online', $instance) }}" class="btn btn-sm btn-outline-primary rounded-pill fw-bold">
+                    <i class="bi bi-wifi me-1"></i>Online
+                </a>
                 <a href="{{ route('owner.instances.users.create', $instance) }}" class="btn btn-sm btn-success rounded-pill fw-bold">
                     <i class="bi bi-plus-lg me-1"></i>Nuevo Usuario
                 </a>
