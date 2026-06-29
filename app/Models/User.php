@@ -49,8 +49,17 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'last_seen_at'      => 'datetime',
+            'password'          => 'hashed',
         ];
+    }
+
+    /**
+     * Usuario se considera online si su last_seen_at fue en los últimos 5 minutos.
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at && $this->last_seen_at->gt(now()->subMinutes(5));
     }
 
     public function sucursal()

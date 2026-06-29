@@ -582,6 +582,10 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'instanceErrors'])->name('instances.errors');
     Route::patch('/instances/{instance}/errors/{errorLog}/resolve', [\App\Http\Controllers\OwnerController::class, 'resolveError'])->name('instances.errors.resolve');
     Route::delete('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'clearErrors'])->name('instances.errors.clear');
+    // Online users
+    Route::get('/online', [\App\Http\Controllers\OwnerController::class, 'onlineUsers'])->name('online.index');
+    Route::get('/instances/{instance}/online', [\App\Http\Controllers\OwnerController::class, 'instanceOnlineUsers'])->name('instances.online');
+
     // Owner role management (reuses RoleController)
     Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('roles.create');

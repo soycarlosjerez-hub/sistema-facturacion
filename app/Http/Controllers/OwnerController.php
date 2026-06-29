@@ -1009,4 +1009,56 @@ class OwnerController extends Controller
 
         return $meses;
     }
+
+    // ─────────────────────────────────────────────────────────
+    //  Usuarios Online
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Vista global: todos los usuarios online de todas las instancias.
+     */
+    public function onlineUsers(Request $request)
+    {
+        $threshold = now()->subMinutes(5);
+
+        $onlineUsers = User::with(['businessInstance', 'instanceRole'])
+            ->whereNotNull('last_seen_at')
+            ->where('last_seen_at', '>=', $threshold)
+            ->whereNotNull('business_instance_id')
+            ->orderByDesc('last_seen_at')
+            ->get();
+
+        // Agrupados por instancia
+        $byInstance = $onlineUsers->groupBy('business_instance_id');
+
+        $instancias = BusinessInstance::whereIn('id', $byInstance->keys())->get()->keyBy('id');
+
+        // Total de usuarios registrados en cada instancia (para contexto)
+        $totalByInstance = User::whereNotNull('business_instance_id')
+            ->selectRaw('business_instance_id, count(*) as total')
+            ->groupBy('business_instance_id')
+            ->pluck('total', 'business_instance_id');
+
+        return view('owner.online', compact('onlineUsers', 'byInstance', 'instancias', 'totalByInstance'));
+    }
+
+    /**
+     * Vista por instancia: usuarios online de una instancia específica.
+     */
+    public function instanceOnlineUsers($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $threshold = now()->subMinutes(5);
+
+        $onlineUsers = User::with('instanceRole')
+            ->where('business_instance_id', $instance->id)
+            ->whereNotNull('last_seen_at')
+            ->where('last_seen_at', '>=', $threshold)
+            ->orderByDesc('last_seen_at')
+            ->get();
+
+        $totalUsers = User::where('business_instance_id', $instance->id)->count();
+
+        return view('owner.instances.online', compact('instance', 'onlineUsers', 'totalUsers'));
+    }
 }

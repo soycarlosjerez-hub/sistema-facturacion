@@ -19,8 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'setup.wizard'     => \App\Http\Middleware\CheckSetupWizard::class,
         ]);
 
+        $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckInstanceBlocked::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSetupWizard::class);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
