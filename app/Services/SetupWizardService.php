@@ -70,19 +70,6 @@ class SetupWizardService
 
     public function firstPendingStep(array $steps): ?array
     {
-        $skipped = collect();
-        foreach (session()->all() as $key => $value) {
-            if (str_starts_with($key, 'setup_skipped_')) {
-                $skipped->push(str_replace('setup_skipped_', '', $key));
-            }
-        }
-
-        foreach ($steps as $step) {
-            if (!$step['completed'] && !in_array($step['key'], $skipped->toArray())) {
-                return $step;
-            }
-        }
-
         foreach ($steps as $step) {
             if (!$step['completed']) {
                 return $step;

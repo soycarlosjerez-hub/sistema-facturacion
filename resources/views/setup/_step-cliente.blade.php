@@ -36,13 +36,3 @@
         </button>
     </div>
 </form>
-
-<div class="d-flex justify-content-start mt-3">
-    <form action="{{ route('setup.skip') }}" method="POST">
-        @csrf
-        <input type="hidden" name="step" value="cliente">
-        <button type="submit" class="btn btn-outline-secondary btn-wizard-skip">
-            <i class="bi bi-arrow-right me-1"></i> Omitir paso
-        </button>
-    </form>
-</div>

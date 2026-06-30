@@ -51,15 +51,6 @@ class SetupWizardController extends Controller
 
         $this->createEntity($step, $data, $data['tenant_id']);
 
-        session()->forget("setup_skipped_{$step}");
-
-        return redirect()->route('setup.wizard');
-    }
-
-    public function skipStep(Request $request): RedirectResponse
-    {
-        $step = $request->input('step');
-        session()->put("setup_skipped_{$step}", true);
         return redirect()->route('setup.wizard');
     }
 
@@ -90,12 +81,6 @@ class SetupWizardController extends Controller
 
         $user->businessInstance->update(['setup_completed' => false]);
         session()->forget('setup_completed');
-
-        foreach (session()->all() as $key => $v) {
-            if (str_starts_with($key, 'setup_skipped_')) {
-                session()->forget($key);
-            }
-        }
 
         return redirect()->route('setup.wizard');
     }

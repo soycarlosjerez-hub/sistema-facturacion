@@ -23,17 +23,15 @@
 .wizard-form .form-control:focus, .wizard-form .form-select:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,.15); }
 .btn-wizard-next { background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none; border-radius: 50px; padding: 0.6rem 2rem; font-weight: 700; color: #fff; transition: all .3s; }
 .btn-wizard-next:hover { box-shadow: 0 6px 20px rgba(139,92,246,.45); transform: translateY(-1px); color: #fff; }
-.btn-wizard-skip { border-radius: 50px; padding: 0.6rem 1.5rem; }
 .final-checklist .check-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; border-radius: 10px; margin-bottom: 0.5rem; background: #f8fafc; }
 .final-checklist .check-item.done { background: #f0fdf4; }
-.final-checklist .check-item.skipped { background: #fefce8; }
 body.dark-mode .step-item:not(:last-child)::after { background: #334155; }
 body.dark-mode .step-item.completed:not(:last-child)::after { background: #22c55e; }
 body.dark-mode .step-item.pending .step-circle { background: #334155; color: #64748b; }
 body.dark-mode .step-label { color: #94a3b8; }
 body.dark-mode .final-checklist .check-item { background: #1e293b; }
 body.dark-mode .final-checklist .check-item.done { background: #052e16; }
-body.dark-mode .final-checklist .check-item.skipped { background: #422006; }
+
 </style>
 @endpush
 
@@ -75,11 +73,6 @@ body.dark-mode .final-checklist .check-item.skipped { background: #422006; }
                                 <div class="check-item done">
                                     <i class="bi bi-check-circle-fill text-success fs-5"></i>
                                     <span>{{ $step['label'] }}</span>
-                                </div>
-                            @elseif(in_array($step['key'], $completedKeys) || $step['skipable'])
-                                <div class="check-item skipped">
-                                    <i class="bi bi-arrow-right-circle-fill text-warning fs-5"></i>
-                                    <span>{{ $step['label'] }} <small class="text-muted">(omitido)</small></span>
                                 </div>
                             @endif
                         @endforeach
