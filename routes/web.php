@@ -589,15 +589,7 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/online', [\App\Http\Controllers\OwnerController::class, 'onlineUsers'])->name('online.index');
     Route::get('/instances/{instance}/online', [\App\Http\Controllers\OwnerController::class, 'instanceOnlineUsers'])->name('instances.online');
 
-    // Owner role management (reuses RoleController)
-    Route::get('/roles', [\App\Http\Controllers\RoleController::class, 'index'])->name('roles.index');
-    Route::get('/roles/create', [\App\Http\Controllers\RoleController::class, 'create'])->name('roles.create');
-    Route::post('/roles', [\App\Http\Controllers\RoleController::class, 'store'])->name('roles.store');
-    Route::get('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'show'])->name('roles.show');
-    Route::get('/roles/{role}/edit', [\App\Http\Controllers\RoleController::class, 'edit'])->name('roles.edit');
-    Route::put('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'update'])->name('roles.update');
-    Route::delete('/roles/{role}', [\App\Http\Controllers\RoleController::class, 'destroy'])->name('roles.destroy');
-    Route::get('/roles-matrix', [\App\Http\Controllers\RoleController::class, 'matrix'])->name('roles.matrix');
+    // (owner role management removed — roles are managed per-instance)
 });
 
 // Devoluciones
@@ -775,6 +767,37 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/lavadero/lavadores/{lavador}', [\App\Http\Controllers\LavadorController::class, 'destroy'])->name('lavadero.lavadores.destroy')->middleware('permission:lavadero.lavadores');
     Route::get('/lavadero/lavadores/activos', [\App\Http\Controllers\LavadorController::class, 'activos'])->name('lavadero.lavadores.activos')->middleware('permission:lavadero.view');
     Route::post('/lavadero/ventas/{venta}/lavadores', [\App\Http\Controllers\LavaderoController::class, 'asignarLavadores'])->name('lavadero.ventas.lavadores')->middleware('permission:lavadero.view');
+
+    // Alquileres (Property Rentals)
+    Route::get('/alquileres', [\App\Http\Controllers\AlquilerController::class, 'index'])->name('alquileres.index')->middleware('permission:alquileres.view');
+
+    Route::get('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'index'])->name('alquileres.viviendas.index')->middleware('permission:alquileres.viviendas');
+    Route::get('/alquileres/viviendas/crear', [\App\Http\Controllers\AlquilerViviendaController::class, 'create'])->name('alquileres.viviendas.create')->middleware('permission:alquileres.viviendas');
+    Route::post('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'store'])->name('alquileres.viviendas.store')->middleware('permission:alquileres.viviendas');
+    Route::get('/alquileres/viviendas/{vivienda}/editar', [\App\Http\Controllers\AlquilerViviendaController::class, 'edit'])->name('alquileres.viviendas.edit')->middleware('permission:alquileres.viviendas');
+    Route::put('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'update'])->name('alquileres.viviendas.update')->middleware('permission:alquileres.viviendas');
+    Route::delete('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'destroy'])->name('alquileres.viviendas.destroy')->middleware('permission:alquileres.viviendas');
+
+    Route::get('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'index'])->name('alquileres.inquilinos.index')->middleware('permission:alquileres.inquilinos');
+    Route::get('/alquileres/inquilinos/crear', [\App\Http\Controllers\AlquilerInquilinoController::class, 'create'])->name('alquileres.inquilinos.create')->middleware('permission:alquileres.inquilinos');
+    Route::post('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'store'])->name('alquileres.inquilinos.store')->middleware('permission:alquileres.inquilinos');
+    Route::get('/alquileres/inquilinos/{inquilino}/editar', [\App\Http\Controllers\AlquilerInquilinoController::class, 'edit'])->name('alquileres.inquilinos.edit')->middleware('permission:alquileres.inquilinos');
+    Route::put('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'update'])->name('alquileres.inquilinos.update')->middleware('permission:alquileres.inquilinos');
+    Route::delete('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'destroy'])->name('alquileres.inquilinos.destroy')->middleware('permission:alquileres.inquilinos');
+
+    Route::get('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'index'])->name('alquileres.contratos.index')->middleware('permission:alquileres.contratos');
+    Route::get('/alquileres/contratos/crear', [\App\Http\Controllers\AlquilerContratoController::class, 'create'])->name('alquileres.contratos.create')->middleware('permission:alquileres.contratos');
+    Route::post('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'store'])->name('alquileres.contratos.store')->middleware('permission:alquileres.contratos');
+    Route::get('/alquileres/contratos/{contrato}/editar', [\App\Http\Controllers\AlquilerContratoController::class, 'edit'])->name('alquileres.contratos.edit')->middleware('permission:alquileres.contratos');
+    Route::put('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'update'])->name('alquileres.contratos.update')->middleware('permission:alquileres.contratos');
+    Route::delete('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'destroy'])->name('alquileres.contratos.destroy')->middleware('permission:alquileres.contratos');
+
+    Route::get('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'index'])->name('alquileres.pagos.index')->middleware('permission:alquileres.pagos');
+    Route::get('/alquileres/pagos/crear', [\App\Http\Controllers\AlquilerPagoController::class, 'create'])->name('alquileres.pagos.create')->middleware('permission:alquileres.pagos');
+    Route::post('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'store'])->name('alquileres.pagos.store')->middleware('permission:alquileres.pagos');
+    Route::get('/alquileres/pagos/{pago}/editar', [\App\Http\Controllers\AlquilerPagoController::class, 'edit'])->name('alquileres.pagos.edit')->middleware('permission:alquileres.pagos');
+    Route::put('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'update'])->name('alquileres.pagos.update')->middleware('permission:alquileres.pagos');
+    Route::delete('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'destroy'])->name('alquileres.pagos.destroy')->middleware('permission:alquileres.pagos');
 });
 
 Route::get('/instancia-bloqueada', function () {

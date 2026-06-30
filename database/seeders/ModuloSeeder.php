@@ -115,6 +115,18 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'auditoria.index', 'sidebar_is_route' => 'auditoria.*', 'sidebar_exact_route' => 'auditoria.index', 'sidebar_permission' => 'auditoria.view'],
             ['key' => 'backups', 'label' => 'Copias de Seguridad', 'icon' => 'bi-database-down', 'categoria' => 'sistema', 'orden' => 68,
              'sidebar_route' => 'backups.index', 'sidebar_is_route' => 'backups.*', 'sidebar_exact_route' => 'backups.index', 'sidebar_permission' => 'backups.view'],
+
+            // Alquileres
+            ['key' => 'alquileres', 'label' => 'Dashboard Alquileres', 'icon' => 'bi-building', 'categoria' => 'alquileres', 'orden' => 70,
+             'sidebar_route' => 'alquileres.index', 'sidebar_is_route' => 'alquileres.*', 'sidebar_exact_route' => 'alquileres.index', 'sidebar_permission' => 'alquileres.view'],
+            ['key' => 'alquileres-viviendas', 'label' => 'Viviendas', 'icon' => 'bi-house-door', 'categoria' => 'alquileres', 'orden' => 71,
+             'sidebar_route' => 'alquileres.viviendas.index', 'sidebar_is_route' => 'alquileres.viviendas.*', 'sidebar_exact_route' => 'alquileres.viviendas.index', 'sidebar_permission' => 'alquileres.viviendas'],
+            ['key' => 'alquileres-inquilinos', 'label' => 'Inquilinos', 'icon' => 'bi-people', 'categoria' => 'alquileres', 'orden' => 72,
+             'sidebar_route' => 'alquileres.inquilinos.index', 'sidebar_is_route' => 'alquileres.inquilinos.*', 'sidebar_exact_route' => 'alquileres.inquilinos.index', 'sidebar_permission' => 'alquileres.inquilinos'],
+            ['key' => 'alquileres-contratos', 'label' => 'Contratos', 'icon' => 'bi-file-earmark-text', 'categoria' => 'alquileres', 'orden' => 73,
+             'sidebar_route' => 'alquileres.contratos.index', 'sidebar_is_route' => 'alquileres.contratos.*', 'sidebar_exact_route' => 'alquileres.contratos.index', 'sidebar_permission' => 'alquileres.contratos'],
+            ['key' => 'alquileres-pagos', 'label' => 'Pagos de Alquiler', 'icon' => 'bi-cash-coin', 'categoria' => 'alquileres', 'orden' => 74,
+             'sidebar_route' => 'alquileres.pagos.index', 'sidebar_is_route' => 'alquileres.pagos.*', 'sidebar_exact_route' => 'alquileres.pagos.index', 'sidebar_permission' => 'alquileres.pagos'],
         ];
 
         foreach ($modulos as $modulo) {

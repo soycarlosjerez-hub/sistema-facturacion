@@ -87,15 +87,6 @@ class Sidebar
                     'exact_route' => 'owner.modules.index',
                 ];
             }
-            if ($user->can('owner.roles.manage')) {
-                $items[] = [
-                    'route' => 'owner.roles.index',
-                    'icon'  => 'bi-shield-shaded',
-                    'label' => 'Roles y Permisos',
-                    'is_route' => 'owner.roles.*',
-                    'exact_route' => 'owner.roles.index',
-                ];
-            }
             $items[] = [
                 'route' => 'owner.errors.index',
                 'icon'  => 'bi-bug',
@@ -270,6 +261,54 @@ class Sidebar
                     'label' => 'Lavadores',
                     'is_route' => 'lavadero.lavadores.*',
                     'exact_route' => 'lavadero.lavadores.index',
+                ];
+            }
+        }
+
+        // Alquileres
+        if ($mod('alquileres') && $can('alquileres.view')) {
+            $items[] = ['section' => 'Alquileres'];
+            $items[] = [
+                'route' => 'alquileres.index',
+                'icon'  => 'bi-building',
+                'label' => 'Dashboard Alquileres',
+                'is_route' => 'alquileres.*',
+                'exact_route' => 'alquileres.index',
+            ];
+            if ($mod('alquileres-viviendas') && $can('alquileres.viviendas')) {
+                $items[] = [
+                    'route' => 'alquileres.viviendas.index',
+                    'icon'  => 'bi-house-door',
+                    'label' => 'Viviendas',
+                    'is_route' => 'alquileres.viviendas.*',
+                    'exact_route' => 'alquileres.viviendas.index',
+                ];
+            }
+            if ($mod('alquileres-inquilinos') && $can('alquileres.inquilinos')) {
+                $items[] = [
+                    'route' => 'alquileres.inquilinos.index',
+                    'icon'  => 'bi-people',
+                    'label' => 'Inquilinos',
+                    'is_route' => 'alquileres.inquilinos.*',
+                    'exact_route' => 'alquileres.inquilinos.index',
+                ];
+            }
+            if ($mod('alquileres-contratos') && $can('alquileres.contratos')) {
+                $items[] = [
+                    'route' => 'alquileres.contratos.index',
+                    'icon'  => 'bi-file-earmark-text',
+                    'label' => 'Contratos',
+                    'is_route' => 'alquileres.contratos.*',
+                    'exact_route' => 'alquileres.contratos.index',
+                ];
+            }
+            if ($mod('alquileres-pagos') && $can('alquileres.pagos')) {
+                $items[] = [
+                    'route' => 'alquileres.pagos.index',
+                    'icon'  => 'bi-cash-coin',
+                    'label' => 'Pagos de Alquiler',
+                    'is_route' => 'alquileres.pagos.*',
+                    'exact_route' => 'alquileres.pagos.index',
                 ];
             }
         }

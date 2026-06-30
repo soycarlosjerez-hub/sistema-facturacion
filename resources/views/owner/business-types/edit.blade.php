@@ -6,10 +6,8 @@
 <style>
 .module-check {
     border: 1px solid rgba(0,0,0,0.06);
-    background-color: #f8f9fa;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
-    position: relative;
 }
 .module-check:hover {
     transform: translateY(-2px);
@@ -35,16 +33,6 @@
     background-color: #198754;
     border-color: #198754;
 }
-.category-section {
-    background: #ffffff;
-    border: 1px solid rgba(0,0,0,0.04);
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.01);
-}
-body.dark-mode .category-section {
-    background: rgba(15,23,42,.6);
-}
 </style>
 @endpush
 
@@ -69,23 +57,22 @@ body.dark-mode .category-section {
         </div>
     </div>
 
-    <form method="POST" action="{{ route('owner.business-types.update', $businessType) }}" id="instanceForm">
+    <form method="POST" action="{{ route('owner.business-types.update', $businessType) }}">
         @csrf @method('PUT')
-        
         <div class="row g-3">
             <div class="col-lg-5">
                 <div class="premium-card h-100">
                     <div class="card-accent purple"></div>
-                    <div class="card-header bg-transparent border-0 p-4 pb-0">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Información General</h5>
+                    <div class="card-header bg-transparent border-0 p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Informaci&oacute;n General</h5>
                     </div>
-                    <div class="card-body p-4 pt-3">
+                    <div class="card-body p-4 pt-0">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Nombre</label>
+                            <label class="form-label fw-bold small">Nombre <span class="text-danger">*</span></label>
                             <input type="text" name="nombre" class="form-control rounded-pill @error('nombre') is-invalid @enderror" value="{{ old('nombre', $businessType->nombre) }}" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Descripción</label>
+                            <label class="form-label fw-bold small">Descripci&oacute;n</label>
                             <textarea name="descripcion" class="form-control rounded-4 @error('descripcion') is-invalid @enderror" rows="3">{{ old('descripcion', $businessType->descripcion) }}</textarea>
                         </div>
                         <div class="mb-3">
@@ -100,9 +87,9 @@ body.dark-mode .category-section {
                             <label class="form-label fw-bold small">Icono (Bootstrap Icons)</label>
                             <input type="text" name="icon" class="form-control rounded-pill" value="{{ old('icon', $businessType->icon) }}" placeholder="bi-building">
                         </div>
-                        <div class="row g-2">
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <div class="form-check form-switch pt-2">
+                                <div class="form-check form-switch">
                                     <input type="checkbox" name="activo" class="form-check-input" value="1" id="activo" {{ old('activo', $businessType->activo) ? 'checked' : '' }}>
                                     <label class="form-check-label fw-bold small" for="activo">Activo</label>
                                 </div>
@@ -115,74 +102,41 @@ body.dark-mode .category-section {
                     </div>
                 </div>
             </div>
-
             <div class="col-lg-7">
                 <div class="premium-card h-100">
                     <div class="card-accent green"></div>
-                    <div class="card-header bg-transparent border-0 p-4 pb-0">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-puzzle text-success me-2"></i>Módulos Disponibles</h5>
+                    <div class="card-header bg-transparent border-0 p-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-puzzle text-success me-2"></i>M&oacute;dulos Disponibles</h5>
                     </div>
-                    <div class="card-body p-4 pt-3">
+                    <div class="card-body p-4 pt-0">
+                        @php $selectedKeys = $businessType->modules->where('visible', true)->pluck('modulo_key')->toArray(); @endphp
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <button type="button" id="selectAll" class="btn btn-sm btn-outline-success rounded-pill"><i class="bi bi-check-all me-1"></i>Seleccionar todos</button>
                             <button type="button" id="deselectAll" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-x me-1"></i>Deseleccionar todos</button>
                         </div>
 
-                        @php
-                            $selectedKeys = $businessType->modules->where('visible', true)->pluck('modulo_key')->toArray();
-                        @endphp
-
-                        <div class="modules-container">
-                            @foreach($modulesByCategory as $categoria => $modules)
-                                @php
-                                    $catInfo = $categoryLabels[$categoria] ?? ['label' => ucfirst($categoria), 'icon' => 'bi-puzzle'];
-                                    $selectedInCat = $modules->whereIn('key', $selectedKeys)->count();
-                                    $totalInCat = $modules->count();
-                                @endphp
-                                <div class="category-section mb-4" id="cat_section_{{ $categoria }}">
-                                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="bi {{ $catInfo['icon'] }} text-primary fs-5"></i>
-                                            <span class="fw-semibold fs-6">{{ $catInfo['label'] }}</span>
-                                            <span class="badge {{ $selectedInCat > 0 ? 'bg-success' : 'bg-secondary' }} ms-2 category-badge" id="badge_{{ $categoria }}">{{ $selectedInCat }} / {{ $totalInCat }}</span>
-                                        </div>
-                                        <div class="d-flex gap-1">
-                                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill select-category" data-category="{{ $categoria }}" title="Seleccionar todos">
-                                                <i class="bi bi-check-all"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill deselect-category" data-category="{{ $categoria }}" title="Deseleccionar todos">
-                                                <i class="bi bi-x"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="row g-2">
-                                        @foreach($modules as $module)
-                                            @php
-                                                $current = $businessType->modules->where('modulo_key', $module->key)->first();
-                                                $visible = $current ? $current->visible : false;
-                                            @endphp
-                                            <div class="col-xl-3 col-lg-4 col-md-6 col-6">
-                                                <div class="form-check module-check rounded-3 p-2 h-100 {{ $visible ? 'is-checked' : '' }}" style="cursor:pointer; min-height: 80px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; text-align: center;" data-category="{{ $categoria }}">
-                                                    <label class="d-flex align-items-center justify-content-center w-100 h-100 m-0" style="cursor:pointer;">
-                                                        <input type="checkbox" name="modules[]" value="{{ $module->key }}" class="form-check-input module-input me-2" id="mod_{{ $module->key }}" {{ $visible ? 'checked' : '' }}>
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <i class="bi {{ $module->icon ?? 'bi-puzzle' }} fs-5 text-muted"></i>
-                                                            <span class="fw-medium small text-wrap text-dark">{{ $module->label ?? $module->key }}</span>
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
+                        <div class="row g-2">
+                            @foreach($allModules as $module)
+                            @php $checked = in_array($module->key, $selectedKeys); @endphp
+                            <div class="col-md-4 col-sm-6">
+                                <div class="form-check module-check rounded-3 p-2 {{ $checked ? 'is-checked' : 'bg-light' }}" style="cursor:pointer;" onclick="toggleModule(this)">
+                                    <input type="checkbox" name="modules[]" value="{{ $module->key }}" class="form-check-input module-input" id="mod_{{ $module->key }}" {{ $checked ? 'checked' : '' }}>
+                                    <label class="form-check-label small fw-medium" for="mod_{{ $module->key }}">
+                                        <i class="bi bi-puzzle me-1 text-muted"></i>{{ $module->label ?? $module->key }}
+                                    </label>
                                 </div>
+                            </div>
                             @endforeach
                         </div>
 
                         <hr>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted small">
-                                <span id="selectedCount">{{ $businessType->modules->where('visible', true)->count() }}</span> de {{ $modulesByCategory->flatten()->count() }} seleccionados
+                                <span id="selectedCount">{{ count($selectedKeys) }}</span> de {{ $allModules->count() }} seleccionados
                             </span>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
+                                <i class="bi bi-check-lg me-2"></i>Guardar Cambios
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -190,136 +144,49 @@ body.dark-mode .category-section {
         </div>
     </form>
 </div>
-
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small d-none d-md-inline">
-            <i class="bi bi-info-circle me-1"></i> Editando tipo de negocio: {{ $businessType->nombre }}
-        </span>
-        <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('owner.business-types.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold shadow-sm">
-                <i class="bi bi-save me-2"></i>Guardar Todo
-            </button>
-        </div>
-    </div>
-</div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-function updateCount() {
-    const count = document.querySelectorAll('.module-input:checked').length;
-    const total = document.querySelectorAll('.module-input').length;
-    const selectedCountEl = document.getElementById('selectedCount');
-    if (selectedCountEl) {
-        selectedCountEl.textContent = count;
+function toggleModule(el) {
+    const input = el.querySelector('.module-input');
+    input.checked = !input.checked;
+    if (input.checked) {
+        el.classList.add('is-checked');
+        el.classList.remove('bg-light');
+    } else {
+        el.classList.remove('is-checked');
+        el.classList.add('bg-light');
     }
-    
-    document.querySelectorAll('.category-section').forEach(section => {
-        const cat = section.id.replace('cat_section_', '');
-        const checked = section.querySelectorAll('.module-input:checked').length;
-        const total = section.querySelectorAll('.module-input').length;
-        const badge = document.getElementById(`badge_${cat}`);
-        if (badge) {
-            badge.textContent = `${checked} / ${total}`;
-            if (checked > 0) {
-                badge.classList.remove('bg-secondary');
-                badge.classList.add('bg-success');
-            } else {
-                badge.classList.remove('bg-success');
-                badge.classList.add('bg-secondary');
-            }
-        }
-    });
+    updateCount();
 }
-
-document.addEventListener('change', function(e) {
-    if (e.target.matches('.module-input')) {
-        const card = e.target.closest('.module-check');
-        if (card) {
-            if (e.target.checked) {
-                card.classList.add('is-checked');
-            } else {
-                card.classList.remove('is-checked');
-            }
-            updateCount();
-        }
-    }
-});
-
-document.getElementById('selectAll')?.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+document.getElementById('selectAll')?.addEventListener('click', function() {
     document.querySelectorAll('.module-input').forEach(i => {
         i.checked = true;
         const parent = i.closest('.module-check');
         if (parent) {
             parent.classList.add('is-checked');
+            parent.classList.remove('bg-light');
         }
     });
     updateCount();
 });
-
-document.getElementById('deselectAll')?.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+document.getElementById('deselectAll')?.addEventListener('click', function() {
     document.querySelectorAll('.module-input').forEach(i => {
         i.checked = false;
         const parent = i.closest('.module-check');
         if (parent) {
             parent.classList.remove('is-checked');
+            parent.classList.add('bg-light');
         }
     });
     updateCount();
 });
-
-document.querySelectorAll('.select-category').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const cat = this.dataset.category;
-        document.querySelectorAll(`.module-check[data-category="${cat}"] .module-input`).forEach(i => {
-            i.checked = true;
-            const parent = i.closest('.module-check');
-            if (parent) {
-                parent.classList.add('is-checked');
-            }
-        });
-        updateCount();
-    });
-});
-
-document.querySelectorAll('.deselect-category').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const cat = this.dataset.category;
-        document.querySelectorAll(`.module-check[data-category="${cat}"] .module-input`).forEach(i => {
-            i.checked = false;
-            const parent = i.closest('.module-check');
-            if (parent) {
-                parent.classList.remove('is-checked');
-            }
-        });
-        updateCount();
-    });
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.target.matches('.module-check') && (e.key === 'Enter' || e.key === ' ')) {
-        e.preventDefault();
-        const input = e.target.querySelector('.module-input');
-        if (input) {
-            input.checked = !input.checked;
-            input.dispatchEvent(new Event('change'));
-        }
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    updateCount();
-});
+function updateCount() {
+    const count = document.querySelectorAll('.module-input:checked').length;
+    document.getElementById('selectedCount').textContent = count;
+}
+document.addEventListener('DOMContentLoaded', updateCount);
 </script>
 @endpush

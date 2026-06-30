@@ -2003,7 +2003,7 @@ body:not(.dark-mode) {
         <div class="modal-content rounded-4 border-0 shadow" style="max-height:95vh;">
             <div class="modal-header border-0 rounded-top-4 py-3">
                 <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Producto</h5>
-                <button type="button" class="btn-close btn-close-white" style="width:36px;height:36px;" data-bs-dismiss="modal" onclick="cerrarModalProductos()"></button>
+                <button type="button" class="btn-close btn-close-white" style="width:36px;height:36px;" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
                 <div class="input-group shadow-sm rounded-3 mb-2">
@@ -2554,8 +2554,8 @@ body:not(.dark-mode) {
             const c = colorProductoModal(p.nombre);
             const initial = (p.nombre || '?').charAt(0).toUpperCase();
             const stockCls = p.stock <= 0 ? 'bg-secondary' : p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark';
-            const stockTxt = p.stock <= 0 ? 'Agotado' : p.stock + ' uds';
-            const outCls = p.stock <= 0 ? ' out-of-stock' : '';
+            const stockTxt = p.stock <= 0 ? 'Sin stock' : p.stock + ' uds';
+            const outCls = ''; // No bloquear por stock
             let imgHtml;
             if (p.imagen_url) {
                 imgHtml = `<img class="modal-prod-img" src="${p.imagen_url}" alt="" onerror="this.onerror=null;this.remove();this.nextElementSibling.style.display='flex';">`;
@@ -2565,7 +2565,7 @@ body:not(.dark-mode) {
             }
             html += `
             <div class="col-4 col-md-3 col-lg-2">
-                <div class="modal-prod-card${outCls}" onclick="agregarProductoDesdeModal(${id})" ${p.stock <= 0 ? 'style="pointer-events:none;"' : ''}>
+                <div class="modal-prod-card${outCls}" onclick="agregarProductoDesdeModal(${id})">
                     <span class="modal-prod-stock-badge badge ${stockCls}">${stockTxt}</span>
                     ${imgHtml}
                     <div class="modal-prod-name">${escapeHtml(p.nombre)}</div>
@@ -2593,14 +2593,11 @@ body:not(.dark-mode) {
 
     function agregarProductoDesdeModal(id) {
         const p = productos.find(x => x.id === id);
-        if (!p || p.stock <= 0) { showToast('Producto sin stock', 'danger'); return; }
+        if (!p) { showToast('Producto no encontrado', 'danger'); return; }
         const qty = cantidadesModal[id] || 1;
-        if (p.stock < qty) { showToast(`Solo hay ${p.stock} unidades disponibles`, 'warning'); return; }
         const existing = cart.find(x => x.id === id);
         if (existing) {
-            const totalQty = existing.qty + qty;
-            if (totalQty > p.stock) { showToast(`Stock máximo: ${p.stock}`, 'warning'); return; }
-            existing.qty = totalQty;
+            existing.qty += qty;
         } else {
             cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: qty, stock: p.stock, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto' });
         }
@@ -2695,16 +2692,8 @@ body:not(.dark-mode) {
             showToast(`Producto #${id} no encontrado`, 'danger');
             return;
         }
-        if (p.stock <= 0) {
-            showToast(`"${p.nombre}" sin stock`, 'danger');
-            return;
-        }
         const existing = cart.find(x => x.id === id);
         if (existing) {
-            if (existing.qty >= p.stock) {
-                showToast(`Stock máximo para "${p.nombre}" (${p.stock})`, 'warning');
-                return;
-            }
             existing.qty++;
         } else {
             cart.push({
@@ -2906,7 +2895,7 @@ body:not(.dark-mode) {
             const stockCls = p.stock === 0 ? 'out' : p.stock <= 5 ? 'crit' : p.stock <= 15 ? 'low' : 'ok';
             const stockLbl = p.stock === 0 ? 'Agotado' : p.stock + ' disp.';
             return `
-            <button type="button" class="pos-product-card ${p.stock === 0 ? 'out-of-stock' : ''}" data-action="add" data-id="${p.id}" ${p.stock === 0 ? 'disabled' : ''}>
+            <button type="button" class="pos-product-card ${p.stock === 0 ? 'out-of-stock' : ''}" data-action="add" data-id="${p.id}">
                 <img src="${p.imagen_url}" class="ppc-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
                 <div class="ppc-name">${escapeHtml(p.nombre)}</div>
                 <div class="ppc-price">${fmt(p.precio)}</div>
@@ -2935,7 +2924,10 @@ body:not(.dark-mode) {
 
     // ============ Cliente ============
     function onClienteChange() {
-        const opt = $('cliente_id').options[$('cliente_id').selectedIndex];
+        const select = $('cliente_id');
+        if (!select || !select.options.length) return;
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return;
         const esFinal = opt.dataset.esFinal === '1';
         const tipo = opt.dataset.tipo || 'consumo';
         const deuda = parseFloat(opt.dataset.deuda) || 0;
@@ -3263,6 +3255,12 @@ body:not(.dark-mode) {
     window.imprimirTicket = imprimirTicket;
     window.mostrarBuscarCliente = mostrarBuscarCliente;
     window.seleccionarCliente = seleccionarCliente;
+    window.cerrarModalProductos = cerrarModalProductos;
+    window.agregarProductoDesdeModal = agregarProductoDesdeModal;
+    window.modalBuscarProductos = modalBuscarProductos;
+    window.modalLimpiarBusqueda = modalLimpiarBusqueda;
+    window.tecladoIdioma = tecladoIdioma;
+    window.categoriaFiltroChange = categoriaFiltroChange;
 
     // Init on DOMContentLoaded
     if (document.readyState === 'loading') {

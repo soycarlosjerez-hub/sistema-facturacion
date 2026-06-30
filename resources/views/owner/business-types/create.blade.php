@@ -99,7 +99,6 @@
                                 </div>
                             </div>
                             @endforeach
-                        </div>
 
                         <hr>
                         <div class="d-flex justify-content-between align-items-center">

@@ -12,7 +12,7 @@ echo 'Roles: ' . implode(', ', $user->getRoleNames()->toArray()) . PHP_EOL;
 Auth::login($user);
 
 // Check permissions
-$perms = ['owner.dashboard', 'owner.instances.view', 'owner.business-types.view', 'owner.roles.manage'];
+$perms = ['owner.dashboard', 'owner.instances.view', 'owner.business-types.view'];
 foreach ($perms as $perm) {
     echo "Permission '$perm': " . ($user->can($perm) ? 'YES' : 'NO') . PHP_EOL;
 }

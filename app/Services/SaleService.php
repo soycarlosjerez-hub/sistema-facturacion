@@ -172,6 +172,17 @@ class SaleService
             ->get()
             ->map(fn($p) => $p->setAttribute('imagen_url', $p->imagen_url));
 
+        // Apply restaurante_valida_stock setting (shared with restaurant module)
+        $validaStock = true;
+        $user = Auth::user();
+        if ($user && $user->businessInstance) {
+            $config = $user->businessInstance->configuracion ?? [];
+            $validaStock = ($config['restaurante_valida_stock'] ?? '1') === '1';
+        }
+        if ($validaStock) {
+            $productos = $productos->filter(fn($p) => $p->stock > 0)->values();
+        }
+
         $stockPorProductoAlmacen = AlmacenMovimiento::query()
             ->selectRaw('producto_id, almacen_id, SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
             ->groupBy('producto_id', 'almacen_id')

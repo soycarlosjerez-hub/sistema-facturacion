@@ -257,7 +257,7 @@
         <div class="modal-content rounded-4 border-0 shadow" style="max-height:95vh;">
             <div class="modal-header border-0 bg-primary text-white rounded-top-4 py-2">
                 <h6 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Plato</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="cerrarModalProductos()"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
                 {{-- Búsqueda --}}

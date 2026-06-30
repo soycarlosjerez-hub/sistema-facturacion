@@ -1,0 +1,98 @@
+{
+  "name": "tenant-id-validator",
+  "description": "Validates and populates tenant_id across all modules using TenantScope trait",
+  "version": "1.0.0",
+  "author": "Opencode",
+  "type": "maintenance",
+  "category": "data-management",
+  "tags": ["tenant", "validation", "data-migration", "multi-tenancy"],
+  "priority": 50,
+  "enabled": true,
+  "schedule": null,
+  "usage": [
+    "php artisan skill:tenant-id-validator",
+    "php artisan skill:tenant-id-validator --fix"
+  ],
+  "parameters": [
+    {
+      "name": "fix",
+      "type": "boolean",
+      "default": false,
+      "required": false,
+      "description": "If set to true, populates missing tenant_id values"
+    }
+  ],
+  "features": [
+    {
+      "id": "validation",
+      "name": "Validate TenantScope Tables",
+      "description": "Validates all tables using TenantScope trait and reports on tenant_id population status",
+      "icon": "🛡️",
+      "color": "blue"
+    },
+    {
+      "id": "statistics",
+      "name": "Generate Statistics",
+      "description": "Provides comprehensive statistics on tenant_id population across all tables",
+      "icon": "📊",
+      "color": "green"
+    },
+    {
+      "id": "populate",
+      "name": "Populate Missing tenant_id",
+      "description": "Automatically assigns tenant_id=1 to all records missing tenant_id",
+      "icon": "✏️",
+      "color": "orange"
+    },
+    {
+      "id": "report",
+      "name": "Detailed Reports",
+      "description": "Generates detailed reports with counts, percentages, and recommendations",
+      "icon": "📋",
+      "color": "purple"
+    }
+  ],
+  "how-to-use": [
+    "Run the skill to validate tenant_id population:",
+    "```bash",
+    "php artisan skill:tenant-id-validator",
+    "```",
+    "",
+    "To populate missing tenant_id values:",
+    "```bash",
+    "php artisan skill:tenant-id-validator --fix",
+    "```"
+  ],
+  "examples": [
+    {
+      "title": "Checking Tenant ID Status",
+      "description": "Validates and shows tenant_id population across all tables",
+      "command": "php artisan skill:tenant-id-validator",
+      "output": "=== TABLES WITH TENANT SCOPE ===\nproductos: ✅ OK (78.5% sin tenant_id)\ncategorias: ✅ OK (0% sin tenant_id)\nclientes: ✅ OK (0% sin tenant_id)\n...\n\n=== SUMMARY ===\nTotal tables: 38\nTables with tenant_id: 38\nTables without tenant_id: 0\nTotal records with tenant_id: 10,450\nTotal records without tenant_id: 2,780"
+    },
+    {
+      "title": "Fixing Missing Tenant IDs",
+      "description": "Populates tenant_id=1 for all records missing it",
+      "command": "php artisan skill:tenant-id-validator --fix",
+      "output": "=== POPULATING MISSING TENANT_ID ===\n  ✓ productos: asignados 780 tenant_id = 1\n  ✓ clientes: asignados 450 tenant_id = 1\n  ✓ ventas: asignados 320 tenant_id = 1\n  ✓ ...\n\n✓ Total registros actualizados: 1,550\n\n=== FINAL STATISTICS ===\nTotal tables processed: 38\nTotal records in database: 13,230\nRecords with valid tenant_id: 11,880\nRecords without tenant_id: 0\n\n✅ All records have tenant_id assigned."
+    }
+  ],
+  "troubleshooting": [
+    {
+      "problem": "Table doesn't have tenant_id column",
+      "solution": "Add the tenant_id column to the table or check if the model uses TenantScope trait"
+    },
+    {
+      "problem": "Command fails to populate records",
+      "solution": "Ensure database permissions are correct and run with proper database user"
+    },
+    {
+      "problem": "Large number of records taking too long",
+      "solution": "Consider running the command with a batch limit or during off-peak hours"
+    }
+  ],
+  "dependencies": [],
+  "permissions": ["owner", "admin", "manager"],
+  "compatible_with": ["v1.0.0", "v1.1.0"],
+  "last_updated": "2026-06-24"
+}

@@ -146,19 +146,7 @@ class OwnerController extends Controller
     {
         $businessType = BusinessType::with('modules')->findOrFail($id);
         $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
-        $modulesByCategory = $allModules->groupBy('categoria');
-        
-        $categoryLabels = [
-            'core' => ['label' => 'Core / Básico', 'icon' => 'bi-cpu'],
-            'operaciones' => ['label' => 'Operaciones', 'icon' => 'bi-gear-wide-connected'],
-            'clientes' => ['label' => 'Clientes y Caja', 'icon' => 'bi-people'],
-            'organizacion' => ['label' => 'Organización', 'icon' => 'bi-diagram-3'],
-            'lavadero' => ['label' => 'Lavadero', 'icon' => 'bi-droplet'],
-            'restaurante' => ['label' => 'Restaurante', 'icon' => 'bi-cup-straw'],
-            'reportes' => ['label' => 'Reportes', 'icon' => 'bi-graph-up'],
-        ];
-        
-        return view('owner.business-types.edit', compact('businessType', 'modulesByCategory', 'categoryLabels'));
+        return view('owner.business-types.edit', compact('businessType', 'allModules'));
     }
 
     public function businessTypesUpdate(Request $request, $id)

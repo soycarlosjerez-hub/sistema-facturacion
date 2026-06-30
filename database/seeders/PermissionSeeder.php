@@ -27,8 +27,6 @@ class PermissionSeeder extends Seeder
                 'owner.business-types.create',
                 'owner.business-types.edit',
                 'owner.business-types.delete',
-                'owner.roles.view',
-                'owner.roles.manage',
                 'owner.users.view',
                 'owner.users.manage',
             ],
@@ -239,8 +237,6 @@ class PermissionSeeder extends Seeder
                 'owner.business-types.create',
                 'owner.business-types.edit',
                 'owner.business-types.delete',
-                'owner.roles.view',
-                'owner.roles.manage',
                 'owner.users.view',
                 'owner.users.manage',
                 

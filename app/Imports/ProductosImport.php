@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Categoria;
 use App\Models\Producto;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -23,6 +24,7 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation
             'stock'            => $row['stock'] ?? 0,
             'imagen'           => $row['imagen'] ?? null,
             'categoria_id'     => $this->resolveCategoryId($row['categoria'] ?? $row['categoria_id'] ?? null),
+            'tenant_id'        => Auth::user()->business_instance_id ?? 1,
         ]);
     }
 
