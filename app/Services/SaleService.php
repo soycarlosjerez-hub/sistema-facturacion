@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AlmacenMovimiento;
+use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\Pago;
 use App\Models\Producto;
@@ -167,7 +168,7 @@ class SaleService
         $almacenes  = \App\Models\Almacen::orderBy('nombre')->get();
 
         $productos = Producto::orderBy('nombre')
-            ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen')
+            ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen', 'categoria_id')
             ->get()
             ->map(fn($p) => $p->setAttribute('imagen_url', $p->imagen_url));
 
@@ -200,7 +201,10 @@ class SaleService
             'ventas_count' => (int) ($p->ventas_count ?? 0),
             'unidad_medida'=> $p->unidad_medida ?? 'Unidad',
             'imagen_url'   => $p->imagen_url,
+            'categoria_id' => (int) ($p->categoria_id ?? 0),
         ])->values()->all();
+
+        $categoriasJs = Categoria::orderBy('nombre')->get(['id', 'nombre'])->toArray();
 
         $clientesJs = $clientes->map(fn($c) => [
             'id'         => (int) $c->id,
@@ -216,7 +220,7 @@ class SaleService
         return compact(
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
-            'productosJs', 'clientesJs'
+            'productosJs', 'clientesJs', 'categoriasJs'
         );
     }
 

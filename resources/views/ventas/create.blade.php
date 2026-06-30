@@ -2005,11 +2005,23 @@ body:not(.dark-mode) {
                 <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Producto</h5>
                 <button type="button" class="btn-close btn-close-white" style="width:36px;height:36px;" data-bs-dismiss="modal" onclick="cerrarModalProductos()"></button>
             </div>
-            <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 68px);">
+            <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
                 <div class="input-group shadow-sm rounded-3 mb-2">
                     <span class="input-group-text" style="background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text-muted); min-height:48px;"><i class="bi bi-search fs-5"></i></span>
                     <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()" style="min-height:48px; font-size:1.05rem;">
                     <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: var(--pos-text-muted); min-width:48px;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg fs-5"></i></button>
+                </div>
+                <div class="d-flex gap-2 mb-2">
+                    <select id="modal-item-curso" class="form-select form-select-sm rounded-3" style="max-width:120px;background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);">
+                        <option value="entrada">Entrada</option>
+                        <option value="fuerte" selected>Plato Fuerte</option>
+                        <option value="postre">Postre</option>
+                        <option value="bebida">Bebida</option>
+                    </select>
+                    <select id="modal-categoria-filtro" class="form-select form-select-sm rounded-3" onchange="categoriaFiltroChange()" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);">
+                        <option value="">Todas</option>
+                    </select>
+                    <input type="text" id="modal-item-notas" class="form-control form-control-sm rounded-3" placeholder="Notas" maxlength="200" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);">
                 </div>
                 <div id="modal-productos-grid" class="row g-2 overflow-auto mb-2" style="flex:1; min-height:0;"></div>
                 <div class="border-top pt-2 mt-2" id="teclado-virtual" style="border-color: var(--pos-border) !important;">
@@ -2135,6 +2147,7 @@ body:not(.dark-mode) {
     // ============ Datos del servidor ============
     const productos = {!! json_encode($productosJs) !!};
     const clientes = {!! json_encode($clientesJs) !!};
+    const categorias = {!! json_encode($categoriasJs) !!};
     const sesionId = {{ $sesion->id }};
     const dia = {!! json_encode(\Carbon\Carbon::now()->format('Y-m-d')) !!};
     const placeholder = {!! json_encode(asset('img/producto-placeholder.svg')) !!};
@@ -2149,6 +2162,7 @@ body:not(.dark-mode) {
     let activeFilter = 'all';
     let searchQuery = '';
     let metodoPagoPendiente = null;
+    let modalCategoriaFiltro = '';
 
     // ============ Helpers ============
     const $ = (id) => document.getElementById(id);
@@ -2442,6 +2456,21 @@ body:not(.dark-mode) {
         if (e.target.id === 'monto-recibido') actualizarTotalPago();
     });
 
+    function renderizarFiltroCategoriasModal() {
+        const sel = $('modal-categoria-filtro');
+        if (!sel) return;
+        let html = '<option value="">Todas</option>';
+        categorias.forEach(c => {
+            html += `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`;
+        });
+        sel.innerHTML = html;
+    }
+
+    function categoriaFiltroChange() {
+        modalCategoriaFiltro = $('modal-categoria-filtro').value;
+        modalBuscarProductos();
+    }
+
     // ============ Modal Productos + Teclado Virtual ============
     const PALETA_COLORES_MODAL = [
         { bg: '#fee2e2', fg: '#dc2626' }, { bg: '#ffedd5', fg: '#ea580c' },
@@ -2471,8 +2500,13 @@ body:not(.dark-mode) {
         const modal = new bootstrap.Modal(modalEl, { keyboard: false });
         $('modal-buscar-producto').value = '';
         $('modal-btn-limpiar').style.display = 'none';
+        $('modal-item-notas').value = '';
+        $('modal-item-curso').value = 'fuerte';
+        $('modal-categoria-filtro').value = '';
+        modalCategoriaFiltro = '';
         cantidadesModal = {};
         teclaShiftActivo = false;
+        renderizarFiltroCategoriasModal();
         renderizarTecladoModal();
         tecladoIdioma('es');
         renderizarProductosModal('');
@@ -2502,10 +2536,12 @@ body:not(.dark-mode) {
     function renderizarProductosModal(filtro) {
         const container = $('modal-productos-grid');
         const q = (filtro || '').toLowerCase();
-        const results = productos.filter(p =>
-            (p.nombre || '').toLowerCase().includes(q) ||
-            (p.codigo_barras || '').toLowerCase().includes(q)
-        );
+        const results = productos.filter(p => {
+            const matchNombre = (p.nombre || '').toLowerCase().includes(q);
+            const matchCodigo = (p.codigo_barras || '').toLowerCase().includes(q);
+            const matchCategoria = !modalCategoriaFiltro || String(p.categoria_id) === modalCategoriaFiltro;
+            return (matchNombre || matchCodigo) && matchCategoria;
+        });
         if (results.length === 0) {
             container.innerHTML = '<div class="col-12 text-center py-4" style="color:var(--pos-text-muted);"><i class="bi bi-search" style="font-size:2.5rem;opacity:.4;display:block;margin-bottom:8px;"></i>Sin resultados</div>';
             return;
