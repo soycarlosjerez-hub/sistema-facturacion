@@ -507,7 +507,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         <?php $sectionId = str_replace(' ', '-', strtolower($sectionTitle)); ?>
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="heading-{{ $sectionId }}">
-                                <button class="accordion-button {{ $sectionId === $activeSectionId ? '' : 'collapsed' }}" type="button" data-bs-target="#collapse-{{ $sectionId }}" aria-expanded="{{ $sectionId === $activeSectionId ? 'true' : 'false' }}" aria-controls="collapse-{{ $sectionId }}">
+                                <button class="accordion-button {{ $sectionId === $activeSectionId ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ $sectionId }}" data-bs-parent="#sidebarAccordion" aria-expanded="{{ $sectionId === $activeSectionId ? 'true' : 'false' }}" aria-controls="collapse-{{ $sectionId }}">
                                     <span class="accordion-text">{{ $sectionTitle }}</span>
                                     <i class="bi bi-chevron-down accordion-icon"></i>
                                 </button>
