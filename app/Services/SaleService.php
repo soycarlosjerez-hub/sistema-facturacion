@@ -203,11 +203,14 @@ class SaleService
         ])->values()->all();
 
         $clientesJs = $clientes->map(fn($c) => [
-            'id'       => (int) $c->id,
-            'nombre'   => $c->nombre,
-            'tipo'     => $c->tipo_cliente ?? 'consumo',
-            'deuda'    => (float) ($c->balance_pendiente ?? 0),
-            'es_final' => $c->id === $clienteConsumidorFinal->id,
+            'id'         => (int) $c->id,
+            'nombre'     => $c->nombre,
+            'tipo'       => $c->tipo_cliente ?? 'consumo',
+            'deuda'      => (float) ($c->balance_pendiente ?? 0),
+            'es_final'   => $c->id === $clienteConsumidorFinal->id,
+            'rnc'        => $c->rnc ?? $c->rnc_cedula ?? '',
+            'rnc_cedula' => $c->rnc_cedula ?? $c->rnc ?? '',
+            'tipo_cliente' => $c->tipo_cliente ?? 'consumo',
         ])->values()->all();
 
         return compact(
@@ -291,6 +294,35 @@ class SaleService
         if (in_array($estado, ['pendiente', 'cuenta_abierta'])) {
             $cliente = Cliente::find($data['cliente_id']);
             $cliente?->increment('balance_pendiente', $data['total']);
+            return;
+        }
+
+        if ($metodo === 'mixto') {
+            $mixtos = [
+                'efectivo'      => (float) ($data['mixto_efectivo'] ?? 0),
+                'tarjeta'       => (float) ($data['mixto_tarjeta'] ?? 0),
+                'transferencia' => (float) ($data['mixto_transferencia'] ?? 0),
+            ];
+            foreach ($mixtos as $tipo => $monto) {
+                if ($monto > 0) {
+                    Pago::create([
+                        'tenant_id'      => Auth::user()->business_instance_id,
+                        'venta_id'       => $venta->id,
+                        'caja_id'        => $sesion->caja_id,
+                        'sesion_caja_id' => $sesion->id,
+                        'monto'          => $monto,
+                        'metodo_pago'    => $tipo,
+                        'nota'           => 'Pago mixto (' . ucfirst($tipo) . ')',
+                        'fecha_pago'     => now(),
+                    ]);
+                    match ($tipo) {
+                        'efectivo'      => $sesion->increment('ventas_efectivo', $monto),
+                        'tarjeta'       => $sesion->increment('ventas_tarjeta', $monto),
+                        'transferencia' => $sesion->increment('ventas_transferencia', $monto),
+                        default         => null,
+                    };
+                }
+            }
             return;
         }
 

@@ -154,6 +154,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/ventas/pdf/{id}', [VentaController::class, 'exportPdf'])->name('venta.pdf');
     });
 
+    Route::post('/ventas/imprimir/{id}', [VentaController::class, 'imprimir'])->name('ventas.imprimir');
+    Route::post('/ventas/facturar/{id}', [VentaController::class, 'facturar'])->name('ventas.facturar');
+
     // Cotizaciones
     Route::prefix('cotizaciones')->name('cotizaciones.')->group(function () {
         Route::get('/buscar-producto', [CotizacionController::class, 'buscarProductos'])->name('buscarProducto');

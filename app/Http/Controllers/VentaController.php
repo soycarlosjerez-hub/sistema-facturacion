@@ -9,6 +9,7 @@ use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\Venta;
+use App\Services\PrintService;
 use App\Services\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -72,6 +73,9 @@ class VentaController extends Controller
             ->first();
 
         if (!$sesion) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Tu caja se cerró. No se puede registrar la venta.'], 400);
+            }
             return back()->with('error', 'Tu caja se cerró. No se puede registrar la venta.');
         }
 
@@ -79,8 +83,22 @@ class VentaController extends Controller
             $venta = $this->saleService->createSale($request->validated(), $sesion);
             $msg = 'Venta registrada en ' . $sesion->caja->nombre;
 
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success'           => true,
+                    'venta_id'          => $venta->id,
+                    'total'             => (float) $venta->total,
+                    'cliente'           => $venta->cliente->nombre ?? 'Consumidor Final',
+                    'metodo_pago'       => $request->input('metodo_pago', 'efectivo'),
+                    'tipo_comprobante'  => $request->input('tipo_comprobante', 'sin'),
+                ]);
+            }
+
             return redirect()->route('ventas.show', $venta->id)->with('success', $msg);
         } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
             return back()->withErrors('Error: ' . $e->getMessage())->withInput();
         }
     }
@@ -231,5 +249,30 @@ class VentaController extends Controller
             ]);
 
         return response()->json(['ventas' => $ventas]);
+    }
+
+    public function imprimir($id)
+    {
+        $venta = Venta::findOrFail($id);
+        try {
+            app(PrintService::class)->imprimir($venta);
+            return response()->json(['success' => true, 'message' => 'Impresión enviada.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function facturar($id)
+    {
+        $venta = Venta::findOrFail($id);
+        try {
+            $ecfService = app(\App\Services\Ecf\EcfService::class);
+            $ecf = $ecfService->generarEcf($venta);
+            $firmado = $ecfService->firmar($ecf);
+            $ecfService->enviar($firmado);
+            return response()->json(['success' => true, 'message' => 'e-CF generado y enviado a DGII.']);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Error al facturar: ' . $e->getMessage()], 500);
+        }
     }
 }

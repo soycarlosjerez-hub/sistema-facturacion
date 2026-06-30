@@ -1516,6 +1516,51 @@ body:not(.dark-mode) {
     }
     .modal-prod-qty button:hover { background: rgba(14,165,233,0.15); border-color: var(--pos-accent); }
     .modal-prod-qty span { font-weight: 800; font-size: 1rem; min-width: 24px; text-align: center; color: var(--pos-text); }
+
+    /* ============ Premium Payment Modal ============ */
+    @keyframes cobrarGradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .cobrar-premium .modal-content { border-radius: 20px; overflow: hidden; border: 0; box-shadow: 0 25px 60px rgba(0,0,0,0.5); }
+    .cobrar-premium .cobrar-header { background: linear-gradient(135deg, #059669, #10b981, #06b6d4, #059669); background-size: 300% 300%; animation: cobrarGradientShift 6s ease infinite; padding: 24px 28px 20px; color: #fff; }
+    .cobrar-premium .cobrar-header .icon-circle { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; backdrop-filter: blur(8px); }
+    .cobrar-total-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 16px 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    .cobrar-total-card h2 { font-size: 2.4rem; font-weight: 900; color: var(--pos-text); font-variant-numeric: tabular-nums; }
+    .metodo-btn { border: 2px solid var(--pos-border); border-radius: 16px; padding: 14px 8px; background: transparent; color: var(--pos-text); font-weight: 700; font-size: 0.85rem; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+    .metodo-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    .metodo-btn.active-metodo.efectivo { border-color: #10b981; background: rgba(16,185,129,0.1); color: #6ee7b7; }
+    .metodo-btn.active-metodo.tarjeta { border-color: #0ea5e9; background: rgba(14,165,233,0.1); color: #38bdf8; }
+    .metodo-btn.active-metodo.transferencia { border-color: #6366f1; background: rgba(99,102,241,0.1); color: #a5b4fc; }
+    .metodo-btn.active-metodo.mixto { border-color: #f59e0b; background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .metodo-btn i { font-size: 1.6rem; }
+    .input-premium { width: 100%; background: rgba(255,255,255,0.06); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 14px 18px; font-size: 1.6rem; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+    .input-premium:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+    .pago-detalle { margin-top: 12px; }
+    .pago-detalle label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--pos-text-muted); margin-bottom: 4px; display: block; }
+    .propina-btn { border-radius: 50px; border: 2px solid rgba(16,185,129,0.3); background: transparent; color: #6ee7b7; font-weight: 700; padding: 8px 18px; font-size: 0.85rem; transition: all 0.15s; cursor: pointer; }
+    .propina-btn:hover { background: rgba(16,185,129,0.1); border-color: #10b981; transform: scale(1.05); }
+    .propina-btn.active { background: #10b981; border-color: #10b981; color: #fff; }
+    .servicio-check { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; }
+    .servicio-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: #10b981; }
+    .servicio-check label { font-size: 0.82rem; font-weight: 600; color: var(--pos-text); margin: 0; }
+    .btn-cobrar { background: linear-gradient(135deg, #059669, #10b981); border: none; border-radius: 50px; padding: 14px 24px; font-weight: 800; font-size: 1.1rem; color: #fff; transition: all 0.3s; position: relative; overflow: hidden; }
+    .btn-cobrar:hover { box-shadow: 0 8px 30px rgba(16,185,129,0.4); transform: translateY(-2px); color: #fff; }
+    .btn-cobrar .shine { position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: cobrarShine 3s ease-in-out infinite; }
+    @keyframes cobrarShine { 0% { left: -60%; } 100% { left: 160%; } }
+    
+    /* ============ Post-Pago Modal ============ */
+    #postPagoModal .modal-content { border-radius: 20px; overflow: hidden; border: 0; }
+    #postPagoModal .modal-header.bg-success { background: linear-gradient(135deg, #059669, #10b981) !important; }
+    
+    /* ============ Cliente Modal ============ */
+    #clienteModal .modal-content { border-radius: 16px; background: var(--pos-bg); color: var(--pos-text); border: 1px solid var(--pos-border); }
+    #clienteModal .modal-header { border-bottom: 1px solid var(--pos-border); }
+    #clienteModal .cliente-search-input { background: rgba(255,255,255,0.06); border: 1px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 12px 16px; font-size: 1rem; width: 100%; }
+    #clienteModal .cliente-search-input:focus { outline: none; border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
+    .cliente-result-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 4px; }
+    .cliente-result-item:hover { background: rgba(14,165,233,0.05); border-color: var(--pos-border); }
+    .cliente-result-item .cr-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .cliente-result-item .cr-info { flex: 1; min-width: 0; }
+    .cliente-result-item .cr-name { font-weight: 700; color: var(--pos-text); }
+    .cliente-result-item .cr-meta { font-size: 0.75rem; color: var(--pos-text-muted); }
 </style>
 
 <form id="pos-form" action="{{ route('ventas.store') }}" method="POST" autocomplete="off">
@@ -1667,7 +1712,11 @@ body:not(.dark-mode) {
                         <i class="bi bi-person"></i> Cliente
                         <span class="cliente-pill ms-auto" id="cliente-tipo-badge">Consumo</span>
                     </div>
-                    <select name="cliente_id" id="cliente_id" class="cliente-select">
+                    <button type="button" class="cliente-select text-start" onclick="mostrarBuscarCliente()" id="btn-select-cliente">
+                        <span id="cliente-selected-name">Consumidor Final</span>
+                        <small class="text-muted d-block" style="font-size:0.7rem;font-weight:400;">Tocar para cambiar</small>
+                    </button>
+                    <select name="cliente_id" id="cliente_id" style="display:none;">
                         @foreach($clientes as $cliente)
                             <option value="{{ $cliente->id }}"
                                     data-es-final="{{ $cliente->id == $clienteConsumidorFinal->id ? '1' : '0' }}"
@@ -1820,119 +1869,129 @@ body:not(.dark-mode) {
 </div>
 @endif
 
-<!-- Modal Pago Efectivo -->
-<div class="modal fade" id="modalEfectivo" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content modal-pos">
-            <div class="modal-header">
-                <h5 class="fw-bold"><i class="bi bi-cash-stack me-2 text-success"></i>Cobro en Efectivo</h5>
+<!-- ============ Premium Payment Modal ============ -->
+<div class="modal fade cobrar-premium" id="pagoModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+        <div class="modal-content">
+            <div class="cobrar-header d-flex align-items-center gap-3">
+                <div class="icon-circle"><i class="bi bi-cash-stack"></i></div>
+                <div class="flex-grow-1">
+                    <h5 class="fw-bold mb-0">Cobrar Venta</h5>
+                    <small class="text-white-50">Punto de Venta</small>
+                </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="cash-modal-grid">
-                    <div>
-                        <div class="cash-total-display">
-                            <div class="ctd-label">Total a Cobrar</div>
-                            <div class="ctd-amount" id="modal-total-display">RD$0.00</div>
-                        </div>
-                        <div class="mb-2">
-                            <small class="text-muted fw-bold text-uppercase">Monto Recibido</small>
-                            <input type="text" inputmode="decimal" id="monto-recibido" class="cash-recibido-input" placeholder="0.00">
-                        </div>
-                        <div class="cambio-display" id="cambio-box">
-                            <div class="cd-label">Cambio (Devuelta)</div>
-                            <div class="cd-amount" id="cambio-display">RD$0.00</div>
-                        </div>
-                        <button type="button" class="btn btn-success w-100 mt-3 py-3 fw-bold rounded-3" onclick="POS.confirmarVentaEfectivo()">
-                            <i class="bi bi-check-circle"></i> CONFIRMAR Y GUARDAR
+            <div class="modal-body p-4">
+                <!-- Total -->
+                <div class="cobrar-total-card mb-4">
+                    <h2 class="fw-bold mb-0" id="pago-total">RD$ 0.00</h2>
+                </div>
+
+                <!-- Métodos de Pago -->
+                <div class="row g-2 mb-3" id="pago-metodos">
+                    <div class="col-3">
+                        <button type="button" class="metodo-btn efectivo active-metodo w-100" data-metodo="efectivo" onclick="seleccionarMetodoPago('efectivo')">
+                            <i class="bi bi-cash-stack"></i> Efectivo
                         </button>
                     </div>
-                    <div>
-                        <small class="text-muted fw-bold text-uppercase d-block mb-2">Montos Rápidos</small>
-                        <div class="row g-1 mb-2" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                            <button type="button" class="quick-amount-btn exacto" onclick="POS.setMontoExacto()">
-                                <i class="bi bi-check2-circle"></i> Exacto
-                            </button>
-                            <button type="button" class="quick-amount-btn" data-amt="100">100</button>
-                            <button type="button" class="quick-amount-btn" data-amt="200">200</button>
-                            <button type="button" class="quick-amount-btn" data-amt="500">500</button>
-                            <button type="button" class="quick-amount-btn" data-amt="1000">1,000</button>
-                            <button type="button" class="quick-amount-btn" data-amt="2000">2,000</button>
-                            <button type="button" class="quick-amount-btn" data-amt="5000">5,000</button>
-                            <button type="button" class="quick-amount-btn" data-amt="10000">10,000</button>
-                            <button type="button" class="quick-amount-btn" data-amt="20000">20,000</button>
-                        </div>
-                        <small class="text-muted fw-bold text-uppercase d-block mb-2">Teclado</small>
-                        <div class="keypad-grid">
-                            <button type="button" class="keypad-btn" data-k="7">7</button>
-                            <button type="button" class="keypad-btn" data-k="8">8</button>
-                            <button type="button" class="keypad-btn" data-k="9">9</button>
-                            <button type="button" class="keypad-btn" data-k="4">4</button>
-                            <button type="button" class="keypad-btn" data-k="5">5</button>
-                            <button type="button" class="keypad-btn" data-k="6">6</button>
-                            <button type="button" class="keypad-btn" data-k="1">1</button>
-                            <button type="button" class="keypad-btn" data-k="2">2</button>
-                            <button type="button" class="keypad-btn" data-k="3">3</button>
-                            <button type="button" class="keypad-btn" data-k="0">0</button>
-                            <button type="button" class="keypad-btn" data-k="00">00</button>
-                            <button type="button" class="keypad-btn" data-k=".">.</button>
-                        </div>
-                        <div class="row g-1 mt-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                            <button type="button" class="keypad-btn fn" onclick="POS.clearMonto()">
-                                <i class="bi bi-backspace"></i> Borrar
-                            </button>
-                            <button type="button" class="keypad-btn fn" data-bs-dismiss="modal">
-                                <i class="bi bi-x-lg"></i> Cancelar
-                            </button>
-                        </div>
+                    <div class="col-3">
+                        <button type="button" class="metodo-btn tarjeta w-100" data-metodo="tarjeta" onclick="seleccionarMetodoPago('tarjeta')">
+                            <i class="bi bi-credit-card-2-front"></i> Tarjeta
+                        </button>
                     </div>
+                    <div class="col-3">
+                        <button type="button" class="metodo-btn transferencia w-100" data-metodo="transferencia" onclick="seleccionarMetodoPago('transferencia')">
+                            <i class="bi bi-bank2"></i> Transferencia
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="metodo-btn mixto w-100" data-metodo="mixto" onclick="seleccionarMetodoPago('mixto')">
+                            <i class="bi bi-coin"></i> Mixto
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Efectivo Section -->
+                <div id="pago-efectivo" class="pago-detalle">
+                    <label>Monto Recibido</label>
+                    <input type="number" id="monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="">
+                    <div id="cambio-info" class="mt-2">
+                        <small class="text-muted">Cambio: <span class="fw-bold" id="cambio-monto">RD$ 0.00</span></small>
+                    </div>
+                </div>
+
+                <!-- Mixto Section -->
+                <div id="pago-mixto" class="pago-detalle" style="display:none;">
+                    <div class="mb-2">
+                        <label>Efectivo</label>
+                        <input type="number" id="mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" oninput="actualizarTotalPago()">
+                    </div>
+                    <div class="mb-2">
+                        <label>Tarjeta</label>
+                        <input type="number" id="mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" oninput="actualizarTotalPago()">
+                    </div>
+                    <div class="mb-2">
+                        <label>Transferencia</label>
+                        <input type="number" id="mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" oninput="actualizarTotalPago()">
+                    </div>
+                    <small class="text-muted" id="mixto-restante"></small>
+                </div>
+
+                <!-- Propina -->
+                <div class="mt-3">
+                    <label class="fw-bold small mb-1" style="color:var(--pos-text-muted);">Propina</label>
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="number" id="propina-input" class="form-control" style="width:100px;background:rgba(255,255,255,0.06);border-color:var(--pos-border);color:var(--pos-text);border-radius:10px;" step="0.01" min="0" value="0" oninput="actualizarTotalPago()">
+                        <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
+                        <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
+                        <button type="button" class="propina-btn" onclick="asignarPropina(18, this)">18%</button>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="d-flex gap-2 mt-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill flex-grow-1" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-cobrar flex-grow-1" onclick="procesarPago()">
+                        <span class="shine"></span>
+                        <i class="bi bi-check2-circle me-1"></i> Cobrar
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Confirmar Venta -->
-<div class="modal fade" id="modalConfirmar" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-pos">
-            <div class="modal-header">
-                <h5 class="fw-bold"><i class="bi bi-check2-circle me-2 text-success"></i>Confirmar Venta</h5>
+<!-- ============ Modal Post-Pago ============ -->
+<div class="modal fade" id="postPagoModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white border-0" style="background:linear-gradient(135deg,#059669,#10b981)!important;">
+                <h5 class="modal-title fw-bold"><i class="bi bi-check-circle me-2"></i>Pago Exitoso</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="p-3 rounded-3 mb-3" style="background: rgba(14, 165, 233, 0.08);">
-                    <div class="d-flex justify-content-between mb-2 small">
-                        <span class="text-muted">Cliente</span>
-                        <strong id="confirm-cliente">—</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2 small">
-                        <span class="text-muted">Items</span>
-                        <strong id="confirm-items">0</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2 small">
-                        <span class="text-muted">Comprobante</span>
-                        <strong id="confirm-comprobante">—</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2 small">
-                        <span class="text-muted">Método</span>
-                        <strong id="confirm-metodo" class="text-uppercase">—</strong>
-                    </div>
-                    <hr class="my-2">
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-bold">Total</span>
-                        <strong class="fs-4" style="color: var(--pos-accent);" id="confirm-total">RD$0.00</strong>
-                    </div>
-                </div>
-                <div id="confirm-ecf-warning" class="alert alert-info py-2 small mb-3" style="display: none;">
-                    <i class="bi bi-info-circle me-1"></i> Se generará un <strong>e-CF</strong> y se enviará a DGII.
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-secondary rounded-pill flex-grow-1" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success rounded-pill flex-grow-1 fw-bold" onclick="POS.confirmarSubmit()">
-                        <i class="bi bi-check2-circle"></i> Confirmar
+            <div class="modal-body text-center py-4" style="background:var(--pos-bg);color:var(--pos-text);">
+                <div class="display-4 text-success mb-3"><i class="bi bi-check-circle-fill"></i></div>
+                <h5 id="post-cliente" class="fw-bold">Consumidor Final</h5>
+                <div class="fs-2 fw-bold text-success mb-3" id="post-total">RD$ 0.00</div>
+                <span class="badge bg-secondary rounded-pill px-3 py-2 mb-3" id="post-metodo">Efectivo</span>
+
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <a href="#" id="btn-ticket" target="_blank" class="btn btn-outline-primary rounded-pill">
+                        <i class="bi bi-receipt me-1"></i> Ticket
+                    </a>
+                    <button type="button" id="btn-imprimir" class="btn btn-outline-secondary rounded-pill" onclick="imprimirTicket()">
+                        <i class="bi bi-printer me-1"></i> Imprimir
+                    </button>
+                    <button type="button" id="btn-facturar" class="btn btn-outline-warning rounded-pill" onclick="facturarVenta()">
+                        <i class="bi bi-shield-check me-1"></i> Facturar (e-CF)
                     </button>
                 </div>
+                <div id="factura-status" class="mt-2 small"></div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center" style="background:var(--pos-bg);">
+                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal" onclick="POS.vaciarCarrito()">
+                    <i class="bi bi-plus-circle me-1"></i> Nueva Venta
+                </button>
             </div>
         </div>
     </div>
@@ -1978,6 +2037,27 @@ body:not(.dark-mode) {
     </div>
 </div>
 
+<!-- ============ Modal Buscar Cliente ============ -->
+<div class="modal fade" id="clienteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="fw-bold mb-0"><i class="bi bi-person me-2"></i>Seleccionar Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="buscar-cliente-input" class="cliente-search-input" placeholder="Buscar por nombre o RNC..." autocomplete="off">
+                <div id="clientes-resultados" class="mt-3" style="max-height:250px;overflow-y:auto;"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill w-100" onclick="seleccionarCliente({{ $clienteConsumidorFinal->id }}, '{{ $clienteConsumidorFinal->nombre }}')">
+                    <i class="bi bi-person me-1"></i> Consumidor Final
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Shortcuts Help Overlay -->
 <div class="shortcuts-overlay" id="shortcutsHelp">
     <div class="shortcuts-panel" role="dialog" aria-label="Atajos de teclado" aria-modal="true">
@@ -2008,7 +2088,7 @@ body:not(.dark-mode) {
             <div class="shortcut-group-title">Métodos de Pago</div>
             <div class="shortcut-row">
                 <span class="keys"><kbd>F4</kbd></span>
-                <span class="desc">Pagar con efectivo</span>
+                <span class="desc">Abrir cobro / Efectivo</span>
             </div>
             <div class="shortcut-row">
                 <span class="keys"><kbd>F5</kbd></span>
@@ -2025,6 +2105,13 @@ body:not(.dark-mode) {
             <div class="shortcut-row">
                 <span class="keys"><kbd>F9</kbd></span>
                 <span class="desc">Transferencia bancaria</span>
+            </div>
+        </div>
+        <div class="shortcut-group">
+            <div class="shortcut-group-title">Clientes</div>
+            <div class="shortcut-row">
+                <span class="keys"><kbd class="key-combo">Ctrl</kbd> + <kbd class="key-combo">K</kbd></span>
+                <span class="desc">Buscar/Seleccionar cliente</span>
             </div>
         </div>
         <div class="shortcut-group">
@@ -2085,46 +2172,6 @@ body:not(.dark-mode) {
             $('scan-input').value = '';
             $('scan-input').focus();
             hideSearchResults();
-        },
-
-        setMontoExacto() {
-            const total = parseFloat($('hidden-total').value) || 0;
-            $('monto-recibido').value = total.toFixed(2);
-            updateCambio();
-        },
-
-        setMonto(monto) {
-            $('monto-recibido').value = parseFloat(monto).toFixed(2);
-            updateCambio();
-        },
-
-        clearMonto() {
-            $('monto-recibido').value = '';
-            updateCambio();
-        },
-
-        confirmarVentaEfectivo() {
-            const recibido = parseFloat(($('monto-recibido').value || '0').replace(/,/g, '')) || 0;
-            const total = parseFloat($('hidden-total').value) || 0;
-            if (recibido < total) {
-                showToast('Monto recibido es menor al total', 'danger');
-                return;
-            }
-            showConfirmModal('efectivo');
-        },
-
-        confirmarSubmit() {
-            const metodo = metodoPagoPendiente;
-            const form = $('pos-form');
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'metodo_pago';
-            input.value = metodo;
-            form.appendChild(input);
-            $('tipo_venta_id_input').value = (metodo === 'fiado' || metodo === 'cuenta_abierta') ? '2' : '1';
-            bootstrap.Modal.getInstance($('modalConfirmar'))?.hide();
-            bootstrap.Modal.getInstance($('modalEfectivo'))?.hide();
-            form.submit();
         },
 
         vaciarCarrito() {
@@ -2188,16 +2235,8 @@ body:not(.dark-mode) {
                 showToast('Agrega al menos un producto al carrito', 'warning');
                 return;
             }
-            if (metodo === 'efectivo') {
-                const total = parseFloat($('hidden-total').value) || 0;
-                $('modal-total-display').innerText = fmt(total);
-                $('monto-recibido').value = '';
-                updateCambio();
-                new bootstrap.Modal($('modalEfectivo')).show();
-                setTimeout(() => $('monto-recibido').focus(), 400);
-                return;
-            }
-            showConfirmModal(metodo);
+            metodoPagoPendiente = metodo;
+            mostrarPago(metodo);
         },
 
         toggleShortcutsHelp() {
@@ -2214,6 +2253,194 @@ body:not(.dark-mode) {
         }
     };
     window.POS = POS;
+
+    // ============ Payment Modal Functions ============
+    let metodoPagoActual = 'efectivo';
+    let ultimaVentaId = null;
+
+    function mostrarPago(metodo) {
+        const total = parseFloat($('hidden-total').value) || 0;
+        if (total <= 0) { showToast('Total inválido', 'danger'); return; }
+        $('pago-total').innerText = fmt(total);
+        // Reset
+        $('propina-input').value = '0';
+        $('monto-recibido').value = total.toFixed(2);
+        document.getElementById('cambio-info').classList.add('d-none');
+        $('mixto-efectivo').value = '';
+        $('mixto-tarjeta').value = '';
+        $('mixto-transferencia').value = '';
+        // Select method
+        seleccionarMetodoPago(metodo);
+        new bootstrap.Modal($('pagoModal')).show();
+        setTimeout(() => $('monto-recibido')?.focus(), 400);
+    }
+
+    function seleccionarMetodoPago(metodo) {
+        metodoPagoActual = metodo;
+        document.querySelectorAll('#pago-metodos .metodo-btn').forEach(b => b.classList.remove('active-metodo'));
+        document.querySelector(`#pago-metodos .metodo-btn[data-metodo="${metodo}"]`)?.classList.add('active-metodo');
+        document.getElementById('pago-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
+        document.getElementById('pago-mixto').style.display = metodo === 'mixto' ? 'block' : 'none';
+        if (metodo === 'efectivo') {
+            const total = parseFloat($('hidden-total').value) || 0;
+            $('monto-recibido').value = total.toFixed(2);
+            document.getElementById('cambio-info').classList.add('d-none');
+            setTimeout(() => $('monto-recibido')?.focus(), 200);
+        }
+        actualizarTotalPago();
+    }
+
+    function actualizarTotalPago() {
+        const totalBase = parseFloat($('hidden-total').value) || 0;
+        const propina = parseFloat($('propina-input').value) || 0;
+        const totalFinal = totalBase + propina;
+        $('pago-total').innerText = fmt(totalFinal);
+
+        if (metodoPagoActual === 'efectivo') {
+            const recibido = parseFloat($('monto-recibido').value) || 0;
+            const cambio = recibido - totalFinal;
+            const cambioInfo = document.getElementById('cambio-info');
+            const cambioMonto = document.getElementById('cambio-monto');
+            if (recibido > 0 && cambio >= 0) {
+                cambioInfo.classList.remove('d-none');
+                cambioMonto.textContent = fmt(cambio);
+            } else {
+                cambioInfo.classList.add('d-none');
+            }
+        } else if (metodoPagoActual === 'mixto') {
+            const eff = parseFloat($('mixto-efectivo').value) || 0;
+            const card = parseFloat($('mixto-tarjeta').value) || 0;
+            const trans = parseFloat($('mixto-transferencia').value) || 0;
+            const suma = eff + card + trans;
+            const restante = totalFinal - suma;
+            const label = document.getElementById('mixto-restante');
+            if (restante > 0.01) {
+                label.innerHTML = `<span class="text-warning fw-bold">Faltan ${fmt(restante)}</span>`;
+            } else if (restante < -0.01) {
+                label.innerHTML = `<span class="text-danger fw-bold">Sobran ${fmt(Math.abs(restante))}</span>`;
+            } else {
+                label.textContent = '✓ Montos correctos';
+                label.className = 'text-success fw-bold';
+            }
+        }
+    }
+
+    function asignarPropina(porcentaje, btn) {
+        const total = parseFloat($('hidden-total').value) || 0;
+        $('propina-input').value = (total * porcentaje / 100).toFixed(2);
+        actualizarTotalPago();
+        document.querySelectorAll('.propina-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+    }
+
+    function procesarPago() {
+        const total = parseFloat($('hidden-total').value) || 0;
+        const propina = parseFloat($('propina-input').value) || 0;
+
+        if (metodoPagoActual === 'efectivo') {
+            const recibido = parseFloat($('monto-recibido').value) || 0;
+            if (recibido < total + propina) {
+                showToast('Monto recibido es menor al total', 'danger');
+                return;
+            }
+        } else if (metodoPagoActual === 'mixto') {
+            const eff = parseFloat($('mixto-efectivo').value) || 0;
+            const card = parseFloat($('mixto-tarjeta').value) || 0;
+            const trans = parseFloat($('mixto-transferencia').value) || 0;
+            const suma = eff + card + trans;
+            if (Math.abs(suma - (total + propina)) > 0.01) {
+                showToast('Los montos mixtos no cubren el total', 'warning');
+                return;
+            }
+        }
+
+        // Prepare form submission
+        const form = $('pos-form');
+        const formData = new FormData(form);
+        formData.set('metodo_pago', metodoPagoActual);
+        formData.set('propina', propina.toFixed(2));
+
+        // Add mixto amounts if applicable
+        if (metodoPagoActual === 'mixto') {
+            formData.set('mixto_efectivo', (parseFloat($('mixto-efectivo').value) || 0).toFixed(2));
+            formData.set('mixto_tarjeta', (parseFloat($('mixto-tarjeta').value) || 0).toFixed(2));
+            formData.set('mixto_transferencia', (parseFloat($('mixto-transferencia').value) || 0).toFixed(2));
+        }
+        bootstrap.Modal.getInstance($('pagoModal'))?.hide();
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
+        .then(data => {
+            ultimaVentaId = data.venta_id;
+            mostrarPostPago(data);
+        })
+        .catch(err => {
+            showToast(err?.message || err?.error || 'Error al procesar venta', 'danger');
+        });
+    }
+
+    function mostrarPostPago(data) {
+        $('post-cliente').textContent = data.cliente || 'Consumidor Final';
+        $('post-total').textContent = fmt(data.total);
+        const metodoMap = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia', fiado: 'Fiado', cuenta_abierta: 'Cuenta Abierta', mixto: 'Mixto' };
+        $('post-metodo').textContent = metodoMap[data.metodo_pago] || data.metodo_pago;
+        const ticketUrl = `/ventas/pdf/${data.venta_id}`;
+        $('btn-ticket').href = ticketUrl;
+        // Enable/disable facturar based on comprobante
+        const facturarBtn = $('btn-facturar');
+        if (data.tipo_comprobante === 'ecf') {
+            facturarBtn.style.display = 'inline-flex';
+            facturarBtn.onclick = () => facturarVenta(data.venta_id);
+        } else {
+            facturarBtn.style.display = 'none';
+        }
+        new bootstrap.Modal($('postPagoModal')).show();
+    }
+
+    function facturarVenta(ventaId) {
+        const id = ventaId || ultimaVentaId;
+        if (!id) return;
+        const btn = $('btn-facturar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Facturando...';
+        fetch(`/ventas/facturar/${id}`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ _token: document.querySelector('input[name="_token"]')?.value })
+        })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(res => {
+            $('factura-status').innerHTML = `<span class="text-success"><i class="bi bi-check-circle me-1"></i> ${res.message || 'Facturado exitosamente'}</span>`;
+        })
+        .catch(() => {
+            $('factura-status').innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i> Error al facturar</span>';
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Facturar (e-CF)';
+        });
+    }
+
+    function imprimirTicket() {
+        if (!ultimaVentaId) return;
+        fetch(`/ventas/imprimir/${ultimaVentaId}`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ _token: document.querySelector('input[name="_token"]')?.value })
+        })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(res => showToast('Impresión enviada', 'success'))
+        .catch(() => showToast('Error al imprimir', 'danger'));
+    }
+
+    // Event listeners for premium payment modal
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'monto-recibido') actualizarTotalPago();
+    });
 
     // ============ Modal Productos + Teclado Virtual ============
     const PALETA_COLORES_MODAL = [
@@ -2424,22 +2651,6 @@ body:not(.dark-mode) {
     }
 
     function teclaEnter() { cerrarModalProductos(); }
-
-    // ============ showConfirmModal ============
-    function showConfirmModal(metodo) {
-        metodoPagoPendiente = metodo;
-        const clienteOpt = $('cliente_id').options[$('cliente_id').selectedIndex];
-        $('confirm-cliente').textContent = clienteOpt.text.split(' (')[0];
-        $('confirm-items').textContent = cart.length;
-        const metodosTxt = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia', fiado: 'Fiado (crédito)', cuenta_abierta: 'Cuenta Abierta', mixto: 'Pago Mixto' };
-        $('confirm-metodo').textContent = metodosTxt[metodo] || metodo;
-        const compTipo = $('tipo_comprobante').value;
-        const compMap = { sin: 'Sin comprobante', ncf: 'NCF ' + ($('ncf_tipo').value || ''), ecf: 'e-CF DGII' };
-        $('confirm-comprobante').textContent = compMap[compTipo] || '—';
-        $('confirm-total').textContent = $('display-total').innerText;
-        $('confirm-ecf-warning').style.display = (compTipo === 'ecf') ? 'block' : 'none';
-        new bootstrap.Modal($('modalConfirmar')).show();
-    }
 
     // ============ Carrito ============
     function addToCart(id, fromScanner = false) {
@@ -2686,24 +2897,6 @@ body:not(.dark-mode) {
         }
     }
 
-    // ============ Modal Efectivo ============
-    function updateCambio() {
-        const recibido = parseFloat(($('monto-recibido').value || '0').replace(/,/g, '')) || 0;
-        const total = parseFloat($('hidden-total').value) || 0;
-        const cambio = recibido - total;
-        const display = $('cambio-display');
-        const box = $('cambio-box');
-        display.innerText = cambio > 0 ? fmt(cambio) : 'RD$0.00';
-        box.classList.toggle('negativo', cambio < 0);
-    }
-
-    function appendKeypad(k) {
-        const input = $('monto-recibido');
-        if (k === '.' && input.value.includes('.')) return;
-        input.value = (input.value || '') + k;
-        updateCambio();
-    }
-
     // ============ Cliente ============
     function onClienteChange() {
         const opt = $('cliente_id').options[$('cliente_id').selectedIndex];
@@ -2750,6 +2943,62 @@ body:not(.dark-mode) {
             })
             .catch(() => {});
     }
+
+    // ============ Buscar Cliente Modal ============
+    function mostrarBuscarCliente() {
+        $('buscar-cliente-input').value = '';
+        $('clientes-resultados').innerHTML = '';
+        new bootstrap.Modal($('clienteModal')).show();
+        setTimeout(() => $('buscar-cliente-input')?.focus(), 300);
+    }
+
+    function seleccionarCliente(id, nombre) {
+        const select = $('cliente_id');
+        for (let opt of select.options) {
+            if (parseInt(opt.value) === id) {
+                select.value = id;
+                break;
+            }
+        }
+        $('cliente-selected-name').textContent = nombre;
+        bootstrap.Modal.getInstance($('clienteModal'))?.hide();
+        onClienteChange();
+    }
+
+    // Client search as you type
+    document.addEventListener('input', function(e) {
+        if (e.target.id === 'buscar-cliente-input') {
+            const q = e.target.value.trim();
+            const container = $('clientes-resultados');
+            if (q.length < 2) {
+                container.innerHTML = '<div class="text-muted text-center py-3" style="font-size:0.85rem;">Escribe al menos 2 caracteres</div>';
+                return;
+            }
+            // Filter from the existing clientes list
+            const query = q.toLowerCase();
+            const results = clientes.filter(c =>
+                (c.nombre || '').toLowerCase().includes(query) ||
+                (c.rnc || c.rnc_cedula || '').toLowerCase().includes(query)
+            );
+            if (results.length === 0) {
+                container.innerHTML = '<div class="text-muted text-center py-3" style="font-size:0.85rem;">Sin resultados</div>';
+                return;
+            }
+            container.innerHTML = results.map(c => {
+                const initial = (c.nombre || '?').charAt(0).toUpperCase();
+                const tipo = c.tipo_cliente === 'credito_fiscal' ? 'Crédito Fiscal' :
+                            c.tipo_cliente === 'gubernamental' ? 'Gubernamental' :
+                            c.tipo_cliente === 'especial' ? 'Especial' : 'Consumo';
+                return `<div class="cliente-result-item" onclick="seleccionarCliente(${c.id}, '${c.nombre.replace(/'/g, "\\'")}')">
+                    <div class="cr-icon" style="background:rgba(14,165,233,0.1);color:#38bdf8;">${initial}</div>
+                    <div class="cr-info">
+                        <div class="cr-name">${escapeHtml(c.nombre)}</div>
+                        <div class="cr-meta">${tipo} ${c.rnc || c.rnc_cedula ? '· ' + escapeHtml(c.rnc || c.rnc_cedula) : ''}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+    });
 
     // ============ Stats & history ============
     function loadDayStats() {
@@ -2847,20 +3096,19 @@ body:not(.dark-mode) {
     // ============ Atajos teclado ============
     function handleGlobalKeys(e) {
         const target = e.target;
-        const inMonto = target.id === 'monto-recibido';
         const inSearch = target.id === 'scan-input';
 
         if (e.key === 'F1') { e.preventDefault(); POS.toggleShortcutsHelp(); return; }
         if (e.key === 'F2') { e.preventDefault(); if (scanMode === 'search') { abrirModalProductos(); } else { $('scan-input').focus(); $('scan-input').select(); } return; }
-        if (e.key === 'F4' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('efectivo'); return; }
-        if (e.key === 'F5' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('tarjeta'); return; }
-        if (e.key === 'F6' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('fiado'); return; }
-        if (e.key === 'F7' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('cuenta_abierta'); return; }
-        if (e.key === 'F9' && !inMonto) { e.preventDefault(); if (cart.length > 0) POS.submitForm('transferencia'); return; }
+        if (e.key === 'F4' && !['monto-recibido','propina-input','mixto-efectivo','mixto-tarjeta','mixto-transferencia'].includes(target.id)) { e.preventDefault(); if (cart.length > 0) POS.submitForm('efectivo'); return; }
+        if (e.key === 'F5') { e.preventDefault(); if (cart.length > 0) POS.submitForm('tarjeta'); return; }
+        if (e.key === 'F6') { e.preventDefault(); if (cart.length > 0) POS.submitForm('fiado'); return; }
+        if (e.key === 'F7') { e.preventDefault(); if (cart.length > 0) POS.submitForm('cuenta_abierta'); return; }
+        if (e.key === 'F9') { e.preventDefault(); if (cart.length > 0) POS.submitForm('transferencia'); return; }
+        if (e.ctrlKey && e.key === 'k') { e.preventDefault(); mostrarBuscarCliente(); return; }
         if (e.ctrlKey && e.key === 'Backspace') { e.preventDefault(); POS.vaciarCarrito(); return; }
         if (e.key === 'Escape' && $('shortcutsHelp').classList.contains('show')) { e.preventDefault(); POS.toggleShortcutsHelp(); return; }
         if (e.key === 'Escape' && inSearch) { e.preventDefault(); POS.clearScan(); return; }
-        if (e.key === 'Escape' && inMonto) { e.preventDefault(); $('monto-recibido').value = ''; updateCambio(); return; }
     }
 
     // ============ Init ============
@@ -2925,22 +3173,11 @@ body:not(.dark-mode) {
         // Descuento
         $('input-descuento').addEventListener('input', calculateTotals);
 
-        // Cliente
-        $('cliente_id').addEventListener('change', onClienteChange);
-
-        // Keypad
-        document.querySelectorAll('.keypad-btn[data-k]').forEach(b => {
-            b.addEventListener('click', () => appendKeypad(b.dataset.k));
-        });
-        document.querySelectorAll('.quick-amount-btn[data-amt]').forEach(b => {
-            b.addEventListener('click', () => POS.setMonto(parseFloat(b.dataset.amt)));
-        });
-
-        // Modal efectivo
-        $('monto-recibido').addEventListener('input', updateCambio);
-        $('monto-recibido').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); POS.confirmarVentaEfectivo(); }
-        });
+        // Cliente - cambiar a botón que abre modal
+        const clienteSelect = $('cliente_id');
+        if (clienteSelect) {
+            clienteSelect.addEventListener('change', onClienteChange);
+        }
 
         // Click-outside to close search
         document.addEventListener('click', (e) => {
@@ -2979,6 +3216,17 @@ body:not(.dark-mode) {
             abrirModalProductos();
         }
     }
+
+    // Expose functions for inline onclick handlers
+    window.seleccionarMetodoPago = seleccionarMetodoPago;
+    window.actualizarTotalPago = actualizarTotalPago;
+    window.asignarPropina = asignarPropina;
+    window.procesarPago = procesarPago;
+    window.mostrarPostPago = mostrarPostPago;
+    window.facturarVenta = facturarVenta;
+    window.imprimirTicket = imprimirTicket;
+    window.mostrarBuscarCliente = mostrarBuscarCliente;
+    window.seleccionarCliente = seleccionarCliente;
 
     // Init on DOMContentLoaded
     if (document.readyState === 'loading') {
