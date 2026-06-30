@@ -729,43 +729,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
             document.body.classList.toggle('sidebar-open');
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const successToast = document.getElementById('successToast');
-            if (successToast) {
-                const toast = new bootstrap.Toast(successToast, { delay: 4000 });
-                toast.show();
-            }
-
-            const errorToast = document.getElementById('errorToast');
-            if (errorToast) {
-                const toast = new bootstrap.Toast(errorToast, { delay: 6000 });
-                toast.show();
-            }
-
-            // Sidebar accordion with toggle: click opens/closes, only one open at a time
-            const sidebarAccordion = document.getElementById('sidebarAccordion');
-            if (sidebarAccordion && typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
-                sidebarAccordion.querySelectorAll('.accordion-button').forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        const targetId = this.getAttribute('data-bs-target');
-                        if (!targetId) return;
-                        const target = document.querySelector(targetId);
-                        if (!target) return;
-                        const isOpen = target.classList.contains('show');
-                        // Close all sections
-                        sidebarAccordion.querySelectorAll('.accordion-collapse.show').forEach(function (el) {
-                            const instance = bootstrap.Collapse.getInstance(el);
-                            if (instance) instance.hide();
-                        });
-                        // If clicked section was closed, open it
-                        if (!isOpen) {
-                            const instance = bootstrap.Collapse.getOrCreateInstance(target);
-                            instance.show();
-                        }
-                    });
-                });
-            }
-        });
+        document.addEventListener('DOMContentLoaded', function () {});
     </script>
     <script src="{{ asset('js/a11y.js') }}"></script>
     <script>
