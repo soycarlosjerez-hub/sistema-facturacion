@@ -744,7 +744,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
 
             // Sidebar accordion with toggle: click opens/closes, only one open at a time
             const sidebarAccordion = document.getElementById('sidebarAccordion');
-            if (sidebarAccordion) {
+            if (sidebarAccordion && typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
                 sidebarAccordion.querySelectorAll('.accordion-button').forEach(function (btn) {
                     btn.addEventListener('click', function () {
                         const targetId = this.getAttribute('data-bs-target');
