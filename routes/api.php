@@ -34,16 +34,17 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // Categories
     Route::apiResource('categories', CategoryController::class)
+        ->names('api.categories')
         ->only(['index', 'store', 'show', 'update', 'destroy']);
 
     Route::patch('categories/{category}/toggle-activa', [CategoryController::class, 'toggleActiva'])
-        ->name('categories.toggle-activa');
+        ->name('api.categories.toggle-activa');
 
     Route::post('categories/reorder', [CategoryController::class, 'reorder'])
-        ->name('categories.reorder');
+        ->name('api.categories.reorder');
 
     Route::post('categories/{category}/type', [CategoryController::class, 'toggleType'])
-        ->name('categories.toggle-type');
+        ->name('api.categories.toggle-type');
 
     // Business Types
     Route::apiResource('business-types', BusinessTypeController::class)
@@ -51,127 +52,152 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
 
     // Business Instances
     Route::apiResource('instances', BusinessInstanceController::class)
+        ->names('api.instances')
         ->except(['edit', 'create']);
 
     Route::patch('instances/{businessInstance}/toggle-module', [BusinessInstanceController::class, 'toggleModule'])
-        ->name('instances.toggle-module');
+        ->name('api.instances.toggle-module');
 
     // Users
     Route::get('users/me', [UserController::class, 'me'])
-        ->name('users.me');
+        ->name('api.users.me');
 
     Route::apiResource('users', UserController::class)
+        ->names('api.users')
         ->except(['edit', 'create']);
 
     // Products
     Route::apiResource('products', ProductoController::class)
+        ->names('api.products')
         ->except(['edit', 'create']);
 
     // Sales
     Route::apiResource('sales', VentaController::class)
+        ->names('api.sales')
         ->except(['edit', 'create']);
 
     Route::get('sales/resumen', [VentaController::class, 'resumen'])
-        ->name('sales.resumen');
+        ->name('api.sales.resumen');
 
     // Customers
     Route::apiResource('customers', ClienteController::class)
+        ->names('api.customers')
         ->except(['edit', 'create']);
 
     // Purchases
     Route::apiResource('purchases', CompraController::class)
+        ->names('api.purchases')
         ->except(['edit', 'create']);
 
     // Suppliers
     Route::apiResource('suppliers', ProveedorController::class)
+        ->names('api.suppliers')
         ->except(['edit', 'create']);
 
     // Branches
     Route::apiResource('branches', SucursalController::class)
+        ->names('api.branches')
         ->except(['edit', 'create']);
 
     // Cash Registers
     Route::apiResource('cash-registers', CajaController::class)
+        ->names('api.cash-registers')
         ->except(['edit', 'create']);
 
     // Tables
     Route::apiResource('tables', MesaController::class)
+        ->names('api.tables')
         ->except(['edit', 'create']);
 
     // Warehouses
     Route::apiResource('warehouses', AlmacenController::class)
+        ->names('api.warehouses')
         ->except(['edit', 'create']);
 
     // Sale Types
     Route::apiResource('sale-types', TipoVentaController::class)
+        ->names('api.sale-types')
         ->except(['edit', 'create']);
 
     // Purchase Types
     Route::apiResource('purchase-types', TipoCompraController::class)
+        ->names('api.purchase-types')
         ->except(['edit', 'create']);
 
     // Quotes
     Route::apiResource('quotes', CotizacionController::class)
+        ->names('api.quotes')
         ->except(['edit', 'create']);
 
     // Returns
     Route::apiResource('returns', DevolucionController::class)
+        ->names('api.returns')
         ->except(['edit', 'create']);
 
     // Rentals
     Route::apiResource('rentals', AlquilerController::class)
+        ->names('api.rentals')
         ->except(['edit', 'create']);
 
     // Delivery
     Route::apiResource('delivery', ConduceController::class)
+        ->names('api.delivery')
         ->except(['edit', 'create']);
 
     // Laundry
     Route::apiResource('laundry', LavaderoController::class)
+        ->names('api.laundry')
         ->except(['edit', 'create']);
 
     // Reservations
     Route::apiResource('reservations', ReservacionController::class)
+        ->names('api.reservations')
         ->except(['edit', 'create']);
 
     // Price Lists
     Route::apiResource('price-lists', ListaPrecioController::class)
+        ->names('api.price-lists')
         ->except(['edit', 'create']);
 
     // Backups
     Route::apiResource('backups', BackupController::class)
+        ->names('api.backups')
         ->except(['edit', 'create']);
 
     // Payment Processors
     Route::apiResource('payment-processors', PaymentProcessorController::class)
+        ->names('api.payment-processors')
         ->except(['edit', 'create']);
 
     // Printers
     Route::apiResource('printers', ImpresoraController::class)
+        ->names('api.printers')
         ->except(['edit', 'create']);
 
     // Audit Logs
     Route::get('audit-logs', [AuditLogController::class, 'index'])
-        ->name('audit-logs.index');
+        ->name('api.audit-logs.index');
 
     // NCF Sequences
     Route::apiResource('ncf-sequences', NcfSequenceController::class)
+        ->names('api.ncf-sequences')
         ->except(['edit', 'create']);
 
     // System Settings
     Route::apiResource('settings', SystemSettingController::class)
+        ->names('api.settings')
         ->except(['edit', 'create']);
 
     // Reports
     Route::get('reports/dashboard', [ReportController::class, 'dashboard'])
-        ->name('reports.dashboard');
+        ->name('api.reports.dashboard');
 
     Route::get('reports/top-products', [ReportController::class, 'topProductos'])
-        ->name('reports.top-products');
+        ->name('api.reports.top-products');
 
     Route::get('reports/top-customers', [ReportController::class, 'topClientes'])
-        ->name('reports.top-customers');
+        ->name('api.reports.top-customers');
 
     Route::get('reports/inventory-low-stock', [ReportController::class, 'inventarioBajoStock'])
-        ->name('reports.inventory-low-stock');
+        ->name('api.reports.inventory-low-stock');
 });
