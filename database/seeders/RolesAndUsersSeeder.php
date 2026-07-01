@@ -64,8 +64,9 @@ class RolesAndUsersSeeder extends Seeder
 
         // 5. Crear instancia de ejemplo (restaurante-ejemplo)
         $restaurantType = \App\Models\BusinessType::where('slug', 'restaurante')->first();
+        $instance = null;
         if ($restaurantType && $ownerUser) {
-            \App\Models\BusinessInstance::updateOrCreate(
+            $instance = \App\Models\BusinessInstance::updateOrCreate(
                 ['slug' => 'restaurante-ejemplo'],
                 [
                     'nombre' => 'Restaurante Ejemplo SRL',
@@ -86,6 +87,22 @@ class RolesAndUsersSeeder extends Seeder
                     ],
                 ]
             );
+        }
+
+        // 6. Crear usuario admin-business asociado a la instancia de ejemplo
+        if ($instance) {
+            $adminBusiness = User::updateOrCreate(
+                ['email' => 'admin@restaurante-ejemplo.com'],
+                [
+                    'name' => 'Admin Restaurante',
+                    'password' => Hash::make('Cambiar123'),
+                    'role' => 'admin-business',
+                    'sucursal_id' => null,
+                    'business_type_id' => $restaurantType?->id,
+                    'business_instance_id' => $instance->id,
+                ]
+            );
+            $adminBusiness->syncRoles(['admin-business']);
         }
     }
     

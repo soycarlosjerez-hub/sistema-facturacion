@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use App\Models\User;
 
 class PermissionSeeder extends Seeder
 {
@@ -687,27 +686,6 @@ class PermissionSeeder extends Seeder
         foreach ($rolePermissions as $roleName => $perms) {
             $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
             $role->syncPermissions($perms);
-        }
-
-        $admin = User::where('email', 'admin@test.com')->first();
-        if ($admin) {
-            $admin->syncRoles(['admin']);
-            $admin->role = 'admin';
-            $admin->save();
-        }
-
-        $vendedor = User::where('email', 'vendedor@test.com')->first();
-        if ($vendedor) {
-            $vendedor->syncRoles(['vendedor']);
-            $vendedor->role = 'vendedor';
-            $vendedor->save();
-        }
-
-        $juanCarlos = User::where('email', 'jcjerez@gmail.com')->first();
-        if ($juanCarlos) {
-            $juanCarlos->syncRoles(['vendedor']);
-            $juanCarlos->role = 'vendedor';
-            $juanCarlos->save();
         }
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
