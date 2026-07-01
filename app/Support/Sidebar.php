@@ -101,6 +101,11 @@ class Sidebar
                 'is_route' => 'owner.online.*',
                 'exact_route' => 'owner.online.index',
             ];
+            $items[] = [
+                'route'  => 'api.documentation',
+                'icon'   => 'bi-code-slash',
+                'label'  => 'Documentaci&oacute;n API',
+            ];
             return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
         }
 
@@ -424,6 +429,22 @@ class Sidebar
             if ($hasSis('backups') && $can('backups.view')) {
                 $items[] = ['route' => 'backups.index', 'icon' => 'bi-cloud-arrow-down', 'label' => 'Backups', 'is_route' => 'backups.*', 'exact_route' => 'backups.index'];
             }
+        }
+
+        // API — solo Owner puede gestionar APIs de sus instancias
+        if ($user->hasRole('owner')) {
+            $items[] = ['section' => 'API'];
+            $items[] = [
+                'route'  => 'owner.instances.index',
+                'icon'   => 'bi-key',
+                'label'  => 'API Keys',
+                'is_route' => 'owner.instances.*',
+            ];
+            $items[] = [
+                'route'  => 'api.documentation',
+                'icon'   => 'bi-code-slash',
+                'label'  => 'Documentaci&oacute;n API',
+            ];
         }
 
         // Configuración — cuando hay InstanceRole, requiere el módulo asignado

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
+use App\Models\InstanceApiKey;
 use App\Models\InstanceErrorLog;
 use App\Models\InstanceRole;
 use App\Models\InstanceRoleModule;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class OwnerController extends Controller
 {
@@ -364,7 +366,7 @@ class OwnerController extends Controller
 
     public function instancesShow($id)
     {
-        $instance = BusinessInstance::with(['businessType', 'owner', 'users', 'ultimoPago'])
+        $instance = BusinessInstance::with(['businessType', 'owner', 'users.tokens', 'ultimoPago'])
             ->findOrFail($id);
         $pagosRecientes = PagoInstancia::where('business_instance_id', $id)
             ->with('registradoPor')
@@ -1047,5 +1049,118 @@ class OwnerController extends Controller
         $totalUsers = User::where('business_instance_id', $instance->id)->count();
 
         return view('owner.instances.online', compact('instance', 'onlineUsers', 'totalUsers'));
+    }
+
+    // ─── API Tokens CRUD ────────────────────────────────────────────
+
+    public function instanceTokensStore(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+        ]);
+
+        $user = User::where('business_instance_id', $instance->id)->findOrFail($data['user_id']);
+
+        $abilities = $request->input('abilities', ['*']);
+        $token = $user->createToken($data['name'], (array) $abilities);
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Token creado correctamente.')
+            ->with('new_token', $token->plainTextToken);
+    }
+
+    public function instanceTokensDestroy($id, $tokenId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $token = PersonalAccessToken::findOrFail($tokenId);
+
+        $user = User::where('business_instance_id', $instance->id)
+            ->findOrFail($token->tokenable_id);
+
+        $token->delete();
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Token revocado correctamente.');
+    }
+
+    // ─── Instance API Keys CRUD ──────────────────────────────────────
+
+    public function instanceApiKeys($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $apiKeys = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->with('creator')
+            ->latest()
+            ->get();
+
+        return view('owner.instances.api-keys', compact('instance', 'apiKeys'));
+    }
+
+    public function instanceApiKeyGenerate(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $rawKey = 'iak_' . Str::random(40);
+
+        $apiKey = InstanceApiKey::create([
+            'business_instance_id' => $instance->id,
+            'name' => $data['name'],
+            'key' => hash('sha256', $rawKey),
+            'is_active' => true,
+            'created_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', 'API Key creada correctamente.')
+            ->with('new_api_key', $rawKey);
+    }
+
+    public function instanceApiKeyRegenerate($id, $apiKeyId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->findOrFail($apiKeyId);
+
+        $rawKey = 'iak_' . Str::random(40);
+        $apiKey->update(['key' => hash('sha256', $rawKey)]);
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', 'API Key regenerada correctamente.')
+            ->with('new_api_key', $rawKey);
+    }
+
+    public function instanceApiKeyToggle($id, $apiKeyId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->findOrFail($apiKeyId);
+
+        $apiKey->update(['is_active' => !$apiKey->is_active]);
+        $status = $apiKey->is_active ? 'activada' : 'desactivada';
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', "API Key \"{$apiKey->name}\" {$status} correctamente.");
+    }
+
+    public function instanceApiKeyDestroy($id, $apiKeyId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->findOrFail($apiKeyId);
+
+        $name = $apiKey->name;
+        $apiKey->delete();
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', "API Key \"{$name}\" eliminada permanentemente.");
     }
 }

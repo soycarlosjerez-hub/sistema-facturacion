@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission'       => \App\Http\Middleware\PermissionMiddleware::class,
             'instance.blocked' => \App\Http\Middleware\CheckInstanceBlocked::class,
             'setup.wizard'     => \App\Http\Middleware\CheckSetupWizard::class,
+            'tenant'           => \App\Http\Middleware\TenantMiddleware::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);

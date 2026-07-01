@@ -383,20 +383,23 @@ Route::middleware(['auth'])->group(function () {
     // Plantilla de Gastos
     Route::middleware('permission:plantilla-gastos.view')->group(function () {
         Route::get('/plantilla-gastos', [PlantaGastoController::class, 'index'])->name('plantilla-gastos.index');
-        Route::get('/plantilla-gastos/{plantilla-gasto}', [PlantaGastoController::class, 'show'])->name('plantilla-gastos.show');
-        Route::post('/plantilla-gastos/{plantilla-gasto}/activar', [PlantaGastoController::class, 'activar'])->name('plantilla-gastos.activar');
-        Route::post('/plantilla-gastos/{plantilla-gasto}/desactivar', [PlantaGastoController::class, 'desactivar'])->name('plantilla-gastos.desactivar');
+        Route::get('/plantilla-gastos/{plantaGasto}', [PlantaGastoController::class, 'show'])->name('plantilla-gastos.show');
+        Route::post('/plantilla-gastos/{plantaGasto}/activar', [PlantaGastoController::class, 'activar'])->name('plantilla-gastos.activar');
+        Route::post('/plantilla-gastos/{plantaGasto}/desactivar', [PlantaGastoController::class, 'desactivar'])->name('plantilla-gastos.desactivar');
     });
+
     Route::middleware('permission:plantilla-gastos.create')->group(function () {
         Route::get('/plantilla-gastos/create', [PlantaGastoController::class, 'create'])->name('plantilla-gastos.create');
         Route::post('/plantilla-gastos', [PlantaGastoController::class, 'store'])->name('plantilla-gastos.store');
     });
+
     Route::middleware('permission:plantilla-gastos.edit')->group(function () {
-        Route::get('/plantilla-gastos/{plantilla-gasto}/edit', [PlantaGastoController::class, 'edit'])->name('plantilla-gastos.edit');
-        Route::put('/plantilla-gastos/{plantilla-gasto}', [PlantaGastoController::class, 'update'])->name('plantilla-gastos.update');
+        Route::get('/plantilla-gastos/{plantaGasto}/edit', [PlantaGastoController::class, 'edit'])->name('plantilla-gastos.edit');
+        Route::put('/plantilla-gastos/{plantaGasto}', [PlantaGastoController::class, 'update'])->name('plantilla-gastos.update');
     });
+
     Route::middleware('permission:plantilla-gastos.delete')->group(function () {
-        Route::delete('/plantilla-gastos/{plantilla-gasto}', [PlantaGastoController::class, 'destroy'])->name('plantilla-gastos.destroy');
+        Route::delete('/plantilla-gastos/{plantaGasto}', [PlantaGastoController::class, 'destroy'])->name('plantilla-gastos.destroy');
     });
 
     // Backups
@@ -557,6 +560,9 @@ Route::middleware(['auth', 'role:admin|owner'])->group(function () {
 // Route::delete('/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserDestroy'])->name('users.destroy');
 
 
+// API Documentation
+Route::middleware('auth')->get('/docs/api', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'index'])->name('api.documentation');
+
 // Owner (Dueño del Sistema)
 Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
     Route::get('/', [\App\Http\Controllers\OwnerController::class, 'index'])->name('dashboard');
@@ -608,6 +614,17 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     // Online users
     Route::get('/online', [\App\Http\Controllers\OwnerController::class, 'onlineUsers'])->name('online.index');
     Route::get('/instances/{instance}/online', [\App\Http\Controllers\OwnerController::class, 'instanceOnlineUsers'])->name('instances.online');
+
+    // API Tokens
+    Route::post('/instances/{instance}/tokens', [\App\Http\Controllers\OwnerController::class, 'instanceTokensStore'])->name('instances.tokens.store');
+    Route::delete('/instances/{instance}/tokens/{token}', [\App\Http\Controllers\OwnerController::class, 'instanceTokensDestroy'])->name('instances.tokens.destroy');
+
+    // Instance API Keys
+    Route::get('/instances/{instance}/api-keys', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeys'])->name('instances.api-keys');
+    Route::post('/instances/{instance}/api-keys', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyGenerate'])->name('instances.api-keys.generate');
+    Route::post('/instances/{instance}/api-keys/{apiKey}/regenerate', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyRegenerate'])->name('instances.api-keys.regenerate');
+    Route::post('/instances/{instance}/api-keys/{apiKey}/toggle', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyToggle'])->name('instances.api-keys.toggle');
+    Route::delete('/instances/{instance}/api-keys/{apiKey}', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyDestroy'])->name('instances.api-keys.destroy');
 
     // (owner role management removed — roles are managed per-instance)
 });

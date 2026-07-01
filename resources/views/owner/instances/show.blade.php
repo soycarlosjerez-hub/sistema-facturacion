@@ -8,6 +8,35 @@
 @section('content')
 <div class="premium-page">
 <div class="container-fluid px-4">
+
+    @if(session('new_token'))
+    <div class="alert alert-warning alert-dismissible fade show rounded-4 border-0 mb-4 shadow" role="alert">
+        <div class="d-flex align-items-start gap-3">
+            <div class="rounded-circle bg-warning bg-opacity-20 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;">
+                <i class="bi bi-key-fill text-dark fs-5"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong class="d-block mb-1">Token creado exitosamente</strong>
+                <p class="mb-2 small">Este token solo se muestra <strong>una vez</strong>. Cópialo ahora y guárdalo en un lugar seguro.</p>
+                <div class="input-group input-group-sm mb-1">
+                    <input type="text" class="form-control font-monospace bg-white" value="{{ session('new_token') }}" readonly id="newTokenInput">
+                    <button class="btn btn-dark" type="button" onclick="copyNewToken()">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <script>
+    function copyNewToken() {
+        var input = document.getElementById('newTokenInput');
+        input.select(); input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value);
+        var btn = input.nextElementSibling; btn.textContent = 'Copiado!';
+        setTimeout(function(){ btn.textContent = 'Copiar'; }, 2000);
+    }
+    </script>
+    @endif
+
     <div class="premium-header" style="margin-bottom: 2rem;">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
         <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
@@ -31,12 +60,15 @@
                     <p class="mb-0 opacity-75">{{ $instance->businessType?->nombre ?? 'Sin tipo' }} &middot; {{ $instance->slug }}</p>
                 </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('owner.instances.edit', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
                     <i class="bi bi-pencil me-2"></i>Editar
                 </a>
                 <a href="{{ route('owner.instances.config', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
                     <i class="bi bi-gear me-2"></i>Configuraci&oacute;n
+                </a>
+                <a href="{{ route('owner.instances.api-keys', $instance) }}" class="btn btn-warning rounded-pill px-4 shadow-sm fw-bold text-dark">
+                    <i class="bi bi-key me-2"></i>API Keys
                 </a>
                 <a href="{{ route('owner.instances.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
                     <i class="bi bi-arrow-left me-2"></i>Volver
@@ -396,6 +428,107 @@
             @endforelse
         </div>
     </div>
+
+    <div class="premium-card mb-4">
+        <div class="card-accent amber"></div>
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-key text-warning me-2"></i>Tokens de API</h5>
+            <button type="button" class="btn btn-sm btn-warning rounded-pill fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createTokenModal">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo Token
+            </button>
+        </div>
+        <div class="card-body p-4 pt-0">
+            @php
+                $allTokens = $instance->users->flatMap(fn($u) => $u->tokens->map(fn($t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'abilities' => $t->abilities,
+                    'last_used_at' => $t->last_used_at,
+                    'created_at' => $t->created_at,
+                    'user_name' => $u->name,
+                    'user_id' => $u->id,
+                ]))->sortByDesc('created_at');
+            @endphp
+            @if($allTokens->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre</th>
+                            <th>&Uacute;ltimo uso</th>
+                            <th>Creado</th>
+                            <th class="text-end">Acci&oacute;n</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allTokens as $t)
+                        <tr>
+                            <td><span class="fw-bold">{{ $t['user_name'] }}</span></td>
+                            <td><code>{{ $t['name'] }}</code></td>
+                            <td><small class="text-muted">{{ $t['last_used_at']?->diffForHumans() ?? 'Nunca' }}</small></td>
+                            <td><small class="text-muted">{{ $t['created_at']->format('d/m/Y') }}</small></td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ route('owner.instances.tokens.destroy', [$instance, $t['id']]) }}" onsubmit="return confirm('&iquest;Revocar el token &quot;{{ $t['name'] }}&quot; de {{ $t['user_name'] }}? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Revocar">
+                                        <i class="bi bi-x-lg me-1"></i>Revocar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2 mb-0">No hay tokens de API para esta instancia.</p>
+                <button type="button" class="btn btn-warning rounded-pill mt-2 btn-sm fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createTokenModal">
+                    <i class="bi bi-plus-lg me-1"></i>Crear Primer Token
+                </button>
+            </div>
+            @endif
+        </div>
+    </div>
 </div>
+</div>
+
+<div class="modal fade" id="createTokenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form method="POST" action="{{ route('owner.instances.tokens.store', $instance) }}">
+                @csrf
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="fw-bold"><i class="bi bi-key text-warning me-2"></i>Nuevo Token de API</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Usuario <span class="text-danger">*</span></label>
+                        <select name="user_id" class="form-select rounded-4" required>
+                            <option value="">Seleccionar usuario...</option>
+                            @foreach($instance->users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Nombre del Token <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control rounded-4" placeholder="Ej: app-movil, pos-terminal" required maxlength="255">
+                        <div class="form-text">Un nombre descriptivo para identificar el uso del token.</div>
+                    </div>
+                    <input type="hidden" name="abilities" value="*">
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning rounded-pill fw-bold text-dark">
+                        <i class="bi bi-key me-1"></i>Crear Token
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection

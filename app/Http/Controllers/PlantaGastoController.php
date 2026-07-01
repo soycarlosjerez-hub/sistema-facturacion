@@ -58,19 +58,21 @@ class PlantaGastoController extends Controller
             ->with('success', 'Plantilla de gasto creada correctamente.');
     }
 
-    public function show(PlantaGasto $plantilla-gasto)
+    public function show(PlantaGasto $plantaGasto)
     {
-        return view('plantilla-gastos.show', compact('plantilla-gasto'));
+        $plantillaGasto = $plantaGasto;
+        return view('plantilla-gastos.show', compact('plantillaGasto'));
     }
 
-    public function edit(PlantaGasto $plantilla-gasto)
+    public function edit(PlantaGasto $plantaGasto)
     {
+        $plantillaGasto = $plantaGasto;
         $categorias = PlantaGasto::categorias();
         $metodosPago = PlantaGasto::metodosPago();
-        return view('plantilla-gastos.edit', compact('plantilla-gasto', 'categorias', 'metodosPago'));
+        return view('plantilla-gastos.edit', compact('plantillaGasto', 'categorias', 'metodosPago'));
     }
 
-    public function update(Request $request, PlantaGasto $plantilla-gasto)
+    public function update(Request $request, PlantaGasto $plantaGasto)
     {
         $validated = $request->validate([
             'nombre'      => 'required|string|max:150',
@@ -82,30 +84,30 @@ class PlantaGastoController extends Controller
             'activo'      => 'boolean',
         ]);
 
-        $plantilla-gasto->update($validated);
+        $plantaGasto->update($validated);
 
         return redirect()->route('plantilla-gastos.index')
             ->with('success', 'Plantilla de gasto actualizada correctamente.');
     }
 
-    public function destroy(PlantaGasto $plantilla-gasto)
+    public function destroy(PlantaGasto $plantaGasto)
     {
-        $plantilla-gasto->delete();
+        $plantaGasto->delete();
 
         return redirect()->route('plantilla-gastos.index')
             ->with('success', 'Plantilla de gasto eliminada correctamente.');
     }
 
-    public function activar(PlantaGasto $plantilla-gasto)
+    public function activar(PlantaGasto $plantaGasto)
     {
-        $plantilla-gasto->update(['activo' => true]);
+        $plantaGasto->update(['activo' => true]);
 
         return back()->with('success', 'Plantilla activada correctamente.');
     }
 
-    public function desactivar(PlantaGasto $plantilla-gasto)
+    public function desactivar(PlantaGasto $plantaGasto)
     {
-        $plantilla-gasto->update(['activo' => false]);
+        $plantaGasto->update(['activo' => false]);
 
         return back()->with('success', 'Plantilla desactivada correctamente.');
     }

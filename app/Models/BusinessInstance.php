@@ -74,6 +74,11 @@ class BusinessInstance extends Model
         return $this->hasMany(BusinessInstanceModule::class);
     }
 
+    public function apiKeys(): HasMany
+    {
+        return $this->hasMany(InstanceApiKey::class, 'business_instance_id');
+    }
+
     public function isModuloVisible(string $moduloKey): bool
     {
         // Check instance-level override first
