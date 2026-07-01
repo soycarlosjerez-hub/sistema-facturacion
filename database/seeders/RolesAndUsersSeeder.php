@@ -31,20 +31,7 @@ class RolesAndUsersSeeder extends Seeder
         );
         $rootUser->syncRoles(['root']);
         
-        // 2. Crear nuevo usuario administrador para "while-pone-el-restaurante"
-        $businessAdminUser = User::updateOrCreate(
-            ['email' => 'whilepon@sistema-facturacion.com'],
-            [
-                'name' => 'while pon el restaurante Admin',
-                'password' => Hash::make('Cambiar123'),
-                'role' => 'admin-business',
-                'sucursal_id' => null,
-                'business_type_id' => $this->getWhilePonBusinessTypeId(),
-            ]
-        );
-        $businessAdminUser->syncRoles(['admin-business']);
-        
-        // 3. Crear usuario de prueba con business type restaurante
+        // 2. Crear usuario de prueba con business type restaurante
         $testUser = User::updateOrCreate(
             ['email' => 'vendedor@sistema-facturacion.com'],
             [
@@ -56,6 +43,11 @@ class RolesAndUsersSeeder extends Seeder
             ]
         );
         $testUser->syncRoles(['vendedor']);
+        
+        // Verificar que el usuario vendedor tiene rol vendedor
+        if (!$testUser->hasRole('vendedor')) {
+            $testUser->assignRole('vendedor');
+        }
 
         // 4. Crear usuario Owner (Dueño del Sistema)
         $ownerUser = User::updateOrCreate(
@@ -70,9 +62,9 @@ class RolesAndUsersSeeder extends Seeder
         );
         $ownerUser->syncRoles(['owner']);
 
-        // 5. Crear instancia de ejemplo
+        // 5. Crear instancia de ejemplo (restaurante-ejemplo)
         $restaurantType = \App\Models\BusinessType::where('slug', 'restaurante')->first();
-        if ($restaurantType) {
+        if ($restaurantType && $ownerUser) {
             \App\Models\BusinessInstance::updateOrCreate(
                 ['slug' => 'restaurante-ejemplo'],
                 [
@@ -97,15 +89,16 @@ class RolesAndUsersSeeder extends Seeder
         }
     }
     
-    private function getWhilePonBusinessTypeId(): int
-    {
-        $whilePon = \App\Models\BusinessType::where('slug', 'while-pone-el-restaurante')->first();
-        return $whilePon ? $whilePon->id : 1;
-    }
-    
     private function getRestauranteBusinessTypeId(): int
     {
         $restaurante = \App\Models\BusinessType::where('slug', 'restaurante')->first();
-        return $restaurante ? $restaurante->id : 2;
+        
+        if (!$restaurante) {
+            // fallback al segundo tipo de negocio si el restaurante no existe
+            // pero con un valor seguro y documentado
+            return 2;
+        }
+        
+        return $restaurante->id;
     }
 }

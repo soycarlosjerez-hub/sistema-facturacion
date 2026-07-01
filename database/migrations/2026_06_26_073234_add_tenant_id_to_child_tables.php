@@ -38,7 +38,7 @@ return new class extends Migration
         // Child tables — backfill from parent's tenant_id
         $children = [
             'venta_detalles'      => ['fk' => 'venta_id',    'parent' => 'ventas'],
-            'detalle_compras'     => ['fk' => 'compra_id',   'parent' => 'compras'],
+            'compra_detalles'     => ['fk' => 'compra_id',   'parent' => 'compras'],
             'conduce_items'       => ['fk' => 'conduce_id',  'parent' => 'conduces'],
             'cotizacion_items'    => ['fk' => 'cotizacion_id','parent' => 'cotizaciones'],
             'lista_precio_items'  => ['fk' => 'lista_precio_id','parent' => 'lista_precios'],
@@ -70,7 +70,7 @@ return new class extends Migration
     {
         $tables = [
             'sucursales', 'almacenes', 'conduces', 'cotizaciones', 'lista_precios',
-            'venta_detalles', 'detalle_compras', 'conduce_items', 'cotizacion_items',
+            'venta_detalles', 'compra_detalles', 'conduce_items', 'cotizacion_items',
             'lista_precio_items', 'pagos', 'ecf_documentos', 'almacen_movimientos', 'waitlist_entries',
         ];
 

@@ -23,6 +23,7 @@ use App\Http\Controllers\PaymentProcessorController;
 use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\ConduceController;
 use App\Http\Controllers\GastoController;
+use App\Http\Controllers\PlantaGastoController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BackupController;
@@ -377,6 +378,25 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:auditoria.view')->group(function () {
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::get('/audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+    });
+
+    // Plantilla de Gastos
+    Route::middleware('permission:plantilla-gastos.view')->group(function () {
+        Route::get('/plantilla-gastos', [PlantaGastoController::class, 'index'])->name('plantilla-gastos.index');
+        Route::get('/plantilla-gastos/{plantilla-gasto}', [PlantaGastoController::class, 'show'])->name('plantilla-gastos.show');
+        Route::post('/plantilla-gastos/{plantilla-gasto}/activar', [PlantaGastoController::class, 'activar'])->name('plantilla-gastos.activar');
+        Route::post('/plantilla-gastos/{plantilla-gasto}/desactivar', [PlantaGastoController::class, 'desactivar'])->name('plantilla-gastos.desactivar');
+    });
+    Route::middleware('permission:plantilla-gastos.create')->group(function () {
+        Route::get('/plantilla-gastos/create', [PlantaGastoController::class, 'create'])->name('plantilla-gastos.create');
+        Route::post('/plantilla-gastos', [PlantaGastoController::class, 'store'])->name('plantilla-gastos.store');
+    });
+    Route::middleware('permission:plantilla-gastos.edit')->group(function () {
+        Route::get('/plantilla-gastos/{plantilla-gasto}/edit', [PlantaGastoController::class, 'edit'])->name('plantilla-gastos.edit');
+        Route::put('/plantilla-gastos/{plantilla-gasto}', [PlantaGastoController::class, 'update'])->name('plantilla-gastos.update');
+    });
+    Route::middleware('permission:plantilla-gastos.delete')->group(function () {
+        Route::delete('/plantilla-gastos/{plantilla-gasto}', [PlantaGastoController::class, 'destroy'])->name('plantilla-gastos.destroy');
     });
 
     // Backups

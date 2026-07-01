@@ -510,7 +510,6 @@ class OwnerController extends Controller
                 'devoluciones',
 
                 // Compras
-                'detalle_compras',   // tabla nueva (alias)
                 'compra_detalles',
                 'compras',
 

@@ -103,18 +103,6 @@ class BusinessTypeSeeder extends Seeder
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-restaurante', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
                 ],
             ],
-            [
-                'slug' => 'while-pone-el-restaurante',
-                 'nombre' => 'while pon el restaurante',
-                 'descripcion' => 'while pon el restaurante',
-                 'color' => 'info',
-                 'icon' => 'bi-cup-straw',
-                 'activo' => true,
-                 'orden' => 7,
-                'modulos' => [
-                    'dashboard', 'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
-                ],
-            ],
         ];
 
         foreach ($tipos as $tipoData) {

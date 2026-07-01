@@ -35,6 +35,8 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'devoluciones.index', 'sidebar_is_route' => 'devoluciones.*', 'sidebar_exact_route' => 'devoluciones.index', 'sidebar_permission' => 'devoluciones.view'],
             ['key' => 'gastos', 'label' => 'Gastos', 'icon' => 'bi-cash-coin', 'categoria' => 'operaciones', 'orden' => 14,
              'sidebar_route' => 'gastos.index', 'sidebar_is_route' => 'gastos.*', 'sidebar_exact_route' => 'gastos.index', 'sidebar_permission' => 'gastos.view'],
+            ['key' => 'plantilla-gastos', 'label' => 'Plantillas de Gasto', 'icon' => 'bi-file-earmark-richtext', 'categoria' => 'operaciones', 'orden' => 15,
+             'sidebar_route' => 'plantilla-gastos.index', 'sidebar_is_route' => 'plantilla-gastos.*', 'sidebar_exact_route' => 'plantilla-gastos.index', 'sidebar_permission' => 'plantilla-gastos.view'],
 
             // Clientes
             ['key' => 'clientes', 'label' => 'Clientes', 'icon' => 'bi-people', 'categoria' => 'clientes', 'orden' => 20,

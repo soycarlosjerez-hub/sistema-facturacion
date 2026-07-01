@@ -100,6 +100,20 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="mb-0">
+                            <label for="planta_gasto_id" class="form-label">Plantilla de Gasto</label>
+                            <select name="planta_gasto_id" id="planta_gasto_id" class="form-select @error('planta_gasto_id') is-invalid @enderror">
+                                <option value="">Sin plantilla</option>
+                                @foreach($plantillas as $planta)
+                                    <option value="{{ $planta->id }}" {{ old('planta_gasto_id') == $planta->id ? 'selected' : '' }}>
+                                        {{ $planta->codigo }} - {{ $planta->descripcion }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('planta_gasto_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="mb-0">
                             <label for="metodo_pago" class="form-label">Método de Pago</label>
                             <select name="metodo_pago" id="metodo_pago" class="form-select @error('metodo_pago') is-invalid @enderror">
                                 <option value="">Seleccionar...</option>

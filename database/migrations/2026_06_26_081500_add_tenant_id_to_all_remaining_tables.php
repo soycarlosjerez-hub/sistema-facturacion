@@ -35,7 +35,7 @@ return new class extends Migration
         // Tables with direct FK to a parent that has tenant_id
         $direct = [
             'mesas'             => ['fk' => 'sucursal_id', 'parent' => 'sucursales'],
-            'split_bill_people' => ['fk' => 'venta_id',    'parent' => 'ventas'],
+            'split_bill_persons' => ['fk' => 'venta_id',    'parent' => 'ventas'],
             'ecf_log_envios'    => ['fk' => 'ecf_documento_id', 'parent' => 'ecf_documentos'],
             'lavadero_citas'    => ['fk' => 'sucursal_id', 'parent' => 'sucursales'],
             'reservaciones'     => ['fk' => 'cliente_id',  'parent' => 'clientes'],
@@ -80,7 +80,7 @@ return new class extends Migration
     public function down(): void
     {
         $tables = [
-            'mesas', 'split_bill_people', 'mesa_categorias', 'ecf_log_envios',
+            'mesas', 'split_bill_persons', 'mesa_categorias', 'ecf_log_envios',
             'lavadores', 'lavadero_servicios', 'lavadero_citas', 'reservaciones',
             'secuencias_ecf', 'ncf_sequences', 'compra_detalles', 'detalles_devolucion',
             'devoluciones', 'gastos', 'proveedores', 'cajas', 'sesion_cajas',

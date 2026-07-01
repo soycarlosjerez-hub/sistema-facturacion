@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('producto_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('almacen_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('almacen_id')->constrained('almacenes')->cascadeOnDelete();
             $table->enum('tipo', ['entrada', 'salida']);
             $table->integer('cantidad');
             $table->string('nota')->nullable();

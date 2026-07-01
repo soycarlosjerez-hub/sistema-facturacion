@@ -24,6 +24,7 @@ class Gasto extends Model
         'sesion_caja_id',
         'sucursal_id',
         'tenant_id',
+        'planta_gasto_id',
     ];
 
     protected $casts = [
@@ -49,6 +50,11 @@ class Gasto extends Model
     public function sesionCaja(): BelongsTo
     {
         return $this->belongsTo(SesionCaja::class);
+    }
+
+    public function plantaGasto(): BelongsTo
+    {
+        return $this->belongsTo(PlantaGasto::class);
     }
 
     public function scopeOfCategoria($query, $categoria)

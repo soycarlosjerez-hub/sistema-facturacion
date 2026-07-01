@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('compras', function (Blueprint $table) {
             if (!Schema::hasColumn('compras', 'almacen_id')) {
-                $table->foreignId('almacen_id')->nullable()->after('proveedor_id')->constrained()->nullOnDelete();
+                $table->foreignId('almacen_id')->nullable()->after('proveedor_id')->constrained('almacenes')->nullOnDelete();
             }
         });
 

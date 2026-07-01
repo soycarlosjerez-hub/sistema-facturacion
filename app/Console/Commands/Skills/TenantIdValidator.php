@@ -42,7 +42,6 @@ class TenantIdValidator extends Command
             'compras',
             'venta_detalles',
             'compra_detalles',
-            'detalle_compras',
             'cajas',
             'sesion_cajas',
             'pagos',

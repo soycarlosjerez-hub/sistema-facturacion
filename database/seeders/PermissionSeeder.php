@@ -144,6 +144,12 @@ class PermissionSeeder extends Seeder
                 'gastos.edit',
                 'gastos.delete',
             ],
+            'plantilla-gastos' => [
+                'plantilla-gastos.view',
+                'plantilla-gastos.create',
+                'plantilla-gastos.edit',
+                'plantilla-gastos.delete',
+            ],
             'auditoria' => [
                 'auditoria.view',
             ],
@@ -267,6 +273,7 @@ class PermissionSeeder extends Seeder
                 'conduces.view',
                 'devoluciones.view',
                 'gastos.view',
+                'plantilla-gastos.view',
                 'clientes.view',
                 'cobros.view',
                 'cajas.view',
@@ -319,6 +326,10 @@ class PermissionSeeder extends Seeder
                 'gastos.view',
                 'gastos.create',
                 'gastos.edit',
+
+                'plantilla-gastos.view',
+                'plantilla-gastos.create',
+                'plantilla-gastos.edit',
 
                 'auditoria.view',
                 'backups.view',
@@ -434,6 +445,10 @@ class PermissionSeeder extends Seeder
                 'gastos.view',
                 'gastos.create',
                 'gastos.edit',
+
+                'plantilla-gastos.view',
+                'plantilla-gastos.create',
+                'plantilla-gastos.edit',
 
                 'auditoria.view',
                 'backups.view',
@@ -601,6 +616,10 @@ class PermissionSeeder extends Seeder
                 'gastos.view',
                 'gastos.create',
                 'gastos.edit',
+
+                'plantilla-gastos.view',
+                'plantilla-gastos.create',
+                'plantilla-gastos.edit',
             ],
 
             'almacen' => [

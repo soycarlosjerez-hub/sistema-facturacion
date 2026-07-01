@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Gasto;
+use App\Models\PlantaGasto;
 use App\Services\GastoService;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,8 @@ class GastoController extends Controller
     public function create()
     {
         $categorias = $this->gastoService->getCategorias();
-        return view('gastos.create', compact('categorias'));
+        $plantillas = PlantaGasto::activas()->orderBy('codigo')->get();
+        return view('gastos.create', compact('categorias', 'plantillas'));
     }
 
     public function store(Request $request)
@@ -33,6 +35,7 @@ class GastoController extends Controller
             'fecha_gasto'  => 'required|date',
             'metodo_pago'  => 'nullable|string|max:50',
             'comprobante'  => 'nullable|string|max:100',
+            'planta_gasto_id' => 'nullable|exists:planta_gastos,id',
         ]);
 
         $this->gastoService->create($data);
@@ -50,7 +53,8 @@ class GastoController extends Controller
     public function edit(Gasto $gasto)
     {
         $categorias = $this->gastoService->getCategorias();
-        return view('gastos.edit', compact('gasto', 'categorias'));
+        $plantillas = PlantaGasto::activas()->orderBy('codigo')->get();
+        return view('gastos.edit', compact('gasto', 'categorias', 'plantillas'));
     }
 
     public function update(Request $request, Gasto $gasto)
@@ -63,6 +67,7 @@ class GastoController extends Controller
             'fecha_gasto'  => 'required|date',
             'metodo_pago'  => 'nullable|string|max:50',
             'comprobante'  => 'nullable|string|max:100',
+            'planta_gasto_id' => 'nullable|exists:planta_gastos,id',
         ]);
 
         $this->gastoService->update($gasto, $data);
