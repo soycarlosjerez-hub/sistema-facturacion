@@ -19,6 +19,7 @@ class NcfService
         $sequence = NcfSequence::where('prefijo', $prefijo)
             ->where('activo', true)
             ->where('fecha_vencimiento', '>=', now())
+            ->lockForUpdate()
             ->first();
 
         if (!$sequence) {

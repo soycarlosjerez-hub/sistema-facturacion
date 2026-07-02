@@ -8,7 +8,7 @@ class StoreVentaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->can('ventas.create');
     }
 
     public function rules(): array
@@ -36,7 +36,7 @@ class StoreVentaRequest extends FormRequest
             'propina'       => 'nullable|numeric|min:0',
             'metodo_pago'   => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',
             'ncf_tipo'      => 'nullable|string|exists:ncf_sequences,tipo_comprobante',
-            'tipo_comprobante' => 'nullable|in:ncf,ecf',
+            'tipo_comprobante' => 'nullable|in:sin,ncf,ecf',
         ];
     }
 

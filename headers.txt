@@ -1,0 +1,11 @@
+HTTP/1.1 302 Found
+Date: Thu, 02 Jul 2026 07:08:49 GMT
+Server: Apache/2.4.62 (Win64) PHP/8.3.14 mod_fcgid/2.3.10-dev
+X-Powered-By: PHP/8.3.14
+Cache-Control: no-cache, private
+Location: http://localhost/sistema-facturacion/login
+Set-Cookie: XSRF-TOKEN=eyJpdiI6IitXSnJOYXo4ZEdTVTAvZHFtbG93SXc9PSIsInZhbHVlIjoicnYzVDRLQWlONllUVmJTN1Fkai8wQXVwZjg1c080NW4yY1VnT3ZyK2lOYS8wWDZPSFFYWTBGUVhVNzdTYys2WDdrN0kwa1hrbDkxbjY3YjRTQkxURG9OTjZqcmpCSFM5SWxHZkZlMW9kbUViUEhqUnJ3QWsxcC9rWXorQWJoTWoiLCJtYWMiOiJkODlhZjY2OWNhZjY0YTJmZDZiZDUyNjk1MTFhOGMwNzI0NzIzYzNkYWFkMzBjZWQ2MTU1YTc5MWQ1NWE2ODI4IiwidGFnIjoiIn0%3D; expires=Thu, 02 Jul 2026 09:08:50 GMT; Max-Age=7200; path=/; samesite=lax
+Set-Cookie: facturacion_session=eyJpdiI6ImFZd0hxYlk5RjUxZFNwVExXdjF0dGc9PSIsInZhbHVlIjoiYnUyQmVYdlRTVW5MS0lDdUFCUUo3MFk4cjMybC9oRXZIQUIwUkdJdTRxR2hWVFBrOGRTNVAzVlYxa05rVUlpS1hxNFZNNkdlMnJjR0xtbGxVdm1YeDdHelEyY1lWNUR5TktvLzZTNHdmRzhtZ3I0T0VOSENyV1ZLU1VabEdPNWUiLCJtYWMiOiJjMDllZWNiYmJiZjlkOWQ5N2NhZGNiMGZlNjk1ZWQzZGQ3NTk4YzY5ZWU2MzMyMjAzZDQ2ZjQ0ZjIwZjk5ZWM4IiwidGFnIjoiIn0%3D; expires=Thu, 02 Jul 2026 09:08:50 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+Transfer-Encoding: chunked
+Content-Type: text/html; charset=utf-8
+

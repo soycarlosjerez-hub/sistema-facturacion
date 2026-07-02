@@ -1577,6 +1577,12 @@ body:not(.dark-mode) {
                 @endif
             </div>
 
+            <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:rgba(255,255,255,0.06);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
+                @foreach($almacenes as $alm)
+                    <option value="{{ $alm->id }}">{{ $alm->nombre }}</option>
+                @endforeach
+            </select>
+
             <div class="pos-stat">
                 <span class="label">Vendido Hoy</span>
                 <span class="value success" id="day-total-display">RD$0.00</span>
@@ -2148,6 +2154,7 @@ body:not(.dark-mode) {
     const productos = {!! json_encode($productosJs) !!};
     const clientes = {!! json_encode($clientesJs) !!};
     const categorias = {!! json_encode($categoriasJs) !!};
+    const almacenes = {!! json_encode($almacenes->map(fn($a) => ['id' => (int)$a->id, 'nombre' => $a->nombre])->values()) !!};
     const sesionId = {{ $sesion->id }};
     const dia = {!! json_encode(\Carbon\Carbon::now()->format('Y-m-d')) !!};
     const placeholder = {!! json_encode(asset('img/producto-placeholder.svg')) !!};
@@ -2791,7 +2798,7 @@ body:not(.dark-mode) {
                     <input type="hidden" name="subtotal[]" value="${subtotalConDesc.toFixed(2)}">
                     <input type="hidden" name="descuento[]" value="${descuentoAplicado.toFixed(2)}">
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
-                    <input type="hidden" name="almacen_id[]" value="1">
+                    <input type="hidden" name="almacen_id[]" value="${$('almacen-select')?.value || '1'}">
                 </div>`;
             }).join('');
         }

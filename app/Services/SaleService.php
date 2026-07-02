@@ -59,6 +59,9 @@ class SaleService
                 $venta->update(['fecha' => now()]);
             } else {
                 $tipoComprobante = $data['tipo_comprobante'] ?? 'ncf';
+                if ($tipoComprobante === 'ncf' && empty($data['ncf_tipo'])) {
+                    $tipoComprobante = 'sin';
+                }
 
                 $venta = Venta::create([
                     'ncf'              => $ncf,
@@ -94,6 +97,8 @@ class SaleService
 
     public function cancelSale(int $id, string $motivo): void
     {
+        $motivo = strip_tags(trim($motivo));
+
         DB::transaction(function () use ($id, $motivo) {
             $venta = Venta::with('detalles')->findOrFail($id);
 
@@ -108,6 +113,11 @@ class SaleService
                     'nota'        => 'ANULACIÓN Venta #' . $venta->id . ' | Motivo: ' . $motivo,
                     'user_id'     => Auth::id(),
                 ]);
+
+                $productoObj = Producto::find($detalle->producto_id);
+                if ($productoObj) {
+                    $productoObj->increment('stock', $detalle->cantidad);
+                }
             }
 
             if ($venta->cliente_id && in_array($venta->estado, ['pendiente', 'cuenta_abierta'])) {
@@ -272,10 +282,11 @@ class SaleService
             $almacenId = $data['almacen_id'][$key] ?? 1;
             $cantidad = $data['cantidad'][$key];
 
-            $disponible = $this->checkStock($productoId, $almacenId);
-            if ($disponible < $cantidad) {
-                $p = Producto::find($productoId);
-                throw new \Exception("Stock insuficiente para: {$p->nombre} (Disponible: {$disponible})");
+            $producto = Producto::findOrFail($productoId);
+
+            $disponiblePorAlmacen = $this->checkStock($productoId, $almacenId);
+            if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
+                throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
             }
 
             VentaDetalle::create([
@@ -298,7 +309,6 @@ class SaleService
                 'user_id'     => Auth::id(),
             ]);
 
-            $producto = Producto::find($productoId);
             $producto->decrement('stock', $cantidad);
             $producto->increment('ventas_count', $cantidad);
         }
