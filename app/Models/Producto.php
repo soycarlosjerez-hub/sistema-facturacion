@@ -38,7 +38,7 @@ class Producto extends Model
         'activo'            => 'boolean',
     ];
 
-    protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen'];
+    protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen', 'can_delete'];
     protected $attributes = [
         'precio_compra' => 0,
     ];
@@ -97,6 +97,20 @@ class Producto extends Model
     public function getColorBadgeActivoAttribute(): string
     {
         return $this->activo ? 'success' : 'secondary';
+    }
+
+    public function getCanDeleteAttribute(): bool
+    {
+        if (isset($this->attributes['venta_detalles_count'])) {
+            return $this->attributes['venta_detalles_count'] == 0
+                && $this->attributes['detalles_compras_count'] == 0
+                && $this->attributes['movimientos_almacen_count'] == 0
+                && $this->attributes['ingredientes_count'] == 0;
+        }
+        return $this->ventaDetalles()->doesntExist()
+            && $this->detallesCompras()->doesntExist()
+            && $this->movimientosAlmacen()->doesntExist()
+            && $this->ingredientes()->doesntExist();
     }
 
     public function getTieneImagenAttribute(): bool

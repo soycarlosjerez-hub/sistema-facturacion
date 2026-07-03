@@ -558,7 +558,7 @@ $(function() {
                         actions += '<button type="button" class="premium-btn-edit toggle-activo" title="' + (activo ? 'Desactivar' : 'Activar') + '" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '" data-activo="' + (activo ? '1' : '0') + '" style="background:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.1);color:' + (activo ? '#ef4444' : '#22c55e') + ';border-color:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.2);">' +
                             '<i class="bi bi-' + (activo ? 'pause-circle' : 'play-circle') + '"></i></button>';
                     }
-                    if (canDelete) {
+                    if (canDelete && data.can_delete) {
                         actions += '<form action="/productos/' + data.id + '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar el producto ' + escapeHtml(data.nombre) + '? Esta acción no se puede deshacer.\');">' +
                             '<input type="hidden" name="_token" value="' + csrfToken + '">' +
                             '<input type="hidden" name="_method" value="DELETE">' +

@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Compra;
-use App\Models\DetalleCompra;
 use App\Models\Producto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +14,8 @@ class ProductoService
 {
     public function list(array $filters = []): LengthAwarePaginator
     {
-        $query = Producto::with('categoria');
+        $query = Producto::with('categoria')
+            ->withCount(['ventaDetalles', 'detallesCompras', 'movimientosAlmacen', 'ingredientes']);
 
         if ($termino = $filters['nombre'] ?? null) {
             $query->where(function ($q) use ($termino) {
@@ -57,7 +56,8 @@ class ProductoService
 
     public function listAll(array $filters = []): Collection
     {
-        $query = Producto::with('categoria');
+        $query = Producto::with('categoria')
+            ->withCount(['ventaDetalles', 'detallesCompras', 'movimientosAlmacen', 'ingredientes']);
 
         if ($termino = $filters['nombre'] ?? null) {
             $query->where(function ($q) use ($termino) {
@@ -125,22 +125,11 @@ class ProductoService
 
     public function delete(Producto $producto): array
     {
-        if ($producto->ventaDetalles()->exists()) {
+        if (!$producto->can_delete) {
             return [
                 'success' => false,
-                'message' => "No se puede eliminar '{$producto->nombre}' porque tiene ventas asociadas.",
+                'message' => "No se puede eliminar '{$producto->nombre}' porque tiene registros asociados (ventas, compras, movimientos de almacén o ingredientes). Puedes desactivarlo en su lugar.",
             ];
-        }
-
-        $compraIds = DetalleCompra::where('producto_id', $producto->id)
-            ->pluck('compra_id')->unique();
-
-        DetalleCompra::where('producto_id', $producto->id)->delete();
-
-        foreach ($compraIds as $compraId) {
-            if (DetalleCompra::where('compra_id', $compraId)->count() === 0) {
-                Compra::where('id', $compraId)->delete();
-            }
         }
 
         if ($producto->imagen) {
