@@ -429,13 +429,17 @@ $(function() {
         data: productos,
         columns: [
             {
-                data: null,
+                data: 'id',
                 className: 'text-center',
-                orderable: false,
+                orderable: true,
                 searchable: false,
+                type: 'num',
                 width: '50px',
-                render: function(data, type, row, meta) {
-                    return '<span class="text-muted fw-bold">' + (meta.row + meta.settings._iDisplayStart + 1) + '</span>';
+                render: function(data, type) {
+                    if (type === 'display' || type === 'filter') {
+                        return '<span class="text-muted fw-bold">' + data + '</span>';
+                    }
+                    return data;
                 }
             },
             {
