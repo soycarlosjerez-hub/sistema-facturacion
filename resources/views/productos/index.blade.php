@@ -684,15 +684,21 @@ $(function() {
         formData.append('_method', 'PUT');
         formData.append('_token', csrfToken);
 
+        console.log('[TOGGLE] Enviando petición para producto:', id);
+
         fetch('/productos/' + id + '/toggle', {
             method: 'POST',
             body: formData
         })
         .then(function(r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
+            console.log('[TOGGLE] Status:', r.status, 'Ok:', r.ok, 'Headers:', r.headers.get('content-type'));
+            return r.text().then(function(text) {
+                console.log('[TOGGLE] Response body:', text.substring(0, 500));
+                return JSON.parse(text);
+            });
         })
         .then(function(data) {
+            console.log('[TOGGLE] Parsed data:', data);
             if (data.success) {
                 var row = btn.closest('tr');
                 if (row) {
@@ -728,7 +734,8 @@ $(function() {
             }
         })
         .catch(function(err) {
-            console.error('Toggle error:', err);
+            console.error('[TOGGLE] Error completo:', err);
+            console.error('[TOGGLE] Stack:', err.stack);
             if (typeof Swal !== 'undefined') {
                 Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
             }

@@ -106,11 +106,24 @@ body.dark-mode .clientes-table tbody td {
                         <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivos</option>
                     </select>
                 </div>
+                <div class="col-lg-2">
+                    <select name="segmento" class="form-select">
+                        <option value="">Todos los segmentos</option>
+                        <option value="micro" {{ request('segmento')=='micro' ? 'selected' : '' }}>Micro</option>
+                        <option value="pequeno" {{ request('segmento')=='pequeno' ? 'selected' : '' }}>Pequeño</option>
+                        <option value="mediano" {{ request('segmento')=='mediano' ? 'selected' : '' }}>Mediano</option>
+                        <option value="grande" {{ request('segmento')=='grande' ? 'selected' : '' }}>Grande</option>
+                        <option value="gobierno" {{ request('segmento')=='gobierno' ? 'selected' : '' }}>Gobierno</option>
+                    </select>
+                </div>
                 <div class="col-lg-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                     <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-lg-3 text-end">
+                    <a href="{{ route('clientes.creditos.resumen') }}" class="btn btn-outline-light rounded-pill me-2" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);">
+                        <i class="bi bi-credit-card me-1"></i> Créditos
+                    </a>
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="bi bi-download me-1"></i> Exportar
@@ -134,10 +147,12 @@ body.dark-mode .clientes-table tbody td {
                         <tr>
                             <th class="ps-4">Cliente</th>
                             <th>Contacto</th>
-                            <th class="text-center">Identificación</th>
+                            <th class="text-center">Tipo</th>
+                            <th class="text-center">Segmento</th>
+                            <th class="text-end">Límite Crédito</th>
+                            <th class="text-end">Balance Pte.</th>
+                            <th class="text-center">Crédito</th>
                             <th class="text-center">Activo</th>
-                            <th class="text-end">Balance Pendiente</th>
-                            <th class="text-center">Estado</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
@@ -157,18 +172,52 @@ body.dark-mode .clientes-table tbody td {
                                         </div>
                                         <div class="text-truncate">
                                             <div class="fw-bold text-dark fs-6 text-truncate" title="{{ $c->nombre }}">{{ $c->nombre }}</div>
-                                            <div class="text-muted small text-truncate"><i class="bi bi-geo-alt me-1"></i>{{ $c->direccion ?? 'Sin dirección' }}</div>
+                                            <div class="text-muted small text-truncate"><i class="bi bi-geo-alt me-1"></i>{{ $c->ciudad ?? $c->direccion ?? 'Sin dirección' }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="fw-medium text-dark"><i class="bi bi-telephone text-muted me-2"></i>{{ $c->telefono ?? '—' }}</div>
                                     <div class="text-muted small mt-1"><i class="bi bi-envelope text-muted me-2"></i>{{ $c->email ?? '—' }}</div>
+                                    <div class="text-muted small mt-1"><i class="bi bi-person-lines-fill text-muted me-2"></i>{{ $c->persona_contacto ?? '—' }}</div>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge bg-light text-dark border rounded-pill">
-                                        <i class="bi bi-person-vcard me-1"></i> {{ $c->rnc_cedula ?? 'Sin RNC/Cédula' }}
+                                    <span class="status-badge bg-{{ $c->color_badge }} bg-opacity-10 text-{{ $c->color_badge }} d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-tag"></i>
+                                        {{ $c->tipo_cliente_label }}
                                     </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="status-badge bg-secondary bg-opacity-10 text-secondary d-inline-flex align-items-center gap-1">
+                                        {{ $c->segmento_label }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="fw-semibold fs-6">RD$ {{ number_format($c->limite_credito, 2) }}</div>
+                                </td>
+                                <td class="text-end">
+                                    @if($c->balance_pendiente > 0)
+                                        <div class="fw-bold text-danger fs-6">RD$ {{ number_format($c->balance_pendiente, 2) }}</div>
+                                    @else
+                                        <div class="fw-bold text-success fs-6">RD$ 0.00</div>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($c->limite_credito > 0)
+                                        <div class="d-flex align-items-center gap-1 justify-content-center">
+                                            <div class="progress" style="width:50px;height:6px;">
+                                                <div class="progress-bar bg-{{ $c->color_badge_estado_credito }}"
+                                                    style="width:{{ min($c->utilizacion_credito, 100) }}%">
+                                                </div>
+                                            </div>
+                                            <span class="small {{ $c->utilizacion_credito >= 80 ? 'text-danger' : 'text-muted' }}">
+                                                {{ $c->utilizacion_credito }}%
+                                            </span>
+                                        </div>
+                                        <div class="text-muted small mt-1">{{ $c->estado_credito_label }}</div>
+                                    @else
+                                        <span class="text-muted small">Sin límite</span>
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     <span class="status-badge bg-{{ $c->color_badge_activo }} bg-opacity-10 text-{{ $c->color_badge_activo }} d-inline-flex align-items-center gap-1">
@@ -183,30 +232,6 @@ body.dark-mode .clientes-table tbody td {
                                         <i class="bi bi-arrow-repeat text-muted" style="font-size:.8rem;"></i>
                                     </button>
                                     @endcan
-                                </td>
-                                <td class="text-end">
-                                    @if($c->balance_pendiente > 0)
-                                        <div class="fw-bold text-danger fs-6">RD$ {{ number_format($c->balance_pendiente, 2) }}</div>
-                                        <div class="text-muted small mt-1">Deuda pendiente</div>
-                                    @else
-                                        <div class="fw-bold text-success fs-6">RD$ 0.00</div>
-                                        <div class="text-muted small mt-1">Al día</div>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    @if($c->balance_pendiente > 5000)
-                                        <span class="status-badge bg-danger bg-opacity-10 text-danger">
-                                            <i class="bi bi-exclamation-triangle-fill me-1"></i> Riesgo Alto
-                                        </span>
-                                    @elseif($c->balance_pendiente > 0)
-                                        <span class="status-badge bg-warning bg-opacity-25 text-dark">
-                                            <i class="bi bi-exclamation-circle-fill text-warning me-1"></i> Deudor
-                                        </span>
-                                    @else
-                                        <span class="status-badge bg-success bg-opacity-10 text-success">
-                                            <i class="bi bi-check-circle-fill me-1"></i> Solvente
-                                        </span>
-                                    @endif
                                 </td>
                                 <td class="text-end pe-4">
                                     <a href="{{ route('clientes.show', $c) }}" class="premium-btn-edit" title="Ver">
@@ -225,7 +250,7 @@ body.dark-mode .clientes-table tbody td {
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-people fs-1" style="color:#cbd5e1;"></i>
                                     <p class="mt-2 mb-0 fw-semibold">No hay clientes registrados</p>
                                     @can('clientes.create')

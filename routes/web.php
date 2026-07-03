@@ -230,6 +230,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/clientes/exportar', [ClienteController::class, 'exportExcel'])->name('clientes.exportar');
         Route::get('/clientes/pdf', [ClienteController::class, 'pdf'])->name('clientes.pdf');
         Route::get('/cuentas-por-cobrar', [ClienteController::class, 'cuentas'])->name('clientes.cuentas');
+        Route::get('/creditos/resumen', [ClienteController::class, 'resumenCreditos'])->name('clientes.creditos.resumen');
+        Route::post('/clientes/recalcular-balances', [ClienteController::class, 'recalcularBalances'])->name('clientes.recalcular-balances');
         Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show');
     });
     Route::middleware('permission:clientes.create')->group(function () {

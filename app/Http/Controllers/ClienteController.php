@@ -34,16 +34,36 @@ class ClienteController extends Controller
         }
 
         $data = $request->validate([
-            'nombre'        => 'required|string|max:255',
-            'rnc_cedula'    => ['nullable', 'digits_between:9,11', new RncValido],
-            'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte,ninguno',
-            'email'         => 'nullable|email',
-            'telefono'      => 'nullable',
-            'direccion'     => 'nullable',
-            'activo'        => 'boolean',
+            'nombre'            => 'required|string|max:255',
+            'rnc_cedula'        => ['nullable', 'digits_between:9,11', new RncValido],
+            'tipo_documento'    => 'nullable|in:rnc,cedula,pasaporte,ninguno',
+            'tipo_cliente'      => 'nullable|in:credito_fiscal,consumo,gubernamental,especial',
+            'email'             => 'nullable|email',
+            'telefono'          => 'nullable',
+            'whatsapp'          => 'nullable',
+            'direccion'         => 'nullable',
+            'ciudad'            => 'nullable|string|max:100',
+            'provincia'         => 'nullable|string|max:100',
+            'codigo_postal'     => 'nullable|string|max:10',
+            'persona_contacto'  => 'nullable|string|max:150',
+            'cargo_contacto'    => 'nullable|string|max:100',
+            'limite_credito'    => 'nullable|numeric|min:0',
+            'plazo_pago_dias'   => 'nullable|integer|min:0|max:365',
+            'tasa_descuento_pct' => 'nullable|numeric|min:0|max:100',
+            'moneda'            => 'nullable|in:RD,USD,EUR',
+            'auto_bloquear_credito' => 'boolean',
+            'notas_internas'    => 'nullable|string',
+            'regimen_mensual'   => 'boolean',
+            'nit'               => 'nullable|string|max:30',
+            'segmento'          => 'nullable|in:micro,pequeno,mediano,grande,gobierno',
+            'origen_cliente'    => 'nullable|in:referencia,web,walkin,publicidad,otro',
+            'sector_actividad'  => 'nullable|string|max:100',
+            'activo'            => 'boolean',
         ]);
 
         $data['activo'] = $request->boolean('activo');
+        $data['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
+        $data['regimen_mensual'] = $request->boolean('regimen_mensual');
 
         $this->clienteService->create($data);
 
@@ -71,16 +91,36 @@ class ClienteController extends Controller
         }
 
         $data = $request->validate([
-            'nombre'        => 'required|string|max:255',
-            'rnc_cedula'    => ['nullable', 'digits_between:9,11', new RncValido],
-            'tipo_documento' => 'nullable|in:rnc,cedula,pasaporte,ninguno',
-            'email'         => 'nullable|email',
-            'telefono'      => 'nullable',
-            'direccion'     => 'nullable',
-            'activo'        => 'boolean',
+            'nombre'            => 'required|string|max:255',
+            'rnc_cedula'        => ['nullable', 'digits_between:9,11', new RncValido],
+            'tipo_documento'    => 'nullable|in:rnc,cedula,pasaporte,ninguno',
+            'tipo_cliente'      => 'nullable|in:credito_fiscal,consumo,gubernamental,especial',
+            'email'             => 'nullable|email',
+            'telefono'          => 'nullable',
+            'whatsapp'          => 'nullable',
+            'direccion'         => 'nullable',
+            'ciudad'            => 'nullable|string|max:100',
+            'provincia'         => 'nullable|string|max:100',
+            'codigo_postal'     => 'nullable|string|max:10',
+            'persona_contacto'  => 'nullable|string|max:150',
+            'cargo_contacto'    => 'nullable|string|max:100',
+            'limite_credito'    => 'nullable|numeric|min:0',
+            'plazo_pago_dias'   => 'nullable|integer|min:0|max:365',
+            'tasa_descuento_pct' => 'nullable|numeric|min:0|max:100',
+            'moneda'            => 'nullable|in:RD,USD,EUR',
+            'auto_bloquear_credito' => 'boolean',
+            'notas_internas'    => 'nullable|string',
+            'regimen_mensual'   => 'boolean',
+            'nit'               => 'nullable|string|max:30',
+            'segmento'          => 'nullable|in:micro,pequeno,mediano,grande,gobierno',
+            'origen_cliente'    => 'nullable|in:referencia,web,walkin,publicidad,otro',
+            'sector_actividad'  => 'nullable|string|max:100',
+            'activo'            => 'boolean',
         ]);
 
         $data['activo'] = $request->boolean('activo');
+        $data['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
+        $data['regimen_mensual'] = $request->boolean('regimen_mensual');
 
         $this->clienteService->update($cliente, $data);
 
@@ -91,6 +131,21 @@ class ClienteController extends Controller
     {
         $this->clienteService->delete($cliente);
         return redirect()->route('clientes.index')->with('success', 'Cliente eliminado');
+    }
+
+    public function resumenCreditos(Request $request)
+    {
+        $resumen = $this->clienteService->resumenCreditos();
+        $clientesEnExceso = Cliente::excedeCredito()
+            ->with(['ventas' => fn($q) => $q->whereIn('estado', ['pendiente', 'cuenta_abierta'])])
+            ->get();
+        return view('clientes.creditos', compact('resumen', 'clientesEnExceso'));
+    }
+
+    public function recalcularBalances()
+    {
+        $this->clienteService->recalcularBalances();
+        return redirect()->back()->with('success', 'Balances recalculados correctamente.');
     }
 
     public function toggleActivo(Cliente $cliente)
