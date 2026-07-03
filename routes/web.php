@@ -295,18 +295,18 @@ Route::middleware(['auth'])->group(function () {
     // Proveedores
     Route::middleware('permission:proveedores.view')->group(function () {
         Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
-        Route::get('/proveedores/{proveedor}', [ProveedorController::class, 'show'])->name('proveedores.show');
+        Route::get('/proveedores/{proveedore}', [ProveedorController::class, 'show'])->name('proveedores.show');
     });
     Route::middleware('permission:proveedores.create')->group(function () {
         Route::get('/proveedores/create', [ProveedorController::class, 'create'])->name('proveedores.create');
         Route::post('/proveedores', [ProveedorController::class, 'store'])->name('proveedores.store');
     });
     Route::middleware('permission:proveedores.edit')->group(function () {
-        Route::get('/proveedores/{proveedor}/edit', [ProveedorController::class, 'edit'])->name('proveedores.edit');
-        Route::put('/proveedores/{proveedor}', [ProveedorController::class, 'update'])->name('proveedores.update');
+        Route::get('/proveedores/{proveedore}/edit', [ProveedorController::class, 'edit'])->name('proveedores.edit');
+        Route::put('/proveedores/{proveedore}', [ProveedorController::class, 'update'])->name('proveedores.update');
     });
     Route::middleware('permission:proveedores.delete')->group(function () {
-        Route::delete('/proveedores/{proveedor}', [ProveedorController::class, 'destroy'])->name('proveedores.destroy');
+        Route::delete('/proveedores/{proveedore}', [ProveedorController::class, 'destroy'])->name('proveedores.destroy');
     });
     Route::middleware('permission:proveedores.export')->group(function () {
         Route::get('/proveedores/exportar', [ProveedorController::class, 'exportExcel'])->name('proveedores.exportar');
@@ -851,3 +851,4 @@ Route::middleware(['auth', 'instance.blocked'])->prefix('setup')->name('setup.')
 });
 
 require __DIR__ . '/auth.php';
+

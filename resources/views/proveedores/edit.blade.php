@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <form id="proveedorForm" action="{{ route('proveedores.update', $proveedore->id) }}" method="POST">
+    <form id="proveedorForm" action="{{ route('proveedores.update', $proveedore) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -116,3 +116,5 @@
     </div>
 </div>
 @endsection
+
+
