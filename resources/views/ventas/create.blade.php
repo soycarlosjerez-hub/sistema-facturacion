@@ -2162,6 +2162,7 @@ body:not(.dark-mode) {
     const urlTurno = {!! json_encode(url('/ventas/json-turno')) !!};
     const urlCuentaAbierta = {!! json_encode(url('/ventas/cuenta-abierta')) !!};
     const turnoInicio = new Date({!! json_encode($sesion->fecha_apertura->toIso8601String()) !!});
+    const validaStock = {!! json_encode($validaStock ?? true) !!};
 
     // ============ Estado ============
     const cart = [];
@@ -2187,7 +2188,7 @@ body:not(.dark-mode) {
     // ============ POS namespace (expuesto a window) ============
     const POS = {
         // Estado expuesto para debugging
-        cart, scanMode: () => scanMode, productos,
+        cart, scanMode, productos, validaStock,
 
         clearScan() {
             $('scan-input').value = '';
@@ -2222,7 +2223,9 @@ body:not(.dark-mode) {
         updateQty(index, val) {
             const v = parseInt(val) || 1;
             if (v < 1) return;
-            if (v > cart[index].stock) {
+            if (!validaStock) {
+                cart[index].qty = v;
+            } else if (v > cart[index].stock) {
                 showToast(`Stock máximo: ${cart[index].stock}`, 'warning');
                 cart[index].qty = cart[index].stock;
             } else {
@@ -2254,6 +2257,10 @@ body:not(.dark-mode) {
         submitForm(metodo) {
             if (cart.length === 0) {
                 showToast('Agrega al menos un producto al carrito', 'warning');
+                return;
+            }
+            if (!$('cliente_id').value) {
+                showToast('Selecciona un cliente antes de cobrar', 'warning');
                 return;
             }
             metodoPagoPendiente = metodo;
@@ -2419,6 +2426,8 @@ body:not(.dark-mode) {
         } else {
             facturarBtn.style.display = 'none';
         }
+        loadDayStats();
+        loadTurnoHistory();
         new bootstrap.Modal($('postPagoModal')).show();
     }
 
@@ -2544,6 +2553,7 @@ body:not(.dark-mode) {
         const container = $('modal-productos-grid');
         const q = (filtro || '').toLowerCase();
         const results = productos.filter(p => {
+            if (validaStock && p.stock <= 0) return false;
             const matchNombre = (p.nombre || '').toLowerCase().includes(q);
             const matchCodigo = (p.codigo_barras || '').toLowerCase().includes(q);
             const matchCategoria = !modalCategoriaFiltro || String(p.categoria_id) === modalCategoriaFiltro;
@@ -2560,9 +2570,9 @@ body:not(.dark-mode) {
             const qty = cantidadesModal[id];
             const c = colorProductoModal(p.nombre);
             const initial = (p.nombre || '?').charAt(0).toUpperCase();
-            const stockCls = p.stock <= 0 ? 'bg-secondary' : p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark';
+            const stockCls = !validaStock ? 'bg-warning text-dark' : (p.stock <= 0 ? 'bg-secondary' : p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark');
             const stockTxt = p.stock <= 0 ? 'Sin stock' : p.stock + ' uds';
-            const outCls = ''; // No bloquear por stock
+            const outCls = (validaStock && p.stock <= 0) ? ' out-of-stock' : '';
             let imgHtml;
             if (p.imagen_url) {
                 imgHtml = `<img class="modal-prod-img" src="${p.imagen_url}" alt="" onerror="this.onerror=null;this.remove();this.nextElementSibling.style.display='flex';">`;
@@ -2601,6 +2611,7 @@ body:not(.dark-mode) {
     function agregarProductoDesdeModal(id) {
         const p = productos.find(x => x.id === id);
         if (!p) { showToast('Producto no encontrado', 'danger'); return; }
+        if (validaStock && p.stock <= 0) { showToast('Producto sin stock', 'warning'); return; }
         const qty = cantidadesModal[id] || 1;
         const existing = cart.find(x => x.id === id);
         if (existing) {
@@ -2831,13 +2842,18 @@ body:not(.dark-mode) {
 
     // ============ Tabs / Filtros ============
     function renderTabCounts() {
+        const available = validaStock ? productos.filter(p => p.stock > 0).length : productos.length;
         $('count-all').textContent = productos.length;
-        $('count-low').textContent = productos.filter(p => p.stock > 0 && p.stock <= 15).length;
-        $('count-avail').textContent = productos.filter(p => p.stock > 0).length;
+        $('count-low').textContent = validaStock ? productos.filter(p => p.stock > 0 && p.stock <= 15).length : 0;
+        $('count-avail').textContent = available;
         $('count-pop').textContent = productos.filter(p => p.ventas_count > 0).length;
     }
 
     function filterProductos(list) {
+        if (!validaStock) {
+            if (activeFilter === 'popular') return list.sort((a,b) => b.ventas_count - a.ventas_count);
+            return list;
+        }
         switch (activeFilter) {
             case 'low': return list.filter(p => p.stock > 0 && p.stock <= 15);
             case 'available': return list.filter(p => p.stock > 0);
@@ -2890,14 +2906,14 @@ body:not(.dark-mode) {
 
     function renderProductsGrid(items) {
         const viewport = $('products-viewport');
-        const cart = $('cart-viewport');
+        const cartViewport = $('cart-viewport');
         if (items.length === 0) {
             viewport.style.display = 'none';
-            cart.style.display = 'block';
+            cartViewport.style.display = 'block';
             return;
         }
         viewport.style.display = 'grid';
-        cart.style.display = 'none';
+        cartViewport.style.display = 'none';
         viewport.innerHTML = items.map(p => {
             const stockCls = p.stock === 0 ? 'out' : p.stock <= 5 ? 'crit' : p.stock <= 15 ? 'low' : 'ok';
             const stockLbl = p.stock === 0 ? 'Agotado' : p.stock + ' disp.';
@@ -2954,7 +2970,6 @@ body:not(.dark-mode) {
             $('cash-card-buttons').style.display = 'contents';
             $('client-only-buttons').style.display = 'none';
             $('btn-transferencia').style.display = '';
-            $('existing-items-panel')?.classList.add('d-none');
         } else {
             $('cash-card-buttons').style.display = 'none';
             $('client-only-buttons').style.display = 'contents';
@@ -2965,17 +2980,6 @@ body:not(.dark-mode) {
 
     function fetchExistingItems(clienteId) {
         fetch(`${urlCuentaAbierta}/${clienteId}`, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }})
-            .then(r => r.ok ? r.json() : Promise.reject())
-            .then(venta => {
-                const panel = $('existing-items-panel');
-                if (panel) {
-                    if (venta && venta.detalles && venta.detalles.length > 0) {
-                        panel.classList.remove('d-none');
-                    } else {
-                        panel.classList.add('d-none');
-                    }
-                }
-            })
             .catch(() => {});
     }
 
@@ -3001,6 +3005,15 @@ body:not(.dark-mode) {
     }
 
     // Client search as you type
+    document.addEventListener('click', function(e) {
+        const item = e.target.closest('.cliente-result-item');
+        if (item) {
+            const id = parseInt(item.dataset.clienteId);
+            const nombre = item.dataset.clienteNombre;
+            if (id && nombre) seleccionarCliente(id, nombre);
+        }
+    });
+
     document.addEventListener('input', function(e) {
         if (e.target.id === 'buscar-cliente-input') {
             const q = e.target.value.trim();
@@ -3024,7 +3037,8 @@ body:not(.dark-mode) {
                 const tipo = c.tipo_cliente === 'credito_fiscal' ? 'Crédito Fiscal' :
                             c.tipo_cliente === 'gubernamental' ? 'Gubernamental' :
                             c.tipo_cliente === 'especial' ? 'Especial' : 'Consumo';
-                return `<div class="cliente-result-item" onclick="seleccionarCliente(${c.id}, '${c.nombre.replace(/'/g, "\\'")}')">
+                const nombreSeguro = JSON.stringify(c.nombre);
+                return `<div class="cliente-result-item" data-cliente-id="${c.id}" data-cliente-nombre='${nombreSeguro}'>
                     <div class="cr-icon" style="background:rgba(14,165,233,0.1);color:#38bdf8;">${initial}</div>
                     <div class="cr-info">
                         <div class="cr-name">${escapeHtml(c.nombre)}</div>
@@ -3142,6 +3156,7 @@ body:not(.dark-mode) {
         if (e.key === 'F9') { e.preventDefault(); if (cart.length > 0) POS.submitForm('transferencia'); return; }
         if (e.ctrlKey && e.key === 'k') { e.preventDefault(); mostrarBuscarCliente(); return; }
         if (e.ctrlKey && e.key === 'Backspace') { e.preventDefault(); POS.vaciarCarrito(); return; }
+        if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); if (cart.length > 0) POS.submitForm('efectivo'); return; }
         if (e.key === 'Escape' && $('shortcutsHelp').classList.contains('show')) { e.preventDefault(); POS.toggleShortcutsHelp(); return; }
         if (e.key === 'Escape' && inSearch) { e.preventDefault(); POS.clearScan(); return; }
     }
@@ -3264,6 +3279,7 @@ body:not(.dark-mode) {
     window.seleccionarCliente = seleccionarCliente;
     window.cerrarModalProductos = cerrarModalProductos;
     window.agregarProductoDesdeModal = agregarProductoDesdeModal;
+    window.cambiarQtyModal = cambiarQtyModal;
     window.modalBuscarProductos = modalBuscarProductos;
     window.modalLimpiarBusqueda = modalLimpiarBusqueda;
     window.tecladoIdioma = tecladoIdioma;

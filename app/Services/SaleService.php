@@ -81,6 +81,7 @@ class SaleService
                     'subtotal'         => $data['subtotal_final'] ?? array_sum($data['subtotal']),
                     'total'            => $data['total'],
                     'estado'           => $estado,
+                    'propina'          => $data['propina'] ?? 0,
                 ]);
 
                 if ($tipoComprobante === 'ecf') {
@@ -241,7 +242,7 @@ class SaleService
         return compact(
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
-            'productosJs', 'clientesJs', 'categoriasJs'
+            'productosJs', 'clientesJs', 'categoriasJs', 'validaStock'
         );
     }
 
@@ -278,15 +279,24 @@ class SaleService
 
     private function procesarDetalles(Venta $venta, array $data, ?Venta $ventaExistente): void
     {
+        $validaStock = true;
+        $user = Auth::user();
+        if ($user && $user->businessInstance) {
+            $config = $user->businessInstance->configuracion ?? [];
+            $validaStock = ($config['restaurante_valida_stock'] ?? '1') === '1';
+        }
+
         foreach ($data['producto_id'] as $key => $productoId) {
             $almacenId = $data['almacen_id'][$key] ?? 1;
             $cantidad = $data['cantidad'][$key];
 
             $producto = Producto::findOrFail($productoId);
 
-            $disponiblePorAlmacen = $this->checkStock($productoId, $almacenId);
-            if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
-                throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
+            if ($validaStock) {
+                $disponiblePorAlmacen = $this->checkStock($productoId, $almacenId);
+                if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
+                    throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
+                }
             }
 
             VentaDetalle::create([

@@ -24,7 +24,7 @@ class StoreProductoRequest extends FormRequest
             'itbis_porcentaje' => 'nullable|numeric|min:0|max:100',
             'stock'           => 'nullable|integer|min:0',
             'stock_minimo'    => 'nullable|integer|min:0',
-            'imagen'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'imagen'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
     }
 
@@ -35,7 +35,7 @@ class StoreProductoRequest extends FormRequest
             'precio.required'    => 'El precio es obligatorio.',
             'precio.min'         => 'El precio no puede ser negativo.',
             'codigo_barras.unique' => 'Este código de barras ya está registrado.',
-            'imagen.max'         => 'La imagen no debe superar 2MB.',
+            'imagen.max'         => 'La imagen no debe superar 10MB.',
         ];
     }
 }

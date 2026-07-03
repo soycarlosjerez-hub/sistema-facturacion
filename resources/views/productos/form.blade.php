@@ -119,7 +119,7 @@
         <div class="col-md-6">
             <input type="file" name="imagen" class="form-control form-control-lg @error('imagen') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg,image/webp">
             @error('imagen')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-            <small class="text-muted d-block">Formatos: JPG, PNG, WEBP. Máx. 2 MB.</small>
+            <small class="text-muted d-block">Formatos: JPG, PNG, WEBP. Máx. 10 MB.</small>
             <small class="text-success-emphasis fw-semibold"><i class="bi bi-arrow-down-circle me-1"></i>Se comprimirá automáticamente a WebP (máx. 800px, calidad 70%)</small>
         </div>
         @if(isset($producto))
