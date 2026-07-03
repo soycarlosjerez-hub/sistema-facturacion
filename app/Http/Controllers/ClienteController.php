@@ -40,7 +40,10 @@ class ClienteController extends Controller
             'email'         => 'nullable|email',
             'telefono'      => 'nullable',
             'direccion'     => 'nullable',
+            'activo'        => 'boolean',
         ]);
+
+        $data['activo'] = $request->boolean('activo');
 
         $this->clienteService->create($data);
 
@@ -74,7 +77,10 @@ class ClienteController extends Controller
             'email'         => 'nullable|email',
             'telefono'      => 'nullable',
             'direccion'     => 'nullable',
+            'activo'        => 'boolean',
         ]);
+
+        $data['activo'] = $request->boolean('activo');
 
         $this->clienteService->update($cliente, $data);
 
@@ -85,6 +91,16 @@ class ClienteController extends Controller
     {
         $this->clienteService->delete($cliente);
         return redirect()->route('clientes.index')->with('success', 'Cliente eliminado');
+    }
+
+    public function toggleActivo(Cliente $cliente)
+    {
+        $cliente = $this->clienteService->toggleActivo($cliente);
+        return response()->json([
+            'success' => true,
+            'activo'  => $cliente->activo,
+            'label'   => $cliente->activo_label,
+        ]);
     }
 
     public function pdf(Request $request)

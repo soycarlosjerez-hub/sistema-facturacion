@@ -169,6 +169,15 @@ body.dark-mode .venta-card {
                         <div class="label">Cliente desde</div>
                         <div class="value">{{ $cliente->created_at->format('d/m/Y') }}</div>
                     </div>
+                    <div class="info-item mt-3" style="border-left-color: {{ $cliente->activo ? '#10b981' : '#6b7280' }};">
+                        <div class="label">Estado</div>
+                        <div class="value">
+                            <span class="badge bg-{{ $cliente->color_badge_activo }} rounded-pill px-3 py-1">
+                                <i class="bi bi-{{ $cliente->activo ? 'check-circle-fill' : 'x-circle-fill' }} me-1"></i>
+                                {{ $cliente->activo_label }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

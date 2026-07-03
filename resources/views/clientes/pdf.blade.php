@@ -19,6 +19,7 @@
                 <th>Email</th>
                 <th>Teléfono</th>
                 <th>Dirección</th>
+                <th>Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -28,6 +29,7 @@
                     <td>{{ $cliente->email }}</td>
                     <td>{{ $cliente->telefono }}</td>
                     <td>{{ $cliente->direccion }}</td>
+                    <td>{{ $cliente->activo_label }}</td>
                 </tr>
             @endforeach
         </tbody>

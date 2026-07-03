@@ -12,13 +12,16 @@ class ClienteService
     public function list(array $filters = []): LengthAwarePaginator
     {
         $nombre = $filters['nombre'] ?? null;
+        $activo = $filters['activo'] ?? null;
 
         return Cliente::when($nombre, fn($q) => $q->where(function ($sub) use ($nombre) {
             $sub->where('nombre', 'like', "%{$nombre}%")
                 ->orWhere('email', 'like', "%{$nombre}%")
                 ->orWhere('rnc_cedula', 'like', "%{$nombre}%")
                 ->orWhere('telefono', 'like', "%{$nombre}%");
-        }))->latest()->paginate(10);
+        }))
+            ->when($activo !== null && $activo !== '', fn($q) => $q->where('activo', $activo))
+            ->latest()->paginate(10);
     }
 
     public function create(array $data): Cliente
@@ -36,6 +39,12 @@ class ClienteService
     public function delete(Cliente $cliente): void
     {
         $cliente->delete();
+    }
+
+    public function toggleActivo(Cliente $cliente): Cliente
+    {
+        $cliente->update(['activo' => !$cliente->activo]);
+        return $cliente->fresh();
     }
 
     public function cuentasPendientes(?string $buscar = null): LengthAwarePaginator

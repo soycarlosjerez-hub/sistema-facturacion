@@ -93,17 +93,24 @@ body.dark-mode .clientes-table tbody td {
         <div class="card-accent green"></div>
         <div class="card-body p-3">
             <form method="GET" id="search-form" class="row g-2 align-items-center">
-                <div class="col-lg-5">
+                <div class="col-lg-4">
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="text" name="nombre" id="busqueda-cliente" class="form-control" placeholder="Nombre, RNC/Cédula, teléfono o email..." value="{{ request('nombre') }}" autocomplete="off">
                     </div>
                 </div>
+                <div class="col-lg-2">
+                    <select name="activo" class="form-select" id="filtro-activo">
+                        <option value="">Todos</option>
+                        <option value="1" {{ request('activo') === '1' ? 'selected' : '' }}>Activos</option>
+                        <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivos</option>
+                    </select>
+                </div>
                 <div class="col-lg-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                     <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
                 </div>
-                <div class="col-lg-4 text-end">
+                <div class="col-lg-3 text-end">
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="bi bi-download me-1"></i> Exportar
@@ -128,6 +135,7 @@ body.dark-mode .clientes-table tbody td {
                             <th class="ps-4">Cliente</th>
                             <th>Contacto</th>
                             <th class="text-center">Identificación</th>
+                            <th class="text-center">Activo</th>
                             <th class="text-end">Balance Pendiente</th>
                             <th class="text-center">Estado</th>
                             <th class="text-end pe-4">Acciones</th>
@@ -161,6 +169,20 @@ body.dark-mode .clientes-table tbody td {
                                     <span class="badge bg-light text-dark border rounded-pill">
                                         <i class="bi bi-person-vcard me-1"></i> {{ $c->rnc_cedula ?? 'Sin RNC/Cédula' }}
                                     </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="status-badge bg-{{ $c->color_badge_activo }} bg-opacity-10 text-{{ $c->color_badge_activo }} d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-{{ $c->activo ? 'check-circle-fill' : 'x-circle-fill' }}"></i>
+                                        {{ $c->activo_label }}
+                                    </span>
+                                    @can('clientes.edit')
+                                    <button type="button" class="btn btn-sm ms-1 p-0 border-0 bg-transparent toggle-activo"
+                                        data-id="{{ $c->id }}"
+                                        data-activo="{{ $c->activo }}"
+                                        title="Cambiar estado">
+                                        <i class="bi bi-arrow-repeat text-muted" style="font-size:.8rem;"></i>
+                                    </button>
+                                    @endcan
                                 </td>
                                 <td class="text-end">
                                     @if($c->balance_pendiente > 0)
@@ -203,7 +225,7 @@ body.dark-mode .clientes-table tbody td {
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
+                                <td colspan="7" class="text-center py-5 text-muted">
                                     <i class="bi bi-people fs-1" style="color:#cbd5e1;"></i>
                                     <p class="mt-2 mb-0 fw-semibold">No hay clientes registrados</p>
                                     @can('clientes.create')
@@ -260,6 +282,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tableBody) tableBody.style.opacity = '1';
             });
         }, 400);
+    });
+
+    // Toggle activo inline
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.toggle-activo');
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+        fetch('/clientes/' + id + '/toggle', {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const row = btn.closest('tr');
+                const badge = row.querySelector('.status-badge');
+                const icon = badge.querySelector('i');
+                if (data.activo) {
+                    badge.className = 'status-badge bg-success bg-opacity-10 text-success d-inline-flex align-items-center gap-1';
+                    icon.className = 'bi bi-check-circle-fill';
+                    badge.childNodes[1].textContent = ' Activo';
+                } else {
+                    badge.className = 'status-badge bg-secondary bg-opacity-10 text-secondary d-inline-flex align-items-center gap-1';
+                    icon.className = 'bi bi-x-circle-fill';
+                    badge.childNodes[1].textContent = ' Inactivo';
+                }
+                btn.dataset.activo = data.activo ? '1' : '0';
+            }
+        })
+        .catch(() => {});
     });
 });
 </script>

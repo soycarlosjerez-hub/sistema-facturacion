@@ -17,6 +17,7 @@ class ClientesExport implements FromCollection, WithHeadings
             'telefono',
             'direccion',
             'rnc_cedula',
+            'activo',
             'created_at'
         )->get();
     }
@@ -30,6 +31,7 @@ class ClientesExport implements FromCollection, WithHeadings
             'Teléfono',
             'Dirección',
             'RNC / Cédula',
+            'Activo',
             'Fecha de Registro'
         ];
     }

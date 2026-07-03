@@ -12,12 +12,14 @@ class Cliente extends Model
 
     protected $fillable = [
         'nombre', 'email', 'telefono', 'direccion', 'rnc_cedula', 'rnc',
-        'tipo_documento', 'tipo_cliente', 'limite_credito', 'balance_pendiente', 'tenant_id',
+        'tipo_documento', 'tipo_cliente', 'limite_credito', 'balance_pendiente',
+        'activo', 'tenant_id',
     ];
 
     protected $casts = [
         'limite_credito'    => 'decimal:2',
         'balance_pendiente' => 'decimal:2',
+        'activo'             => 'boolean',
     ];
 
     // Relationships
@@ -47,6 +49,17 @@ class Cliente extends Model
                 'tipo_cliente'   => 'consumo',
             ]
         );
+    }
+
+    // Accessor for activo label
+    public function getActivoLabelAttribute(): string
+    {
+        return $this->activo ? 'Activo' : 'Inactivo';
+    }
+
+    public function getColorBadgeActivoAttribute(): string
+    {
+        return $this->activo ? 'success' : 'secondary';
     }
 
     // Accessor for a pretty label

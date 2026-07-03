@@ -110,6 +110,25 @@
                 <div class="premium-card" style="animation-delay:.15s;">
                     <div class="card-accent green"></div>
                     <div class="premium-card-title">
+                        <i class="bi bi-toggle-on icon-green"></i>
+                        Estado del Cliente
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="fw-bold">Cliente Activo</span>
+                                <p class="text-muted small mb-0">Si está inactivo no aparecerá en las listas</p>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" {{ $cliente->activo ? 'checked' : '' }} role="switch">
+                                <label class="form-check-label" for="chk-activo"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="premium-card mt-3" style="animation-delay:.2s;">
+                    <div class="card-accent green"></div>
+                    <div class="premium-card-title">
                         <i class="bi bi-info-circle icon-green"></i>
                         Información
                     </div>
