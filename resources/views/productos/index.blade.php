@@ -533,7 +533,7 @@ $(function() {
                 orderable: false,
                 searchable: false,
                 render: function(data) {
-                    const activo = data || data === null;
+                    const activo = !!data;
                     const cls = activo ? 'success' : 'secondary';
                     const icon = activo ? 'check-circle-fill' : 'x-circle-fill';
                     const label = activo ? 'Activo' : 'Inactivo';
@@ -554,7 +554,7 @@ $(function() {
                     if (canEdit) {
                         actions += '<a href="/productos/' + data.id + '/edit" class="premium-btn-edit" title="Editar">' +
                             '<i class="bi bi-pencil"></i></a>';
-                        const activo = data.activo || data.activo === null;
+                        const activo = !!data.activo;
                         actions += '<button type="button" class="premium-btn-edit toggle-activo" title="' + (activo ? 'Desactivar' : 'Activar') + '" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '" data-activo="' + (activo ? '1' : '0') + '" style="background:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.1);color:' + (activo ? '#ef4444' : '#22c55e') + ';border-color:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.2);">' +
                             '<i class="bi bi-' + (activo ? 'pause-circle' : 'play-circle') + '"></i></button>';
                     }
@@ -688,23 +688,26 @@ $(function() {
                 'Accept': 'application/json'
             }
         })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
         .then(function(data) {
             if (data.success) {
-                const row = btn.closest('tr');
+                var row = btn.closest('tr');
                 if (row) {
-                    const estadoCell = row.querySelectorAll('td')[6];
+                    var estadoCell = row.querySelectorAll('td')[6];
                     if (estadoCell) {
-                        const cls = data.activo ? 'success' : 'secondary';
-                        const icon = data.activo ? 'check-circle-fill' : 'x-circle-fill';
-                        const label = data.activo ? 'Activo' : 'Inactivo';
+                        var cls = data.activo ? 'success' : 'secondary';
+                        var icon = data.activo ? 'check-circle-fill' : 'x-circle-fill';
+                        var label = data.activo ? 'Activo' : 'Inactivo';
                         estadoCell.innerHTML = '<span class="badge rounded-pill bg-' + cls + ' bg-opacity-10 text-' + cls + ' fw-semibold" style="font-size:.75rem;">' +
                             '<i class="bi bi-' + icon + ' me-1"></i>' + label +
                         '</span>';
                     }
-                    const actionsCell = row.querySelectorAll('td')[7];
+                    var actionsCell = row.querySelectorAll('td')[7];
                     if (actionsCell) {
-                        const toggleBtn = actionsCell.querySelector('.toggle-activo');
+                        var toggleBtn = actionsCell.querySelector('.toggle-activo');
                         if (toggleBtn) {
                             toggleBtn.dataset.activo = data.activo ? '1' : '0';
                             toggleBtn.title = data.activo ? 'Desactivar' : 'Activar';
@@ -715,9 +718,21 @@ $(function() {
                         }
                     }
                 }
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'success', title: 'Listo', text: 'Producto ' + (data.activo ? 'activado' : 'desactivado') + ' correctamente.', timer: 1500, showConfirmButton: false });
+                }
+            } else {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo actualizar el producto.' });
+                }
             }
         })
-        .catch(function() {});
+        .catch(function(err) {
+            console.error('Toggle error:', err);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+            }
+        });
     }
 
     function escapeHtml(str) {
