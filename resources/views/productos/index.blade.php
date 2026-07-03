@@ -558,12 +558,9 @@ $(function() {
                         actions += '<button type="button" class="premium-btn-edit toggle-activo" title="' + (activo ? 'Desactivar' : 'Activar') + '" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '" data-activo="' + (activo ? '1' : '0') + '" style="background:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.1);color:' + (activo ? '#ef4444' : '#22c55e') + ';border-color:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.2);">' +
                             '<i class="bi bi-' + (activo ? 'pause-circle' : 'play-circle') + '"></i></button>';
                     }
-                    if (canDelete && data.can_delete) {
-                        actions += '<form action="/productos/' + data.id + '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar el producto ' + escapeHtml(data.nombre) + '? Esta acción no se puede deshacer.\');">' +
-                            '<input type="hidden" name="_token" value="' + csrfToken + '">' +
-                            '<input type="hidden" name="_method" value="DELETE">' +
-                            '<button type="submit" class="premium-btn-delete border-0" title="Eliminar">' +
-                                '<i class="bi bi-trash"></i></button></form>';
+                    if (canDelete) {
+                        actions += '<button type="button" class="premium-btn-delete border-0 btn-delete-producto" title="Eliminar" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '">' +
+                            '<i class="bi bi-trash"></i></button>';
                     }
                     actions += '</div>';
                     return actions;
@@ -684,21 +681,21 @@ $(function() {
         formData.append('_method', 'PUT');
         formData.append('_token', csrfToken);
 
-        console.log('[TOGGLE] Enviando petición para producto:', id);
-
         fetch('/productos/' + id + '/toggle', {
             method: 'POST',
             body: formData
         })
         .then(function(r) {
-            console.log('[TOGGLE] Status:', r.status, 'Ok:', r.ok, 'Headers:', r.headers.get('content-type'));
-            return r.text().then(function(text) {
-                console.log('[TOGGLE] Response body:', text.substring(0, 500));
-                return JSON.parse(text);
-            });
+            if (!r.ok) {
+                throw new Error('El servidor respondió con estado ' + r.status + '. Verifica que tengas permiso de edición.');
+            }
+            var ct = r.headers.get('content-type') || '';
+            if (ct.indexOf('application/json') === -1) {
+                throw new Error('Respuesta inesperada del servidor (no es JSON). Es posible que la sesión haya expirado.');
+            }
+            return r.json();
         })
         .then(function(data) {
-            console.log('[TOGGLE] Parsed data:', data);
             if (data.success) {
                 var row = btn.closest('tr');
                 if (row) {
@@ -734,10 +731,80 @@ $(function() {
             }
         })
         .catch(function(err) {
-            console.error('[TOGGLE] Error completo:', err);
-            console.error('[TOGGLE] Stack:', err.stack);
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor.' });
+                Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo conectar con el servidor.' });
+            }
+        });
+    }
+
+    // Delete producto via AJAX
+    $(document).on('click', '.btn-delete-producto', function() {
+        var btn = $(this);
+        var id = btn.data('id');
+        var nombre = btn.data('nombre');
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Eliminar producto?',
+                text: 'Se eliminará "' + nombre + '". Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#ef4444'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    deleteProducto(id, btn);
+                }
+            });
+        } else {
+            if (confirm('¿Eliminar "' + nombre + '"? Esta acción no se puede deshacer.')) {
+                deleteProducto(id, btn);
+            }
+        }
+    });
+
+    function deleteProducto(id, btn) {
+        var formData = new FormData();
+        formData.append('_method', 'DELETE');
+        formData.append('_token', csrfToken);
+
+        var row = btn.closest('tr');
+        if (row) row.style.opacity = '0.5';
+
+        fetch('/productos/' + id + '/delete-ajax', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(r) {
+            if (!r.ok) {
+                throw new Error('El servidor respondió con estado ' + r.status);
+            }
+            var ct = r.headers.get('content-type') || '';
+            if (ct.indexOf('application/json') === -1) {
+                throw new Error('Respuesta inesperada del servidor.');
+            }
+            return r.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                if (row && row.closest('tbody')) {
+                    table.row(row).remove().draw();
+                }
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'success', title: 'Eliminado', text: data.message, timer: 1500, showConfirmButton: false });
+                }
+            } else {
+                if (row) row.style.opacity = '1';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'No se pudo eliminar', text: data.message });
+                }
+            }
+        })
+        .catch(function(err) {
+            if (row) row.style.opacity = '1';
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo conectar con el servidor.' });
             }
         });
     }

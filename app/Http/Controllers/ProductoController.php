@@ -204,6 +204,12 @@ class ProductoController extends Controller
             ->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
+    public function destroyAjax(Producto $producto)
+    {
+        $result = $this->productoService->delete($producto);
+        return response()->json($result);
+    }
+
     public function toggleActivo(Producto $producto)
     {
         $producto = $this->productoService->toggleActivo($producto);

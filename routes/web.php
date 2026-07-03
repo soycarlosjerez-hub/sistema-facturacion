@@ -221,6 +221,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('permission:productos.delete')->group(function () {
         Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
+        Route::post('/productos/{producto}/delete-ajax', [ProductoController::class, 'destroyAjax'])->name('productos.destroy-ajax');
 
         Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy');
     });
