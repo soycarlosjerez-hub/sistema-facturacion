@@ -93,13 +93,19 @@ body.dark-mode .proveedores-table tbody td {
         <div class="card-accent blue"></div>
         <div class="card-body p-3">
             <form method="GET" id="search-form" class="row g-2 align-items-center">
-                <div class="col-lg-5">
+                <div class="col-lg-4">
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="text" name="buscar" id="busqueda-proveedor" class="form-control" placeholder="Nombre, RNC, teléfono o email..." value="{{ request('buscar') }}" autocomplete="off">
                     </div>
                 </div>
-                <div class="col-lg-3 d-flex gap-2">
+                <div class="col-lg-2 d-flex align-items-center">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" name="incluir_inactivos" value="1" id="incluir_inactivos" {{ request('incluir_inactivos') === '1' ? 'checked' : '' }}>
+                        <label class="form-check-label small fw-bold text-muted" for="incluir_inactivos">Incluir inactivos</label>
+                    </div>
+                </div>
+                <div class="col-lg-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                     <a href="{{ route('proveedores.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
                 </div>
@@ -162,23 +168,33 @@ body.dark-mode .proveedores-table tbody td {
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <span class="status-badge bg-success bg-opacity-10 text-success">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Activo
-                                    </span>
+                    @if($p->activo)
+                    <span class="status-badge bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-check-circle-fill me-1"></i> Activo
+                    </span>
+                    @else
+                    <span class="status-badge bg-secondary bg-opacity-10 text-secondary">
+                        <i class="bi bi-x-circle-fill me-1"></i> Inactivo
+                    </span>
+                    @endif
                                 </td>
                                 <td class="text-end pe-4">
                                     <a href="{{ route('proveedores.show', $p) }}" class="premium-btn-edit" title="Ver">
                                         <i class="bi bi-eye"></i>
                                     </a>
+                                    @can('proveedores.edit')
                                     <a href="{{ route('proveedores.edit', $p) }}" class="premium-btn-edit" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    @endcan
+                                    @can('proveedores.delete')
                                     <form action="{{ route('proveedores.destroy', $p) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este proveedor?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="premium-btn-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty
@@ -215,12 +231,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!searchInput) return;
 
+    const incluirInactivos = document.getElementById('incluir_inactivos');
+    function actualizarBusqueda() {
+        const query = searchInput.value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('buscar', query);
+        url.searchParams.set('incluir_inactivos', incluirInactivos && incluirInactivos.checked ? '1' : '');
+
+        if (tableBody) tableBody.style.opacity = '0.5';
+
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newTbody = doc.getElementById('proveedores-tbody');
+            const newPaginator = doc.querySelector('.pagination')?.outerHTML;
+            if (newPaginator) {
+                const oldPaginator = document.querySelector('.pagination')?.closest('.d-flex');
+                if (oldPaginator) oldPaginator.outerHTML = doc.querySelector('.pagination')?.closest('.d-flex')?.outerHTML || '';
+            }
+            if (newTbody && tableBody) {
+                tableBody.innerHTML = newTbody.innerHTML;
+                tableBody.style.opacity = '1';
+            }
+        })
+        .catch(() => {
+            if (tableBody) tableBody.style.opacity = '1';
+        });
+    }
+
     searchInput.addEventListener('input', function() {
         clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            const query = this.value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('buscar', query);
+        timeout = setTimeout(actualizarBusqueda, 400);
+    });
+    if (incluirInactivos) {
+        incluirInactivos.addEventListener('change', actualizarBusqueda);
+    }
 
             if (tableBody) tableBody.style.opacity = '0.5';
 

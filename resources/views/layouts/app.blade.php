@@ -684,6 +684,21 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         </div>
         @endif
 
+        @if(session('warning'))
+        <div id="warningToast" class="toast align-items-center text-white bg-warning border-0 rounded-4 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex p-2">
+                <div class="toast-body d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                    <div>
+                        <div class="fw-bold">Aviso</div>
+                        <div class="small opacity-75">{{ session('warning') }}</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        @endif
+
         @if(session('error'))
         <div id="errorToast" class="toast align-items-center text-white bg-danger border-0 rounded-4 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex p-2">

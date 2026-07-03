@@ -93,6 +93,12 @@
                             <label class="form-check-label fw-bold small" for="ret_itbis">Sujeto a Ret. ITBIS</label>
                         </div>
                     </div>
+                    <div class="col-md-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" {{ $proveedore->activo ? 'checked' : '' }}>
+                            <label class="form-check-label fw-bold small" for="chk-activo">Proveedor Activo</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

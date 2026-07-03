@@ -104,7 +104,11 @@ body.dark-mode .compras-table tbody td {
                     <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-1"></i>{{ $proveedore->direccion ?? 'Sin dirección' }}</p>
                     <p class="text-muted small mb-1"><i class="bi bi-envelope me-1"></i>{{ $proveedore->email ?? '—' }}</p>
                     <p class="text-muted small mb-3"><i class="bi bi-telephone me-1"></i>{{ $proveedore->telefono ?? '—' }}</p>
+                    @if($proveedore->activo)
                     <span class="premium-badge" style="background:rgba(16,185,129,.1);color:#059669;"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>
+                    @else
+                    <span class="premium-badge" style="background:rgba(107,114,128,.1);color:#6b7280;"><i class="bi bi-x-circle-fill me-1"></i>Inactivo</span>
+                    @endif
                 </div>
             </div>
         </div>

@@ -62,6 +62,7 @@ class ProveedorController extends Controller
             'tipo_persona'          => 'nullable|string|in:fisica,juridica',
             'sujeto_retencion_isr'  => 'boolean',
             'sujeto_retencion_itbis' => 'boolean',
+            'activo'                => 'boolean',
         ]);
 
         $this->proveedorService->update($proveedore, $data);
@@ -71,8 +72,9 @@ class ProveedorController extends Controller
 
     public function destroy(Proveedor $proveedore)
     {
-        $this->proveedorService->delete($proveedore);
-        return redirect()->route('proveedores.index')->with('success', 'Proveedor eliminado correctamente');
+        $result = $this->proveedorService->delete($proveedore);
+        $type = $result['deactivated'] ? 'warning' : 'success';
+        return redirect()->route('proveedores.index')->with($type, $result['message']);
     }
 
     public function pdf(Request $request)
