@@ -134,4 +134,24 @@
         </div>
         @endif
     </div>
+
+    {{-- Section 4: Estado del Producto --}}
+    <div class="mb-4 pb-3 border-bottom">
+        <h6 class="fw-bold mb-0" style="color: #059669;">
+            <i class="bi bi-toggle-on me-2"></i>Estado del Producto
+        </h6>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-12">
+            <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(5,150,105,.05);">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" {{ old('activo', $producto->activo ?? true) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
+                    <label class="form-check-label fw-semibold ms-2" for="chk-activo">
+                        Producto Activo
+                    </label>
+                </div>
+                <small class="text-muted">Si está inactivo no aparecerá en las listas de ventas ni en el catálogo.</small>
+            </div>
+        </div>
+    </div>
 </div>

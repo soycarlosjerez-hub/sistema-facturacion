@@ -213,6 +213,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:productos.edit')->group(function () {
         Route::get('/productos/{producto}/edit', [ProductoController::class, 'edit'])->name('productos.edit');
         Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
+        Route::put('/productos/{producto}/toggle', [ProductoController::class, 'toggleActivo'])->name('productos.toggle');
 
         Route::get('/categorias/{categoria}/edit', [CategoriaController::class, 'edit'])->name('categorias.edit');
         Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update');

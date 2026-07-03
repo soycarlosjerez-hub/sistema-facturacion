@@ -42,6 +42,11 @@ class ProductoService
             };
         }
 
+        $activo = $filters['activo'] ?? null;
+        if ($activo !== null && $activo !== '') {
+            $query->where('activo', $activo);
+        }
+
         // Apply tenant filter for multi‑tenant isolation
         if (auth()->check() && auth()->user()->business_instance_id !== null) {
             $query->where('tenant_id', auth()->user()->business_instance_id);
@@ -76,6 +81,11 @@ class ProductoService
                 'ok'       => $query->where('stock', '>', 15),
                 default    => null,
             };
+        }
+
+        $activo = $filters['activo'] ?? null;
+        if ($activo !== null && $activo !== '') {
+            $query->where('activo', $activo);
         }
 
         if (auth()->check() && auth()->user()->business_instance_id !== null) {
@@ -140,6 +150,12 @@ class ProductoService
         $producto->delete();
 
         return ['success' => true, 'message' => 'Producto eliminado correctamente.'];
+    }
+
+    public function toggleActivo(Producto $producto): Producto
+    {
+        $producto->update(['activo' => !$producto->activo]);
+        return $producto->fresh();
     }
 
     public function deleteImage(Producto $producto): void

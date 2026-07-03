@@ -36,6 +36,7 @@
                 <th class="text-right">Costo</th>
                 <th class="text-right">ITBIS</th>
                 <th class="text-center">Stock</th>
+                <th class="text-center">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -50,10 +51,11 @@
                 <td class="text-center {{ $producto->estado_stock === 'critical' ? 'badge-crit' : ($producto->estado_stock === 'low' ? 'badge-low' : '') }}">
                     {{ $producto->stock }}
                 </td>
+                <td class="text-center">{{ $producto->activo_label }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center" style="padding: 20px;">No hay productos para mostrar.</td>
+                <td colspan="8" class="text-center" style="padding: 20px;">No hay productos para mostrar.</td>
             </tr>
             @endforelse
         </tbody>

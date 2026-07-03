@@ -25,6 +25,7 @@ class UpdateProductoRequest extends FormRequest
             'itbis_porcentaje' => 'nullable|numeric|min:0|max:100',
             'stock'           => 'nullable|integer|min:0',
             'stock_minimo'    => 'nullable|integer|min:0',
+            'activo'          => 'boolean',
             'imagen'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
     }

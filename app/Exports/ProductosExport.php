@@ -39,6 +39,7 @@ class ProductosExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             'Ganancia',
             'Margen %',
             'Estado Stock',
+            'Estado',
         ];
     }
 
@@ -66,6 +67,7 @@ class ProductosExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             number_format($ganancia, 2, '.', ''),
             number_format($margen, 2, '.', ''),
             $estado,
+            $producto->activo_label,
         ];
     }
 

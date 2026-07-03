@@ -166,7 +166,9 @@ class ProductoController extends Controller
 
     public function store(StoreProductoRequest $request)
     {
-        $this->productoService->create($request->validated(), $request->file('imagen'));
+        $data = $request->validated();
+        $data['activo'] = $request->boolean('activo');
+        $this->productoService->create($data, $request->file('imagen'));
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto creado correctamente.');
@@ -186,7 +188,9 @@ class ProductoController extends Controller
 
     public function update(UpdateProductoRequest $request, Producto $producto)
     {
-        $this->productoService->update($producto, $request->validated(), $request->file('imagen'));
+        $data = $request->validated();
+        $data['activo'] = $request->boolean('activo');
+        $this->productoService->update($producto, $data, $request->file('imagen'));
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto actualizado correctamente.');
@@ -198,6 +202,16 @@ class ProductoController extends Controller
 
         return redirect()->route('productos.index')
             ->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function toggleActivo(Producto $producto)
+    {
+        $producto = $this->productoService->toggleActivo($producto);
+        return response()->json([
+            'success' => true,
+            'activo'  => $producto->activo,
+            'label'   => $producto->activo_label,
+        ]);
     }
 
     public function exportExcel(Request $request)
@@ -265,6 +279,10 @@ class ProductoController extends Controller
                     $query->where('stock', '>', 15);
                     break;
             }
+        }
+
+        if ($request->filled('activo')) {
+            $query->where('activo', $request->activo);
         }
 
         return $query;

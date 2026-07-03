@@ -24,6 +24,7 @@ class Producto extends Model
         'itbis_porcentaje',
         'stock',
         'stock_minimo',
+        'activo',
         'imagen',
         'tenant_id',
     ];
@@ -34,6 +35,7 @@ class Producto extends Model
         'itbis_porcentaje' => 'decimal:2',
         'stock'            => 'integer',
         'stock_minimo'     => 'integer',
+        'activo'            => 'boolean',
     ];
 
     protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen'];
@@ -85,6 +87,16 @@ class Producto extends Model
             return 'low';
         }
         return 'ok';
+    }
+
+    public function getActivoLabelAttribute(): string
+    {
+        return $this->activo ? 'Activo' : 'Inactivo';
+    }
+
+    public function getColorBadgeActivoAttribute(): string
+    {
+        return $this->activo ? 'success' : 'secondary';
     }
 
     public function getTieneImagenAttribute(): bool

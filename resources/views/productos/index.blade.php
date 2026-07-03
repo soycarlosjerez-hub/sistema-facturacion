@@ -366,6 +366,14 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label {
                     </select>
                 </div>
                 <div class="col-lg-2">
+                    <label class="form-label small fw-bold text-muted">Estado</label>
+                    <select name="activo" id="filter-activo" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="1" {{ request('activo') === '1' ? 'selected' : '' }}>Activos</option>
+                        <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivos</option>
+                    </select>
+                </div>
+                <div class="col-lg-2">
                     <label class="form-label small fw-bold text-muted">Precio Mín.</label>
                     <input type="number" name="precio_min" id="filter-precio-min" class="form-control" placeholder="RD$ 0.00" value="{{ request('precio_min') }}" step="0.01" min="0">
                 </div>
@@ -407,6 +415,7 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label {
                             <th class="text-end">Venta &amp; Costos</th>
                             <th class="text-center">Rentabilidad</th>
                             <th class="text-center">Inventario</th>
+                            <th class="text-center">Estado</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
@@ -519,6 +528,21 @@ $(function() {
                 }
             },
             {
+                data: 'activo',
+                className: 'text-center',
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    const activo = data || data === null;
+                    const cls = activo ? 'success' : 'secondary';
+                    const icon = activo ? 'check-circle-fill' : 'x-circle-fill';
+                    const label = activo ? 'Activo' : 'Inactivo';
+                    return '<span class="badge rounded-pill bg-' + cls + ' bg-opacity-10 text-' + cls + ' fw-semibold" style="font-size:.75rem;">' +
+                        '<i class="bi bi-' + icon + ' me-1"></i>' + label +
+                    '</span>';
+                }
+            },
+            {
                 data: null,
                 className: 'text-end',
                 orderable: false,
@@ -530,6 +554,9 @@ $(function() {
                     if (canEdit) {
                         actions += '<a href="/productos/' + data.id + '/edit" class="premium-btn-edit" title="Editar">' +
                             '<i class="bi bi-pencil"></i></a>';
+                        const activo = data.activo || data.activo === null;
+                        actions += '<button type="button" class="premium-btn-edit toggle-activo" title="' + (activo ? 'Desactivar' : 'Activar') + '" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '" data-activo="' + (activo ? '1' : '0') + '" style="background:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.1);color:' + (activo ? '#ef4444' : '#22c55e') + ';border-color:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.2);">' +
+                            '<i class="bi bi-' + (activo ? 'pause-circle' : 'play-circle') + '"></i></button>';
                     }
                     if (canDelete) {
                         actions += '<form action="/productos/' + data.id + '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar el producto ' + escapeHtml(data.nombre) + '? Esta acción no se puede deshacer.\');">' +
@@ -588,6 +615,7 @@ $(function() {
         e.preventDefault();
         const nombre = $('#busqueda-producto').val();
         const stockStatus = $('#filter-stock').val();
+        const activo = $('#filter-activo').val();
         const precioMin = parseFloat($('#filter-precio-min').val()) || 0;
         const precioMax = parseFloat($('#filter-precio-max').val()) || Infinity;
 
@@ -597,12 +625,15 @@ $(function() {
             const stock = parseInt(data[5]) || 0;
             const precioStr = data[3].replace(/[^0-9.]/g, '');
             const precio = parseFloat(precioStr) || 0;
+            const isActivo = (data[6] || '').indexOf('Activo') !== -1;
 
             if (stockStatus === 'critical' && stock > 5) return false;
             if (stockStatus === 'low' && (stock < 6 || stock > 15)) return false;
             if (stockStatus === 'ok' && stock <= 15) return false;
             if (precio < precioMin) return false;
             if (precio > precioMax) return false;
+            if (activo === '1' && !isActivo) return false;
+            if (activo === '0' && isActivo) return false;
 
             return true;
         });
@@ -620,6 +651,74 @@ $(function() {
             table.search(val).draw();
         }, 300);
     });
+
+    // Toggle activo
+    $(document).on('click', '.toggle-activo', function() {
+        const btn = $(this);
+        const id = btn.data('id');
+        const nombre = btn.data('nombre');
+        const activo = btn.data('activo') == '1';
+        const accion = activo ? 'desactivar' : 'activar';
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿' + accion.charAt(0).toUpperCase() + accion.slice(1) + ' producto?',
+                text: '¿Estás seguro de ' + accion + ' "' + nombre + '"?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, ' + accion,
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: activo ? '#ef4444' : '#22c55e'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    toggleProducto(id, btn);
+                }
+            });
+        } else {
+            toggleProducto(id, btn);
+        }
+    });
+
+    function toggleProducto(id, btn) {
+        fetch('/productos/' + id + '/toggle', {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                const row = btn.closest('tr');
+                if (row) {
+                    const estadoCell = row.querySelectorAll('td')[6];
+                    if (estadoCell) {
+                        const cls = data.activo ? 'success' : 'secondary';
+                        const icon = data.activo ? 'check-circle-fill' : 'x-circle-fill';
+                        const label = data.activo ? 'Activo' : 'Inactivo';
+                        estadoCell.innerHTML = '<span class="badge rounded-pill bg-' + cls + ' bg-opacity-10 text-' + cls + ' fw-semibold" style="font-size:.75rem;">' +
+                            '<i class="bi bi-' + icon + ' me-1"></i>' + label +
+                        '</span>';
+                    }
+                    const actionsCell = row.querySelectorAll('td')[7];
+                    if (actionsCell) {
+                        const toggleBtn = actionsCell.querySelector('.toggle-activo');
+                        if (toggleBtn) {
+                            toggleBtn.dataset.activo = data.activo ? '1' : '0';
+                            toggleBtn.title = data.activo ? 'Desactivar' : 'Activar';
+                            toggleBtn.style.background = data.activo ? 'rgba(239,68,68,.1)' : 'rgba(34,197,94,.1)';
+                            toggleBtn.style.color = data.activo ? '#ef4444' : '#22c55e';
+                            toggleBtn.style.borderColor = data.activo ? 'rgba(239,68,68,.2)' : 'rgba(34,197,94,.2)';
+                            toggleBtn.innerHTML = '<i class="bi bi-' + (data.activo ? 'pause-circle' : 'play-circle') + '"></i>';
+                        }
+                    }
+                }
+            }
+        })
+        .catch(function() {});
+    }
 
     function escapeHtml(str) {
         return String(str || '').replace(/[&<>"']/g, function(c) {

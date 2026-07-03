@@ -48,9 +48,15 @@
                 <div class="card-body p-4 text-center">
                     <img src="{{ $producto->imagen_url }}" class="rounded-3 shadow-sm img-fluid mb-3" style="max-height:280px;object-fit:cover;background:#f1f5f9;" alt="{{ $producto->nombre }}">
                     <h4 class="fw-bold mb-1">{{ $producto->nombre }}</h4>
-                    <p class="text-muted small mb-3">
+                    <p class="text-muted small mb-2">
                         <i class="bi bi-upc-scan"></i> {{ $producto->codigo_barras ?? 'Sin código' }}
                     </p>
+                    <div class="mb-3">
+                        <span class="badge bg-{{ $producto->color_badge_activo }} rounded-pill px-3 py-2">
+                            <i class="bi bi-{{ $producto->activo ? 'check-circle-fill' : 'x-circle-fill' }} me-1"></i>
+                            {{ $producto->activo_label }}
+                        </span>
+                    </div>
                     @if($producto->estado_stock === 'critical')
                         <span class="badge bg-danger rounded-pill px-3 py-2">Stock Crítico: {{ $producto->stock }}</span>
                     @elseif($producto->estado_stock === 'low')
