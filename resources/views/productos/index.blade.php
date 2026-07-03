@@ -680,13 +680,13 @@ $(function() {
     });
 
     function toggleProducto(id, btn) {
+        var formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('_token', csrfToken);
+
         fetch('/productos/' + id + '/toggle', {
-            method: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+            method: 'POST',
+            body: formData
         })
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
