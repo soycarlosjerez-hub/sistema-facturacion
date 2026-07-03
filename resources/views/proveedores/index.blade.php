@@ -182,19 +182,15 @@ body.dark-mode .proveedores-table tbody td {
                                     <a href="{{ route('proveedores.show', $p) }}" class="premium-btn-edit" title="Ver">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    @can('proveedores.edit')
                                     <a href="{{ route('proveedores.edit', $p) }}" class="premium-btn-edit" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    @endcan
-                                    @can('proveedores.delete')
                                     <form action="{{ route('proveedores.destroy', $p) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este proveedor?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="premium-btn-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
-                                    @endcan
                                 </td>
                             </tr>
                         @empty
@@ -268,26 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (incluirInactivos) {
         incluirInactivos.addEventListener('change', actualizarBusqueda);
     }
-
-            if (tableBody) tableBody.style.opacity = '0.5';
-
-            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(r => r.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newTbody = doc.getElementById('proveedores-tbody');
-
-                if (newTbody && tableBody) {
-                    tableBody.innerHTML = newTbody.innerHTML;
-                    tableBody.style.opacity = '1';
-                }
-            })
-            .catch(() => {
-                if (tableBody) tableBody.style.opacity = '1';
-            });
-        }, 400);
-    });
 });
 </script>
 @endpush
