@@ -36,7 +36,6 @@ class ReservacionController extends Controller
 
         $validated['user_id'] = auth()->id();
         $validated['tenant_id'] = auth()->user()->business_instance_id ?? null;
-        $validated['sucursal_id'] = \App\Models\Mesa::find($validated['mesa_id'])->sucursal_id ?? null;
 
         $reservacion = Reservacion::create($validated);
 
