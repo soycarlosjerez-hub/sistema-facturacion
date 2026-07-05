@@ -2,42 +2,100 @@
 @section('title', 'Gestión de Mesas')
 @push('styles')
 @include('partials.premium-ui')
+@include('partials.datatable-ui')
 <style>
-.status-badge {
-    padding: 0.4em 0.8em;
+:root {
+    --dt-accent: #f97316;
+    --dt-accent-gradient: linear-gradient(135deg, #f97316, #f59e0b);
+    --dt-accent-rgb: 249,115,22;
+}
+#mesas-table { width: 100% !important; margin: 0; }
+#mesas-table thead th {
+    background: rgba(241,245,249,.8);
+    color: #64748b;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 700;
+    padding: .85rem 1rem;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+#mesas-table tbody td {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: .9rem;
+}
+#mesas-table tbody tr:last-child td { border-bottom: none; }
+#mesas-table tbody tr { transition: background .15s; }
+#mesas-table tbody tr:hover { background: rgba(249,115,22,.03); }
+.mesa-badge-cat {
+    padding: .35em .7em;
     border-radius: 2rem;
-    font-weight: 500;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
+    font-weight: 600;
+    font-size: .75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
 }
-.btn-icon-hover {
-    width: 32px; height: 32px;
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s;
+.form-switch-mesa {
+    width: 2.5em !important;
+    height: 1.25em !important;
+    cursor: pointer;
 }
-.btn-icon-hover:hover { transform: scale(1.15); }
+.form-switch-mesa:checked {
+    background-color: var(--dt-accent, #f97316) !important;
+    border-color: var(--dt-accent, #f97316) !important;
+}
+.premium-btn-edit {
+    background: rgba(249,115,22,.1);
+    color: #f97316;
+    border: 1.5px solid rgba(249,115,22,.2);
+}
+.premium-btn-edit:hover {
+    background: #f97316;
+    color: #fff;
+    border-color: #f97316;
+}
+body.dark-mode #mesas-table thead th {
+    background: rgba(15,23,42,.5);
+    color: #94a3b8;
+    border-bottom-color: #1e293b;
+}
+body.dark-mode #mesas-table tbody td {
+    border-bottom-color: #1e293b;
+    color: #cbd5e1;
+}
+body.dark-mode #mesas-table tbody tr:hover {
+    background: rgba(249,115,22,.05);
+}
 </style>
 @endpush
 @section('content')
-<div class="container-fluid px-4 premium-page">
+<div class="container-fluid px-4 py-3 premium-page">
     <div class="premium-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
             <div class="d-flex align-items-center gap-3">
                 <div class="premium-avatar-circle">
                     <i class="bi bi-cup-straw"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Gestión de Mesas</h2>
-                    <p class="text-white text-opacity-75 mb-0">Administra las mesas del restaurante</p>
+                    <h4 class="fw-bold mb-1 text-white">Gestión de Mesas</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-grid me-1"></i>
+                        Administra las mesas del restaurante
+                    </small>
                 </div>
             </div>
-            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#mesaModal" onclick="abrirModalCrear()">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Mesa
-            </button>
+            <div>
+                <button class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);" data-bs-toggle="modal" data-bs-target="#mesaModal" onclick="abrirModalCrear()">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Mesa
+                </button>
+            </div>
         </div>
     </div>
 
@@ -52,95 +110,63 @@
         </div>
     @endif
 
-    <div class="premium-card">
-        <div class="card-accent green"></div>
+    <div class="premium-card mb-4" style="animation-delay:.1s;">
+        <div class="card-accent" style="background:var(--dt-accent-gradient);"></div>
+        <div class="card-body p-3">
+            <form id="filtros-form" class="row g-2 align-items-end">
+                <div class="col-lg-4">
+                    <label class="form-label small fw-bold text-muted">Buscar mesa</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="busqueda-mesa" class="form-control bg-light border-0" placeholder="Número, nombre..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label small fw-bold text-muted">Estado</label>
+                    <select id="filter-estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="disponible">Disponible</option>
+                        <option value="ocupada">Ocupada</option>
+                        <option value="reservada">Reservada</option>
+                        <option value="inactiva">Inactiva</option>
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label small fw-bold text-muted">Ubicación</label>
+                    <select id="filter-ubicacion" class="form-select">
+                        <option value="">Todas</option>
+                        @foreach($ubicaciones as $ubi)
+                            <option value="{{ $ubi->nombre }}">{{ $ubi->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-lg-2 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary flex-grow-1" style="background:var(--dt-accent-gradient);border:none;"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('restaurante.mesas.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="premium-card" style="animation-delay:.15s;">
+        <div class="card-accent" style="background:var(--dt-accent-gradient);"></div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Número</th>
-                            <th>Nombre</th>
-                            <th>Capacidad</th>
-                            <th>Ubicación</th>
-                            <th>Categoría</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-center">Activa</th>
-                            <th class="text-end">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($mesas as $mesa)
-                        <tr id="row-{{ $mesa->id }}">
-                            <td class="fw-semibold">{{ $mesa->numero }}</td>
-                            <td>{{ $mesa->nombre ?: '—' }}</td>
-                            <td><i class="bi bi-people me-1 text-muted"></i>{{ $mesa->capacidad }}</td>
-                            <td>{{ $mesa->ubicacion ? $mesa->ubicacion->nombre : '—' }}</td>
-                            <td>
-                                @if($mesa->categoria)
-                                    <span class="badge rounded-pill" style="background:{{ $mesa->categoria->color }}20; color:{{ $mesa->categoria->color }};">
-                                        <i class="bi {{ $mesa->categoria->icono }} me-1"></i>{{ $mesa->categoria->nombre }}
-                                    </span>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                @php
-                                    $estados = [
-                                        'disponible' => ['label' => 'Disponible', 'class' => 'bg-success'],
-                                        'ocupada'    => ['label' => 'Ocupada', 'class' => 'bg-danger'],
-                                        'reservada'  => ['label' => 'Reservada', 'class' => 'bg-warning text-dark'],
-                                        'inactiva'   => ['label' => 'Inactiva', 'class' => 'bg-secondary'],
-                                    ];
-                                    $e = $estados[$mesa->estado] ?? $estados['disponible'];
-                                @endphp
-                                <span class="badge {{ $e['class'] }} rounded-pill">{{ $e['label'] }}</span>
-                            </td>
-                            <td class="text-center">
-                                <div class="form-check form-switch d-flex justify-content-center">
-                                    <input class="form-check-input" type="checkbox"
-                                        {{ $mesa->activa ? 'checked' : '' }}
-                                        onchange="toggleActiva({{ $mesa->id }}, this.checked)">
-                                </div>
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group btn-group-sm">
-                                    <button class="premium-btn-edit"
-                                        onclick="editarMesa({{ $mesa->id }})" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    @if($mesa->estado !== 'ocupada')
-                                    <form action="{{ route('restaurante.mesa.destroy', $mesa) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('¿Eliminar la mesa {{ $mesa->numero }}?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="premium-btn-delete" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @else
-                                    <button class="premium-btn-delete" disabled title="No se puede eliminar una mesa ocupada">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
-                                <i class="bi bi-grid-3x3-gap display-4 d-block mb-3 opacity-25"></i>
-                                <p class="mb-0">No hay mesas registradas.</p>
-                                <button class="btn btn-primary btn-sm rounded-pill mt-2" data-bs-toggle="modal" data-bs-target="#mesaModal" onclick="abrirModalCrear()">
-                                    <i class="bi bi-plus-lg me-1"></i>Crear primera mesa
-                                </button>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+            <table id="mesas-table" class="table dt-table nowrap no-footer" style="width:100%">
+                <thead>
+                    <tr>
+                        <th class="ps-4" style="width:50px;">#</th>
+                        <th>Número</th>
+                        <th>Nombre</th>
+                        <th>Capacidad</th>
+                        <th>Ubicación</th>
+                        <th>Categoría</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Activa</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -201,7 +227,7 @@
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4" style="background:var(--dt-accent-gradient);border:none;">
                         <i class="bi bi-check-lg me-1"></i>Guardar
                     </button>
                 </div>
@@ -210,6 +236,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
 function abrirModalCrear() {
     document.getElementById('mesa-modal-title').textContent = 'Nueva Mesa';
@@ -238,27 +265,273 @@ function editarMesa(id) {
         });
 }
 
-function toggleActiva(id, activa) {
-    fetch('/restaurante/mesa/' + id + '/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({ activa: activa, _method: 'PUT' })
-    }).then(r => {
-        if (!r.ok) Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar' });
-    }).catch(() => {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar' });
-    });
-}
-
 document.getElementById('mesaModal').addEventListener('hidden.bs.modal', function () {
     document.getElementById('mesa-modal-title').textContent = 'Nueva Mesa';
     document.getElementById('mesa-method').value = 'POST';
     document.getElementById('mesa-form').action = '{{ route("restaurante.mesa.store") }}';
     document.getElementById('mesa-estado-group').classList.add('d-none');
 });
+
+$(function() {
+    const mesas = @json($mesasAll);
+    const csrfToken = '{{ csrf_token() }}';
+
+    const table = $('#mesas-table').DataTable({
+        data: mesas,
+        columns: [
+            {
+                data: null,
+                className: 'text-center ps-4',
+                orderable: false,
+                searchable: false,
+                width: '50px',
+                render: function(data, type, row, meta) {
+                    return '<span class="text-muted fw-bold">' + (meta.row + meta.settings._iDisplayStart + 1) + '</span>';
+                }
+            },
+            {
+                data: 'numero',
+                orderable: true,
+                searchable: true,
+                render: function(data) {
+                    return '<span class="fw-semibold">' + escapeHtml(data) + '</span>';
+                }
+            },
+            {
+                data: 'nombre',
+                defaultContent: '<span class="text-muted">—</span>',
+                render: function(data) {
+                    return data ? escapeHtml(data) : '<span class="text-muted">—</span>';
+                }
+            },
+            {
+                data: 'capacidad',
+                className: 'text-center',
+                render: function(data) {
+                    return '<i class="bi bi-people me-1 text-muted"></i>' + data;
+                }
+            },
+            {
+                data: null,
+                render: function(data) {
+                    if (data.ubicacion && data.ubicacion.nombre) {
+                        return '<span class="fw-medium">' + escapeHtml(data.ubicacion.nombre) + '</span>';
+                    }
+                    return '<span class="text-muted">—</span>';
+                }
+            },
+            {
+                data: null,
+                render: function(data) {
+                    if (data.categoria) {
+                        const bg = (data.categoria.color || '#6366f1') + '20';
+                        const color = data.categoria.color || '#6366f1';
+                        const icono = data.categoria.icono || 'bi-tag';
+                        return '<span class="mesa-badge-cat" style="background:' + bg + ';color:' + color + ';">' +
+                            '<i class="bi ' + icono + '"></i>' + escapeHtml(data.categoria.nombre) + '</span>';
+                    }
+                    return '<span class="text-muted">—</span>';
+                }
+            },
+            {
+                data: 'estado',
+                className: 'text-center',
+                render: function(data) {
+                    const estados = {
+                        disponible: { label: 'Disponible', cls: 'bg-success' },
+                        ocupada:    { label: 'Ocupada', cls: 'bg-danger' },
+                        reservada:  { label: 'Reservada', cls: 'bg-warning text-dark' },
+                        inactiva:   { label: 'Inactiva', cls: 'bg-secondary' },
+                    };
+                    const e = estados[data] || estados.disponible;
+                    return '<span class="badge ' + e.cls + ' rounded-pill">' + e.label + '</span>';
+                }
+            },
+            {
+                data: 'activa',
+                className: 'text-center',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    const checked = data ? 'checked' : '';
+                    return '<div class="form-check form-switch d-flex justify-content-center">' +
+                        '<input class="form-check-input form-switch-mesa toggle-activa" type="checkbox" ' + checked +
+                        ' data-id="' + row.id + '"></div>';
+                }
+            },
+            {
+                data: null,
+                className: 'text-end pe-4',
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    const id = data.id;
+                    let html = '<div class="d-flex justify-content-end gap-1">';
+                    html += '<button class="premium-btn-edit btn-editar-mesa" data-id="' + id + '" title="Editar">' +
+                        '<i class="bi bi-pencil"></i></button>';
+                    if (data.estado !== 'ocupada') {
+                        html += '<form action="/restaurante/mesa/' + id + '" method="POST" class="d-inline form-eliminar-mesa" data-numero="' + escapeHtml(data.numero) + '">' +
+                            '@csrf<input type="hidden" name="_method" value="DELETE">' +
+                            '<button type="submit" class="premium-btn-delete border-0" title="Eliminar">' +
+                            '<i class="bi bi-trash"></i></button></form>';
+                    } else {
+                        html += '<button class="premium-btn-delete border-0" disabled title="No se puede eliminar una mesa ocupada">' +
+                            '<i class="bi bi-trash"></i></button>';
+                    }
+                    html += '</div>';
+                    return html;
+                }
+            }
+        ],
+        language: {
+            search: '',
+            lengthMenu: '_MENU_',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ mesas',
+            infoEmpty: 'No hay mesas',
+            infoFiltered: '(de _MAX_ totales)',
+            paginate: {
+                first: '<i class="bi bi-chevron-double-left"></i>',
+                last: '<i class="bi bi-chevron-double-right"></i>',
+                next: '<i class="bi bi-chevron-right"></i>',
+                previous: '<i class="bi bi-chevron-left"></i>'
+            },
+            zeroRecords: '<div class="text-center py-5">' +
+                '<i class="bi bi-grid-3x3-gap d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i>' +
+                '<p class="fw-semibold mb-1" style="color:#475569;">No se encontraron mesas</p>' +
+                '<p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>'
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+        order: [[1, 'asc']],
+        responsive: {
+            details: {
+                type: 'column',
+                target: 'tr',
+                renderer: function(api, rowIdx, columns) {
+                    let data = '';
+                    columns.forEach(function(col) {
+                        if (col.hidden) {
+                            data += '<li>' +
+                                '<span class="child-label">' + col.title + '</span>' +
+                                '<span class="child-value">' + col.data + '</span>' +
+                            '</li>';
+                        }
+                    });
+                    return data ? $('<ul class="d-flex flex-wrap gap-2 p-2 mb-0">' + data + '</ul>') : false;
+                }
+            }
+        },
+        dom: '<"row px-3 pt-2"<"col-sm-6"l><"col-sm-6"f>>' +
+             '<"row"<"col-12"tr>>' +
+             '<"row px-3 pb-2"<"col-sm-5"i><"col-sm-7"p>>',
+        createdRow: function(row, data, dataIndex) {
+            $(row).attr('id', 'row-' + data.id);
+        }
+    });
+
+    // Filtros
+    $('#filtros-form').on('submit', function(e) {
+        e.preventDefault();
+        const valBusqueda = $('#busqueda-mesa').val();
+        const valEstado = $('#filter-estado').val();
+        const valUbicacion = $('#filter-ubicacion').val();
+
+        table.search(valBusqueda).draw();
+
+        $.fn.dataTable.ext.search.push(function(settings, data) {
+            const estado = data[6] || '';
+            const ubicacion = data[4] || '';
+
+            if (valEstado) {
+                const badge = $('<span>' + estado + '</span>');
+                const texto = badge.text().trim().toLowerCase();
+                if (texto !== valEstado) return false;
+            }
+            if (valUbicacion && ubicacion.trim() !== valUbicacion) return false;
+
+            return true;
+        });
+
+        table.draw();
+        $.fn.dataTable.ext.search.pop();
+    });
+
+    // Búsqueda en tiempo real
+    let searchTimeout;
+    $('#busqueda-mesa').on('input', function() {
+        clearTimeout(searchTimeout);
+        const val = $(this).val();
+        searchTimeout = setTimeout(function() {
+            table.search(val).draw();
+        }, 300);
+    });
+
+    // Editar mesa
+    $(document).on('click', '.btn-editar-mesa', function() {
+        editarMesa($(this).data('id'));
+    });
+
+    // Toggle activa
+    $(document).on('change', '.toggle-activa', function() {
+        const chk = $(this);
+        const id = chk.data('id');
+        const activa = chk.prop('checked');
+
+        fetch('/restaurante/mesa/' + id + '/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ activa: activa, _method: 'PUT' })
+        }).then(r => {
+            if (!r.ok) {
+                chk.prop('checked', !activa);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar' });
+                }
+            }
+        }).catch(() => {
+            chk.prop('checked', !activa);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar' });
+            }
+        });
+    });
+
+    // Confirmar eliminación
+    $(document).on('submit', '.form-eliminar-mesa', function(e) {
+        e.preventDefault();
+        const form = $(this);
+        const numero = form.data('numero');
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Eliminar mesa ' + numero + '?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#ef4444'
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    form.off('submit').submit();
+                }
+            });
+        } else {
+            if (confirm('¿Eliminar mesa ' + numero + '? Esta acción no se puede deshacer.')) {
+                form.off('submit').submit();
+            }
+        }
+    });
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, function(c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+        });
+    }
+});
 </script>
+@endpush
 @endsection

@@ -12,10 +12,10 @@ class MesaController extends Controller
 {
     public function index()
     {
-        $mesas = Mesa::deSucursal()->with('categoria', 'ubicacion')->orderBy('numero')->get();
+        $mesasAll = Mesa::deSucursal()->with('categoria', 'ubicacion')->orderBy('numero')->get();
         $categorias = MesaCategoria::orderBy('nombre')->get();
         $ubicaciones = MesaUbicacion::orderBy('nombre')->get();
-        return view('restaurante.mesas', compact('mesas', 'categorias', 'ubicaciones'));
+        return view('restaurante.mesas', compact('mesasAll', 'categorias', 'ubicaciones'));
     }
 
     public function show(Mesa $mesa)
