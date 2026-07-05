@@ -31,7 +31,7 @@ use App\Http\Controllers\Api\NcfSequenceController;
 use App\Http\Controllers\Api\SystemSettingController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
+Route::middleware(['api-auth', 'tenant'])->group(function () {
     // Categories
     Route::apiResource('categories', CategoryController::class)
         ->names('api.categories')

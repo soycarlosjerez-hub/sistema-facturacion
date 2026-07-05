@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'instance.blocked' => \App\Http\Middleware\CheckInstanceBlocked::class,
             'setup.wizard'     => \App\Http\Middleware\CheckSetupWizard::class,
             'tenant'           => \App\Http\Middleware\TenantMiddleware::class,
+            'api-auth'         => \App\Http\Middleware\AuthenticateApiKey::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
