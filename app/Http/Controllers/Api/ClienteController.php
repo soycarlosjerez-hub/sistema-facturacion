@@ -52,9 +52,9 @@ class ClienteController extends Controller
             'segmento'          => 'nullable|in:micro,pequeno,mediano,grande,gobierno',
             'origen_cliente'    => 'nullable|in:referencia,web,walkin,publicidad,otro',
             'sector_actividad'  => 'nullable|string|max:100',
-            'tenant_id'         => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $validated['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
         $validated['regimen_mensual'] = $request->boolean('regimen_mensual');
 
@@ -65,11 +65,15 @@ class ClienteController extends Controller
 
     public function show(Cliente $cliente)
     {
+        $this->ensureTenantAccess($cliente);
+
         return new ClienteResource($cliente->load(['ventas', 'cotizaciones']));
     }
 
     public function update(Request $request, Cliente $cliente)
     {
+        $this->ensureTenantAccess($cliente);
+
         $validated = $request->validate([
             'nombre'            => 'sometimes|string|max:255',
             'email'             => 'sometimes|email|max:255',
@@ -96,7 +100,6 @@ class ClienteController extends Controller
             'segmento'          => 'nullable|in:micro,pequeno,mediano,grande,gobierno',
             'origen_cliente'    => 'nullable|in:referencia,web,walkin,publicidad,otro',
             'sector_actividad'  => 'nullable|string|max:100',
-            'tenant_id'         => 'sometimes|exists:tenants,id',
         ]);
 
         $validated['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
@@ -109,7 +112,17 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente)
     {
+        $this->ensureTenantAccess($cliente);
+
         $cliente->delete();
         return response()->json(['message' => 'Cliente eliminado.']);
+    }
+
+    private function ensureTenantAccess(Cliente $cliente): void
+    {
+        $tenantId = auth()->user()->business_instance_id;
+        if ($cliente->tenant_id !== $tenantId) {
+            abort(404, 'Cliente no encontrado.');
+        }
     }
 }
