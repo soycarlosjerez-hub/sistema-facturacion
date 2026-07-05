@@ -62,7 +62,10 @@ class Mesa extends Model
     public function scopeDeSucursal($query)
     {
         if ($sucursalId = session('sucursal_id')) {
-            return $query->where('sucursal_id', $sucursalId);
+            return $query->where(function ($q) use ($sucursalId) {
+                $q->where('sucursal_id', $sucursalId)
+                  ->orWhereNull('sucursal_id');
+            });
         }
         return $query;
     }
