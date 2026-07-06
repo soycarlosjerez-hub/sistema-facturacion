@@ -40,7 +40,10 @@ class Reservacion extends Model
     public function scopeDeSucursal($query)
     {
         if ($sucursalId = session('sucursal_id')) {
-            return $query->whereHas('mesa', fn($q) => $q->where('sucursal_id', $sucursalId));
+            return $query->whereHas('mesa', function ($q) use ($sucursalId) {
+                $q->where('sucursal_id', $sucursalId)
+                  ->orWhereNull('sucursal_id');
+            });
         }
         return $query;
     }

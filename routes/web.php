@@ -700,6 +700,29 @@ Route::middleware(['auth', 'permission:delivery-companies.delete'])->group(funct
     Route::delete('delivery-companies/{deliveryCompany}', [DeliveryCompanyController::class, 'destroy'])->name('delivery-companies.destroy');
 });
 
+// DEBUG - diagnostic route for reservations
+Route::middleware(['auth'])->get('/_debug-reservaciones', function () {
+    $query = \App\Models\Reservacion::with('mesa', 'user')->deSucursal();
+    $results = $query->get();
+    return [
+        'user' => [
+            'id' => Auth::id(),
+            'business_instance_id' => Auth::user()?->business_instance_id,
+            'roles' => Auth::user()?->roles->pluck('name'),
+        ],
+        'session' => [
+            'sucursal_id' => session('sucursal_id'),
+        ],
+        'sql' => $query->toSql(),
+        'bindings' => $query->getBindings(),
+        'total_with_scopes' => \App\Models\Reservacion::count(),
+        'total_without_scopes' => \App\Models\Reservacion::withoutGlobalScopes()->count(),
+        'reservacion_2' => \App\Models\Reservacion::withoutGlobalScopes()->find(2),
+        'results_count' => $results->count(),
+        'results' => $results->toArray(),
+    ];
+})->name('_debug.reservaciones');
+
 // Restaurante (Terminal de Mesas)
 Route::middleware(['auth'])->group(function () {
     Route::get('/restaurante', [RestauranteController::class, 'index'])->name('restaurante.index')->middleware('permission:restaurante.view');

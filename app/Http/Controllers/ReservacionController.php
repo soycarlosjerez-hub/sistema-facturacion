@@ -14,6 +14,17 @@ class ReservacionController extends Controller
     {
         $query = Reservacion::with('mesa', 'user')->deSucursal();
 
+        // DEBUG: Log query info
+        \Illuminate\Support\Facades\Log::debug('Reservacion::index', [
+            'user_id' => Auth::id(),
+            'business_instance_id' => Auth::user()?->business_instance_id,
+            'session_sucursal_id' => session('sucursal_id'),
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+            'total_with_scopes' => Reservacion::count(),
+            'total_without_scopes' => Reservacion::withoutGlobalScopes()->count(),
+        ]);
+
         if ($busqueda = request('busqueda')) {
             $query->where(function ($q) use ($busqueda) {
                 $q->where('cliente_nombre', 'like', "%{$busqueda}%")
