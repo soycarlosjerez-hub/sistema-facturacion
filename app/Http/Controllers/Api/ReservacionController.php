@@ -37,6 +37,11 @@ class ReservacionController extends Controller
         $validated['user_id'] = auth()->id();
         $validated['tenant_id'] = auth()->user()->business_instance_id ?? null;
 
+        if (empty($validated['cliente_telefono']) && !empty($validated['cliente_id'])) {
+            $cliente = \App\Models\Cliente::find($validated['cliente_id']);
+            $validated['cliente_telefono'] = $cliente?->telefono;
+        }
+
         $reservacion = Reservacion::create($validated);
 
         return new ReservacionResource($reservacion->load(['cliente', 'mesa', 'user']));

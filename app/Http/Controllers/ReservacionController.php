@@ -12,7 +12,7 @@ class ReservacionController extends Controller
 {
     public function index()
     {
-        $query = Reservacion::with('mesa', 'user')->deSucursal();
+        $query = Reservacion::with('mesa', 'user', 'cliente')->deSucursal();
 
         // DEBUG: Log query info
         \Illuminate\Support\Facades\Log::debug('Reservacion::index', [
@@ -64,6 +64,11 @@ class ReservacionController extends Controller
 
         $data['user_id'] = Auth::id();
         $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
+
+        if (empty($data['cliente_telefono']) && !empty($data['cliente_id'])) {
+            $cliente = \App\Models\Cliente::find($data['cliente_id']);
+            $data['cliente_telefono'] = $cliente?->telefono;
+        }
 
         DB::beginTransaction();
         try {

@@ -111,11 +111,12 @@
                         </td>
                         <td>
                             <div class="fw-semibold">{{ $r->cliente_nombre }}</div>
-                            @if($r->cliente_email)
-                                <small class="text-muted">{{ $r->cliente_email }}</small>
+                            @php $email = $r->cliente_email ?: $r->cliente?->email @endphp
+                            @if($email)
+                                <small class="text-muted">{{ $email }}</small>
                             @endif
                         </td>
-                        <td>{{ $r->cliente_telefono ?? '—' }}</td>
+                        <td>{{ $r->cliente_telefono ?: $r->cliente?->telefono ?? '—' }}</td>
                         <td>{{ $r->personas }}</td>
                         <td>{{ $r->fecha_hora->format('d/m/Y h:i A') }}</td>
                         <td>
@@ -129,12 +130,12 @@
                         <td><small class="text-muted">{{ Str::limit($r->notas, 30) ?: '—' }}</small></td>
                         <td class="text-end pe-4">
                             <div class="btn-group">
-                                <a class="premium-btn-edit" href="#" title="Ver detalles"
-                                   onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono), @js($r->cliente_email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a class="premium-btn-edit" href="#" title="Editar"
-                                   onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono), @js($r->cliente_email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
+                                 <a class="premium-btn-edit" href="#" title="Ver detalles"
+                                   onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono ?: $r->cliente?->telefono), @js($r->cliente_email ?: $r->cliente?->email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
+                                     <i class="bi bi-eye"></i>
+                                 </a>
+                                 <a class="premium-btn-edit" href="#" title="Editar"
+                                    onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono ?: $r->cliente?->telefono), @js($r->cliente_email ?: $r->cliente?->email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <div class="dropdown d-inline me-1">
