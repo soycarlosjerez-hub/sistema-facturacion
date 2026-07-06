@@ -21,7 +21,7 @@ class GastoController extends Controller
     public function create()
     {
         $categorias = $this->gastoService->getCategorias();
-        $plantillas = PlantaGasto::activas()->orderBy('codigo')->get();
+        $plantillas = PlantaGasto::activas()->orderBy('nombre')->get();
         return view('gastos.create', compact('categorias', 'plantillas'));
     }
 
@@ -53,7 +53,7 @@ class GastoController extends Controller
     public function edit(Gasto $gasto)
     {
         $categorias = $this->gastoService->getCategorias();
-        $plantillas = PlantaGasto::activas()->orderBy('codigo')->get();
+        $plantillas = PlantaGasto::activas()->orderBy('nombre')->get();
         return view('gastos.edit', compact('gasto', 'categorias', 'plantillas'));
     }
 
