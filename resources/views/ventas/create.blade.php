@@ -1582,7 +1582,7 @@ body:not(.dark-mode) {
 
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:rgba(255,255,255,0.06);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
                 @foreach($almacenes as $alm)
-                    <option value="{{ $alm->id }}">{{ $alm->nombre }}</option>
+                    <option value="{{ $alm->id }}" @if($loop->first) selected @endif>{{ $alm->nombre }}</option>
                 @endforeach
             </select>
 
@@ -2202,6 +2202,12 @@ body:not(.dark-mode) {
     const fmt = (n) => 'RD$' + (parseFloat(n) || 0).toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     const escapeHtml = (s) => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     const debounce = (fn, delay) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), delay); }; };
+
+    function getAlmacenId() {
+        const el = $('almacen-select');
+        if (el && el.value && almacenes.some(a => a.id === parseInt(el.value))) return el.value;
+        return almacenes.length > 0 ? almacenes[0].id : '1';
+    }
 
     function showToast(msg, type = 'success', delay = 2500) {
         const toast = $('scanToast');
@@ -2925,7 +2931,7 @@ body:not(.dark-mode) {
                     <input type="hidden" name="subtotal[]" value="${subtotalConDesc.toFixed(2)}">
                     <input type="hidden" name="descuento[]" value="${descuentoAplicado.toFixed(2)}">
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
-                    <input type="hidden" name="almacen_id[]" value="${$('almacen-select')?.value || '1'}">
+                    <input type="hidden" name="almacen_id[]" value="${getAlmacenId()}">
                 </div>`;
             }).join('');
         }
