@@ -115,7 +115,8 @@ class VentaController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        if (!auth()->user()->hasRole('admin')) {
+        $user = auth()->user();
+        if (!$user->hasAnyRole(['admin', 'admin-business', 'root']) && $user->role !== 'admin') {
             abort(403, 'Solo los administradores pueden anular ventas.');
         }
 
