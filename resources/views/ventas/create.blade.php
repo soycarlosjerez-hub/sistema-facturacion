@@ -1520,33 +1520,37 @@ body:not(.dark-mode) {
     /* ============ Premium Payment Modal ============ */
     @keyframes cobrarGradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     .cobrar-premium .modal-content { border-radius: 20px; overflow: hidden; border: 0; box-shadow: 0 25px 60px rgba(0,0,0,0.5); }
-    .cobrar-premium .cobrar-header { background: linear-gradient(135deg, #059669, #10b981, #06b6d4, #059669); background-size: 300% 300%; animation: cobrarGradientShift 6s ease infinite; padding: 24px 28px 20px; color: #fff; }
-    .cobrar-premium .cobrar-header .icon-circle { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; backdrop-filter: blur(8px); }
-    .cobrar-total-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 16px 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-    .cobrar-total-card h2 { font-size: 2.4rem; font-weight: 900; color: var(--pos-text); font-variant-numeric: tabular-nums; }
-    .metodo-btn { border: 2px solid var(--pos-border); border-radius: 16px; padding: 14px 8px; background: transparent; color: var(--pos-text); font-weight: 700; font-size: 0.85rem; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
-    .metodo-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-    .metodo-btn.active-metodo.efectivo { border-color: #10b981; background: rgba(16,185,129,0.1); color: #6ee7b7; }
-    .metodo-btn.active-metodo.tarjeta { border-color: #0ea5e9; background: rgba(14,165,233,0.1); color: #38bdf8; }
-    .metodo-btn.active-metodo.transferencia { border-color: #6366f1; background: rgba(99,102,241,0.1); color: #a5b4fc; }
-    .metodo-btn.active-metodo.mixto { border-color: #f59e0b; background: rgba(245,158,11,0.1); color: #fbbf24; }
-    .metodo-btn i { font-size: 1.6rem; }
-    .input-premium { width: 100%; background: rgba(255,255,255,0.06); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 14px 18px; font-size: 1.6rem; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+    .cobrar-premium .cobrar-header { background: linear-gradient(135deg, #059669, #10b981, #06b6d4, #059669); background-size: 300% 300%; animation: cobrarGradientShift 6s ease infinite; padding: 20px 24px 16px; color: #fff; }
+    .cobrar-premium .cobrar-header .icon-circle { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; backdrop-filter: blur(8px); }
+    .cobrar-total-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 12px 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    .cobrar-total-card h2 { font-size: 3rem; font-weight: 900; color: var(--pos-text); font-variant-numeric: tabular-nums; }
+    .metodo-btn { border: 2px solid var(--pos-border); border-radius: 14px; padding: 14px 6px; background: transparent; color: var(--pos-text); font-weight: 700; font-size: 0.9rem; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-height: 68px; }
+    .metodo-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .metodo-btn.active-metodo.efectivo { border-color: #10b981; background: rgba(16,185,129,0.12); color: #6ee7b7; }
+    .metodo-btn.active-metodo.tarjeta { border-color: #0ea5e9; background: rgba(14,165,233,0.12); color: #38bdf8; }
+    .metodo-btn.active-metodo.transferencia { border-color: #6366f1; background: rgba(99,102,241,0.12); color: #a5b4fc; }
+    .metodo-btn.active-metodo.mixto { border-color: #f59e0b; background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .metodo-btn i { font-size: 1.5rem; }
+    .input-premium { width: 100%; background: rgba(255,255,255,0.06); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 12px 16px; font-size: 1.25rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
     .input-premium:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+    .input-premium::placeholder { font-weight: 400; font-size: 1rem; color: var(--pos-text-muted); opacity: 0.5; }
     .pago-detalle { margin-top: 12px; }
     .pago-detalle label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--pos-text-muted); margin-bottom: 4px; display: block; }
-    .propina-btn { border-radius: 50px; border: 2px solid rgba(16,185,129,0.3); background: transparent; color: #6ee7b7; font-weight: 700; padding: 8px 18px; font-size: 0.85rem; transition: all 0.15s; cursor: pointer; }
+    .cambio-display { text-align: center; padding: 8px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; }
+    .cambio-display.positivo { background: rgba(16,185,129,0.1); color: #6ee7b7; }
+    .cambio-display.negativo { background: rgba(239,68,68,0.1); color: #fca5a5; }
+    .propina-btn { border-radius: 50px; border: 2px solid rgba(16,185,129,0.3); background: transparent; color: #6ee7b7; font-weight: 700; padding: 10px 20px; font-size: 0.9rem; transition: all 0.15s; cursor: pointer; min-height: 44px; }
     .propina-btn:hover { background: rgba(16,185,129,0.1); border-color: #10b981; transform: scale(1.05); }
     .propina-btn.active { background: #10b981; border-color: #10b981; color: #fff; }
-    .servicio-check { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; }
-    .servicio-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: #10b981; }
-    .servicio-check label { font-size: 0.82rem; font-weight: 600; color: var(--pos-text); margin: 0; }
-    .btn-cobrar { background: linear-gradient(135deg, #059669, #10b981); border: none; border-radius: 50px; padding: 14px 24px; font-weight: 800; font-size: 1.1rem; color: #fff; transition: all 0.3s; position: relative; overflow: hidden; }
-    .btn-cobrar:hover { box-shadow: 0 8px 30px rgba(16,185,129,0.4); transform: translateY(-2px); color: #fff; }
-    .btn-cobrar .shine { position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: cobrarShine 3s ease-in-out infinite; }
+    #propina-input { height: 44px; text-align: center; background: rgba(255,255,255,0.06); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); font-weight: 700; font-size: 1.1rem; width: 100px; }
+    #propina-input:focus { outline: none; border-color: #10b981; }
+    .btn-cobrar-touch { background: linear-gradient(135deg, #059669, #10b981); border: none; border-radius: 16px; padding: 16px 24px; font-weight: 800; font-size: 1.2rem; color: #fff; transition: all 0.3s; position: relative; overflow: hidden; min-height: 56px; }
+    .btn-cobrar-touch:hover { box-shadow: 0 8px 30px rgba(16,185,129,0.4); transform: translateY(-1px); color: #fff; }
+    .btn-cobrar-touch .shine { position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: cobrarShine 3s ease-in-out infinite; }
     @keyframes cobrarShine { 0% { left: -60%; } 100% { left: 160%; } }
-    .btn-cobrar:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-    .btn-cobrar:disabled .shine { display: none; }
+    .btn-cobrar-touch:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+    .btn-cobrar-touch:disabled .shine { display: none; }
+    .cobrar-section { margin-bottom: 14px; }
     .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
     
     /* ============ Post-Pago Modal ============ */
@@ -1879,7 +1883,7 @@ body:not(.dark-mode) {
 
 <!-- ============ Premium Payment Modal ============ -->
 <div class="modal fade cobrar-premium" id="pagoModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
         <div class="modal-content">
             <div class="cobrar-header d-flex align-items-center gap-3">
                 <div class="icon-circle"><i class="bi bi-cash-stack"></i></div>
@@ -1889,79 +1893,96 @@ body:not(.dark-mode) {
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
-                <!-- Total -->
-                <div class="cobrar-total-card mb-4">
-                    <h2 class="fw-bold mb-0" id="pago-total">RD$ 0.00</h2>
-                </div>
+            <div class="modal-body p-3">
 
-                <!-- Métodos de Pago -->
-                <div class="row g-2 mb-3" id="pago-metodos">
-                    <div class="col-3">
-                        <button type="button" class="metodo-btn efectivo active-metodo w-100" data-metodo="efectivo" onclick="seleccionarMetodoPago('efectivo')">
-                            <i class="bi bi-cash-stack"></i> Efectivo
-                        </button>
-                    </div>
-                    <div class="col-3">
-                        <button type="button" class="metodo-btn tarjeta w-100" data-metodo="tarjeta" onclick="seleccionarMetodoPago('tarjeta')">
-                            <i class="bi bi-credit-card-2-front"></i> Tarjeta
-                        </button>
-                    </div>
-                    <div class="col-3">
-                        <button type="button" class="metodo-btn transferencia w-100" data-metodo="transferencia" onclick="seleccionarMetodoPago('transferencia')">
-                            <i class="bi bi-bank2"></i> Transferencia
-                        </button>
-                    </div>
-                    <div class="col-3">
-                        <button type="button" class="metodo-btn mixto w-100" data-metodo="mixto" onclick="seleccionarMetodoPago('mixto')">
-                            <i class="bi bi-coin"></i> Mixto
-                        </button>
+                <!-- Fila 1: Total grande -->
+                <div class="cobrar-section">
+                    <div class="cobrar-total-card">
+                        <h2 class="fw-bold mb-0" id="pago-total">RD$ 0.00</h2>
                     </div>
                 </div>
 
-                <!-- Efectivo Section -->
-                <div id="pago-efectivo" class="pago-detalle">
-                    <label>Monto Recibido</label>
-                    <input type="number" id="monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="">
-                    <div id="cambio-info" class="mt-2">
-                        <small class="text-muted">Cambio: <span class="fw-bold" id="cambio-monto">RD$ 0.00</span></small>
+                <!-- Fila 2: Métodos de pago grandes -->
+                <div class="cobrar-section">
+                    <div class="row g-2" id="pago-metodos">
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn efectivo active-metodo w-100" data-metodo="efectivo" onclick="seleccionarMetodoPago('efectivo')">
+                                <i class="bi bi-cash-stack"></i> Efectivo
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn tarjeta w-100" data-metodo="tarjeta" onclick="seleccionarMetodoPago('tarjeta')">
+                                <i class="bi bi-credit-card-2-front"></i> Tarjeta
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn transferencia w-100" data-metodo="transferencia" onclick="seleccionarMetodoPago('transferencia')">
+                                <i class="bi bi-bank2"></i> Transf.
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn mixto w-100" data-metodo="mixto" onclick="seleccionarMetodoPago('mixto')">
+                                <i class="bi bi-coin"></i> Mixto
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Mixto Section -->
-                <div id="pago-mixto" class="pago-detalle" style="display:none;">
-                    <div class="mb-2">
-                        <label>Efectivo</label>
-                        <input type="number" id="mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" oninput="actualizarTotalPago()">
-                    </div>
-                    <div class="mb-2">
-                        <label>Tarjeta</label>
-                        <input type="number" id="mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" oninput="actualizarTotalPago()">
-                    </div>
-                    <div class="mb-2">
-                        <label>Transferencia</label>
-                        <input type="number" id="mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" oninput="actualizarTotalPago()">
-                    </div>
-                    <small class="text-muted" id="mixto-restante"></small>
-                </div>
-
-                <!-- Propina -->
-                <div class="mt-3">
-                    <label class="fw-bold small mb-1" style="color:var(--pos-text-muted);">Propina</label>
-                    <div class="d-flex gap-2 align-items-center">
-                        <input type="number" id="propina-input" class="form-control" style="width:100px;background:rgba(255,255,255,0.06);border-color:var(--pos-border);color:var(--pos-text);border-radius:10px;" step="0.01" min="0" value="0" oninput="actualizarTotalPago()">
-                        <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
-                        <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
-                        <button type="button" class="propina-btn" onclick="asignarPropina(18, this)">18%</button>
+                <!-- Fila 3: Efectivo (monto recibido + cambio) -->
+                <div id="pago-efectivo" class="cobrar-section">
+                    <div class="pago-detalle">
+                        <label>Monto Recibido</label>
+                        <input type="number" id="monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="" inputmode="decimal">
+                        <div id="cambio-info" class="mt-2 cambio-display positivo d-none">
+                            Cambio: <span class="fw-bold" id="cambio-monto">RD$ 0.00</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Footer -->
-                <div class="d-flex gap-2 mt-4">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill flex-grow-1" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn-cobrar flex-grow-1" onclick="procesarPago()">
+                <!-- Fila 4: Mixto (tres campos) -->
+                <div id="pago-mixto" class="cobrar-section" style="display:none;">
+                    <div class="pago-detalle">
+                        <div class="mb-2">
+                            <label>Efectivo</label>
+                            <input type="number" id="mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                        </div>
+                        <div class="mb-2">
+                            <label>Tarjeta</label>
+                            <input type="number" id="mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                        </div>
+                        <div class="mb-2">
+                            <label>Transferencia</label>
+                            <input type="number" id="mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                        </div>
+                        <small class="text-muted" id="mixto-restante"></small>
+                    </div>
+                </div>
+
+                <!-- Fila 5: Propina -->
+                <div class="cobrar-section">
+                    <div class="pago-detalle">
+                        <label>Propina</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="number" id="propina-input" step="0.01" min="0" value="0" inputmode="decimal" oninput="actualizarTotalPago()">
+                            <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
+                            <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
+                            <button type="button" class="propina-btn" onclick="asignarPropina(18, this)">18%</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fila 6: Botón cobrar full-width -->
+                <div class="cobrar-section mt-1">
+                    <button type="button" class="btn-cobrar-touch w-100" onclick="procesarPago()">
                         <span class="shine"></span>
                         <i class="bi bi-check2-circle me-1"></i> Cobrar
+                    </button>
+                </div>
+
+                <!-- Fila 7: Cancelar -->
+                <div class="text-center">
+                    <button type="button" class="btn btn-sm btn-link text-muted" data-bs-dismiss="modal" style="text-decoration:none;">
+                        Cancelar
                     </button>
                 </div>
             </div>
@@ -2449,7 +2470,7 @@ body:not(.dark-mode) {
         if (validaStock && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
 
         isSubmitting = true;
-        const btn = document.querySelector('.btn-cobrar');
+        const btn = document.querySelector('.btn-cobrar-touch');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
 
@@ -2481,6 +2502,7 @@ body:not(.dark-mode) {
         .then(data => {
             playBeep('success');
             ultimaVentaId = data.venta_id;
+            resetearCliente();
             mostrarPostPago(data);
         })
         .catch(err => {
@@ -2540,6 +2562,7 @@ body:not(.dark-mode) {
         .then(data => {
             playBeep('success');
             ultimaVentaId = data.venta_id;
+            resetearCliente();
             mostrarPostPago(data);
         })
         .catch(err => {
@@ -3143,6 +3166,17 @@ body:not(.dark-mode) {
         $('cliente-selected-name').textContent = nombre;
         bootstrap.Modal.getInstance($('clienteModal'))?.hide();
         onClienteChange();
+    }
+
+    function resetearCliente() {
+        const select = $('cliente_id');
+        if (!select) return;
+        const finalOpt = Array.from(select.options).find(o => o.dataset.esFinal === '1');
+        if (finalOpt) {
+            select.value = finalOpt.value;
+            $('cliente-selected-name').textContent = finalOpt.textContent.trim();
+            onClienteChange();
+        }
     }
 
     // Client search as you type
