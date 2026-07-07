@@ -209,22 +209,22 @@ body.dark-mode .ventas-table tbody td {
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">
-                                    <div class="dropdown">
-                                        <button class="premium-btn-edit" data-bs-toggle="dropdown" title="Acciones">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
-                                            <li><a class="dropdown-item py-2" href="{{ route('ventas.show', $v->id) }}"><i class="bi bi-eye text-info me-2"></i>Ver Detalle</a></li>
-                                            <li><a class="dropdown-item py-2" href="{{ route('pagos.realizar', $v->id) }}"><i class="bi bi-cash-coin text-primary me-2"></i>Cobrar / Abono</a></li>
-                                            <li><a class="dropdown-item py-2" href="{{ route('venta.pdf', $v->id) }}"><i class="bi bi-printer text-secondary me-2"></i>Reimprimir</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <form action="{{ route('ventas.destroy', $v->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Anular esta venta?')">
-                                                    @csrf @method('DELETE')
-                                                    <button class="dropdown-item py-2 text-danger"><i class="bi bi-x-circle text-danger me-2"></i>Anular</button>
-                                                </form>
-                                            </li>
-                                        </ul>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <a href="{{ route('ventas.show', $v->id) }}" class="premium-btn-edit" title="Ver Detalle">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('pagos.realizar', $v->id) }}" class="premium-btn-edit" title="Cobrar / Abono" style="background:rgba(59,130,246,.1);color:#3b82f6;border-color:rgba(59,130,246,.2);">
+                                            <i class="bi bi-cash-coin"></i>
+                                        </a>
+                                        <a href="{{ route('venta.pdf', $v->id) }}" class="premium-btn-edit" title="Reimprimir" style="background:rgba(100,116,139,.1);color:#64748b;border-color:rgba(100,116,139,.2);">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
+                                        <form action="{{ route('ventas.destroy', $v->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Anular esta venta?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="premium-btn-delete" title="Anular">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
