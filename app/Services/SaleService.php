@@ -204,7 +204,15 @@ class SaleService
         $clientes   = Cliente::orderBy('nombre')->get();
         $tiposVenta = \App\Models\TipoVenta::orderBy('nombre')->get();
         $tipoVentaDefault = $tiposVenta->firstWhere('nombre', 'Contado') ?? $tiposVenta->first();
-        $almacenes  = \App\Models\Almacen::orderBy('nombre')->get();
+        $almacenes = \App\Models\Almacen::orderBy('nombre');
+        if ($sucursalId = session('sucursal_id')) {
+            $almacenes = $almacenes->where('sucursal_id', $sucursalId);
+        }
+        $almacenes = $almacenes->get();
+        // Fallback: if no almacenes in this sucursal, get any almacen in the tenant
+        if ($almacenes->isEmpty()) {
+            $almacenes = \App\Models\Almacen::orderBy('nombre')->limit(1)->get();
+        }
 
         $productos = Producto::orderBy('nombre')
             ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen', 'categoria_id')
@@ -315,7 +323,7 @@ class SaleService
         }
 
         foreach ($data['producto_id'] as $key => $productoId) {
-            $almacenId = $data['almacen_id'][$key] ?? 1;
+            $almacenId = isset($data['almacen_id'][$key]) ? (int)$data['almacen_id'][$key] : 1;
             $cantidad = $data['cantidad'][$key];
 
             $producto = Producto::findOrFail($productoId);
@@ -337,17 +345,20 @@ class SaleService
                 'tenant_id'       => Auth::user()->business_instance_id,
             ]);
 
-            AlmacenMovimiento::create([
-                'tenant_id'   => Auth::user()->business_instance_id,
-                'producto_id' => $productoId,
-                'almacen_id'  => $almacenId,
-                'tipo'        => 'salida',
-                'cantidad'    => $cantidad,
-                'nota'        => 'Venta #' . $venta->id . ($ventaExistente ? ' (Adición)' : ''),
-                'user_id'     => Auth::id(),
-            ]);
+            if ($validaStock) {
+                AlmacenMovimiento::create([
+                    'tenant_id'   => Auth::user()->business_instance_id,
+                    'producto_id' => $productoId,
+                    'almacen_id'  => $almacenId,
+                    'tipo'        => 'salida',
+                    'cantidad'    => $cantidad,
+                    'nota'        => 'Venta #' . $venta->id . ($ventaExistente ? ' (Adición)' : ''),
+                    'user_id'     => Auth::id(),
+                ]);
 
-            $producto->decrement('stock', $cantidad);
+                $producto->decrement('stock', $cantidad);
+            }
+
             $producto->increment('ventas_count', $cantidad);
         }
     }

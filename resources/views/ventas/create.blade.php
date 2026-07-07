@@ -2210,6 +2210,7 @@ body:not(.dark-mode) {
             if (!isNaN(id) && id > 0) return id;
         }
         if (almacenes.length > 0) return almacenes[0].id;
+        // Last resort — shouldn't happen since server ensures at least one almacen
         return 0;
     }
 
