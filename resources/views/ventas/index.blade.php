@@ -219,9 +219,11 @@ body.dark-mode .ventas-table tbody td {
                                         <a href="{{ route('venta.pdf', $v->id) }}" class="premium-btn-edit" title="Reimprimir" style="background:rgba(100,116,139,.1);color:#64748b;border-color:rgba(100,116,139,.2);">
                                             <i class="bi bi-printer"></i>
                                         </a>
-                                        <form action="{{ route('ventas.destroy', $v->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Anular esta venta?')">
+                                        <form action="{{ route('ventas.destroy', $v->id) }}" method="POST" class="d-inline form-anular" data-venta-id="{{ $v->id }}" data-venta-label="#{{ str_pad($v->id, 5, '0', STR_PAD_LEFT) }}">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="premium-btn-delete" title="Anular">
+                                            <input type="hidden" name="motivo" class="motivo-input">
+                                            <input type="hidden" name="confirmar" value="1">
+                                            <button type="button" class="premium-btn-delete btn-trigger-anular" title="Anular">
                                                 <i class="bi bi-x-circle"></i>
                                             </button>
                                         </form>
@@ -287,6 +289,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tableBody) tableBody.style.opacity = '1';
             });
         }, 400);
+    });
+
+    // Anular venta con motivo
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.btn-trigger-anular');
+        if (!btn) return;
+
+        const form = btn.closest('.form-anular');
+        if (!form) return;
+
+        const ventaLabel = form.dataset.ventaLabel || '';
+        const motivoInput = form.querySelector('.motivo-input');
+
+        Swal.fire({
+            title: 'Anular Venta',
+            html: `
+                <p class="text-muted mb-3">¿Anular la venta <strong>${ventaLabel}</strong>?</p>
+                <textarea id="swal-motivo" class="form-control" rows="3" placeholder="Motivo de la anulación (mín. 5 caracteres)" required></textarea>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, anular',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ef4444',
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                const motivo = document.getElementById('swal-motivo').value.trim();
+                if (!motivo || motivo.length < 5) {
+                    Swal.showValidationMessage('El motivo debe tener al menos 5 caracteres');
+                    return false;
+                }
+                return motivo;
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                motivoInput.value = result.value;
+                form.submit();
+            }
+        });
     });
 });
 </script>
