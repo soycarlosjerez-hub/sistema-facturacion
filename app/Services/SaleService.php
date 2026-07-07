@@ -110,6 +110,7 @@ class SaleService
                     'total'            => $data['total'],
                     'estado'           => $estado,
                     'propina'          => $data['propina'] ?? 0,
+                    'tenant_id'        => Auth::user()->business_instance_id,
                 ]);
 
                 if ($tipoComprobante === 'ecf') {
