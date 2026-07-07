@@ -1545,6 +1545,9 @@ body:not(.dark-mode) {
     .btn-cobrar:hover { box-shadow: 0 8px 30px rgba(16,185,129,0.4); transform: translateY(-2px); color: #fff; }
     .btn-cobrar .shine { position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); animation: cobrarShine 3s ease-in-out infinite; }
     @keyframes cobrarShine { 0% { left: -60%; } 100% { left: 160%; } }
+    .btn-cobrar:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+    .btn-cobrar:disabled .shine { display: none; }
+    .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
     
     /* ============ Post-Pago Modal ============ */
     #postPagoModal .modal-content { border-radius: 20px; overflow: hidden; border: 0; }
@@ -1610,6 +1613,9 @@ body:not(.dark-mode) {
                 </span>
             @endif
 
+            <button type="button" class="btn btn-sm btn-outline-light rounded-pill" id="btn-mute-audio" title="Sonido" aria-label="Activar/desactivar sonido">
+                <i class="bi bi-volume-up"></i>
+            </button>
             <button type="button" class="btn btn-sm btn-outline-light rounded-pill" onclick="POS.toggleShortcutsHelp()" title="Atajos de teclado (F1)" aria-label="Atajos de teclado">
                 <i class="bi bi-question-lg"></i> <kbd style="font-size:.6rem;background:rgba(255,255,255,.15);border:none;padding:1px 4px;border-radius:3px;">F1</kbd>
             </button>
@@ -2148,6 +2154,8 @@ body:not(.dark-mode) {
 
     // ============ Datos del servidor ============
     const productos = {!! json_encode($productosJs) !!};
+    const productosPre = productos.map(p => ({ ...p, nl: (p.nombre || '').toLowerCase(), cl: (p.codigo_barras || '').toLowerCase() }));
+    const codigoBarraMap = new Map(productosPre.filter(p => p.cl).map(p => [p.cl, p]));
     const clientes = {!! json_encode($clientesJs) !!};
     const categorias = {!! json_encode($categoriasJs) !!};
     const almacenes = {!! json_encode($almacenes->map(fn($a) => ['id' => (int)$a->id, 'nombre' => $a->nombre])->values()) !!};
@@ -2167,11 +2175,33 @@ body:not(.dark-mode) {
     let searchQuery = '';
     let metodoPagoPendiente = null;
     let modalCategoriaFiltro = '';
+    let isSubmitting = false;
+    let lastRemovedItem = null;
+    let audioEnabled = localStorage.getItem('pos_audio_enabled') !== 'false';
+
+    function playBeep(type) {
+        if (!audioEnabled) return;
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const g = ctx.createGain();
+            g.connect(ctx.destination);
+            g.gain.value = 0.08;
+            const freqs = { success: [880, 1100], error: [440, 330], warning: [660], scan: [1200] };
+            const tones = freqs[type] || freqs.success;
+            tones.forEach((freq, i) => {
+                const o = ctx.createOscillator();
+                o.type = 'sine'; o.frequency.value = freq; o.connect(g);
+                o.start(ctx.currentTime + i * 0.12);
+                o.stop(ctx.currentTime + i * 0.12 + 0.1);
+            });
+        } catch(e) {}
+    }
 
     // ============ Helpers ============
     const $ = (id) => document.getElementById(id);
     const fmt = (n) => 'RD$' + (parseFloat(n) || 0).toLocaleString('es-DO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     const escapeHtml = (s) => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+    const debounce = (fn, delay) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), delay); }; };
 
     function showToast(msg, type = 'success', delay = 2500) {
         const toast = $('scanToast');
@@ -2203,17 +2233,33 @@ body:not(.dark-mode) {
         },
 
         removeFromCart(index) {
+            const item = cart[index];
+            if (!item) return;
+            lastRemovedItem = item;
+
             const el = document.querySelector(`.cart-item[data-index="${index}"]`);
             if (el) {
                 el.classList.add('removing');
                 setTimeout(() => {
                     cart.splice(index, 1);
                     renderCart();
+                    mostrarUndoRemoval(item);
                 }, 250);
             } else {
                 cart.splice(index, 1);
                 renderCart();
+                mostrarUndoRemoval(item);
             }
+        },
+
+        deshacerRemocion() {
+            if (!lastRemovedItem) return;
+            cart.push(lastRemovedItem);
+            lastRemovedItem = null;
+            renderCart('add');
+            showToast('Producto restaurado', 'success', 1500);
+            const toast = bootstrap.Toast.getInstance($('scanToast'));
+            if (toast) toast.hide();
         },
 
         updateQty(index, val) {
@@ -2253,6 +2299,10 @@ body:not(.dark-mode) {
         submitForm(metodo) {
             if (cart.length === 0) {
                 showToast('Agrega al menos un producto al carrito', 'warning');
+                return;
+            }
+            if (isSubmitting) {
+                showToast('Ya hay un pago en proceso', 'warning');
                 return;
             }
             if (metodo === 'fiado' || metodo === 'cuenta_abierta') {
@@ -2358,6 +2408,7 @@ body:not(.dark-mode) {
     }
 
     function procesarPago() {
+        if (isSubmitting) return;
         const total = parseFloat($('hidden-total').value) || 0;
         const propina = parseFloat($('propina-input').value) || 0;
 
@@ -2377,6 +2428,11 @@ body:not(.dark-mode) {
                 return;
             }
         }
+
+        isSubmitting = true;
+        const btn = document.querySelector('.btn-cobrar');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
 
         // Prepare form submission
         const form = $('pos-form');
@@ -2399,17 +2455,37 @@ body:not(.dark-mode) {
         })
         .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
         .then(data => {
+            playBeep('success');
             ultimaVentaId = data.venta_id;
             mostrarPostPago(data);
         })
         .catch(err => {
+            playBeep('error');
             showToast(err?.message || err?.error || 'Error al procesar venta', 'danger');
+        })
+        .finally(() => {
+            isSubmitting = false;
+            btn.disabled = false;
+            btn.innerHTML = '<span class="shine"></span><i class="bi bi-check2-circle me-1"></i> Cobrar';
         });
     }
 
+    function mostrarUndoRemoval(item) {
+        const nombre = escapeHtml(item.nombre);
+        const toastEl = $('scanToast');
+        const body = $('scanToastBody');
+        toastEl.className = 'toast align-items-center text-white border-0 bg-warning';
+        body.innerHTML = `"${nombre}" eliminado. <button type="button" class="btn btn-sm btn-link text-white p-0 ms-2 fw-bold" onclick="POS.deshacerRemocion()">Deshacer</button>`;
+        new bootstrap.Toast(toastEl, { delay: 5000 }).show();
+        setTimeout(() => { lastRemovedItem = null; }, 5000);
+    }
+
     function procesarPagoDirecto(metodo) {
+        if (isSubmitting) return;
         const total = parseFloat($('hidden-total').value) || 0;
         if (total <= 0) { showToast('Total inválido', 'danger'); return; }
+
+        isSubmitting = true;
 
         const form = $('pos-form');
         const formData = new FormData(form);
@@ -2423,11 +2499,16 @@ body:not(.dark-mode) {
         })
         .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
         .then(data => {
+            playBeep('success');
             ultimaVentaId = data.venta_id;
             mostrarPostPago(data);
         })
         .catch(err => {
+            playBeep('error');
             showToast(err?.message || err?.error || 'Error al procesar venta', 'danger');
+        })
+        .finally(() => {
+            isSubmitting = false;
         });
     }
 
@@ -2443,6 +2524,9 @@ body:not(.dark-mode) {
         if (data.tipo_comprobante === 'ecf') {
             facturarBtn.style.display = 'inline-flex';
             facturarBtn.onclick = () => facturarVenta(data.venta_id);
+            // Auto-enviar e-CF después de mostrar el modal
+            $('factura-status').innerHTML = '<span class="text-warning"><i class="bi bi-hourglass-split me-1"></i> Enviando e-CF...</span>';
+            setTimeout(() => facturarVenta(data.venta_id), 800);
         } else {
             facturarBtn.style.display = 'none';
         }
@@ -2743,6 +2827,7 @@ body:not(.dark-mode) {
         if (fromScanner) {
             $('scan-input').classList.add('scanner-flash');
             setTimeout(() => $('scan-input').classList.remove('scanner-flash'), 400);
+            playBeep('scan');
         }
         // Limpiar input y mostrar carrito
         $('scan-input').value = '';
@@ -2896,9 +2981,9 @@ body:not(.dark-mode) {
         }
 
         // Mostrar dropdown de búsqueda
-        const filtered = filterProductos(productos.filter(p =>
-            p.nombre.toLowerCase().includes(query) ||
-            (p.codigo_barras && p.codigo_barras.toLowerCase().includes(query))
+        const filtered = filterProductos(productosPre.filter(p =>
+            p.nl.includes(query) ||
+            (p.cl && p.cl.includes(query))
         )).slice(0, 12);
 
         if (filtered.length > 0) {
@@ -2953,8 +3038,9 @@ body:not(.dark-mode) {
 
     // ============ Procesar código (escáner) ============
     function procesarCodigo(code) {
-        const p = productos.find(x => x.codigo_barras && x.codigo_barras === code)
-               || productos.find(x => x.codigo_barras && x.codigo_barras.includes(code));
+        const codeLower = code.toLowerCase().trim();
+        const p = codigoBarraMap.get(codeLower)
+               || productosPre.find(x => x.cl && x.cl.includes(codeLower));
         if (p) {
             addToCart(p.id, true);
         } else {
@@ -3131,9 +3217,20 @@ body:not(.dark-mode) {
                 e.preventDefault();
                 if (!isNaN(index)) {
                     const value = parseFloat(target.value) || 0;
-                    cart[index].descuento = Math.max(0, value);
+                    const item = cart[index];
+                    const lineTotal = item.precio * item.qty;
+                    if (lineTotal > 0) {
+                        const descuentoAplicado = item.descuento_tipo === 'porcentaje' ? value : (value / lineTotal * 100);
+                        if (descuentoAplicado > 50) {
+                            if (!confirm('Descuento superior al 50%. ¿Confirmar?')) {
+                                target.value = item.descuento || 0;
+                                return;
+                            }
+                        }
+                    }
+                    item.descuento = Math.max(0, value);
                     renderCart();
-                    A11y && A11y.announce(`Descuento actualizado: ${cart[index].descuento}`);
+                    A11y && A11y.announce(`Descuento actualizado: ${item.descuento}`);
                 }
                 break;
             case 'toggle-discount-type':
@@ -3183,6 +3280,19 @@ body:not(.dark-mode) {
         loadTurnoHistory();
         startTurnoTimer();
 
+        // Refrescar estadísticas cada minuto
+        setInterval(loadDayStats, 60000);
+
+        // Mute audio toggle
+        const muteBtn = $('btn-mute-audio');
+        if (muteBtn) {
+            muteBtn.addEventListener('click', () => {
+                audioEnabled = !audioEnabled;
+                localStorage.setItem('pos_audio_enabled', audioEnabled);
+                muteBtn.innerHTML = `<i class="bi bi-${audioEnabled ? 'volume-up' : 'volume-mute'}"></i>`;
+            });
+        }
+
         // Modo Escáner/Buscar
         $('mode-barcode').addEventListener('click', () => setScanMode('barcode'));
         $('mode-search').addEventListener('click', () => setScanMode('search'));
@@ -3211,8 +3321,8 @@ body:not(.dark-mode) {
             });
         });
 
-        // Búsqueda en vivo
-        $('scan-input').addEventListener('input', triggerSearch);
+        // Búsqueda en vivo (con debounce)
+        $('scan-input').addEventListener('input', debounce(triggerSearch, 200));
 
         // Enter en input
         $('scan-input').addEventListener('keydown', function(e) {
@@ -3287,6 +3397,7 @@ body:not(.dark-mode) {
     window.procesarPago = procesarPago;
     window.mostrarPostPago = mostrarPostPago;
     window.facturarVenta = facturarVenta;
+    window.mostrarUndoRemoval = mostrarUndoRemoval;
     window.imprimirTicket = imprimirTicket;
     window.mostrarBuscarCliente = mostrarBuscarCliente;
     window.seleccionarCliente = seleccionarCliente;

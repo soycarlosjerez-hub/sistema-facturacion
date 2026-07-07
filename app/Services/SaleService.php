@@ -45,6 +45,26 @@ class SaleService
             default => 'completada',
         };
 
+        $subtotalTotal = array_sum($data['subtotal'] ?? []);
+        if ($subtotalTotal > 0) {
+            $descuentosLinea = 0;
+            foreach (($data['descuento'] ?? []) as $i => $desc) {
+                $desc = (float) ($desc ?? 0);
+                if ($desc <= 0) continue;
+                $tipo = $data['descuento_tipo'][$i] ?? 'monto';
+                $lineSub = (float) ($data['subtotal'][$i] ?? 0);
+                if ($tipo === 'porcentaje') {
+                    $descuentosLinea += $lineSub * min($desc, 100) / 100;
+                } else {
+                    $descuentosLinea += $desc;
+                }
+            }
+            $pctDescuento = ($descuentosLinea / $subtotalTotal) * 100;
+            if ($pctDescuento > 50 && !auth()->user()->hasRole('admin')) {
+                throw new \Exception('Descuentos superiores al 50% requieren autorización de administrador.');
+            }
+        }
+
         return DB::transaction(function () use ($data, $sesion, $metodo, $estado) {
             $ncf = null;
             if (!empty($data['ncf_tipo'])) {
