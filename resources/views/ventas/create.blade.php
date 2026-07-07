@@ -2205,8 +2205,12 @@ body:not(.dark-mode) {
 
     function getAlmacenId() {
         const el = $('almacen-select');
-        if (el && el.value && almacenes.some(a => a.id === parseInt(el.value))) return el.value;
-        return almacenes.length > 0 ? almacenes[0].id : '1';
+        if (el && el.value) {
+            const id = parseInt(el.value);
+            if (!isNaN(id) && id > 0) return id;
+        }
+        if (almacenes.length > 0) return almacenes[0].id;
+        return 0;
     }
 
     function showToast(msg, type = 'success', delay = 2500) {
@@ -2309,6 +2313,10 @@ body:not(.dark-mode) {
             }
             if (isSubmitting) {
                 showToast('Ya hay un pago en proceso', 'warning');
+                return;
+            }
+            if (!getAlmacenId()) {
+                showToast('Selecciona un almacén válido', 'danger');
                 return;
             }
             if (metodo === 'fiado' || metodo === 'cuenta_abierta') {
@@ -2435,6 +2443,10 @@ body:not(.dark-mode) {
             }
         }
 
+        // Validate almacen before proceeding
+        const almacenId = getAlmacenId();
+        if (!almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+
         isSubmitting = true;
         const btn = document.querySelector('.btn-cobrar');
         btn.disabled = true;
@@ -2445,6 +2457,9 @@ body:not(.dark-mode) {
         const formData = new FormData(form);
         formData.set('metodo_pago', metodoPagoActual);
         formData.set('propina', propina.toFixed(2));
+
+        // Inject almacen_id for each cart item (one per line item)
+        cart.forEach(() => formData.append('almacen_id', almacenId));
 
         // Add mixto amounts if applicable
         if (metodoPagoActual === 'mixto') {
@@ -2491,6 +2506,10 @@ body:not(.dark-mode) {
         const total = parseFloat($('hidden-total').value) || 0;
         if (total <= 0) { showToast('Total inválido', 'danger'); return; }
 
+        // Validate almacen before proceeding
+        const almacenId = getAlmacenId();
+        if (!almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+
         isSubmitting = true;
         const btn = document.querySelector(`.btn-pay[data-metodo="${metodo}"]`);
         const btnOrigHtml = btn ? btn.innerHTML : '';
@@ -2504,6 +2523,8 @@ body:not(.dark-mode) {
         const formData = new FormData(form);
         formData.set('metodo_pago', metodo);
         formData.set('propina', '0');
+        // Inject almacen_id for each cart item
+        cart.forEach(() => formData.append('almacen_id', almacenId));
 
         fetch(form.action, {
             method: 'POST',
@@ -2931,7 +2952,6 @@ body:not(.dark-mode) {
                     <input type="hidden" name="subtotal[]" value="${subtotalConDesc.toFixed(2)}">
                     <input type="hidden" name="descuento[]" value="${descuentoAplicado.toFixed(2)}">
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
-                    <input type="hidden" name="almacen_id[]" value="${getAlmacenId()}">
                 </div>`;
             }).join('');
         }
