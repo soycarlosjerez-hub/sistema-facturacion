@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Caja;
+use App\Models\Gasto;
+use App\Models\Pago;
 use App\Models\SesionCaja;
 use App\Models\Venta;
 use Illuminate\Support\Collection;
@@ -72,9 +74,14 @@ class CajaService
             return ['success' => false, 'message' => 'No se puede eliminar una caja abierta. Ciérrela primero.'];
         }
 
-        if (Venta::where('caja_id', $caja->id)->exists()) {
+        $hasData = Venta::where('caja_id', $caja->id)->exists()
+                || SesionCaja::where('caja_id', $caja->id)->exists()
+                || Pago::where('caja_id', $caja->id)->exists()
+                || Gasto::where('caja_id', $caja->id)->exists();
+
+        if ($hasData) {
             $caja->update(['activo' => false]);
-            return ['success' => true, 'deactivated' => true, 'message' => 'La caja tiene ventas asociadas, se desactivó en lugar de eliminarse.'];
+            return ['success' => true, 'deactivated' => true, 'message' => 'La caja tiene datos asociados, se desactivó en lugar de eliminarse.'];
         }
 
         $caja->delete();
