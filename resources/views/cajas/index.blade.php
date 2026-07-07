@@ -553,12 +553,14 @@
                             <a href="{{ route('cajas.edit', $caja->id) }}" class="btn btn-sm btn-outline-primary rounded-pill flex-fill">
                                 <i class="bi bi-pencil-square me-1"></i> Completa
                             </a>
-                            <form action="{{ route('cajas.destroy', $caja->id) }}" method="POST" class="flex-fill" onsubmit="return confirm('¿Eliminar la caja {{ $caja->nombre }}? Esta acción no se puede deshacer.')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill w-100" {{ $caja->estado == 'abierta' ? 'disabled' : '' }}>
-                                    <i class="bi bi-trash me-1"></i>
-                                </button>
-                            </form>
+                            @if($caja->can_delete)
+                                <form action="{{ route('cajas.destroy', $caja->id) }}" method="POST" class="flex-fill" onsubmit="return confirm('¿Eliminar la caja {{ $caja->nombre }}? Esta acción no se puede deshacer.')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill w-100">
+                                        <i class="bi bi-trash me-1"></i>
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     @endif
                 </div>

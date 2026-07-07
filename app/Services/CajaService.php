@@ -42,6 +42,11 @@ class CajaService
             $caja->ultima_sesion = $ultimaSesion;
             $caja->total_sesiones = SesionCaja::where('caja_id', $caja->id)->count();
             $caja->ventas_historico = Venta::where('caja_id', $caja->id)->sum('total');
+            $caja->can_delete = $caja->estado === 'cerrada'
+                && !Venta::where('caja_id', $caja->id)->exists()
+                && !SesionCaja::where('caja_id', $caja->id)->exists()
+                && !Pago::where('caja_id', $caja->id)->exists()
+                && !Gasto::where('caja_id', $caja->id)->exists();
             return $caja;
         });
 
