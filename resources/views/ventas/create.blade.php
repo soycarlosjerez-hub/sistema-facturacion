@@ -1536,13 +1536,13 @@ body:not(.dark-mode) {
     .input-premium::placeholder { font-weight: 400; font-size: 1rem; color: var(--pos-text-muted); opacity: 0.5; }
     .pago-detalle { margin-top: 12px; }
     .pago-detalle label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--pos-text-muted); margin-bottom: 4px; display: block; }
-    .cambio-display { text-align: center; padding: 12px 16px; border-radius: 12px; font-size: 1.5rem; font-weight: 800; }
-    .cambio-display.positivo { background: rgba(16,185,129,0.15); color: #34d399; }
-    .cambio-display.negativo { background: rgba(239,68,68,0.15); color: #f87171; }
-    .propina-btn { border-radius: 50px; border: 2px solid rgba(16,185,129,0.3); background: transparent; color: #6ee7b7; font-weight: 700; padding: 10px 20px; font-size: 0.9rem; transition: all 0.15s; cursor: pointer; min-height: 44px; }
-    .propina-btn:hover { background: rgba(16,185,129,0.1); border-color: #10b981; transform: scale(1.05); }
-    .propina-btn.active { background: #10b981; border-color: #10b981; color: #fff; }
-    #propina-input { height: 44px; text-align: center; background: rgba(255,255,255,0.06); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); font-weight: 700; font-size: 1.1rem; width: 100px; }
+    .cambio-display { text-align: center; padding: 14px 20px; border-radius: 12px; font-size: 1.75rem; font-weight: 800; }
+    .cambio-display.positivo { background: #dcfce7; color: #166534; }
+    .cambio-display.negativo { background: #fee2e2; color: #991b1b; }
+    .propina-btn { border-radius: 50px; border: 2px solid #059669; background: transparent; color: #059669; font-weight: 700; padding: 10px 20px; font-size: 0.9rem; transition: all 0.15s; cursor: pointer; min-height: 44px; }
+    .propina-btn:hover { background: rgba(5,150,105,0.1); border-color: #047857; color: #047857; transform: scale(1.05); }
+    .propina-btn.active { background: #059669; border-color: #059669; color: #fff; }
+    #propina-input { height: 44px; text-align: center; background: rgba(255,255,255,0.12); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); font-weight: 700; font-size: 1.1rem; width: 100px; }
     #propina-input:focus { outline: none; border-color: #10b981; }
     .btn-cobrar-touch { background: linear-gradient(135deg, #059669, #10b981); border: none; border-radius: 16px; padding: 16px 24px; font-weight: 800; font-size: 1.2rem; color: #fff; transition: all 0.3s; position: relative; overflow: hidden; min-height: 56px; }
     .btn-cobrar-touch:hover { box-shadow: 0 8px 30px rgba(16,185,129,0.4); transform: translateY(-1px); color: #fff; }
