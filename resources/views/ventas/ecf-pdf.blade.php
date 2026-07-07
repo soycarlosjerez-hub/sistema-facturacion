@@ -95,11 +95,11 @@
         <tr>
             <td style="width: 50%; padding: 5px;">
                 <strong style="font-size: 8px;">NOMBRE / RAZÓN SOCIAL:</strong><br>
-                {{ $ecf->venta->cliente->nombre }}
+                {{ $ecf->venta->cliente->nombre ?? 'Consumidor Final' }}
             </td>
             <td style="width: 50%; padding: 5px;">
                 <strong style="font-size: 8px;">RNC / CÉDULA:</strong>
-                {{ $ecf->venta->cliente->rnc_cedula ?: 'N/A' }}
+                {{ $ecf->venta->cliente?->rnc_cedula ?? 'N/A' }}
             </td>
         </tr>
     </table>

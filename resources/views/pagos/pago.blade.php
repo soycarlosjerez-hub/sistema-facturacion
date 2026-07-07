@@ -24,8 +24,8 @@
                                 <i class="bi bi-person-badge-fill" style="font-size: 5rem;"></i>
                             </div>
                             <h6 class="text-uppercase small fw-bold opacity-75 mb-3">Resumen de Cliente</h6>
-                            <h4 class="fw-bold mb-1">{{ $venta->cliente->nombre }}</h4>
-                            <p class="small mb-4 opacity-75"><i class="bi bi-telephone me-2"></i>{{ $venta->cliente->telefono ?? 'N/A' }}</p>
+                            <h4 class="fw-bold mb-1">{{ $venta->cliente->nombre ?? 'Consumidor Final' }}</h4>
+                            <p class="small mb-4 opacity-75"><i class="bi bi-telephone me-2"></i>{{ $venta->cliente?->telefono ?? 'N/A' }}</p>
                             
                             <div class="bg-white bg-opacity-20 rounded-3 p-3 mt-auto">
                                 <small class="d-block opacity-75 small fw-bold text-uppercase">Venta #{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}</small>
