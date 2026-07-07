@@ -30,6 +30,14 @@ class SaleService
 
     public function createSale(array $data, SesionCaja $sesion): Venta
     {
+        if (empty($data['cliente_id'])) {
+            $consumidorFinal = Cliente::firstOrCreate(
+                ['nombre' => 'Consumidor Final'],
+                ['limite_credito' => 0, 'balance_pendiente' => 0, 'tipo_cliente' => 'consumo']
+            );
+            $data['cliente_id'] = $consumidorFinal->id;
+        }
+
         $metodo = $data['metodo_pago'] ?? 'efectivo';
         $estado = match ($metodo) {
             'fiado' => 'pendiente',
@@ -328,7 +336,9 @@ class SaleService
     {
         if (in_array($estado, ['pendiente', 'cuenta_abierta'])) {
             $cliente = Cliente::find($data['cliente_id']);
-            $cliente?->increment('balance_pendiente', $data['total']);
+            if ($cliente && $cliente->nombre !== 'Consumidor Final') {
+                $cliente->increment('balance_pendiente', $data['total']);
+            }
             return;
         }
 

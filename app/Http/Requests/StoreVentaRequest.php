@@ -14,7 +14,7 @@ class StoreVentaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cliente_id'    => 'required|exists:clientes,id',
+            'cliente_id'    => 'nullable|exists:clientes,id',
             'tipo_venta_id' => 'required|exists:tipos_ventas,id',
             'producto_id'   => 'required|array|min:1',
             'producto_id.*' => 'exists:productos,id',

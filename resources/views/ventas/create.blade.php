@@ -1810,26 +1810,22 @@ body:not(.dark-mode) {
                     <input type="hidden" name="tipo_venta_id" id="tipo_venta_id_input" value="{{ $tipoVentaDefault->id ?? 1 }}">
 
                     <div class="payment-buttons" id="payment-buttons">
-                        <div id="cash-card-buttons" class="payment-buttons" style="display: contents;">
-                            <button type="button" data-action="submit" data-metodo="efectivo" class="btn-pay">
-                                <span class="pay-shortcut">F4</span>
-                                <i class="bi bi-cash-stack"></i> Efectivo
-                            </button>
-                            <button type="button" data-action="submit" data-metodo="tarjeta" class="btn-pay tarjeta">
-                                <span class="pay-shortcut">F5</span>
-                                <i class="bi bi-credit-card-2-front"></i> Tarjeta
-                            </button>
-                        </div>
-                        <div id="client-only-buttons" class="payment-buttons" style="display: none;">
-                            <button type="button" data-action="submit" data-metodo="fiado" class="btn-pay fiado">
-                                <span class="pay-shortcut">F6</span>
-                                <i class="bi bi-journal-bookmark"></i> Fiado
-                            </button>
-                            <button type="button" data-action="submit" data-metodo="cuenta_abierta" class="btn-pay cuenta_abierta">
-                                <span class="pay-shortcut">F7</span>
-                                <i class="bi bi-folder-plus"></i> Cta. Abierta
-                            </button>
-                        </div>
+                        <button type="button" data-action="submit" data-metodo="efectivo" class="btn-pay">
+                            <span class="pay-shortcut">F4</span>
+                            <i class="bi bi-cash-stack"></i> Efectivo
+                        </button>
+                        <button type="button" data-action="submit" data-metodo="tarjeta" class="btn-pay tarjeta">
+                            <span class="pay-shortcut">F5</span>
+                            <i class="bi bi-credit-card-2-front"></i> Tarjeta
+                        </button>
+                        <button type="button" data-action="submit" data-metodo="fiado" class="btn-pay fiado">
+                            <span class="pay-shortcut">F6</span>
+                            <i class="bi bi-journal-bookmark"></i> Fiado
+                        </button>
+                        <button type="button" data-action="submit" data-metodo="cuenta_abierta" class="btn-pay cuenta_abierta">
+                            <span class="pay-shortcut">F7</span>
+                            <i class="bi bi-folder-plus"></i> Cta. Abierta
+                        </button>
                         <button type="button" data-action="submit" data-metodo="transferencia" class="btn-pay transferencia full" id="btn-transferencia">
                             <i class="bi bi-bank2"></i> Transferencia
                         </button>
@@ -2259,8 +2255,8 @@ body:not(.dark-mode) {
                 showToast('Agrega al menos un producto al carrito', 'warning');
                 return;
             }
-            if (!$('cliente_id').value) {
-                showToast('Selecciona un cliente antes de cobrar', 'warning');
+            if (metodo === 'fiado' || metodo === 'cuenta_abierta') {
+                procesarPagoDirecto(metodo);
                 return;
             }
             metodoPagoPendiente = metodo;
@@ -2395,6 +2391,30 @@ body:not(.dark-mode) {
             formData.set('mixto_transferencia', (parseFloat($('mixto-transferencia').value) || 0).toFixed(2));
         }
         bootstrap.Modal.getInstance($('pagoModal'))?.hide();
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
+        .then(data => {
+            ultimaVentaId = data.venta_id;
+            mostrarPostPago(data);
+        })
+        .catch(err => {
+            showToast(err?.message || err?.error || 'Error al procesar venta', 'danger');
+        });
+    }
+
+    function procesarPagoDirecto(metodo) {
+        const total = parseFloat($('hidden-total').value) || 0;
+        if (total <= 0) { showToast('Total inválido', 'danger'); return; }
+
+        const form = $('pos-form');
+        const formData = new FormData(form);
+        formData.set('metodo_pago', metodo);
+        formData.set('propina', '0');
 
         fetch(form.action, {
             method: 'POST',
@@ -2966,14 +2986,7 @@ body:not(.dark-mode) {
         badge.textContent = t.text;
         badge.className = 'cliente-pill ms-auto' + (deuda > 0 ? ' danger' : ' ' + t.cls);
 
-        if (esFinal) {
-            $('cash-card-buttons').style.display = 'contents';
-            $('client-only-buttons').style.display = 'none';
-            $('btn-transferencia').style.display = '';
-        } else {
-            $('cash-card-buttons').style.display = 'none';
-            $('client-only-buttons').style.display = 'contents';
-            $('btn-transferencia').style.display = 'none';
+        if (!esFinal) {
             fetchExistingItems($('cliente_id').value);
         }
     }
