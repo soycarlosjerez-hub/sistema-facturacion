@@ -422,7 +422,7 @@
             @php
                 $sesionActiva = $caja->sesionActiva();
                 $isMySession = $sesionActiva && $sesionActiva->user_id == auth()->id();
-                $esAdmin = in_array(auth()->user()->role, ['admin', 'owner']);
+                $esAdmin = auth()->user()->role === 'admin' || auth()->user()->hasRole('admin') || auth()->user()->hasRole('admin-business') || auth()->user()->hasRole('root');
                 $estadoClass = !$caja->activo ? 'inactiva' : $caja->estado;
                 $headerGradient = match($estadoClass) {
                     'abierta' => 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
