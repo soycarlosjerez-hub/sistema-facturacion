@@ -2316,7 +2316,7 @@ body:not(.dark-mode) {
                 showToast('Ya hay un pago en proceso', 'warning');
                 return;
             }
-            if (!getAlmacenId()) {
+            if (validaStock && !getAlmacenId()) {
                 showToast('Selecciona un almacén válido', 'danger');
                 return;
             }
@@ -2446,7 +2446,7 @@ body:not(.dark-mode) {
 
         // Validate almacen before proceeding
         const almacenId = getAlmacenId();
-        if (!almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (validaStock && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
 
         isSubmitting = true;
         const btn = document.querySelector('.btn-cobrar');
@@ -2459,8 +2459,10 @@ body:not(.dark-mode) {
         formData.set('metodo_pago', metodoPagoActual);
         formData.set('propina', propina.toFixed(2));
 
-        // Inject almacen_id for each cart item (one per line item)
-        cart.forEach(() => formData.append('almacen_id', almacenId));
+        // Inject almacen_id for each cart item when stock validation is active
+        if (validaStock) {
+            cart.forEach(() => formData.append('almacen_id', almacenId));
+        }
 
         // Add mixto amounts if applicable
         if (metodoPagoActual === 'mixto') {
@@ -2509,7 +2511,7 @@ body:not(.dark-mode) {
 
         // Validate almacen before proceeding
         const almacenId = getAlmacenId();
-        if (!almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (validaStock && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
 
         isSubmitting = true;
         const btn = document.querySelector(`.btn-pay[data-metodo="${metodo}"]`);
@@ -2524,8 +2526,10 @@ body:not(.dark-mode) {
         const formData = new FormData(form);
         formData.set('metodo_pago', metodo);
         formData.set('propina', '0');
-        // Inject almacen_id for each cart item
-        cart.forEach(() => formData.append('almacen_id', almacenId));
+        // Inject almacen_id for each cart item when stock validation is active
+        if (validaStock) {
+            cart.forEach(() => formData.append('almacen_id', almacenId));
+        }
 
         fetch(form.action, {
             method: 'POST',

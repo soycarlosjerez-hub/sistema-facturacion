@@ -322,8 +322,18 @@ class SaleService
             $validaStock = ($config['restaurante_valida_stock'] ?? '1') === '1';
         }
 
+        // Ensure we always have a fallback almacen for the FK constraint
+        $fallbackAlmacen = \App\Models\Almacen::first();
+        if (!$fallbackAlmacen) {
+            $fallbackAlmacen = \App\Models\Almacen::create([
+                'tenant_id'   => Auth::user()->business_instance_id,
+                'nombre'      => 'General',
+                'ubicacion'   => 'Principal',
+            ]);
+        }
+
         foreach ($data['producto_id'] as $key => $productoId) {
-            $almacenId = isset($data['almacen_id'][$key]) ? (int)$data['almacen_id'][$key] : 1;
+            $almacenId = isset($data['almacen_id'][$key]) ? (int)$data['almacen_id'][$key] : $fallbackAlmacen->id;
             $cantidad = $data['cantidad'][$key];
 
             $producto = Producto::findOrFail($productoId);
