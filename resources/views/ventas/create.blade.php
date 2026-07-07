@@ -1522,23 +1522,23 @@ body:not(.dark-mode) {
     .cobrar-premium .modal-content { border-radius: 20px; overflow: hidden; border: 0; box-shadow: 0 25px 60px rgba(0,0,0,0.5); }
     .cobrar-premium .cobrar-header { background: linear-gradient(135deg, #059669, #10b981, #06b6d4, #059669); background-size: 300% 300%; animation: cobrarGradientShift 6s ease infinite; padding: 20px 24px 16px; color: #fff; }
     .cobrar-premium .cobrar-header .icon-circle { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; backdrop-filter: blur(8px); }
-    .cobrar-total-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-radius: 16px; padding: 12px 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    .cobrar-total-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 16px 20px; text-align: center; border: 1px solid rgba(255,255,255,0.15); }
     .cobrar-total-card h2 { font-size: 3rem; font-weight: 900; color: var(--pos-text); font-variant-numeric: tabular-nums; }
-    .metodo-btn { border: 2px solid var(--pos-border); border-radius: 14px; padding: 14px 6px; background: transparent; color: var(--pos-text); font-weight: 700; font-size: 0.9rem; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-height: 68px; }
+    .metodo-btn { border: 2px solid var(--pos-border); border-radius: 14px; padding: 14px 6px; background: rgba(255,255,255,0.03); color: var(--pos-text); font-weight: 700; font-size: 0.9rem; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-height: 68px; }
     .metodo-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
     .metodo-btn.active-metodo.efectivo { border-color: #10b981; background: rgba(16,185,129,0.12); color: #6ee7b7; }
     .metodo-btn.active-metodo.tarjeta { border-color: #0ea5e9; background: rgba(14,165,233,0.12); color: #38bdf8; }
     .metodo-btn.active-metodo.transferencia { border-color: #6366f1; background: rgba(99,102,241,0.12); color: #a5b4fc; }
     .metodo-btn.active-metodo.mixto { border-color: #f59e0b; background: rgba(245,158,11,0.12); color: #fbbf24; }
     .metodo-btn i { font-size: 1.5rem; }
-    .input-premium { width: 100%; background: rgba(255,255,255,0.06); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 12px 16px; font-size: 1.25rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
+    .input-premium { width: 100%; background: rgba(255,255,255,0.1); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 12px 16px; font-size: 1.25rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
     .input-premium:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
     .input-premium::placeholder { font-weight: 400; font-size: 1rem; color: var(--pos-text-muted); opacity: 0.5; }
     .pago-detalle { margin-top: 12px; }
     .pago-detalle label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--pos-text-muted); margin-bottom: 4px; display: block; }
-    .cambio-display { text-align: center; padding: 8px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; }
-    .cambio-display.positivo { background: rgba(16,185,129,0.1); color: #6ee7b7; }
-    .cambio-display.negativo { background: rgba(239,68,68,0.1); color: #fca5a5; }
+    .cambio-display { text-align: center; padding: 12px 16px; border-radius: 12px; font-size: 1.5rem; font-weight: 800; }
+    .cambio-display.positivo { background: rgba(16,185,129,0.15); color: #34d399; }
+    .cambio-display.negativo { background: rgba(239,68,68,0.15); color: #f87171; }
     .propina-btn { border-radius: 50px; border: 2px solid rgba(16,185,129,0.3); background: transparent; color: #6ee7b7; font-weight: 700; padding: 10px 20px; font-size: 0.9rem; transition: all 0.15s; cursor: pointer; min-height: 44px; }
     .propina-btn:hover { background: rgba(16,185,129,0.1); border-color: #10b981; transform: scale(1.05); }
     .propina-btn.active { background: #10b981; border-color: #10b981; color: #fff; }
