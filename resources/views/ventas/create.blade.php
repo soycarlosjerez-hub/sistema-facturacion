@@ -1732,7 +1732,7 @@ body:not(.dark-mode) {
                         <span id="cliente-selected-name">Consumidor Final</span>
                         <small class="text-muted d-block" style="font-size:0.7rem;font-weight:400;">Tocar para cambiar</small>
                     </button>
-                    <select name="cliente_id" id="cliente_id" style="display:none;">
+                    <select name="cliente_id" id="cliente_id" style="display:none;" value="{{ $clienteConsumidorFinal->id }}">
                         @foreach($clientes as $cliente)
                             <option value="{{ $cliente->id }}"
                                     data-es-final="{{ $cliente->id == $clienteConsumidorFinal->id ? '1' : '0' }}"
@@ -3426,6 +3426,10 @@ body:not(.dark-mode) {
         const clienteSelect = $('cliente_id');
         if (clienteSelect) {
             clienteSelect.addEventListener('change', onClienteChange);
+            // FORZAR cliente por defecto a "Consumidor Final" (evita que aparezca otro)
+            const defaultClientId = {{ $clienteConsumidorFinal->id }};
+            clienteSelect.value = String(defaultClientId);
+            onClienteChange();
         }
 
         // Click-outside to close search
