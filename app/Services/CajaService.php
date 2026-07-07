@@ -66,8 +66,16 @@ class CajaService
 
     public function delete(Caja $caja): array
     {
-        if (!auth()->user()->hasRole('admin') && !auth()->user()->can('cajas.delete')) {
-            abort(403, 'Solo administradores pueden eliminar cajas.');
+        $user = auth()->user();
+
+        $isElevated = $user->hasRole('admin')
+            || $user->hasRole('owner')
+            || $user->hasRole('admin-business')
+            || $user->hasRole('root')
+            || in_array($user->role ?? '', ['admin', 'owner', 'admin-business', 'root']);
+
+        if (!$isElevated && !$user->can('cajas.delete')) {
+            abort(403, 'No tienes permiso para eliminar cajas.');
         }
 
         if ($caja->estado === 'abierta') {
