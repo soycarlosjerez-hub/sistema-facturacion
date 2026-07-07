@@ -34,6 +34,7 @@ class StoreVentaRequest extends FormRequest
             'impuestos'     => 'nullable|numeric|min:0',
             'subtotal_final' => 'nullable|numeric|min:0',
             'propina'       => 'nullable|numeric|min:0',
+            'general_descuento' => 'nullable|numeric|min:0',
             'metodo_pago'   => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',
             'ncf_tipo'      => 'nullable|string|exists:ncf_sequences,tipo_comprobante',
             'tipo_comprobante' => 'nullable|in:sin,ncf,ecf',

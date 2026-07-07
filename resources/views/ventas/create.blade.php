@@ -1791,7 +1791,7 @@ body:not(.dark-mode) {
                         <span class="label">Descuento</span>
                         <div class="input-group input-group-sm" style="width: 130px;">
                             <span class="input-group-text bg-transparent border-end-0 text-muted" style="font-size: 0.75rem;">RD$</span>
-                            <input type="number" name="descuento" id="input-descuento" class="form-control descuento-input" value="0" min="0" step="0.01">
+                            <input type="number" name="general_descuento" id="input-general-descuento" class="form-control descuento-input" value="0" min="0" step="0.01">
                         </div>
                     </div>
                     <div class="total-display">
@@ -2486,6 +2486,13 @@ body:not(.dark-mode) {
         if (total <= 0) { showToast('Total inválido', 'danger'); return; }
 
         isSubmitting = true;
+        const btn = document.querySelector(`.btn-pay[data-metodo="${metodo}"]`);
+        const btnOrigHtml = btn ? btn.innerHTML : '';
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+        }
 
         const form = $('pos-form');
         const formData = new FormData(form);
@@ -2509,6 +2516,10 @@ body:not(.dark-mode) {
         })
         .finally(() => {
             isSubmitting = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = btnOrigHtml;
+            }
         });
     }
 
@@ -2934,7 +2945,7 @@ body:not(.dark-mode) {
             totalDescuentos += descuentoAplicado;
             itbis += subtotalConDesc * (item.itbis_p / 100);
         });
-        const descuentoGeneral = parseFloat($('input-descuento').value) || 0;
+        const descuentoGeneral = parseFloat($('input-general-descuento').value) || 0;
         const descuentoTotal = totalDescuentos + descuentoGeneral;
         const total = Math.max(0, subtotal - descuentoTotal + itbis);
         $('display-subtotal').innerText = fmt(subtotal);
@@ -3344,7 +3355,7 @@ body:not(.dark-mode) {
         });
 
         // Descuento
-        $('input-descuento').addEventListener('input', calculateTotals);
+        $('input-general-descuento').addEventListener('input', calculateTotals);
 
         // Cliente - cambiar a botón que abre modal
         const clienteSelect = $('cliente_id');
