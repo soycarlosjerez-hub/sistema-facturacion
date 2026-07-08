@@ -21,6 +21,11 @@
     </style>
 </head>
 <body>
+    @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+    <div style="text-align:center;margin-bottom:6px;">
+        <strong style="font-size:12px;">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</strong><br>
+        <span style="font-size:7px;color:#666;">RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</span>
+    </div>
     <h2>{{ $titulo }}</h2>
     <div class="subtitle">Período: {{ ucfirst($periodo->translatedFormat('F Y')) }} | {{ $cantidad }} registro(s)</div>
 

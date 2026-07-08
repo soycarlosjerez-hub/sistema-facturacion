@@ -37,15 +37,16 @@
 </head>
 <body>
 <div class="container">
+    @php $empresaData = \App\Models\SystemSetting::allCached(); @endphp
     <div class="header">
         <div class="left">
             <h1><i class="bi bi-truck"></i> CONDUCE</h1>
             <div class="small">Nota de Entrega</div>
             <p class="small">
-                <strong>{{ $empresa->nombre ?? config('app.name') }}</strong><br>
-                RNC: {{ $empresa->rnc ?? 'N/A' }}<br>
-                {{ $empresa->direccion ?? '' }}<br>
-                {{ $empresa->telefono ?? '' }}
+                <strong>{{ $empresaData['empresa_nombre'] ?? 'Mi Negocio' }}</strong><br>
+                RNC: {{ $empresaData['empresa_rnc'] ?? 'N/A' }}<br>
+                {{ $empresaData['empresa_direccion'] ?? '' }}<br>
+                {{ $empresaData['empresa_telefono'] ?? '' }}
             </p>
         </div>
         <div class="right">

@@ -11,6 +11,11 @@
     </style>
 </head>
 <body>
+    @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+    <div style="text-align:center;margin-bottom:20px;">
+        <h2 style="margin:0;">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</h2>
+        <small style="color:#666;">RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</small>
+    </div>
     <h3>Listado de Ventas</h3>
     <table>
         <thead>

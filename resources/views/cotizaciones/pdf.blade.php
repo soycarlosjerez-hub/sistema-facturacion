@@ -28,8 +28,10 @@
 <body>
     <div class="header">
         <div class="company-info">
-            <h1>{{ $systemName ?? config('app.name') }}</h1>
-            <p>{{ $systemSlogan ?? 'Sistema de Facturación' }}</p>
+            @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+            <h1>{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</h1>
+            <p>{{ $empresa['sistema_slogan'] ?? 'Sistema de Facturación' }}</p>
+            <small>{{ $empresa['empresa_rnc'] ?? '' }}</small>
         </div>
     <div class="cotizacion-info">
         <h2>COTIZACIÓN</h2>

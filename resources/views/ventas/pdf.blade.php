@@ -72,13 +72,15 @@
 </head>
 <body>
 
+    @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+
     <!-- HEADER -->
     <table class="header">
         <tr>
             <td>
-                <div class="empresa">TU EMPRESA SRL</div>
-                <div class="muted">RNC: 000000000</div>
-                <div class="muted">Tel: 809-000-0000</div>
+                <div class="empresa">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</div>
+                <div class="muted">RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</div>
+                <div class="muted">Tel: {{ $empresa['empresa_telefono'] ?? 'N/A' }}</div>
             </td>
             <td class="text-end">
                 <div><strong>FACTURA</strong></div>

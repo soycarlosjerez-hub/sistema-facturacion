@@ -2,6 +2,11 @@
 <html><head><meta charset="utf-8"><title>Gastos {{ $desde }} al {{ $hasta }}</title>
 <style>body{font-family:DejaVu Sans,sans-serif;font-size:7px;}table{width:100%;border-collapse:collapse;margin-top:10px;}th,td{border:1px solid #ccc;padding:3px 5px;text-align:left;}th{background:#f0f0f0;font-weight:700;text-transform:uppercase;font-size:6px;}td.text-end{text-align:right;}.totals{background:#f8f8f8;font-weight:700;}h2{margin:0;color:#333;}.meta{color:#666;margin:5px 0;}</style>
 </head><body>
+@php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+<div style="text-align:center;margin-bottom:8px;">
+    <strong style="font-size:11px;">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</strong><br>
+    <span style="font-size:7px;color:#666;">RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</span>
+</div>
 <h2>Resumen de Gastos</h2>
 <p class="meta">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} gasto(s)</p>
 <table><thead><tr>
