@@ -102,6 +102,17 @@
                                         <span class="input-group-text bg-white border-0 text-muted">Recibido RD$</span>
                                         <input type="number" id="recibido" class="form-control border-0 bg-white fw-bold fs-4" placeholder="0.00">
                                     </div>
+
+                                    <!-- Botones de Denominaciones RD$ -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold" onclick="addRecibido(50)">RD$50</button></div>
+                                        <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold" onclick="addRecibido(100)">RD$100</button></div>
+                                        <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold" onclick="addRecibido(200)">RD$200</button></div>
+                                        <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold" onclick="addRecibido(500)">RD$500</button></div>
+                                        <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold" onclick="addRecibido(1000)">RD$1,000</button></div>
+                                        <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold" onclick="addRecibido(2000)">RD$2,000</button></div>
+                                    </div>
+
                                     <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm">
                                         <span class="fw-bold text-muted text-uppercase">Su Cambio:</span>
                                         <span class="fs-2 fw-bold text-success mb-0" id="cambio-val">RD$0.00</span>
@@ -130,6 +141,13 @@
 <script>
     function setMonto(val) {
         document.getElementById('input-monto').value = val.toFixed(2);
+        actualizarCambio();
+    }
+
+    function addRecibido(monto) {
+        const input = document.getElementById('recibido');
+        const actual = parseFloat(input.value) || 0;
+        input.value = (actual + monto).toFixed(2);
         actualizarCambio();
     }
 
