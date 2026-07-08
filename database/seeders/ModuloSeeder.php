@@ -129,6 +129,16 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'alquileres.contratos.index', 'sidebar_is_route' => 'alquileres.contratos.*', 'sidebar_exact_route' => 'alquileres.contratos.index', 'sidebar_permission' => 'alquileres.contratos'],
             ['key' => 'alquileres-pagos', 'label' => 'Pagos de Alquiler', 'icon' => 'bi-cash-coin', 'categoria' => 'alquileres', 'orden' => 74,
              'sidebar_route' => 'alquileres.pagos.index', 'sidebar_is_route' => 'alquileres.pagos.*', 'sidebar_exact_route' => 'alquileres.pagos.index', 'sidebar_permission' => 'alquileres.pagos'],
+
+            // Tattoo Studio
+            ['key' => 'tattoo', 'label' => 'Terminal Tattoo', 'icon' => 'bi-brush', 'categoria' => 'tattoo', 'orden' => 80,
+             'sidebar_route' => 'tattoo.index', 'sidebar_is_route' => 'tattoo.*', 'sidebar_exact_route' => 'tattoo.index', 'sidebar_permission' => 'tattoo.view'],
+            ['key' => 'tattoo-artistas', 'label' => 'Artistas', 'icon' => 'bi-person-badge', 'categoria' => 'tattoo', 'orden' => 81,
+             'sidebar_route' => 'tattoo.artistas.index', 'sidebar_is_route' => 'tattoo.artistas.*', 'sidebar_exact_route' => 'tattoo.artistas.index', 'sidebar_permission' => 'tattoo.artistas'],
+            ['key' => 'tattoo-disenos', 'label' => 'Catálogo de Diseños', 'icon' => 'bi-images', 'categoria' => 'tattoo', 'orden' => 82,
+             'sidebar_route' => 'tattoo.disenos.index', 'sidebar_is_route' => 'tattoo.disenos.*', 'sidebar_exact_route' => 'tattoo.disenos.index', 'sidebar_permission' => 'tattoo.disenos'],
+            ['key' => 'tattoo-citas', 'label' => 'Citas / Agenda', 'icon' => 'bi-calendar-event', 'categoria' => 'tattoo', 'orden' => 83,
+             'sidebar_route' => 'tattoo.citas.index', 'sidebar_is_route' => 'tattoo.citas.*', 'sidebar_exact_route' => 'tattoo.citas.index', 'sidebar_permission' => 'tattoo.citas'],
         ];
 
         foreach ($modulos as $modulo) {

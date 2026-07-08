@@ -298,13 +298,13 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Proveedores
-    Route::middleware('permission:proveedores.view')->group(function () {
-        Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
-        Route::get('/proveedores/{proveedore}', [ProveedorController::class, 'show'])->name('proveedores.show');
-    });
     Route::middleware('permission:proveedores.create')->group(function () {
         Route::get('/proveedores/create', [ProveedorController::class, 'create'])->name('proveedores.create');
         Route::post('/proveedores', [ProveedorController::class, 'store'])->name('proveedores.store');
+    });
+    Route::middleware('permission:proveedores.view')->group(function () {
+        Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
+        Route::get('/proveedores/{proveedore}', [ProveedorController::class, 'show'])->name('proveedores.show');
     });
     Route::middleware('permission:proveedores.edit')->group(function () {
         Route::get('/proveedores/{proveedore}/edit', [ProveedorController::class, 'edit'])->name('proveedores.edit');
@@ -863,6 +863,36 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/alquileres/pagos/{pago}/editar', [\App\Http\Controllers\AlquilerPagoController::class, 'edit'])->name('alquileres.pagos.edit')->middleware('permission:alquileres.pagos');
     Route::put('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'update'])->name('alquileres.pagos.update')->middleware('permission:alquileres.pagos');
     Route::delete('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'destroy'])->name('alquileres.pagos.destroy')->middleware('permission:alquileres.pagos');
+});
+
+// Tattoo Studio
+Route::middleware(['auth'])->prefix('tattoo')->name('tattoo.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\TattooController::class, 'index'])->name('index')->middleware('permission:tattoo.view');
+
+    Route::get('/artistas', [\App\Http\Controllers\TattooArtistController::class, 'index'])->name('artistas.index')->middleware('permission:tattoo.artistas');
+    Route::get('/artistas/crear', [\App\Http\Controllers\TattooArtistController::class, 'create'])->name('artistas.create')->middleware('permission:tattoo.artistas');
+    Route::post('/artistas', [\App\Http\Controllers\TattooArtistController::class, 'store'])->name('artistas.store')->middleware('permission:tattoo.artistas');
+    Route::get('/artistas/{artista}', [\App\Http\Controllers\TattooArtistController::class, 'show'])->name('artistas.show')->middleware('permission:tattoo.artistas');
+    Route::get('/artistas/{artista}/editar', [\App\Http\Controllers\TattooArtistController::class, 'edit'])->name('artistas.edit')->middleware('permission:tattoo.artistas');
+    Route::put('/artistas/{artista}', [\App\Http\Controllers\TattooArtistController::class, 'update'])->name('artistas.update')->middleware('permission:tattoo.artistas');
+    Route::delete('/artistas/{artista}', [\App\Http\Controllers\TattooArtistController::class, 'destroy'])->name('artistas.destroy')->middleware('permission:tattoo.artistas');
+    Route::patch('/artistas/{artista}/toggle-status', [\App\Http\Controllers\TattooArtistController::class, 'toggleStatus'])->name('artistas.toggle-status')->middleware('permission:tattoo.artistas');
+
+    Route::get('/disenos', [\App\Http\Controllers\TattooDesignController::class, 'index'])->name('disenos.index')->middleware('permission:tattoo.disenos');
+    Route::get('/disenos/crear', [\App\Http\Controllers\TattooDesignController::class, 'create'])->name('disenos.create')->middleware('permission:tattoo.disenos');
+    Route::post('/disenos', [\App\Http\Controllers\TattooDesignController::class, 'store'])->name('disenos.store')->middleware('permission:tattoo.disenos');
+    Route::get('/disenos/{diseno}/editar', [\App\Http\Controllers\TattooDesignController::class, 'edit'])->name('disenos.edit')->middleware('permission:tattoo.disenos');
+    Route::put('/disenos/{diseno}', [\App\Http\Controllers\TattooDesignController::class, 'update'])->name('disenos.update')->middleware('permission:tattoo.disenos');
+    Route::delete('/disenos/{diseno}', [\App\Http\Controllers\TattooDesignController::class, 'destroy'])->name('disenos.destroy')->middleware('permission:tattoo.disenos');
+
+    Route::get('/citas', [\App\Http\Controllers\TattooAppointmentController::class, 'index'])->name('citas.index')->middleware('permission:tattoo.citas');
+    Route::get('/citas/crear', [\App\Http\Controllers\TattooAppointmentController::class, 'create'])->name('citas.create')->middleware('permission:tattoo.citas');
+    Route::post('/citas', [\App\Http\Controllers\TattooAppointmentController::class, 'store'])->name('citas.store')->middleware('permission:tattoo.citas');
+    Route::get('/citas/{cita}/editar', [\App\Http\Controllers\TattooAppointmentController::class, 'edit'])->name('citas.edit')->middleware('permission:tattoo.citas');
+    Route::put('/citas/{cita}', [\App\Http\Controllers\TattooAppointmentController::class, 'update'])->name('citas.update')->middleware('permission:tattoo.citas');
+    Route::delete('/citas/{cita}', [\App\Http\Controllers\TattooAppointmentController::class, 'destroy'])->name('citas.destroy')->middleware('permission:tattoo.citas');
+    Route::patch('/citas/{cita}/cambiar-estado', [\App\Http\Controllers\TattooAppointmentController::class, 'cambiarEstado'])->name('citas.cambiar-estado')->middleware('permission:tattoo.citas');
+    Route::post('/citas/{cita}/pagar', [\App\Http\Controllers\TattooAppointmentController::class, 'pagar'])->name('citas.pagar')->middleware('permission:tattoo.citas');
 });
 
 Route::get('/instancia-bloqueada', function () {

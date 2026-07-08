@@ -204,6 +204,12 @@ class PermissionSeeder extends Seeder
                 'lavadero.citas',
                 'lavadero.lavadores',
             ],
+            'tattoo' => [
+                'tattoo.view',
+                'tattoo.artistas',
+                'tattoo.disenos',
+                'tattoo.citas',
+            ],
             'configuracion' => [
                 'configuracion.view',
                 'configuracion.edit',
@@ -280,6 +286,7 @@ class PermissionSeeder extends Seeder
                 'almacenes.view',
                 'almacenes.movements',
                 'lavadero.view',
+                'tattoo.view',
                 'restaurante.view',
                 'sucursales.view',
                 'ncf.view',
@@ -352,6 +359,11 @@ class PermissionSeeder extends Seeder
                 'lavadero.vehiculos',
                 'lavadero.citas',
                 'lavadero.lavadores',
+
+                'tattoo.view',
+                'tattoo.artistas',
+                'tattoo.disenos',
+                'tattoo.citas',
 
                 'cajas.view',
                 'cajas.create',
@@ -472,6 +484,11 @@ class PermissionSeeder extends Seeder
                 'lavadero.citas',
                 'lavadero.lavadores',
 
+                'tattoo.view',
+                'tattoo.artistas',
+                'tattoo.disenos',
+                'tattoo.citas',
+
                 'cajas.view',
                 'cajas.create',
                 'cajas.edit',
@@ -566,6 +583,11 @@ class PermissionSeeder extends Seeder
                 'lavadero.vehiculos',
                 'lavadero.citas',
                 'lavadero.lavadores',
+
+                'tattoo.view',
+                'tattoo.artistas',
+                'tattoo.disenos',
+                'tattoo.citas',
 
                 'retail.terminal',
                 'retail.inventario',

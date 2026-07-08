@@ -273,6 +273,45 @@ class Sidebar
             }
         }
 
+        // Tattoo Studio
+        if ($mod('tattoo') && $can('tattoo.view')) {
+            $items[] = ['section' => 'Tattoo Studio'];
+            $items[] = [
+                'route' => 'tattoo.index',
+                'icon'  => 'bi-brush',
+                'label' => 'Terminal Tattoo',
+                'is_route' => 'tattoo.*',
+                'exact_route' => 'tattoo.index',
+            ];
+            if ($mod('tattoo-artistas') && $can('tattoo.artistas')) {
+                $items[] = [
+                    'route' => 'tattoo.artistas.index',
+                    'icon'  => 'bi-person-badge',
+                    'label' => 'Artistas',
+                    'is_route' => 'tattoo.artistas.*',
+                    'exact_route' => 'tattoo.artistas.index',
+                ];
+            }
+            if ($mod('tattoo-disenos') && $can('tattoo.disenos')) {
+                $items[] = [
+                    'route' => 'tattoo.disenos.index',
+                    'icon'  => 'bi-images',
+                    'label' => 'Diseños',
+                    'is_route' => 'tattoo.disenos.*',
+                    'exact_route' => 'tattoo.disenos.index',
+                ];
+            }
+            if ($mod('tattoo-citas') && $can('tattoo.citas')) {
+                $items[] = [
+                    'route' => 'tattoo.citas.index',
+                    'icon'  => 'bi-calendar-event',
+                    'label' => 'Citas / Agenda',
+                    'is_route' => 'tattoo.citas.*',
+                    'exact_route' => 'tattoo.citas.index',
+                ];
+            }
+        }
+
         // Alquileres
         if ($mod('alquileres') && $can('alquileres.view')) {
             $items[] = ['section' => 'Alquileres'];
