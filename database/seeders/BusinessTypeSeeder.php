@@ -22,7 +22,8 @@ class BusinessTypeSeeder extends Seeder
                 'modulos' => [
                     'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
                     'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
-                    'clientes', 'cajas', 'sucursales', 'almacenes', 'reportes-caja', 'reportes-restaurante', 'reportes-resumen',
+                    'clientes', 'cajas', 'sucursales', 'almacenes', 'cuentas-bancarias',
+                    'reportes-caja', 'reportes-restaurante', 'reportes-resumen', 'reportes-gastos',
                 ],
             ],
             [
@@ -38,6 +39,7 @@ class BusinessTypeSeeder extends Seeder
                     'ventas', 'devoluciones',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
                 ],
             ],
             [
@@ -53,6 +55,7 @@ class BusinessTypeSeeder extends Seeder
                     'ventas', 'conduces',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
                 ],
             ],
             [
@@ -68,6 +71,7 @@ class BusinessTypeSeeder extends Seeder
                     'cotizaciones', 'gastos',
                     'clientes', 'cobros', 'cajas',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
                 ],
             ],
             ['slug' => 'lavadero',
@@ -84,6 +88,7 @@ class BusinessTypeSeeder extends Seeder
                      'reportes-ventas', 'reportes-caja', 'reportes-stock',
                      'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
                      'sucursales', 'almacenes',
+                     'cuentas-bancarias', 'reportes-gastos',
                  ],
              ],
             [
@@ -101,6 +106,7 @@ class BusinessTypeSeeder extends Seeder
                     'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-restaurante', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
                 ],
             ],
             [
@@ -118,6 +124,7 @@ class BusinessTypeSeeder extends Seeder
                     'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-caja', 'reportes-stock',
                     'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
                 ],
             ],
         ];

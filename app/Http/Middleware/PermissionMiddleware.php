@@ -90,6 +90,10 @@ class PermissionMiddleware
                 'configuracion.view'        => 'configuracion-general',
                 'payment-processors.view'   => 'payment-processors',
                 'delivery-companies.view'   => 'delivery-companies',
+                'cuentas-bancarias.view'    => 'cuentas-bancarias',
+                'cuentas-bancarias.create'  => 'cuentas-bancarias',
+                'cuentas-bancarias.edit'    => 'cuentas-bancarias',
+                'cuentas-bancarias.delete'  => 'cuentas-bancarias',
             ];
 
             foreach ($permissions as $permission) {
