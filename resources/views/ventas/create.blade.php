@@ -3490,6 +3490,7 @@ body:not(.dark-mode) {
 
     // Expose functions for inline onclick handlers
     window.seleccionarMetodoPago = seleccionarMetodoPago;
+    window.addRecibido = addRecibido;
     window.actualizarTotalPago = actualizarTotalPago;
     window.asignarPropina = asignarPropina;
     window.procesarPago = procesarPago;
