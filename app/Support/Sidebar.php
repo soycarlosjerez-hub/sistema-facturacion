@@ -545,4 +545,3 @@ class Sidebar
         return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
     }
 }
-\n            if (->can('cuentas-bancarias.view')) {\n                [] = [\n                    'route'  => 'owner.cuentas-bancarias.index',\n                    'icon'   => 'bi-bank',\n                    'label'  => 'Cuentas Bancarias',\n                    'is_route' => 'owner.cuentas-bancarias.*',\n                    'exact_route' => 'owner.cuentas-bancarias.index',\n                ];\n            }
