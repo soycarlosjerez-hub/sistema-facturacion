@@ -47,6 +47,7 @@ use App\Http\Controllers\RetencionExportController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ModuloController;
 use App\Http\Controllers\LavadorController;
+use App\Http\Controllers\CuentaBancariaController;
 use App\Http\Middleware\RoleMiddleware;
 
 // Home / Welcome
@@ -75,6 +76,7 @@ Route::pattern('paymentProcessor', '[0-9]+');
 Route::pattern('lavador', '[0-9]+');
 Route::pattern('listaPrecio', '[0-9]+');
 Route::pattern('sucursal', '[0-9]+');
+Route::pattern('cuentas_bancarium', '[0-9]+');
 
 // Dashboard
 Route::middleware('auth')->group(function () {
@@ -273,6 +275,23 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/payment-processors/{paymentProcessor}', [PaymentProcessorController::class, 'destroy'])->name('payment-processors.destroy');
     });
 
+    // Cuentas Bancarias
+    Route::middleware('permission:cuentas-bancarias.create')->group(function () {
+        Route::get('/cuentas-bancarias/create', [CuentaBancariaController::class, 'create'])->name('cuentas-bancarias.create');
+        Route::post('/cuentas-bancarias', [CuentaBancariaController::class, 'store'])->name('cuentas-bancarias.store');
+    });
+    Route::middleware('permission:cuentas-bancarias.view')->group(function () {
+        Route::get('/cuentas-bancarias', [CuentaBancariaController::class, 'index'])->name('cuentas-bancarias.index');
+        Route::get('/cuentas-bancarias/{cuentasBancarium}', [CuentaBancariaController::class, 'show'])->name('cuentas-bancarias.show');
+    });
+    Route::middleware('permission:cuentas-bancarias.edit')->group(function () {
+        Route::get('/cuentas-bancarias/{cuentasBancarium}/edit', [CuentaBancariaController::class, 'edit'])->name('cuentas-bancarias.edit');
+        Route::put('/cuentas-bancarias/{cuentasBancarium}', [CuentaBancariaController::class, 'update'])->name('cuentas-bancarias.update');
+    });
+    Route::middleware('permission:cuentas-bancarias.delete')->group(function () {
+        Route::delete('/cuentas-bancarias/{cuentasBancarium}', [CuentaBancariaController::class, 'destroy'])->name('cuentas-bancarias.destroy');
+    });
+
     // Compras
     Route::middleware('permission:compras.view')->group(function () {
         Route::get('/compras', [CompraController::class, 'index'])->name('compras.index');
@@ -446,6 +465,11 @@ Route::middleware(['auth'])->group(function () {
         // Utilidades
         Route::get('/reportes/utilidades', [ReporteController::class, 'utilidades'])->name('reportes.utilidades');
         Route::get('/reportes/utilidades/csv', [ReporteController::class, 'utilidadesCsv'])->name('reportes.utilidades.csv');
+
+        // Gastos
+        Route::get('/reportes/gastos', [ReporteController::class, 'gastos'])->name('reportes.gastos');
+        Route::get('/reportes/gastos/csv', [ReporteController::class, 'gastosCsv'])->name('reportes.gastos.csv');
+        Route::get('/reportes/gastos/pdf', [ReporteController::class, 'gastosPdf'])->name('reportes.gastos.pdf');
 
         // Retenciones
         Route::get('/reportes/retenciones', [ReporteController::class, 'retenciones'])->name('reportes.retenciones');

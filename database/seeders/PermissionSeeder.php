@@ -210,6 +210,12 @@ class PermissionSeeder extends Seeder
                 'tattoo.disenos',
                 'tattoo.citas',
             ],
+            'cuentas-bancarias' => [
+                'cuentas-bancarias.view',
+                'cuentas-bancarias.create',
+                'cuentas-bancarias.edit',
+                'cuentas-bancarias.delete',
+            ],
             'configuracion' => [
                 'configuracion.view',
                 'configuracion.edit',
@@ -293,6 +299,7 @@ class PermissionSeeder extends Seeder
                 'ecf.view',
                 'impresoras.view',
                 'payment-processors.view',
+                'cuentas-bancarias.view',
                 'usuarios.view',
                 'roles.view',
             ],
@@ -417,6 +424,10 @@ class PermissionSeeder extends Seeder
 
                 'configuracion.view',
 
+                'cuentas-bancarias.view',
+                'cuentas-bancarias.create',
+                'cuentas-bancarias.edit',
+
                 'usuarios.view',
                 'roles.view',
             ],
@@ -540,6 +551,10 @@ class PermissionSeeder extends Seeder
                 'sucursales.edit',
 
                 'configuracion.view',
+
+                'cuentas-bancarias.view',
+                'cuentas-bancarias.create',
+                'cuentas-bancarias.edit',
 
                 'usuarios.view',
                 'roles.view',
@@ -702,6 +717,8 @@ class PermissionSeeder extends Seeder
                 'kardex.export',
 
                 'ncf.view',
+
+                'cuentas-bancarias.view',
             ],
         ];
 

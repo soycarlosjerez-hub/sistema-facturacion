@@ -139,6 +139,19 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
             </a>
         </div>
         <div class="col-lg-4 col-md-6">
+            <a href="{{ route('reportes.gastos') }}" class="text-decoration-none">
+                <div class="premium-card card-accent blue h-100 report-card">
+                    <div class="card-body p-4 text-center">
+                        <div class="rounded-circle bg-warning bg-opacity-10 text-warning mx-auto d-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;">
+                            <i class="bi bi-cash-coin fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Gastos / Egresos</h5>
+                        <p class="text-muted small mb-0">Gastos por período, categoría, método de pago. Exporta a PDF y CSV.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6">
             <a href="{{ route('reportes.utilidades') }}" class="text-decoration-none">
                 <div class="premium-card card-accent blue h-100 report-card">
                     <div class="card-body p-4 text-center">

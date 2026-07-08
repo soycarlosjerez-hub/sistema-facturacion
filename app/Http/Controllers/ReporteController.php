@@ -63,6 +63,54 @@ class ReporteController extends Controller
         return $this->exportPdf('reportes.ventas-pdf', $data, "ventas_{$data['desde']}_{$data['hasta']}.pdf");
     }
 
+    public function gastos(Request $request)
+    {
+        $data = $this->reporteService->gastos(
+            $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            $request->input('hasta', today()->format('Y-m-d')),
+            $request->input('categoria')
+        );
+        return view('reportes.gastos', $data);
+    }
+
+    public function gastosCsv(Request $request)
+    {
+        $data = $this->reporteService->gastos(
+            $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            $request->input('hasta', today()->format('Y-m-d')),
+            $request->input('categoria')
+        );
+
+        return $this->reporteService->exportCsv(
+            ['filename' => "gastos_{$data['desde']}_{$data['hasta']}.csv"],
+            ['#', 'Descripción', 'Categoría', 'Método de Pago', 'Comprobante', 'Usuario', 'Fecha', 'Monto'],
+            function ($output) use ($data) {
+                foreach ($data['gastos'] as $i => $g) {
+                    fputcsv($output, [
+                        $i + 1,
+                        $g->descripcion,
+                        $g->categoria ?? '',
+                        $g->metodo_pago ?? '',
+                        $g->comprobante ?? '',
+                        $g->user?->name ?? '',
+                        $g->fecha_gasto?->format('d/m/Y') ?? '',
+                        number_format($g->monto, 2, '.', ''),
+                    ]);
+                }
+            }
+        );
+    }
+
+    public function gastosPdf(Request $request)
+    {
+        $data = $this->reporteService->gastos(
+            $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            $request->input('hasta', today()->format('Y-m-d')),
+            $request->input('categoria')
+        );
+        return $this->exportPdf('reportes.gastos-pdf', $data, "gastos_{$data['desde']}_{$data['hasta']}.pdf");
+    }
+
     public function compras(Request $request)
     {
         $data = $this->reporteService->compras(

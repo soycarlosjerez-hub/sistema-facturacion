@@ -416,7 +416,7 @@ class Sidebar
         }
 
         // Reportes
-        $hasReportes = $mod('reportes-ventas') || $mod('reportes-compras') || $mod('reportes-stock') || $mod('reportes-utilidades') || $mod('reportes-caja') || $mod('reportes-restaurante') || $mod('reportes-retenciones') || $mod('reportes-fiscales') || $mod('reportes-resumen');
+        $hasReportes = $mod('reportes-ventas') || $mod('reportes-compras') || $mod('reportes-stock') || $mod('reportes-utilidades') || $mod('reportes-caja') || $mod('reportes-restaurante') || $mod('reportes-retenciones') || $mod('reportes-fiscales') || $mod('reportes-resumen') || $mod('reportes-gastos');
         if ($hasReportes && $can('reportes.view')) {
             $items[] = ['section' => 'Reportes'];
             $items[] = [
@@ -441,6 +441,9 @@ class Sidebar
             }
             if ($mod('reportes-caja')) {
                 $items[] = ['route' => 'reportes.caja', 'icon' => 'bi-cash-stack', 'label' => 'Caja / Turnos', 'is_route' => 'reportes.caja*', 'exact_route' => 'reportes.caja'];
+            }
+            if ($mod('reportes-gastos')) {
+                $items[] = ['route' => 'reportes.gastos', 'icon' => 'bi-cash-coin', 'label' => 'Gastos', 'is_route' => 'reportes.gastos*', 'exact_route' => 'reportes.gastos'];
             }
             if ($mod('reportes-restaurante')) {
                 $items[] = ['route' => 'reportes.restaurante', 'icon' => 'bi-cup-straw', 'label' => 'Restaurante', 'is_route' => 'reportes.restaurante*', 'exact_route' => 'reportes.restaurante'];
@@ -495,6 +498,7 @@ class Sidebar
             ($hasConf('ncf') && $can('ncf.view')) ||
             ($hasConf('ecf') && $can('ecf.view')) ||
             ($hasConf('payment-processors') && $can('payment-processors.view')) ||
+            ($hasConf('cuentas-bancarias') && $can('cuentas-bancarias.view')) ||
             ($hasConf('delivery-companies') && $can('delivery-companies.view')) ||
             ($hasConf('impresoras') && $can('impresoras.view')) ||
             ($hasConf('configuracion-general') && $can('configuracion.view'))
@@ -513,7 +517,10 @@ class Sidebar
                 $items[] = ['route' => 'certificados-digitales.index', 'icon' => 'bi-key', 'label' => 'Certificados Digitales', 'is_route' => 'certificados-digitales.*', 'exact_route' => 'certificados-digitales.index'];
             }
             if ($hasConf('payment-processors') && $can('payment-processors.view')) {
-                $items[] = ['route' => 'payment-processors.index', 'icon' => 'bi-credit-card', 'label' => 'Procesadores de Pago', 'is_route' => 'payment-processors.*', 'exact_route' => 'payment-processors.index'];
+                $items[] = ['route' => 'payment-processors.index', 'icon' => 'bi-credit-card', 'label' => 'Métodos de Pago', 'is_route' => 'payment-processors.*', 'exact_route' => 'payment-processors.index'];
+            }
+            if ($hasConf('cuentas-bancarias') && $can('cuentas-bancarias.view')) {
+                $items[] = ['route' => 'cuentas-bancarias.index', 'icon' => 'bi-bank', 'label' => 'Cuentas Bancarias', 'is_route' => 'cuentas-bancarias.*', 'exact_route' => 'cuentas-bancarias.index'];
             }
             if ($hasConf('delivery-companies') && $can('delivery-companies.view')) {
                 $items[] = ['route' => 'delivery-companies.index', 'icon' => 'bi-truck', 'label' => 'Delivery Companies', 'is_route' => 'delivery-companies.*', 'exact_route' => 'delivery-companies.index'];

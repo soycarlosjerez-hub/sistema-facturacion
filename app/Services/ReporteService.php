@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Almacen;
 use App\Models\Caja;
 use App\Models\Compra;
+use App\Models\Gasto;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\Sucursal;
@@ -97,6 +98,33 @@ class ReporteService
             'totalItbis'       => $compras->sum('itbis_total'),
             'totalRetenciones' => $compras->sum('retencion_isr') + $compras->sum('retencion_itbis'),
             'cantidad'         => $compras->count(),
+        ];
+    }
+
+    public function gastos(string $desde, string $hasta, ?string $categoria = null): array
+    {
+        $gastos = Gasto::with('user:id,name')
+            ->when($this->sucursalId(), fn($q) => $q->where('sucursal_id', $this->sucursalId()))
+            ->whereDate('fecha_gasto', '>=', $desde)
+            ->whereDate('fecha_gasto', '<=', $hasta)
+            ->when($categoria, fn($q) => $q->ofCategoria($categoria))
+            ->orderBy('fecha_gasto', 'desc')
+            ->get();
+
+        $totalPorCategoria = $gastos->groupBy('categoria')->map(fn($items) => [
+            'total' => $items->sum('monto'),
+            'count' => $items->count(),
+        ]);
+
+        return [
+            'gastos'            => $gastos,
+            'desde'             => $desde,
+            'hasta'             => $hasta,
+            'categoria'         => $categoria,
+            'totalGeneral'      => $gastos->sum('monto'),
+            'cantidad'          => $gastos->count(),
+            'totalPorCategoria' => $totalPorCategoria,
+            'categorias'        => Gasto::categorias(),
         ];
     }
 
