@@ -95,6 +95,12 @@
                             @error('saldo_inicial') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch pt-4">
+                            <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" checked>
+                            <label class="form-check-label fw-bold small" for="chk-activo">Cuenta Activa</label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

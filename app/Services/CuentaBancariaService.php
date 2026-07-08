@@ -33,7 +33,7 @@ class CuentaBancariaService
     public function create(array $data): CuentaBancaria
     {
         $data['saldo_actual'] = $data['saldo_inicial'] ?? 0;
-        $data['activo'] = $data['activo'] ?? false;
+        $data['activo'] = $data['activo'] ?? true;
         $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
         return CuentaBancaria::create($data);
     }

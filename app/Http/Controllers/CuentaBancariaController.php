@@ -33,6 +33,7 @@ class CuentaBancariaController extends Controller
             'titular'       => 'nullable|string|max:255',
             'cedula_ruc'    => 'nullable|string|max:20',
             'saldo_inicial' => 'nullable|numeric|min:0',
+            'activo' => 'nullable|boolean',
         ]);
 
         $this->cuentaBancariaService->create($data);
