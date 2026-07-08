@@ -1933,6 +1933,17 @@ body:not(.dark-mode) {
                     <div class="pago-detalle">
                         <label>Monto Recibido</label>
                         <input type="number" id="monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="" inputmode="decimal">
+                        
+                        <!-- Botones de Denominaciones RD$ -->
+                        <div class="row g-2 mt-2 mb-2">
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(50)">RD$50</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(100)">RD$100</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(200)">RD$200</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(500)">RD$500</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(1000)">RD$1,000</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(2000)">RD$2,000</button></div>
+                        </div>
+                        
                         <div id="cambio-info" class="mt-2 cambio-display positivo d-none">
                             Cambio: <span class="fw-bold" id="cambio-monto">RD$ 0.00</span>
                         </div>
@@ -2397,6 +2408,13 @@ body:not(.dark-mode) {
             document.getElementById('cambio-info').classList.add('d-none');
             setTimeout(() => $('monto-recibido')?.focus(), 200);
         }
+        actualizarTotalPago();
+    }
+
+    function addRecibido(monto) {
+        const input = document.getElementById('monto-recibido');
+        const actual = parseFloat(input.value) || 0;
+        input.value = (actual + monto).toFixed(2);
         actualizarTotalPago();
     }
 
