@@ -47,6 +47,7 @@ trait Auditable
             'new_values'  => $new,
             'ip_address'  => Request::ip(),
             'user_agent'  => Request::userAgent(),
+            'tenant_id'  => Auth::user()->business_instance_id ?? null,
         ]);
     }
 

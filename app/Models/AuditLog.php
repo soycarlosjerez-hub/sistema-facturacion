@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AuditLog extends Model
 {
+    use TenantScope;
+
     protected $fillable = [
         'user_id',
         'action',
@@ -17,6 +20,7 @@ class AuditLog extends Model
         'new_values',
         'ip_address',
         'user_agent',
+        'tenant_id',
     ];
 
     protected $casts = [
