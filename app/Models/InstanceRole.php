@@ -38,7 +38,8 @@ class InstanceRole extends Model
         if ($module !== null) {
             return $module->is_visible;
         }
-        return false;
+        // Fallback al nivel BusinessType
+        return $this->businessInstance?->businessType?->isModuloVisible($moduloKey) ?? false;
     }
 
     public function syncModules(array $moduleKeys): void
