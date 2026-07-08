@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CuentaBancaria extends Model
 {
@@ -24,6 +25,11 @@ class CuentaBancaria extends Model
         'saldo_actual'  => 'decimal:2',
         'activo'        => 'boolean',
     ];
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(BusinessInstance::class, 'tenant_id');
+    }
 
     public function scopeActivo($query)
     {
