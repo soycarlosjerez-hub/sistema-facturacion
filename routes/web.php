@@ -655,6 +655,8 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::post('/instances/{instance}/api-keys/{apiKey}/toggle', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyToggle'])->name('instances.api-keys.toggle');
     Route::delete('/instances/{instance}/api-keys/{apiKey}', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyDestroy'])->name('instances.api-keys.destroy');
 
+    // Cuentas Bancarias (Owner)
+    Route::get('/cuentas-bancarias',[\App\Http\Controllers\OwnerController::class,'cuentasBancarias'])->name('cuentas-bancarias.index');
     // (owner role management removed — roles are managed per-instance)
 });
 

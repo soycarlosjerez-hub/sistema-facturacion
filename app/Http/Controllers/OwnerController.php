@@ -1163,4 +1163,44 @@ class OwnerController extends Controller
         return redirect()->route('owner.instances.api-keys', $instance)
             ->with('success', "API Key \"{$name}\" eliminada permanentemente.");
     }
-}
+
+
+    // --- Cuentas Bancarias (Owner) ---
+
+    public function cuentasBancarias(Request $request)
+    {
+        $query = CuentaBancaria::query();
+
+        // Filtro por instancia
+        if ($instanceId = $request->input('instance_id')) {
+            $query->where('tenant_id', $instanceId);
+        }
+
+        // Busqueda
+        if ($buscar = $request->input('buscar')) {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre', 'like', '%'.$buscar.'%')
+                    ->orWhere('banco', 'like', '%'.$buscar.'%')
+                    ->orWhere('numero_cuenta', 'like', '%'.$buscar.'%')
+                    ->orWhere('titular', 'like', '%'.$buscar.'%');
+            });
+        }
+
+        // Incluir inactivas
+        if ($request->input('incluir_inactivos') !== '1') {
+            $query->activo();
+        }
+
+        $cuentas = $query->with('tenant')->latest()->paginate(15)->withQueryString();
+
+        $instances = BusinessInstance::orderBy('nombre')->get();
+
+        $stats = [
+            'total' => CuentaBancaria::count(),
+            'activas' => CuentaBancaria::activo()->count(),
+            'instancias_con_cuentas' => CuentaBancaria::distinct('tenant_id')->count(),
+        ];
+
+        return view('owner.cuentas-bancarias.index', compact('cuentas', 'instances', 'stats'));
+    }}
+// TEST LINE
