@@ -38,7 +38,11 @@ class InstanceRole extends Model
         if ($module !== null) {
             return $module->is_visible;
         }
-        // Fallback al nivel BusinessType
+        // Si el rol ya tiene módulos configurados, los que no están listados NO son visibles
+        if ($this->modules()->exists()) {
+            return false;
+        }
+        // Fallback al nivel BusinessType (solo si el rol nunca fue personalizado)
         return $this->businessInstance?->businessType?->isModuloVisible($moduloKey) ?? false;
     }
 
