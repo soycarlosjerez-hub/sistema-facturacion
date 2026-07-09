@@ -21,6 +21,8 @@
 .btn-icon-hover:hover { transform: scale(1.15); }
 .table > :not(caption) > * > * { padding: 0.85rem 0.5rem; }
 .table thead th { font-weight: 700; letter-spacing: 0.03em; border-bottom: 1px solid #e2e8f0; }
+.table .dropdown-menu { z-index: 1050 !important; position: absolute !important; }
+.table tbody td .dropdown { position: relative; }
 </style>
 @endpush
 
@@ -87,7 +89,7 @@
         </div>
     </div>
 
-    <div class="premium-card">
+    <div class="premium-card" style="overflow:visible;">
         <div class="card-accent green"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
