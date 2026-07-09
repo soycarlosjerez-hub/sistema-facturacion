@@ -44,6 +44,25 @@ class ReservacionController extends Controller
 
         $reservacion = Reservacion::create($validated);
 
+        if (!empty($validated['cliente_id'])) {
+            $updates = [];
+            if (!empty($validated['cliente_nombre'])) {
+                $updates['nombre'] = $validated['cliente_nombre'];
+            }
+            if (!empty($validated['cliente_email'])) {
+                $updates['email'] = $validated['cliente_email'];
+            }
+            if (!empty($validated['cliente_telefono'])) {
+                $updates['telefono'] = $validated['cliente_telefono'];
+            }
+
+            if (!empty($updates)) {
+                \App\Models\Cliente::where('id', $validated['cliente_id'])
+                    ->where('tenant_id', $validated['tenant_id'])
+                    ->update($updates);
+            }
+        }
+
         return new ReservacionResource($reservacion->load(['cliente', 'mesa', 'user']));
     }
 
@@ -67,6 +86,25 @@ class ReservacionController extends Controller
         ]);
 
         $reservacion->update($validated);
+
+        if (!empty($validated['cliente_id'])) {
+            $updates = [];
+            if (!empty($validated['cliente_nombre'])) {
+                $updates['nombre'] = $validated['cliente_nombre'];
+            }
+            if (!empty($validated['cliente_email'])) {
+                $updates['email'] = $validated['cliente_email'];
+            }
+            if (!empty($validated['cliente_telefono'])) {
+                $updates['telefono'] = $validated['cliente_telefono'];
+            }
+
+            if (!empty($updates)) {
+                \App\Models\Cliente::where('id', $validated['cliente_id'])
+                    ->where('tenant_id', $reservacion->tenant_id)
+                    ->update($updates);
+            }
+        }
 
         return new ReservacionResource($reservacion->load(['cliente', 'mesa', 'user']));
     }
