@@ -163,15 +163,17 @@ class ReservacionController extends Controller
             return back()->with('error', 'Error al actualizar estado: ' . $e->getMessage());
         }
 
-        if (!empty($reservacion->cliente_email)) {
+        $reservacion->load('cliente');
+        $email = $reservacion->cliente_email;
+        if (!empty($email)) {
             $cc = SystemSetting::get('mail_from_address');
             
             if ($request->estado === 'confirmada') {
-                Mail::to($reservacion->cliente_email)
+                Mail::to($email)
                     ->cc($cc ?: null)
                     ->send(new ReservacionConfirmadaMail($reservacion));
             } elseif ($request->estado === 'cancelada') {
-                Mail::to($reservacion->cliente_email)
+                Mail::to($email)
                     ->cc($cc ?: null)
                     ->send(new ReservacionCanceladaMail($reservacion));
             }
