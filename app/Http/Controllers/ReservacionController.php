@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ReservacionCanceladaMail;
+use App\Mail\ReservacionConfirmadaMail;
+use App\Mail\ReservacionRecibidaMail;
 use App\Models\Mesa;
 use App\Models\Reservacion;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class ReservacionController extends Controller
 {
@@ -72,12 +77,19 @@ class ReservacionController extends Controller
 
         DB::beginTransaction();
         try {
-            Reservacion::create($data);
+            $reservacion = Reservacion::create($data);
             $mesa->update(['estado' => 'reservada']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Error al crear la reservación: ' . $e->getMessage());
+        }
+
+        if (!empty($data['cliente_email'])) {
+            $cc = SystemSetting::get('mail_from_address');
+            Mail::to($data['cliente_email'])
+                ->cc($cc ?: null)
+                ->queue(new ReservacionRecibidaMail($reservacion));
         }
 
         return redirect()->route('restaurante.reservaciones.index')->with('success', 'Reservación creada.');
@@ -149,6 +161,20 @@ class ReservacionController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Error al actualizar estado: ' . $e->getMessage());
+        }
+
+        if (!empty($reservacion->cliente_email)) {
+            $cc = SystemSetting::get('mail_from_address');
+            
+            if ($request->estado === 'confirmada') {
+                Mail::to($reservacion->cliente_email)
+                    ->cc($cc ?: null)
+                    ->queue(new ReservacionConfirmadaMail($reservacion));
+            } elseif ($request->estado === 'cancelada') {
+                Mail::to($reservacion->cliente_email)
+                    ->cc($cc ?: null)
+                    ->queue(new ReservacionCanceladaMail($reservacion));
+            }
         }
 
         return back()->with('success', 'Estado actualizado.');

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 
 class BusinessInstance extends Model
 {
@@ -157,5 +158,35 @@ class BusinessInstance extends Model
     public function scopeBloqueadas($query)
     {
         return $query->where('bloqueado', true);
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (self $instance) {
+            self::seedSmtpSettings($instance->id);
+        });
+    }
+
+    private static function seedSmtpSettings(int $tenantId): void
+    {
+        $settings = [
+            'mail_mailer'     => 'smtp',
+            'mail_host'       => 'mail.armada.do',
+            'mail_port'       => '465',
+            'mail_username'   => 'no-reply@armada.do',
+            'mail_password'   => Crypt::encryptString('Dn%q#U0tV,65FqSU'),
+            'mail_encryption' => 'ssl',
+            'mail_from_address' => 'no-reply@armada.do',
+            'mail_from_name'    => 'Sistema de Facturación',
+        ];
+
+        foreach ($settings as $key => $value) {
+            \App\Models\SystemSetting::updateOrCreate(
+                ['key' => $key, 'tenant_id' => $tenantId],
+                ['value' => $value]
+            );
+        }
+
+        \App\Models\SystemSetting::flush();
     }
 }

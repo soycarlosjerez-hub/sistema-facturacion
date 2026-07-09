@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\SystemSetting;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Crypt;
 
 class SystemSettingsSeeder extends Seeder
 {
@@ -53,37 +54,37 @@ class SystemSettingsSeeder extends Seeder
         $mailSettings = [
             [
                 'key' => 'mail_mailer',
-                'value' => 'log',
+                'value' => 'smtp',
                 'description' => 'Controlador de correo (smtp, log, sendmail)'
             ],
             [
                 'key' => 'mail_host',
-                'value' => '',
+                'value' => 'mail.armada.do',
                 'description' => 'Servidor SMTP (ej. smtp.gmail.com)'
             ],
             [
                 'key' => 'mail_port',
-                'value' => '587',
+                'value' => '465',
                 'description' => 'Puerto SMTP (587 TLS, 465 SSL)'
             ],
             [
                 'key' => 'mail_username',
-                'value' => '',
+                'value' => 'no-reply@armada.do',
                 'description' => 'Usuario de autenticación SMTP'
             ],
             [
                 'key' => 'mail_password',
-                'value' => '',
-                'description' => 'Contraseña SMTP'
+                'value' => Crypt::encryptString('Dn%q#U0tV,65FqSU'),
+                'description' => 'Contraseña SMTP (encriptada)'
             ],
             [
                 'key' => 'mail_encryption',
-                'value' => 'tls',
+                'value' => 'ssl',
                 'description' => 'Cifrado SMTP (tls, ssl, null)'
             ],
             [
                 'key' => 'mail_from_address',
-                'value' => 'no-reply@facturacion.local',
+                'value' => 'no-reply@armada.do',
                 'description' => 'Dirección remitente por defecto'
             ],
             [
