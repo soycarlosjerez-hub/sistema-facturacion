@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,7 +14,9 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable, Auditable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, Auditable, TenantScope;
+
+    protected string $tenantColumn = 'business_instance_id';
 
     /**
      * The attributes that are mass assignable.

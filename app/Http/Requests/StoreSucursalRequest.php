@@ -14,7 +14,7 @@ class StoreSucursalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'codigo' => 'required|string|max:20|unique:sucursales,codigo',
+            'codigo' => 'required|string|max:20|unique:sucursales,codigo,NULL,id,tenant_id,' . auth()->user()->business_instance_id,
             'nombre' => 'required|string|max:255',
             'direccion' => 'nullable|string|max:500',
             'telefono' => 'nullable|string|max:50',

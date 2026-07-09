@@ -121,7 +121,6 @@ class SucursalService
                 ->latest()
                 ->take(5)
                 ->get(),
-            'stock_critico' => \App\Models\Producto::whereColumn('stock', '<=', 'stock_minimo')->count(),
         ];
     }
 }

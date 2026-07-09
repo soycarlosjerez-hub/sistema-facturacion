@@ -19,6 +19,20 @@ class CajaController extends Controller
         return view('cajas.index', $this->cajaService->listarConStats());
     }
 
+    public function show(Caja $caja)
+    {
+        $sesionActiva = $caja->sesionActiva();
+        $stats = null;
+        if ($sesionActiva) {
+            try {
+                $stats = $this->cajaService->resumenCierre($caja);
+            } catch (\Exception $e) {
+                $stats = null;
+            }
+        }
+        return view('cajas.show', compact('caja', 'sesionActiva', 'stats'));
+    }
+
     public function create()
     {
         $caja = new Caja();

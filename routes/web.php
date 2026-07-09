@@ -131,6 +131,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/cajas/{caja}/cerrar', [CajaController::class, 'cerrar'])->name('cajas.cerrar');
     });
 
+    Route::middleware('permission:cajas.view')->group(function () {
+        Route::get('/cajas/{caja}', [CajaController::class, 'show'])->name('cajas.show');
+    });
+
     Route::post('/cajas/cambiar', [VentaController::class, 'cambiarCaja'])->name('cajas.cambiar');
 
     // Ventas
