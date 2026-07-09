@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,6 +22,10 @@ trait TenantScope
     protected static function bootTenantScope(): void
     {
         static::addGlobalScope('tenant', function (Builder $builder) {
+            // Skip for User model to prevent infinite recursion (Auth::user() triggers User query)
+            if ($builder->getModel() instanceof User) {
+                return;
+            }
             if (Auth::check() && Auth::user()->business_instance_id !== null) {
                 $model = $builder->getModel();
                 $column = $model->getTenantIdColumn();
