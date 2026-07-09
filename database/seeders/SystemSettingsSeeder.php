@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BusinessInstance;
 use App\Models\SystemSetting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Crypt;
@@ -96,6 +97,16 @@ class SystemSettingsSeeder extends Seeder
 
         foreach (array_merge($settings, $mailSettings) as $setting) {
             SystemSetting::updateOrCreate(['key' => $setting['key']], $setting);
+        }
+
+        $instancias = BusinessInstance::all();
+        foreach ($instancias as $instancia) {
+            foreach ($mailSettings as $setting) {
+                SystemSetting::updateOrCreate(
+                    ['key' => $setting['key'], 'tenant_id' => $instancia->id],
+                    array_merge($setting, ['tenant_id' => $instancia->id])
+                );
+            }
         }
     }
 }
