@@ -89,7 +89,7 @@ class ReservacionController extends Controller
             $cc = SystemSetting::get('mail_from_address');
             Mail::to($data['cliente_email'])
                 ->cc($cc ?: null)
-                ->queue(new ReservacionRecibidaMail($reservacion));
+                ->send(new ReservacionRecibidaMail($reservacion));
         }
 
         return redirect()->route('restaurante.reservaciones.index')->with('success', 'Reservación creada.');
@@ -169,11 +169,11 @@ class ReservacionController extends Controller
             if ($request->estado === 'confirmada') {
                 Mail::to($reservacion->cliente_email)
                     ->cc($cc ?: null)
-                    ->queue(new ReservacionConfirmadaMail($reservacion));
+                    ->send(new ReservacionConfirmadaMail($reservacion));
             } elseif ($request->estado === 'cancelada') {
                 Mail::to($reservacion->cliente_email)
                     ->cc($cc ?: null)
-                    ->queue(new ReservacionCanceladaMail($reservacion));
+                    ->send(new ReservacionCanceladaMail($reservacion));
             }
         }
 

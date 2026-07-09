@@ -4,8 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReservacionResource;
+use App\Mail\ReservacionCanceladaMail;
+use App\Mail\ReservacionConfirmadaMail;
+use App\Mail\ReservacionRecibidaMail;
 use App\Models\Reservacion;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class ReservacionController extends Controller
 {
@@ -63,6 +68,14 @@ class ReservacionController extends Controller
             }
         }
 
+        $email = $validated['cliente_email'] ?? $reservacion->cliente?->email;
+        if (!empty($email)) {
+            $cc = SystemSetting::get('mail_from_address');
+            Mail::to($email)
+                ->cc($cc ?: null)
+                ->send(new ReservacionRecibidaMail($reservacion));
+        }
+
         return new ReservacionResource($reservacion->load(['cliente', 'mesa', 'user']));
     }
 
@@ -85,6 +98,7 @@ class ReservacionController extends Controller
             'notas' => 'nullable|string',
         ]);
 
+        $estadoAnterior = $reservacion->estado;
         $reservacion->update($validated);
 
         if (!empty($validated['cliente_id'])) {
@@ -103,6 +117,23 @@ class ReservacionController extends Controller
                 \App\Models\Cliente::where('id', $validated['cliente_id'])
                     ->where('tenant_id', $reservacion->tenant_id)
                     ->update($updates);
+            }
+        }
+
+        $reservacion->refresh();
+        $email = $reservacion->cliente_email ?? $reservacion->cliente?->email;
+        $cc = SystemSetting::get('mail_from_address');
+
+        if (!empty($email)) {
+            $nuevoEstado = $validated['estado'] ?? null;
+            if ($nuevoEstado === 'confirmada' && $nuevoEstado !== $estadoAnterior) {
+                Mail::to($email)
+                    ->cc($cc ?: null)
+                    ->send(new ReservacionConfirmadaMail($reservacion));
+            } elseif ($nuevoEstado === 'cancelada' && $nuevoEstado !== $estadoAnterior) {
+                Mail::to($email)
+                    ->cc($cc ?: null)
+                    ->send(new ReservacionCanceladaMail($reservacion));
             }
         }
 
