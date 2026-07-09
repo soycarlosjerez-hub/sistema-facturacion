@@ -1738,8 +1738,17 @@ body:not(.dark-mode) {
                                     data-es-final="{{ $cliente->id == $clienteConsumidorFinal->id ? '1' : '0' }}"
                                     data-tipo="{{ $cliente->tipo_cliente ?? 'consumo' }}"
                                     data-deuda="{{ $cliente->balance_pendiente ?? 0 }}"
+                                    data-limite="{{ $cliente->limite_credito ?? 0 }}"
                                     {{ $cliente->id == $clienteConsumidorFinal->id ? 'selected' : '' }}>
-                                {{ $cliente->nombre }}{{ $cliente->balance_pendiente > 0 ? ' (Debe: RD$'.number_format($cliente->balance_pendiente,0).')' : '' }}
+                                {{ $cliente->nombre }}
+                                @if($cliente->limite_credito > 0)
+                                    (Lim: RD$ {{ number_format($cliente->limite_credito, 0) }} · Disp: RD$ {{ number_format(max(0, $cliente->limite_credito - $cliente->balance_pendiente), 0) }})
+                                    @if($cliente->balance_pendiente > 0)
+                                        · Adeuda: RD$ {{ number_format($cliente->balance_pendiente, 0) }}
+                                    @endif
+                                @elseif($cliente->balance_pendiente > 0)
+                                    (Adeuda: RD$ {{ number_format($cliente->balance_pendiente, 0) }})
+                                @endif
                             </option>
                         @endforeach
                     </select>
@@ -2110,6 +2119,54 @@ body:not(.dark-mode) {
     </div>
 </div>
 
+<!-- ============ Modal Advertencia de Crédito ============ -->
+<div class="modal fade" id="creditoWarningModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content modal-pos">
+            <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#1f2937;">
+                <h5 class="fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Límite de Crédito Excedido</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">El cliente <strong id="credito-nombre"></strong> superará su límite de crédito con esta venta:</p>
+                <div class="p-3 bg-light rounded-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Límite de crédito:</span>
+                        <strong id="credito-limite"></strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Deuda actual:</span>
+                        <strong class="text-danger" id="credito-deuda"></strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Disponible:</span>
+                        <strong class="text-success" id="credito-disponible"></strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Total esta venta:</span>
+                        <strong id="credito-total"></strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Nuevo saldo:</span>
+                        <strong class="text-danger" id="credito-nuevo-saldo"></strong>
+                    </div>
+                    <div class="d-flex justify-content-between p-2 bg-danger bg-opacity-10 rounded-3 mt-2">
+                        <span class="fw-bold">Exceso:</span>
+                        <strong class="text-danger" id="credito-exceso"></strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning rounded-pill" id="btn-confirmar-credito">
+                    <i class="bi bi-check-circle me-1"></i>Registrar Igual
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Shortcuts Help Overlay -->
 <div class="shortcuts-overlay" id="shortcutsHelp">
     <div class="shortcuts-panel" role="dialog" aria-label="Atajos de teclado" aria-modal="true">
@@ -2353,6 +2410,9 @@ body:not(.dark-mode) {
                 return;
             }
             if (metodo === 'fiado' || metodo === 'cuenta_abierta') {
+                if (!validarCreditoFiado()) {
+                    return;
+                }
                 procesarPagoDirecto(metodo);
                 return;
             }
@@ -2542,6 +2602,41 @@ body:not(.dark-mode) {
         body.innerHTML = `"${nombre}" eliminado. <button type="button" class="btn btn-sm btn-link text-white p-0 ms-2 fw-bold" onclick="POS.deshacerRemocion()">Deshacer</button>`;
         new bootstrap.Toast(toastEl, { delay: 5000 }).show();
         setTimeout(() => { lastRemovedItem = null; }, 5000);
+    }
+
+    // ============ Crédito/Fiado Validation ============
+    function validarCreditoFiado() {
+        const select = $('cliente_id');
+        if (!select) return true;
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return true;
+        const esFinal = opt.dataset.esFinal === '1';
+        const limite = parseFloat(opt.dataset.limite) || 0;
+        const deuda = parseFloat(opt.dataset.deuda) || 0;
+        const total = parseFloat($('hidden-total').value) || 0;
+        // Si es Consumidor Final, exigir seleccionar cliente
+        if (esFinal) {
+            showToast('Selecciona un cliente antes de marcar como Fiado', 'warning');
+            return false;
+        }
+        // Si no tiene límite configurado, permitir
+        if (limite <= 0) return true;
+        const nuevoTotal = deuda + total;
+        const disponible = limite - deuda;
+        // Verificar si excede el límite
+        if (nuevoTotal > limite) {
+            const exceso = nuevoTotal - limite;
+            $('credito-nombre').textContent = opt.textContent.trim();
+            $('credito-limite').textContent = fmt(limite);
+            $('credito-deuda').textContent = fmt(deuda);
+            $('credito-disponible').textContent = fmt(Math.max(0, disponible));
+            $('credito-total').textContent = fmt(total);
+            $('credito-nuevo-saldo').textContent = fmt(nuevoTotal);
+            $('credito-exceso').textContent = fmt(exceso);
+            new bootstrap.Modal($('creditoWarningModal')).show();
+            return false;
+        }
+        return true;
     }
 
     function procesarPagoDirecto(metodo) {
@@ -3487,6 +3582,13 @@ body:not(.dark-mode) {
             abrirModalProductos();
         }
     }
+
+        // Confirmar venta con crédito excedido
+        $('btn-confirmar-credito')?.addEventListener('click', function() {
+            bootstrap.Modal.getInstance($('creditoWarningModal'))?.hide();
+            isSubmitting = false;
+            procesarPagoDirecto('fiado');
+        });
 
     // Expose functions for inline onclick handlers
     window.seleccionarMetodoPago = seleccionarMetodoPago;

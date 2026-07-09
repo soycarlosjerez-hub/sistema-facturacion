@@ -129,41 +129,24 @@
                         </td>
                         <td><small class="text-muted">{{ Str::limit($r->notas, 30) ?: '—' }}</small></td>
                         <td class="text-end pe-4">
-                            <div class="btn-group">
+                            <div class="d-inline-flex gap-1 align-items-center">
                                  <a class="premium-btn-edit" href="#" title="Ver detalles"
-                                   onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono ?: $r->cliente?->telefono), @js($r->cliente_email ?: $r->cliente?->email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
-                                     <i class="bi bi-eye"></i>
-                                 </a>
-                                 <a class="premium-btn-edit" href="#" title="Editar"
                                     onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono ?: $r->cliente?->telefono), @js($r->cliente_email ?: $r->cliente?->email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
+                                      <i class="bi bi-eye"></i>
+                                  </a>
+                                  <a class="premium-btn-edit" href="#" title="Editar"
+                                     onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono ?: $r->cliente?->telefono), @js($r->cliente_email ?: $r->cliente?->email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <div class="dropdown d-inline me-1">
-                                    <button class="btn btn-sm btn-outline-secondary rounded-pill dropdown-toggle" data-bs-toggle="dropdown" title="Cambiar estado">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary rounded-pill dropdown-toggle px-2" data-bs-toggle="dropdown" title="Cambiar estado">
                                         <i class="bi bi-arrow-repeat"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0">
-                                        <li>
-                                            <form action="{{ route('restaurante.reservaciones.estado', $r) }}" method="POST">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="estado" value="confirmada">
-                                                <button class="dropdown-item small"><i class="bi bi-check-circle text-success me-2"></i>Confirmar</button>
-                                            </form>
-                                        </li>
-                                        <li>
-                                            <form action="{{ route('restaurante.reservaciones.estado', $r) }}" method="POST">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="estado" value="cumplida">
-                                                <button class="dropdown-item small"><i class="bi bi-check-all text-info me-2"></i>Marcar cumplida</button>
-                                            </form>
-                                        </li>
-                                        <li>
-                                            <form action="{{ route('restaurante.reservaciones.estado', $r) }}" method="POST">
-                                                @csrf @method('PATCH')
-                                                <input type="hidden" name="estado" value="cancelada">
-                                                <button class="dropdown-item small"><i class="bi bi-x-circle text-danger me-2"></i>Cancelar</button>
-                                            </form>
-                                        </li>
+                                        <li><button class="dropdown-item small" type="button" onclick="cambiarEstado({{ $r->id }}, 'confirmada')"><i class="bi bi-check-circle text-success me-2"></i>Confirmar</button></li>
+                                        <li><button class="dropdown-item small" type="button" onclick="cambiarEstado({{ $r->id }}, 'cumplida')"><i class="bi bi-check-all text-info me-2"></i>Marcar cumplida</button></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><button class="dropdown-item small" type="button" onclick="cambiarEstado({{ $r->id }}, 'cancelada')"><i class="bi bi-x-circle text-danger me-2"></i>Cancelar</button></li>
                                     </ul>
                                 </div>
                                 <form action="{{ route('restaurante.reservaciones.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la reservación de ' + @js($r->cliente_nombre) + '? Esta acción no se puede deshacer.')">
@@ -324,6 +307,19 @@ function editarReservacion(id, mesaId, clienteNombre, clienteTelefono, clienteEm
     document.getElementById('edit-fecha-hora').value = fechaHora || '';
     document.getElementById('edit-notas').value = notas || '';
     new bootstrap.Modal(document.getElementById('editarReservaModal')).show();
+}
+
+function cambiarEstado(id, estado) {
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/restaurante/reservaciones/' + id + '/estado';
+    form.style.display = 'none';
+    var h1 = document.createElement('input'); h1.type = 'hidden'; h1.name = '_token'; h1.value = document.querySelector('meta[name=\"csrf-token\"]')?.content || '';
+    var h2 = document.createElement('input'); h2.type = 'hidden'; h2.name = '_method'; h2.value = 'PATCH';
+    var h3 = document.createElement('input'); h3.type = 'hidden'; h3.name = 'estado'; h3.value = estado;
+    form.append(h1, h2, h3);
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 @endpush

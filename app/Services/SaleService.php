@@ -270,6 +270,7 @@ class SaleService
             'nombre'     => $c->nombre,
             'tipo'       => $c->tipo_cliente ?? 'consumo',
             'deuda'      => (float) ($c->balance_pendiente ?? 0),
+            'limite'     => (float) ($c->limite_credito ?? 0),
             'es_final'   => $c->id === $clienteConsumidorFinal->id,
             'rnc'        => $c->rnc ?? $c->rnc_cedula ?? '',
             'rnc_cedula' => $c->rnc_cedula ?? $c->rnc ?? '',
