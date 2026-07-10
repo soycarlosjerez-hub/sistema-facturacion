@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Orden extends Model
 {
@@ -82,7 +83,8 @@ class Orden extends Model
 
     public function scopeDeSucursal($query)
     {
-        if ($sucursalId = session('sucursal_id')) {
+        $sucursalId = session('sucursal_id') ?? Auth::user()?->sucursal_id;
+        if ($sucursalId) {
             return $query->where('sucursal_id', $sucursalId);
         }
         return $query;

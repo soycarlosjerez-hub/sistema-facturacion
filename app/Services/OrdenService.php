@@ -17,6 +17,15 @@ use Illuminate\Support\Facades\Log;
 
 class OrdenService
 {
+    private function restauranteValidaStock(): bool
+    {
+        $user = Auth::user();
+        if (!$user || !$user->businessInstance) {
+            return true;
+        }
+        $config = $user->businessInstance->configuracion ?? [];
+        return ($config['restaurante_valida_stock'] ?? '1') === '1';
+    }
     public function getIndexData(): array
     {
         $query = Orden::deSucursal()->with(['detalles.producto', 'cliente', 'usuario', 'terminal', 'entregaEmpresa']);
@@ -96,11 +105,12 @@ class OrdenService
             $orden->increment('subtotal', $producto->precio * $cantidad);
             $orden->increment('impuestos', $itbisItem);
 
-            // Descontar stock
-            $producto->decrement('stock', $cantidad);
+            if ($this->restauranteValidaStock()) {
+                $producto->decrement('stock', $cantidad);
 
-            foreach ($producto->ingredientes as $ingrediente) {
-                $ingrediente->decrement('stock', $ingrediente->pivot->cantidad * $cantidad);
+                foreach ($producto->ingredientes as $ingrediente) {
+                    $ingrediente->decrement('stock', $ingrediente->pivot->cantidad * $cantidad);
+                }
             }
 
             DB::commit();
@@ -129,7 +139,7 @@ class OrdenService
             $orden->decrement('subtotal', $subtotal);
             $orden->decrement('impuestos', $itbisItem);
 
-            if ($detalle->producto) {
+            if ($detalle->producto && $this->restauranteValidaStock()) {
                 $detalle->producto->increment('stock', $detalle->cantidad);
                 foreach ($detalle->producto->ingredientes as $ingrediente) {
                     $ingrediente->increment('stock', $ingrediente->pivot->cantidad * $detalle->cantidad);
@@ -170,7 +180,7 @@ class OrdenService
             $detalle->subtotal = $nuevoSubtotal;
             $detalle->save();
 
-            if ($producto) {
+            if ($producto && $this->restauranteValidaStock()) {
                 $producto->decrement('stock', $diferencia);
                 foreach ($producto->ingredientes as $ingrediente) {
                     $ingrediente->decrement('stock', $ingrediente->pivot->cantidad * $diferencia);
@@ -231,9 +241,11 @@ class OrdenService
 
         DB::beginTransaction();
         try {
-            foreach ($orden->detalles as $detalle) {
-                if ($detalle->producto) {
-                    $detalle->producto->increment('stock', $detalle->cantidad);
+            if ($this->restauranteValidaStock()) {
+                foreach ($orden->detalles as $detalle) {
+                    if ($detalle->producto) {
+                        $detalle->producto->increment('stock', $detalle->cantidad);
+                    }
                 }
             }
 

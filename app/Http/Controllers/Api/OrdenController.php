@@ -16,7 +16,7 @@ class OrdenController extends Controller
 
     public function index(Request $request)
     {
-        $query = Orden::with(['detalles.producto', 'cliente', 'usuario', 'terminal'])
+        $query = Orden::deSucursal()->with(['detalles.producto', 'cliente', 'usuario', 'terminal'])
             ->when($request->tipo, fn($q) => $q->where('tipo_orden', $request->tipo))
             ->when($request->estado, fn($q) => $q->where('estado', $request->estado))
             ->when($request->cliente_id, fn($q) => $q->where('cliente_id', $request->cliente_id))

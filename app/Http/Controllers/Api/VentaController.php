@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\VentaResource;
 use App\Models\Venta;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VentaController extends Controller
 {
@@ -13,7 +14,7 @@ class VentaController extends Controller
     {
         $query = Venta::with(['usuario', 'cliente', 'sucursal', 'caja', 'detalles.producto', 'pagos', 'tipoVenta', 'mesa'])
             ->when($request->cliente_id, fn ($q) => $q->where('cliente_id', $request->cliente_id))
-            ->when($request->sucursal_id, fn ($q) => $q->where('sucursal_id', $request->sucursal_id))
+            ->when($request->sucursal_id, fn ($q) => $q->where('sucursal_id', $request->sucursal_id), fn ($q) => $q->deSucursal())
             ->when($request->estado, fn ($q) => $q->where('estado', $request->estado))
             ->when($request->fecha_desde, fn ($q) => $q->whereDate('fecha', '>=', $request->fecha_desde))
             ->when($request->fecha_hasta, fn ($q) => $q->whereDate('fecha', '<=', $request->fecha_hasta))
@@ -54,6 +55,8 @@ class VentaController extends Controller
             'detalles.*.impuesto' => 'nullable|numeric|min:0',
         ]);
 
+        $validated['tenant_id'] = Auth::user()->business_instance_id;
+
         $venta = Venta::create($validated);
 
         foreach ($validated['detalles'] as $detalle) {
@@ -92,11 +95,8 @@ class VentaController extends Controller
 
     public function resumen(Request $request)
     {
-        $query = Venta::where('estado', '!=', 'cancelada');
-
-        if ($request->sucursal_id) {
-            $query->where('sucursal_id', $request->sucursal_id);
-        }
+        $query = Venta::where('estado', '!=', 'cancelada')
+            ->when($request->sucursal_id, fn ($q) => $q->where('sucursal_id', $request->sucursal_id), fn ($q) => $q->deSucursal());
 
         if ($request->fecha_desde) {
             $query->whereDate('fecha', '>=', $request->fecha_desde);
