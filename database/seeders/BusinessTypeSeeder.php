@@ -39,7 +39,7 @@ class BusinessTypeSeeder extends Seeder
                 'orden' => 2,
                 'modulos' => [
                     'dashboard', 'inventario', 'compras', 'proveedores', 'kardex',
-                    'ventas', 'devoluciones',
+                    'ventas', 'devoluciones', 'ordenes', 'ordenes-kds',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
                     'cuentas-bancarias', 'reportes-gastos',
@@ -58,7 +58,7 @@ class BusinessTypeSeeder extends Seeder
                 'orden' => 3,
                 'modulos' => [
                     'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
-                    'ventas', 'conduces',
+                    'ventas', 'conduces', 'ordenes', 'ordenes-kds',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
                     'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades', 'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
                     'cuentas-bancarias', 'reportes-gastos',
@@ -117,7 +117,7 @@ class BusinessTypeSeeder extends Seeder
                 'orden' => 6,
                 'modulos' => [
                     'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
-                    'ventas', 'devoluciones',
+                    'ventas', 'devoluciones', 'ordenes', 'ordenes-kds',
                     'cotizaciones', 'conduces', 'gastos',
                     'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
                     'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',

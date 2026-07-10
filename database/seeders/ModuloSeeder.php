@@ -33,9 +33,13 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'conduces.index', 'sidebar_is_route' => 'conduces.*', 'sidebar_exact_route' => 'conduces.index', 'sidebar_permission' => 'conduces.view'],
             ['key' => 'devoluciones', 'label' => 'Devoluciones', 'icon' => 'bi-arrow-return-left', 'categoria' => 'operaciones', 'orden' => 13,
              'sidebar_route' => 'devoluciones.index', 'sidebar_is_route' => 'devoluciones.*', 'sidebar_exact_route' => 'devoluciones.index', 'sidebar_permission' => 'devoluciones.view'],
-            ['key' => 'gastos', 'label' => 'Gastos', 'icon' => 'bi-cash-coin', 'categoria' => 'operaciones', 'orden' => 14,
+            ['key' => 'ordenes', 'label' => 'Órdenes POS', 'icon' => 'bi-receipt-cutoff', 'categoria' => 'operaciones', 'orden' => 14,
+             'sidebar_route' => 'ordenes.index', 'sidebar_is_route' => 'ordenes.*', 'sidebar_exact_route' => 'ordenes.index', 'sidebar_permission' => 'ordenes.view'],
+            ['key' => 'ordenes-kds', 'label' => 'Pantalla Cocina (KDS)', 'icon' => 'bi-display', 'categoria' => 'operaciones', 'orden' => 15,
+             'sidebar_route' => 'kds.index', 'sidebar_is_route' => 'kds.*', 'sidebar_exact_route' => 'kds.index', 'sidebar_permission' => 'kds.view'],
+            ['key' => 'gastos', 'label' => 'Gastos', 'icon' => 'bi-cash-coin', 'categoria' => 'operaciones', 'orden' => 16,
              'sidebar_route' => 'gastos.index', 'sidebar_is_route' => 'gastos.*', 'sidebar_exact_route' => 'gastos.index', 'sidebar_permission' => 'gastos.view'],
-            ['key' => 'plantilla-gastos', 'label' => 'Plantillas de Gasto', 'icon' => 'bi-file-earmark-richtext', 'categoria' => 'operaciones', 'orden' => 15,
+            ['key' => 'plantilla-gastos', 'label' => 'Plantillas de Gasto', 'icon' => 'bi-file-earmark-richtext', 'categoria' => 'operaciones', 'orden' => 17,
              'sidebar_route' => 'plantilla-gastos.index', 'sidebar_is_route' => 'plantilla-gastos.*', 'sidebar_exact_route' => 'plantilla-gastos.index', 'sidebar_permission' => 'plantilla-gastos.view'],
 
             // Clientes

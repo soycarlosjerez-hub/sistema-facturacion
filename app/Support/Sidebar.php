@@ -170,8 +170,8 @@ class Sidebar
         }
 
         // Operaciones
-        $tieneOperaciones = $mod('ventas') || $mod('cotizaciones') || $mod('conduces') || $mod('devoluciones') || $mod('gastos') || $mod('plantilla-gastos');
-        if ($tieneOperaciones && ($can('ventas.create') || $can('ventas.view') || $can('ventas.view.own') || $can('cotizaciones.view') || $can('conduces.view') || $can('devoluciones.view') || $can('gastos.view') || $can('plantilla-gastos.view'))) {
+        $tieneOperaciones = $mod('ventas') || $mod('cotizaciones') || $mod('conduces') || $mod('devoluciones') || $mod('gastos') || $mod('plantilla-gastos') || $mod('ordenes') || $mod('ordenes-kds');
+        if ($tieneOperaciones && ($can('ventas.create') || $can('ventas.view') || $can('ventas.view.own') || $can('cotizaciones.view') || $can('conduces.view') || $can('devoluciones.view') || $can('gastos.view') || $can('plantilla-gastos.view') || $can('ordenes.view') || $can('kds.view'))) {
             $items[] = ['section' => 'Operaciones'];
             if ($mod('ventas') && ($can('ventas.create') || $can('ventas.view') || $can('ventas.view.own'))) {
                 $items[] = ['route' => 'ventas.create', 'icon' => 'bi-cart-plus', 'label' => 'Terminal de Ventas', 'is_route' => 'ventas.*', 'exact_route' => 'ventas.create'];
@@ -193,6 +193,12 @@ class Sidebar
             }
             if ($mod('plantilla-gastos') && $can('plantilla-gastos.view')) {
                 $items[] = ['route' => 'plantilla-gastos.index', 'icon' => 'bi-file-earmark-text', 'label' => 'Plantillas de Gasto', 'is_route' => 'plantilla-gastos.*', 'exact_route' => 'plantilla-gastos.index'];
+            }
+            if ($mod('ordenes') && $can('ordenes.view')) {
+                $items[] = ['route' => 'ordenes.index', 'icon' => 'bi-receipt-cutoff', 'label' => 'Órdenes POS', 'is_route' => 'ordenes.*', 'exact_route' => 'ordenes.index'];
+            }
+            if ($mod('ordenes-kds') && $can('kds.view')) {
+                $items[] = ['route' => 'kds.index', 'icon' => 'bi-display', 'label' => 'Pantalla Cocina (KDS)', 'is_route' => 'kds.*', 'exact_route' => 'kds.index'];
             }
         }
 
