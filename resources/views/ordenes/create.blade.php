@@ -1,5 +1,80 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+:root {
+    --pos-accent: #0ea5e9;
+    --pos-bg: #0f172a;
+    --pos-card: #1e293b;
+    --pos-border: #334155;
+    --pos-text: #f1f5f9;
+    --pos-text-muted: #94a3b8;
+}
+#productosModal .modal-content { background: var(--pos-bg); color: var(--pos-text); }
+#productosModal .modal-header { background: linear-gradient(135deg, var(--pos-accent), #0284c7); }
+#productosModal .form-control { background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text); }
+#productosModal .form-control::placeholder { color: var(--pos-text-muted); }
+#productosModal .form-control:focus { border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); color: var(--pos-text); }
+
+.tecla {
+    flex: 1; height: 52px; border-radius: 10px;
+    border: 1px solid var(--pos-border);
+    background: var(--pos-card);
+    color: var(--pos-text);
+    font-size: 1.1rem; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; user-select: none; transition: all .1s;
+    min-width: 0;
+}
+.tecla:active { transform: scale(.92); background: #334155; }
+.tecla-func { background: #0f172a; color: var(--pos-text-muted); }
+.tecla-punct { background: #1e293b; }
+.tecla-space { flex: 4; }
+.tecla-enter { background: var(--pos-accent); color: #fff; }
+.tecla-shift.active { background: var(--pos-accent); color: #fff; }
+.tecla-row { display: flex; gap: 4px; margin-bottom: 4px; }
+
+.modal-prod-card {
+    background: var(--pos-card);
+    border: 1px solid var(--pos-border);
+    border-radius: 12px;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .15s;
+    position: relative;
+    overflow: hidden;
+}
+.modal-prod-card:hover { border-color: var(--pos-accent); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(14,165,233,.2); }
+.modal-prod-card:active { transform: scale(.96); }
+.modal-prod-card.out-of-stock { opacity: .4; pointer-events: none; }
+.modal-prod-img-placeholder {
+    width: 100%; aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: 700;
+    margin-bottom: 6px;
+}
+.modal-prod-name { font-size: .78rem; font-weight: 600; color: var(--pos-text); line-height: 1.2; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal-prod-price { font-size: .85rem; font-weight: 700; color: var(--pos-accent); }
+.modal-prod-stock-badge { position: absolute; top: 4px; right: 4px; font-size: .6rem; padding: 2px 6px; border-radius: 20px; }
+.modal-prod-qty {
+    display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px;
+}
+.modal-prod-qty button {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid var(--pos-border);
+    background: var(--pos-bg);
+    color: var(--pos-text);
+    font-size: 1rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+}
+.modal-prod-qty button:active { background: var(--pos-accent); }
+.modal-prod-qty span { font-size: .9rem; font-weight: 600; min-width: 18px; text-align: center; }
+</style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -73,19 +148,6 @@
         </div>
 
         <div class="col-md-7">
-            <div class="card mb-3">
-                <div class="card-header">
-                    <h5>Buscar Productos</h5>
-                </div>
-                <div class="card-body">
-                    <div class="input-group mb-3">
-                        <input type="text" id="producto_search" class="form-control" placeholder="Buscar por nombre o código...">
-                        <button class="btn btn-outline-secondary" type="button" id="search_btn">Buscar</button>
-                    </div>
-                    <div id="producto_resultados" class="list-group" style="max-height: 300px; overflow-y: auto;"></div>
-                </div>
-            </div>
-
             <div class="card">
                 <div class="card-header d-flex justify-content-between">
                     <h5>Productos en la Orden</h5>
@@ -116,6 +178,48 @@
                             </tfoot>
                         </table>
                     </div>
+                    <button type="button" class="btn btn-success w-100 btn-lg mt-2" onclick="abrirModalProductos()">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Productos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ Modal Productos con Teclado Virtual ============ -->
+<div class="modal fade" id="productosModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content rounded-4 border-0 shadow" style="max-height:95vh;">
+            <div class="modal-header border-0 rounded-top-4 py-3">
+                <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Agregar Producto</h5>
+                <button type="button" class="btn-close btn-close-white" style="width:36px;height:36px;" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
+                <div class="input-group shadow-sm rounded-3 mb-2">
+                    <span class="input-group-text" style="background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text-muted); min-height:48px;"><i class="bi bi-search fs-5"></i></span>
+                    <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()" style="min-height:48px; font-size:1.05rem;">
+                    <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: var(--pos-text-muted); min-width:48px;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg fs-5"></i></button>
+                </div>
+                <div class="d-flex gap-2 mb-2">
+                    <select id="modal-item-curso" class="form-select form-select-sm rounded-3" style="max-width:120px;background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);">
+                        <option value="entrada">Entrada</option>
+                        <option value="fuerte" selected>Plato Fuerte</option>
+                        <option value="postre">Postre</option>
+                        <option value="bebida">Bebida</option>
+                    </select>
+                    <input type="text" id="modal-item-notas" class="form-control form-control-sm rounded-3" placeholder="Notas" maxlength="200" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);">
+                </div>
+                <div id="modal-productos-grid" class="row g-2 overflow-auto mb-2" style="flex:1; min-height:0;"></div>
+                <div class="border-top pt-2 mt-2" id="teclado-virtual" style="border-color: var(--pos-border) !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="fw-semibold" style="font-size:.8rem; color: var(--pos-text-muted);">Teclado</small>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary rounded-start-pill" style="font-size:.8rem;padding:4px 12px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('us')" id="btn-idioma-us">US</button>
+                            <button class="btn btn-outline-secondary rounded-end-pill" style="font-size:.8rem;padding:4px 12px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('es')" id="btn-idioma-es">ES</button>
+                        </div>
+                    </div>
+                    <div id="teclado-rows"></div>
                 </div>
             </div>
         </div>
@@ -125,69 +229,227 @@
 @push('scripts')
 <script>
 let cart = [];
+let productos = [];
+let cantidadesModal = {};
+const PALETA_COLORES_MODAL = [
+    { bg: '#fee2e2', fg: '#dc2626' }, { bg: '#ffedd5', fg: '#ea580c' },
+    { bg: '#fef9c3', fg: '#ca8a04' }, { bg: '#dcfce7', fg: '#16a34a' },
+    { bg: '#cffafe', fg: '#0891b2' }, { bg: '#dbeafe', fg: '#2563eb' },
+    { bg: '#ede9fe', fg: '#7c3aed' }, { bg: '#fce7f3', fg: '#db2777' },
+    { bg: '#ccfbf1', fg: '#0d9488' }, { bg: '#faf5ff', fg: '#a21caf' },
+];
+const TECLADO_LAYOUTS = {
+    us: [['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m']],
+    es: [['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l','ñ'],['z','x','c','v','b','n','m']]
+};
+let tecladoIdiomaActual = 'es';
+let teclaShiftActivo = false;
 
+// ============ Order Form ============
 document.getElementById('tipo_orden').addEventListener('change', function() {
     document.getElementById('delivery_fields').style.display = this.value === 'delivery' ? 'block' : 'none';
     document.getElementById('pickup_fields').style.display = this.value === 'pickup' ? 'block' : 'none';
     document.getElementById('contacto_fields').style.display = this.value !== 'mostrador' ? 'block' : 'none';
 });
 
-let searchTimeout;
-document.getElementById('producto_search').addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    const term = this.value;
-    if (term.length < 2) return;
-    searchTimeout = setTimeout(() => buscarProductos(term), 300);
-});
-
-document.getElementById('search_btn').addEventListener('click', function() {
-    const term = document.getElementById('producto_search').value;
-    if (term.length >= 2) buscarProductos(term);
-});
-
-function buscarProductos(q) {
-    fetch(`{{ route('ordenes.buscarProducto') }}?q=${encodeURIComponent(q)}`)
-        .then(r => r.json())
-        .then(data => {
-            const container = document.getElementById('producto_resultados');
-            container.innerHTML = data.map(p => {
-                const inCart = cart.find(c => c.producto_id === p.id);
-                return `<a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center ${inCart ? 'active' : ''}"
-                   data-id="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio}" data-stock="${p.stock}">
-                    <div>
-                        <strong>${p.nombre}</strong>
-                        <small class="d-block text-muted">${p.codigo_barras || ''} ${inCart ? '(en carrito)' : ''}</small>
-                    </div>
-                    <span class="badge bg-primary rounded-pill fs-6">RD$ ${p.precio}</span>
-                </a>`;
-            }).join('');
-            if (data.length === 0) {
-                container.innerHTML = '<div class="list-group-item text-muted">Sin resultados</div>';
-            }
-        });
+// ============ Modal Productos + Teclado Virtual ============
+function colorProductoModal(nombre) {
+    let h = 0;
+    for (let i = 0; i < nombre.length; i++) h = nombre.charCodeAt(i) + ((h << 5) - h);
+    return PALETA_COLORES_MODAL[Math.abs(h) % PALETA_COLORES_MODAL.length];
 }
 
-document.getElementById('producto_resultados').addEventListener('click', function(e) {
-    const item = e.target.closest('.list-group-item');
-    if (!item) return;
-    e.preventDefault();
-    const id = parseInt(item.dataset.id);
-    const nombre = item.dataset.nombre;
-    const precio = parseFloat(item.dataset.precio);
-    agregarAlCarrito(id, nombre, precio);
-    // Re-render search to update active state
-    const q = document.getElementById('producto_search').value;
-    if (q.length >= 2) buscarProductos(q);
-});
+function abrirModalProductos() {
+    const modalEl = document.getElementById('productosModal');
+    const old = bootstrap.Modal.getInstance(modalEl);
+    if (old) old.dispose();
+    const modal = new bootstrap.Modal(modalEl, { keyboard: false });
+    document.getElementById('modal-buscar-producto').value = '';
+    document.getElementById('modal-btn-limpiar').style.display = 'none';
+    document.getElementById('modal-item-notas').value = '';
+    document.getElementById('modal-item-curso').value = 'fuerte';
+    cantidadesModal = {};
+    teclaShiftActivo = false;
+    renderizarTecladoModal();
+    tecladoIdioma('es');
+    renderizarProductosModal('');
+    // Fetch products
+    fetch('{{ route("ordenes.buscarProducto") }}?q=')
+        .then(r => r.json())
+        .then(data => { productos = data; renderizarProductosModal(''); });
+    modal.show();
+    setTimeout(() => document.getElementById('modal-buscar-producto').focus(), 300);
+}
 
-function agregarAlCarrito(id, nombre, precio) {
+function cerrarModalProductos() {
+    const el = document.getElementById('productosModal');
+    const m = bootstrap.Modal.getInstance(el);
+    if (m) m.hide();
+}
+
+function modalBuscarProductos() {
+    const q = document.getElementById('modal-buscar-producto').value.trim();
+    document.getElementById('modal-btn-limpiar').style.display = q.length > 0 ? 'inline-block' : 'none';
+    renderizarProductosModal(q);
+}
+
+function modalLimpiarBusqueda() {
+    document.getElementById('modal-buscar-producto').value = '';
+    document.getElementById('modal-btn-limpiar').style.display = 'none';
+    modalBuscarProductos();
+    document.getElementById('modal-buscar-producto').focus();
+}
+
+function renderizarProductosModal(filtro) {
+    const container = document.getElementById('modal-productos-grid');
+    const q = (filtro || '').toLowerCase();
+    const results = productos.filter(p => {
+        const matchNombre = (p.nombre || '').toLowerCase().includes(q);
+        const matchCodigo = (p.codigo_barras || '').toLowerCase().includes(q);
+        return matchNombre || matchCodigo;
+    });
+    if (results.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center py-4" style="color:var(--pos-text-muted);"><i class="bi bi-search" style="font-size:2.5rem;opacity:.4;display:block;margin-bottom:8px;"></i>Sin resultados</div>';
+        return;
+    }
+    let html = '';
+    results.forEach(p => {
+        const id = p.id;
+        if (cantidadesModal[id] === undefined) cantidadesModal[id] = 1;
+        const qty = cantidadesModal[id];
+        const c = colorProductoModal(p.nombre);
+        const initial = (p.nombre || '?').charAt(0).toUpperCase();
+        const stockTxt = p.stock <= 0 ? 'Sin stock' : p.stock + ' uds';
+        const stockCls = p.stock <= 0 ? 'bg-secondary' : (p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark');
+        html += `
+        <div class="col-4 col-md-3 col-lg-2">
+            <div class="modal-prod-card" onclick="agregarProductoDesdeModal(${id})">
+                <span class="modal-prod-stock-badge badge ${stockCls}">${stockTxt}</span>
+                <div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};">${initial}</div>
+                <div class="modal-prod-name">${escHtml(p.nombre)}</div>
+                <div class="modal-prod-price">RD$ ${Number(p.precio).toFixed(2)}</div>
+                <div class="modal-prod-qty" onclick="event.stopPropagation()">
+                    <button type="button" onpointerdown="cambiarQtyModal(${id}, -1)">−</button>
+                    <span id="mqty-${id}">${qty}</span>
+                    <button type="button" onpointerdown="cambiarQtyModal(${id}, 1)">+</button>
+                </div>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+function cambiarQtyModal(productoId, delta) {
+    if (cantidadesModal[productoId] === undefined) cantidadesModal[productoId] = 1;
+    let nueva = cantidadesModal[productoId] + delta;
+    if (nueva < 1) nueva = 1;
+    if (nueva > 99) nueva = 99;
+    cantidadesModal[productoId] = nueva;
+    const span = document.getElementById('mqty-' + productoId);
+    if (span) span.textContent = nueva;
+}
+
+function agregarProductoDesdeModal(id) {
+    const p = productos.find(x => x.id === id);
+    if (!p) return;
+    const qty = cantidadesModal[id] || 1;
+    const curso = document.getElementById('modal-item-curso').value;
+    const notas = document.getElementById('modal-item-notas').value.trim();
     const existente = cart.find(c => c.producto_id === id);
     if (existente) {
-        existente.cantidad += 1;
+        existente.cantidad += qty;
+        if (notas) existente.notas = notas;
+        if (curso) existente.curso = curso;
     } else {
-        cart.push({ producto_id: id, nombre, precio, cantidad: 1, notas: '', curso: 'fuerte' });
+        cart.push({ producto_id: id, nombre: p.nombre, precio: Number(p.precio), cantidad: qty, notas: notas, curso: curso });
     }
     renderCart();
+    cerrarModalProductos();
+}
+
+// Teclado virtual
+function renderizarTecladoModal() {
+    const container = document.getElementById('teclado-rows');
+    if (!container) return;
+    const layout = TECLADO_LAYOUTS[tecladoIdiomaActual] || TECLADO_LAYOUTS.es;
+    let html = '<div class="tecla-row">';
+    ['1','2','3','4','5','6','7','8','9','0'].forEach(n => {
+        html += `<button class="tecla" onpointerdown="teclaPulsar('${n}')" type="button">${n}</button>`;
+    });
+    html += '</div>';
+    layout.slice(0, -1).forEach(fila => {
+        html += '<div class="tecla-row">';
+        fila.forEach(letra => {
+            const display = teclaShiftActivo ? letra.toUpperCase() : letra;
+            html += `<button class="tecla" onpointerdown="teclaPulsar('${letra}')" type="button">${display}</button>`;
+        });
+        html += '</div>';
+    });
+    html += '<div class="tecla-row">';
+    const shiftCls = teclaShiftActivo ? ' active' : '';
+    html += `<button class="tecla tecla-func tecla-shift${shiftCls}" onpointerdown="teclaMayusculas()" type="button"><i class="bi bi-arrow-up-short fs-4"></i></button>`;
+    layout[layout.length - 1].forEach(letra => {
+        const display = teclaShiftActivo ? letra.toUpperCase() : letra;
+        html += `<button class="tecla" onpointerdown="teclaPulsar('${letra}')" type="button">${display}</button>`;
+    });
+    html += `<button class="tecla tecla-func tecla-backspace" onpointerdown="teclaBorrar()" type="button"><i class="bi bi-backspace fs-4"></i></button>`;
+    html += '</div>';
+    html += '<div class="tecla-row">';
+    html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar(',')" type="button">,</button>`;
+    html += `<button class="tecla tecla-func tecla-space" onpointerdown="teclaPulsar(' ')" type="button"><span class="fw-normal" style="font-size:1rem;">Espacio</span></button>`;
+    html += `<button class="tecla tecla-punct" onpointerdown="teclaPulsar('.')" type="button">.</button>`;
+    html += `<button class="tecla tecla-enter" onpointerdown="teclaEnter()" type="button"><i class="bi bi-arrow-return-left fs-4"></i></button>`;
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function tecladoIdioma(idioma) {
+    tecladoIdiomaActual = idioma;
+    const usBtn = document.getElementById('btn-idioma-us');
+    const esBtn = document.getElementById('btn-idioma-es');
+    if (usBtn) usBtn.classList.toggle('active', idioma === 'us');
+    if (esBtn) esBtn.classList.toggle('active', idioma === 'es');
+    renderizarTecladoModal();
+}
+
+function teclaPulsar(caracter) {
+    const input = document.getElementById('modal-buscar-producto');
+    const start = input.selectionStart || input.value.length;
+    const end = input.selectionEnd || input.value.length;
+    const letra = teclaShiftActivo ? caracter.toUpperCase() : caracter;
+    input.value = input.value.substring(0, start) + letra + input.value.substring(end);
+    const newPos = start + letra.length;
+    input.setSelectionRange(newPos, newPos);
+    input.focus();
+    if (teclaShiftActivo) { teclaShiftActivo = false; renderizarTecladoModal(); }
+    modalBuscarProductos();
+}
+
+function teclaMayusculas() { teclaShiftActivo = !teclaShiftActivo; renderizarTecladoModal(); }
+
+function teclaBorrar() {
+    const input = document.getElementById('modal-buscar-producto');
+    const start = input.selectionStart || input.value.length;
+    const end = input.selectionEnd || input.value.length;
+    if (start === 0 && end === 0) return;
+    if (start !== end) {
+        input.value = input.value.substring(0, start) + input.value.substring(end);
+        input.setSelectionRange(start, start);
+    } else {
+        input.value = input.value.substring(0, start - 1) + input.value.substring(start);
+        input.setSelectionRange(start - 1, start - 1);
+    }
+    input.focus();
+    modalBuscarProductos();
+}
+
+function teclaEnter() { cerrarModalProductos(); }
+
+// ============ Cart ============
+function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
 }
 
 function cambiarCantidad(id, delta) {
@@ -198,15 +460,11 @@ function cambiarCantidad(id, delta) {
         cart = cart.filter(c => c.producto_id !== id);
     }
     renderCart();
-    const q = document.getElementById('producto_search').value;
-    if (q.length >= 2) buscarProductos(q);
 }
 
 function quitarDelCarrito(id) {
     cart = cart.filter(c => c.producto_id !== id);
     renderCart();
-    const q = document.getElementById('producto_search').value;
-    if (q.length >= 2) buscarProductos(q);
 }
 
 function renderCart() {
@@ -233,7 +491,7 @@ function renderCart() {
         const sub = c.precio * c.cantidad;
         sum += sub;
         return `<tr>
-            <td>${c.nombre}</td>
+            <td>${escHtml(c.nombre)}${c.notas ? '<br><small class="text-muted">'+escHtml(c.notas)+'</small>' : ''}</td>
             <td>
                 <div class="input-group input-group-sm">
                     <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(${c.producto_id}, -1)">−</button>
@@ -249,12 +507,11 @@ function renderCart() {
 
     total.textContent = `RD$ ${sum.toFixed(2)}`;
 
-    // Serialize cart to hidden input
     const itemsData = cart.map(c => ({
         producto_id: c.producto_id,
         cantidad: c.cantidad,
-        notas: c.notas,
-        curso: c.curso,
+        notas: c.notas || '',
+        curso: c.curso || 'fuerte',
     }));
     document.getElementById('itemsInput').value = JSON.stringify(itemsData);
 }
