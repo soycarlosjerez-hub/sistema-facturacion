@@ -15,14 +15,27 @@ class OrdenKitchenService
             ->whereIn('estado', ['pendiente', 'confirmada', 'en_proceso'])
             ->whereHas('detalles', fn($q) => $q->where('estado_cocina', '!=', 'entregado'))
             ->with([
-                'detalles' => fn($q) => $q->select('id', 'orden_id', 'producto_id', 'curso', 'estado_cocina', 'cantidad', 'notas', 'created_at')
-                    ->where('estado_cocina', '!=', 'entregado')
-                    ->with('producto:id,nombre')
+                'detalles' => fn($q) => $q->where('estado_cocina', '!=', 'entregado')->with('producto:id,nombre')
             ])
             ->orderBy('created_at')
             ->get()
             ->map(function ($o) {
-                $cursos = $o->detalles->groupBy('curso');
+                $cursos = [];
+                foreach ($o->detalles as $detalle) {
+                    $nombreCurso = $detalle->curso ?: 'General';
+                    if (!isset($cursos[$nombreCurso])) {
+                        $cursos[$nombreCurso] = [];
+                    }
+                    $cursos[$nombreCurso][] = [
+                        'id' => $detalle->id,
+                        'producto' => $detalle->producto ? ['id' => $detalle->producto->id, 'nombre' => $detalle->producto->nombre] : null,
+                        'cantidad' => $detalle->cantidad,
+                        'notas' => $detalle->notas,
+                        'estado_cocina' => $detalle->estado_cocina,
+                        'created_at' => $detalle->created_at?->toISOString(),
+                    ];
+                }
+
                 return [
                     'id'             => $o->id,
                     'tipo_orden'     => $o->tipo_orden,
@@ -34,7 +47,7 @@ class OrdenKitchenService
                     'hora_retiro'    => $o->hora_retiro?->format('h:i A'),
                     'time'           => $o->created_at->diffForHumans(),
                     'time_iso'       => $o->created_at->toIso8601String(),
-                    'cursos'         => $cursos->toArray(),
+                    'cursos'         => $cursos,
                 ];
             });
 
