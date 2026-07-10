@@ -115,12 +115,17 @@ class OrdenPosController extends Controller
     public function buscarProducto(Request $request)
     {
         $term = $request->get('q', '');
-        $productos = Producto::where('activo', true)
+        $query = Producto::where('activo', true)
             ->where(function ($q) use ($term) {
                 $q->where('nombre', 'like', "%{$term}%")
                   ->orWhere('codigo_barras', 'like', "%{$term}%");
-            })
-            ->with('categorias')
+            });
+
+        if ($this->restauranteValidaStock()) {
+            $query->where('stock', '>', 0);
+        }
+
+        $productos = $query->with('categorias')
             ->orderBy('nombre')
             ->limit(20)
             ->get(['id', 'nombre', 'precio', 'codigo_barras', 'stock']);
@@ -234,5 +239,15 @@ class OrdenPosController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error al imprimir: ' . $e->getMessage());
         }
+    }
+
+    private function restauranteValidaStock(): bool
+    {
+        $user = auth()->user();
+        if (!$user || !$user->businessInstance) {
+            return true;
+        }
+        $config = $user->businessInstance->configuracion ?? [];
+        return ($config['restaurante_valida_stock'] ?? '1') === '1';
     }
 }
