@@ -29,7 +29,7 @@
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between">
                     <h5>Productos</h5>
-                    @if(!in_array($orden->estado, ['completada', 'anulada']) && $sesion)
+                    @if(!in_array($orden->estado, ['completada', 'anulada']))
                     <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">+ Agregar</button>
                     @endif
                 </div>
@@ -160,7 +160,6 @@
             @endif
 
             @if(!in_array($orden->estado, ['completada', 'anulada']))
-                @if($sesion)
                 <div class="card mb-3">
                     <div class="card-header"><h5>Cobrar</h5></div>
                     <div class="card-body">
@@ -207,11 +206,6 @@
                         </form>
                     </div>
                 </div>
-                @else
-                <div class="alert alert-warning">
-                    Debes <a href="{{ route('cajas.index') }}">abrir una caja</a> para cobrar.
-                </div>
-                @endif
 
                 <div class="card mb-3">
                     <div class="card-header"><h5>Cambiar Estado</h5></div>
@@ -247,7 +241,7 @@
     </div>
 </div>
 
-@if(!in_array($orden->estado, ['completada', 'anulada']) && $sesion)
+@if(!in_array($orden->estado, ['completada', 'anulada']))
 <div class="modal fade" id="addProductModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">

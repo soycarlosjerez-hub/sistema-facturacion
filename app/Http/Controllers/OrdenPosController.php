@@ -6,7 +6,6 @@ use App\Enums\OrdenTipo;
 use App\Models\Cliente;
 use App\Models\Orden;
 use App\Models\Producto;
-use App\Models\SesionCaja;
 use App\Services\OrdenService;
 use App\Services\OrdenPaymentService;
 use App\Services\OrdenNotificationService;
@@ -31,13 +30,7 @@ class OrdenPosController extends Controller
 
     public function create()
     {
-        $sesion = SesionCaja::where('user_id', auth()->id())
-            ->where('estado', 'abierta')
-            ->latest('fecha_apertura')
-            ->first();
-
         return view('ordenes.create', [
-            'sesion' => $sesion,
             'tipos' => OrdenTipo::cases(),
         ]);
     }
@@ -74,14 +67,9 @@ class OrdenPosController extends Controller
     public function show(Orden $orden)
     {
         $orden->load(['detalles.producto', 'cliente', 'usuario', 'pagos', 'entregaEmpresa']);
-        $sesion = SesionCaja::where('user_id', auth()->id())
-            ->where('estado', 'abierta')
-            ->latest('fecha_apertura')
-            ->first();
 
         return view('ordenes.show', [
             'orden' => $orden,
-            'sesion' => $sesion,
         ]);
     }
 

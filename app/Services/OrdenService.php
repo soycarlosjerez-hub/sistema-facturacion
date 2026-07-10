@@ -6,6 +6,7 @@ use App\Enums\OrdenState;
 use App\Enums\OrdenTipo;
 use App\Models\Almacen;
 use App\Models\AlmacenMovimiento;
+use App\Models\Caja;
 use App\Models\Cliente;
 use App\Models\Orden;
 use App\Models\OrdenDetalle;
@@ -25,6 +26,27 @@ class OrdenService
         }
         $config = $user->businessInstance->configuracion ?? [];
         return ($config['restaurante_valida_stock'] ?? '1') === '1';
+    }
+
+    private function obtenerCajaOrdenes(int $sucursalId, int $tenantId): Caja
+    {
+        $caja = Caja::where('nombre', 'órdenes')
+            ->where('sucursal_id', $sucursalId)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        if (!$caja) {
+            $caja = Caja::create([
+                'nombre'   => 'órdenes',
+                'codigo'   => 'ORD',
+                'sucursal_id' => $sucursalId,
+                'tenant_id'    => $tenantId,
+                'activo'   => true,
+                'estado'   => 'cerrada',
+            ]);
+        }
+
+        return $caja;
     }
     public function getIndexData(): array
     {
@@ -48,15 +70,27 @@ class OrdenService
         $data['tenant_id'] = $user->business_instance_id;
         $data['sucursal_id'] = $user->sucursal_id ?? session('sucursal_id');
 
-        $sesion = SesionCaja::where('user_id', $user->id)
+        $caja = $this->obtenerCajaOrdenes($data['sucursal_id'], $data['tenant_id']);
+
+        $sesion = SesionCaja::where('caja_id', $caja->id)
             ->where('estado', 'abierta')
             ->latest('fecha_apertura')
             ->first();
 
-        if ($sesion) {
-            $data['caja_id'] = $sesion->caja_id;
-            $data['sesion_caja_id'] = $sesion->id;
+        if (!$sesion) {
+            $sesion = SesionCaja::create([
+                'tenant_id'      => $data['tenant_id'],
+                'caja_id'        => $caja->id,
+                'user_id'        => $user->id,
+                'fecha_apertura' => now(),
+                'monto_inicial'  => 0,
+                'estado'         => 'abierta',
+            ]);
+            $caja->update(['estado' => 'abierta']);
         }
+
+        $data['caja_id'] = $caja->id;
+        $data['sesion_caja_id'] = $sesion->id;
 
         $data['subtotal'] = 0;
         $data['impuestos'] = 0;

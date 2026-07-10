@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\OrdenState;
 use App\Enums\OrdenTipo;
+use App\Models\Caja;
 use App\Models\Orden;
 use App\Models\Pago;
 use App\Models\SesionCaja;
@@ -19,13 +20,36 @@ class OrdenPaymentService
             return ['error' => 'La orden ya está ' . $orden->estado, 'code' => 422];
         }
 
-        $sesion = SesionCaja::where('user_id', Auth::id())
+        $caja = Caja::where('nombre', 'órdenes')
+            ->where('activo', true)
+            ->first();
+
+        if (!$caja) {
+            $caja = Caja::create([
+                'nombre'   => 'órdenes',
+                'codigo'   => 'ORD',
+                'sucursal_id' => Auth::user()->sucursal_id,
+                'tenant_id'    => Auth::user()->business_instance_id,
+                'activo'   => true,
+                'estado'   => 'cerrada',
+            ]);
+        }
+
+        $sesion = SesionCaja::where('caja_id', $caja->id)
             ->where('estado', 'abierta')
             ->latest('fecha_apertura')
             ->first();
 
         if (!$sesion) {
-            return ['error' => 'No tienes una sesión de caja abierta', 'code' => 422];
+            $sesion = SesionCaja::create([
+                'tenant_id'      => Auth::user()->business_instance_id,
+                'caja_id'        => $caja->id,
+                'user_id'        => Auth::id(),
+                'fecha_apertura' => now(),
+                'monto_inicial'  => 0,
+                'estado'         => 'abierta',
+            ]);
+            $caja->update(['estado' => 'abierta']);
         }
 
         $propina = (float)($data['propina'] ?? 0);

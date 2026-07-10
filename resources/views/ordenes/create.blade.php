@@ -7,12 +7,6 @@
         <a href="{{ route('ordenes.index') }}" class="btn btn-secondary">Volver</a>
     </div>
 
-    @if(!$sesion)
-    <div class="alert alert-warning">
-        No tienes una sesión de caja abierta. <a href="{{ route('cajas.index') }}">Abrir caja</a>
-    </div>
-    @endif
-
     <div class="row">
         <div class="col-md-5">
             <div class="card">
@@ -69,7 +63,7 @@
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100" {{ !$sesion ? 'disabled' : '' }}>
+                        <button type="submit" class="btn btn-primary w-100">
                             Crear Orden
                         </button>
                     </form>
@@ -77,22 +71,6 @@
             </div>
         </div>
 
-        <div class="col-md-7">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Buscador de Productos</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <input type="text" id="producto_search" class="form-control" placeholder="Buscar producto por nombre o código...">
-                            <button class="btn btn-outline-secondary" type="button" id="search_btn">Buscar</button>
-                        </div>
-                    </div>
-                    <div id="producto_resultados" class="list-group" style="max-height: 400px; overflow-y: auto;"></div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -102,44 +80,6 @@ document.getElementById('tipo_orden').addEventListener('change', function() {
     document.getElementById('delivery_fields').style.display = this.value === 'delivery' ? 'block' : 'none';
     document.getElementById('pickup_fields').style.display = this.value === 'pickup' ? 'block' : 'none';
     document.getElementById('contacto_fields').style.display = this.value !== 'mostrador' ? 'block' : 'none';
-});
-
-let searchTimeout;
-document.getElementById('producto_search').addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    const term = this.value;
-    if (term.length < 2) return;
-    searchTimeout = setTimeout(() => buscarProductos(term), 300);
-});
-
-document.getElementById('search_btn').addEventListener('click', function() {
-    const term = document.getElementById('producto_search').value;
-    if (term.length >= 2) buscarProductos(term);
-});
-
-function buscarProductos(q) {
-    fetch(`{{ route('ordenes.buscarProducto') }}?q=${encodeURIComponent(q)}`)
-        .then(r => r.json())
-        .then(data => {
-            const container = document.getElementById('producto_resultados');
-            container.innerHTML = data.map(p => `
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" 
-                   data-id="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio}">
-                    <div>
-                        <strong>${p.nombre}</strong>
-                        <small class="d-block text-muted">${p.codigo_barras || ''}</small>
-                    </div>
-                    <span class="badge bg-primary rounded-pill fs-6">RD$ ${p.precio}</span>
-                </a>
-            `).join('');
-        });
-}
-
-document.getElementById('producto_resultados').addEventListener('click', function(e) {
-    const item = e.target.closest('.list-group-item');
-    if (!item) return;
-    e.preventDefault();
-    alert(`Producto seleccionado: ${item.dataset.nombre} - RD$ ${item.dataset.precio}\nGuarda la orden primero para agregar productos.`);
 });
 </script>
 @endpush
