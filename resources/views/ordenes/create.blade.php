@@ -4,11 +4,30 @@
 <style>
 :root {
     --pos-accent: #0ea5e9;
-    --pos-bg: #0f172a;
-    --pos-card: #1e293b;
-    --pos-border: #334155;
-    --pos-text: #f1f5f9;
-    --pos-text-muted: #94a3b8;
+    --pos-bg-light: #ffffff;
+    --pos-bg-dark: #0f172a;
+    --pos-card-light: #f1f5f9;
+    --pos-card-dark: #1e293b;
+    --pos-border-light: #e2e8f0;
+    --pos-border-dark: #334155;
+    --pos-text-light: #1e293b;
+    --pos-text-dark: #f1f5f9;
+    --pos-text-muted-light: #64748b;
+    --pos-text-muted-dark: #94a3b8;
+}
+body.dark-mode {
+    --pos-bg: var(--pos-bg-dark);
+    --pos-card: var(--pos-card-dark);
+    --pos-border: var(--pos-border-dark);
+    --pos-text: var(--pos-text-dark);
+    --pos-text-muted: var(--pos-text-muted-dark);
+}
+body:not(.dark-mode) {
+    --pos-bg: var(--pos-bg-light);
+    --pos-card: var(--pos-card-light);
+    --pos-border: var(--pos-border-light);
+    --pos-text: var(--pos-text-light);
+    --pos-text-muted: var(--pos-text-muted-light);
 }
 #productosModal .modal-content { background: var(--pos-bg); color: var(--pos-text); }
 #productosModal .modal-header { background: linear-gradient(135deg, var(--pos-accent), #0284c7); }
