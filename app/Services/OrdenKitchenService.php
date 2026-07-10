@@ -15,7 +15,9 @@ class OrdenKitchenService
             ->whereIn('estado', ['pendiente', 'confirmada', 'en_proceso'])
             ->whereHas('detalles', fn($q) => $q->where('estado_cocina', '!=', 'entregado'))
             ->with([
-                'detalles' => fn($q) => $q->where('estado_cocina', '!=', 'entregado')->with('producto:id,nombre')
+                'detalles' => fn($q) => $q->select('id', 'orden_id', 'producto_id', 'curso', 'estado_cocina', 'cantidad', 'notas', 'created_at')
+                    ->where('estado_cocina', '!=', 'entregado')
+                    ->with('producto:id,nombre')
             ])
             ->orderBy('created_at')
             ->get()
