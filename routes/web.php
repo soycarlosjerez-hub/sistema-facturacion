@@ -77,6 +77,8 @@ Route::pattern('lavador', '[0-9]+');
 Route::pattern('listaPrecio', '[0-9]+');
 Route::pattern('sucursal', '[0-9]+');
 Route::pattern('cuentas_bancarium', '[0-9]+');
+Route::pattern('orden', '[0-9]+');
+Route::pattern('detalle', '[0-9]+');
 
 // Dashboard
 Route::middleware('auth')->group(function () {
@@ -158,11 +160,35 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware('permission:ventas.view,ventas.view.own')->group(function () {
-        Route::get('/ventas/pdf/{id}', [VentaController::class, 'exportPdf'])->name('venta.pdf');
+    Route::get('/ventas/pdf/{id}', [VentaController::class, 'exportPdf'])->name('venta.pdf');
     });
 
     Route::post('/ventas/imprimir/{id}', [VentaController::class, 'imprimir'])->name('ventas.imprimir');
     Route::post('/ventas/facturar/{id}', [VentaController::class, 'facturar'])->name('ventas.facturar');
+
+    // POS - Ordenes (sin mesas)
+    Route::prefix('ordenes')->name('ordenes.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\OrdenPosController::class, 'index'])->name('index')->middleware('permission:ordenes.view');
+        Route::get('/create', [\App\Http\Controllers\OrdenPosController::class, 'create'])->name('create')->middleware('permission:ordenes.create');
+        Route::post('/', [\App\Http\Controllers\OrdenPosController::class, 'store'])->name('store')->middleware('permission:ordenes.create');
+        Route::get('/{orden}', [\App\Http\Controllers\OrdenPosController::class, 'show'])->name('show')->middleware('permission:ordenes.view');
+        Route::patch('/{orden}', [\App\Http\Controllers\OrdenPosController::class, 'update'])->name('update')->middleware('permission:ordenes.update');
+        Route::delete('/{orden}', [\App\Http\Controllers\OrdenPosController::class, 'destroy'])->name('destroy')->middleware('permission:ordenes.cancel');
+        Route::get('/buscar-producto', [\App\Http\Controllers\OrdenPosController::class, 'buscarProducto'])->name('buscarProducto')->middleware('permission:ordenes.create');
+        Route::post('/{orden}/agregar', [\App\Http\Controllers\OrdenPosController::class, 'agregarItem'])->name('agregarItem')->middleware('permission:ordenes.create');
+        Route::delete('/{orden}/quitar/{detalle}', [\App\Http\Controllers\OrdenPosController::class, 'quitarItem'])->name('quitarItem')->middleware('permission:ordenes.create');
+        Route::post('/{orden}/cobrar', [\App\Http\Controllers\OrdenPosController::class, 'cobrar'])->name('cobrar')->middleware('permission:ordenes.pay');
+        Route::post('/{orden}/estado', [\App\Http\Controllers\OrdenPosController::class, 'cambiarEstado'])->name('cambiarEstado')->middleware('permission:ordenes.update');
+        Route::get('/{orden}/ticket', [\App\Http\Controllers\OrdenPosController::class, 'ticket'])->name('ticket')->middleware('permission:ordenes.view');
+        Route::post('/{orden}/imprimir', [\App\Http\Controllers\OrdenPosController::class, 'imprimir'])->name('imprimir')->middleware('permission:ordenes.view');
+    });
+
+    // KDS (Kitchen Display System) for POS
+    Route::prefix('kds')->name('kds.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\PosKdsController::class, 'index'])->name('index')->middleware('permission:kds.view');
+        Route::get('/orders', [\App\Http\Controllers\PosKdsController::class, 'orders'])->name('orders')->middleware('permission:kds.view');
+        Route::post('/update/{detalle}', [\App\Http\Controllers\PosKdsController::class, 'updateEstado'])->name('update')->middleware('permission:kds.update');
+    });
 
     // Cotizaciones
     Route::prefix('cotizaciones')->name('cotizaciones.')->group(function () {

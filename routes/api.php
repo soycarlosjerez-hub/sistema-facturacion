@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\PaymentProcessorController;
 use App\Http\Controllers\Api\ImpresoraController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\NcfSequenceController;
+use App\Http\Controllers\Api\OrdenController;
+use App\Http\Controllers\Api\TerminalController;
 use App\Http\Controllers\Api\SystemSettingController;
 use Illuminate\Support\Facades\Route;
 
@@ -186,6 +188,35 @@ Route::middleware(['api-auth', 'tenant'])->group(function () {
     // System Settings
     Route::apiResource('settings', SystemSettingController::class)
         ->names('api.settings')
+        ->except(['edit', 'create']);
+
+    // Orders
+    Route::apiResource('orders', OrdenController::class)
+        ->names('api.orders')
+        ->except(['edit', 'create']);
+
+    Route::post('orders/{order}/pay', [\App\Http\Controllers\Api\OrdenPaymentController::class, 'process'])
+        ->name('api.orders.pay');
+
+    Route::delete('orders/{orden}/details/{detalle}', [\App\Http\Controllers\Api\OrdenDetailController::class, 'destroy'])
+        ->name('api.orders.details.destroy');
+
+    Route::patch('orders/{orden}/details/{detalle}', [\App\Http\Controllers\Api\OrdenDetailController::class, 'update'])
+        ->name('api.orders.details.update');
+
+    Route::post('orders/{orden}/details', [\App\Http\Controllers\Api\OrdenDetailController::class, 'store'])
+        ->name('api.orders.details.store');
+
+    // KDS
+    Route::get('kds/orders', [\App\Http\Controllers\Api\KitchenDisplayController::class, 'index'])
+        ->name('api.kds.orders');
+
+    Route::patch('kds/orders/{detalle}/status', [\App\Http\Controllers\Api\KitchenDisplayController::class, 'updateStatus'])
+        ->name('api.kds.orders.update-status');
+
+    // Terminals
+    Route::apiResource('terminals', TerminalController::class)
+        ->names('api.terminals')
         ->except(['edit', 'create']);
 
     // Reports

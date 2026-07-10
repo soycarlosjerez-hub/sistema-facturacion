@@ -432,6 +432,7 @@ $(function() {
     const productos = @json($productos);
     const csrfToken = '{{ csrf_token() }}';
     const canEdit = {{ auth()->user()->can('productos.edit') ? 'true' : 'false' }};
+    const canToggle = {{ auth()->user()->can('productos.toggle') ? 'true' : 'false' }};
     const canDelete = {{ auth()->user()->can('productos.delete') ? 'true' : 'false' }};
 
     const table = $('#productos-table').DataTable({
@@ -554,6 +555,8 @@ $(function() {
                     if (canEdit) {
                         actions += '<a href="/productos/' + data.id + '/edit" class="premium-btn-edit" title="Editar">' +
                             '<i class="bi bi-pencil"></i></a>';
+                    }
+                    if (canToggle) {
                         const activo = !!data.activo;
                         actions += '<button type="button" class="premium-btn-edit toggle-activo" title="' + (activo ? 'Desactivar' : 'Activar') + '" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '" data-activo="' + (activo ? '1' : '0') + '" style="background:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.1);color:' + (activo ? '#ef4444' : '#22c55e') + ';border-color:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.2);">' +
                             '<i class="bi bi-' + (activo ? 'pause-circle' : 'play-circle') + '"></i></button>';

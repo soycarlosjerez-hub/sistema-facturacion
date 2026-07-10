@@ -95,6 +95,7 @@ class PermissionSeeder extends Seeder
                 'productos.delete',
                 'productos.import',
                 'productos.export',
+                'productos.toggle',
             ],
             'compras' => [
                 'compras.view',
@@ -395,6 +396,7 @@ class PermissionSeeder extends Seeder
                 'productos.edit',
                 'productos.import',
                 'productos.export',
+                'productos.toggle',
 
                 'compras.view',
                 'compras.create',
@@ -523,6 +525,7 @@ class PermissionSeeder extends Seeder
                 'productos.edit',
                 'productos.import',
                 'productos.export',
+                'productos.toggle',
 
                 'compras.view',
                 'compras.create',
@@ -634,6 +637,7 @@ class PermissionSeeder extends Seeder
                 'productos.create',
                 'productos.edit',
                 'productos.export',
+                'productos.toggle',
 
                 'compras.view',
                 'compras.create',
@@ -670,6 +674,7 @@ class PermissionSeeder extends Seeder
                 'productos.edit',
                 'productos.import',
                 'productos.export',
+                'productos.toggle',
 
                 'compras.view',
                 'compras.create',

@@ -14,6 +14,7 @@ class Pago extends Model
     protected $fillable = [
         'tenant_id',
         'venta_id',
+        'orden_id',
         'caja_id',
         'sesion_caja_id',
         'monto',
@@ -31,6 +32,11 @@ class Pago extends Model
     public function venta(): BelongsTo
     {
         return $this->belongsTo(Venta::class);
+    }
+
+    public function orden(): BelongsTo
+    {
+        return $this->belongsTo(Orden::class);
     }
 
     public function caja(): BelongsTo
