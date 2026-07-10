@@ -325,7 +325,9 @@ function renderizarProductosModal(filtro) {
         <div class="col-4 col-md-3 col-lg-2">
             <div class="modal-prod-card" onclick="agregarProductoDesdeModal(${id})">
                 <span class="modal-prod-stock-badge badge ${stockCls}">${stockTxt}</span>
-                <div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};">${initial}</div>
+                ${p.tiene_imagen
+                    ? `<img src="${p.imagen_url}" alt="${escHtml(p.nombre)}" style="width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;" loading="lazy">`
+                    : `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};">${initial}</div>`}
                 <div class="modal-prod-name">${escHtml(p.nombre)}</div>
                 <div class="modal-prod-price">RD$ ${Number(p.precio).toFixed(2)}</div>
                 <div class="modal-prod-qty" onclick="event.stopPropagation()">

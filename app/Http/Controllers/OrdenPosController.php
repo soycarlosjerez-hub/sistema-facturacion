@@ -127,7 +127,16 @@ class OrdenPosController extends Controller
 
         $productos = $query->orderBy('nombre')
             ->limit(20)
-            ->get(['id', 'nombre', 'precio', 'codigo_barras', 'stock']);
+            ->get(['id', 'nombre', 'precio', 'codigo_barras', 'stock', 'imagen'])
+            ->map(fn($p) => [
+                'id'           => $p->id,
+                'nombre'       => $p->nombre,
+                'precio'       => (float) $p->precio,
+                'codigo_barras'=> $p->codigo_barras,
+                'stock'        => (int) $p->stock,
+                'imagen_url'   => $p->imagen_url,
+                'tiene_imagen' => $p->tiene_imagen,
+            ]);
 
         return response()->json($productos);
     }
