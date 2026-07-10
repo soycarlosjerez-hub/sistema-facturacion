@@ -10,6 +10,8 @@ class Orden extends Model
 {
     use Auditable, TenantScope;
 
+    protected $table = 'ordenes';
+
     protected $casts = [
         'subtotal'       => 'decimal:2',
         'impuestos'      => 'decimal:2',
