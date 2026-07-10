@@ -48,6 +48,7 @@ class OrdenPosController extends Controller
             'hora_retiro' => 'nullable|date',
             'entrega_empresa_id' => 'nullable|exists:delivery_companies,id',
             'notas' => 'nullable|string',
+            'items' => 'nullable|json',
         ]);
 
         if (empty($validated['cliente_id']) && !empty($validated['cliente_nombre'])) {
@@ -59,6 +60,20 @@ class OrdenPosController extends Controller
         }
 
         $orden = $this->ordenService->createOrden($validated);
+
+        $items = json_decode($request->input('items', '[]'), true);
+        foreach ($items as $item) {
+            $result = $this->ordenService->agregarItem(
+                $orden,
+                $item['producto_id'],
+                $item['cantidad'] ?? 1,
+                $item['notas'] ?? null,
+                $item['curso'] ?? null
+            );
+            if (isset($result['error'])) {
+                return redirect()->back()->with('error', "Error al agregar {$item['producto_id']}: {$result['error']}");
+            }
+        }
 
         return redirect()->route('ordenes.show', $orden)
             ->with('success', 'Orden creada correctamente.');
