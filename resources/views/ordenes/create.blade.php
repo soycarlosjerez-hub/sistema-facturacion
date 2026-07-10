@@ -19,59 +19,51 @@
 .tecla {
     flex: 1; height: 52px; border-radius: 10px;
     border: 1px solid var(--pos-border);
-    background: var(--pos-card);
-    color: var(--pos-text);
-    font-size: 1.1rem; font-weight: 500;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; user-select: none; transition: all .1s;
-    min-width: 0;
+    background: var(--pos-card); color: var(--pos-text);
+    font-size: 1.15rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    transition: background .08s, transform .08s; padding: 0 4px; min-width: 0;
 }
-.tecla:active { transform: scale(.92); background: #334155; }
-.tecla-func { background: #0f172a; color: var(--pos-text-muted); }
-.tecla-punct { background: #1e293b; }
+.tecla:active { background: rgba(14,165,233,0.2); transform: scale(0.93); box-shadow: 0 0 0 2px rgba(14,165,233,0.2); }
+.tecla-func { background: rgba(255,255,255,0.06); font-size: 1rem; }
+.tecla-shift { flex: 1.6; }
+.tecla-shift.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+.tecla-backspace { flex: 1.3; }
 .tecla-space { flex: 4; }
-.tecla-enter { background: var(--pos-accent); color: #fff; }
-.tecla-shift.active { background: var(--pos-accent); color: #fff; }
-.tecla-row { display: flex; gap: 4px; margin-bottom: 4px; }
+.tecla-enter { flex: 1.3; background: var(--pos-accent); color: #fff; border-color: var(--pos-accent); }
+.tecla-punct { flex: 1; }
+.tecla-func:active { background: rgba(14,165,233,0.2); }
+.tecla-func.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+.tecla-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 6px; }
+#teclado-rows { max-width: 100%; }
+#teclado-rows::-webkit-scrollbar { height: 0; }
 
 .modal-prod-card {
-    background: var(--pos-card);
-    border: 1px solid var(--pos-border);
-    border-radius: 12px;
-    padding: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .15s;
-    position: relative;
-    overflow: hidden;
+    background: var(--pos-card); border: 1px solid var(--pos-border); border-radius: 14px;
+    padding: 12px 10px; cursor: pointer; text-align: center; position: relative;
+    transition: transform .15s, box-shadow .15s; height: 100%; display: flex; flex-direction: column; align-items: center;
 }
-.modal-prod-card:hover { border-color: var(--pos-accent); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(14,165,233,.2); }
-.modal-prod-card:active { transform: scale(.96); }
-.modal-prod-card.out-of-stock { opacity: .4; pointer-events: none; }
+.modal-prod-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); border-color: var(--pos-accent); }
+.modal-prod-card.out-of-stock { opacity: 0.4; cursor: not-allowed; }
+.modal-prod-card.out-of-stock:hover { transform: none; box-shadow: none; }
+.modal-prod-img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,0.05); margin-bottom: 8px; }
 .modal-prod-img-placeholder {
-    width: 100%; aspect-ratio: 1;
-    border-radius: 8px;
+    width: 80px; height: 80px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.8rem; font-weight: 700;
-    margin-bottom: 6px;
+    font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;
 }
-.modal-prod-name { font-size: .78rem; font-weight: 600; color: var(--pos-text); line-height: 1.2; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.modal-prod-price { font-size: .85rem; font-weight: 700; color: var(--pos-accent); }
-.modal-prod-stock-badge { position: absolute; top: 4px; right: 4px; font-size: .6rem; padding: 2px 6px; border-radius: 20px; }
-.modal-prod-qty {
-    display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px;
-}
+.modal-prod-name { font-size: .9rem; font-weight: 600; color: var(--pos-text); line-height: 1.2; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+.modal-prod-price { font-size: 1rem; font-weight: 800; color: var(--pos-accent); font-variant-numeric: tabular-nums; }
+.modal-prod-stock-badge { font-size: .7rem; padding: 2px 8px; border-radius: 6px; font-weight: 700; position: absolute; top: 8px; right: 8px; }
+.modal-prod-qty { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 .modal-prod-qty button {
-    width: 26px; height: 26px; border-radius: 50%;
-    border: 1px solid var(--pos-border);
-    background: var(--pos-bg);
-    color: var(--pos-text);
-    font-size: 1rem; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--pos-border);
+    background: rgba(255,255,255,0.06); color: var(--pos-text); font-weight: 700; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s;
 }
-.modal-prod-qty button:active { background: var(--pos-accent); }
-.modal-prod-qty span { font-size: .9rem; font-weight: 600; min-width: 18px; text-align: center; }
+.modal-prod-qty button:hover { background: rgba(14,165,233,0.15); border-color: var(--pos-accent); }
+.modal-prod-qty span { font-weight: 800; font-size: 1rem; min-width: 24px; text-align: center; color: var(--pos-text); }
 </style>
 @endpush
 
@@ -300,10 +292,13 @@ function modalLimpiarBusqueda() {
     document.getElementById('modal-buscar-producto').focus();
 }
 
+const validaStock = false;
+
 function renderizarProductosModal(filtro) {
     const container = document.getElementById('modal-productos-grid');
     const q = (filtro || '').toLowerCase();
     const results = productos.filter(p => {
+        if (validaStock && p.stock <= 0) return false;
         const matchNombre = (p.nombre || '').toLowerCase().includes(q);
         const matchCodigo = (p.codigo_barras || '').toLowerCase().includes(q);
         return matchNombre || matchCodigo;
@@ -319,15 +314,21 @@ function renderizarProductosModal(filtro) {
         const qty = cantidadesModal[id];
         const c = colorProductoModal(p.nombre);
         const initial = (p.nombre || '?').charAt(0).toUpperCase();
+        const stockCls = !validaStock ? 'bg-warning text-dark' : (p.stock <= 0 ? 'bg-secondary' : p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark');
         const stockTxt = p.stock <= 0 ? 'Sin stock' : p.stock + ' uds';
-        const stockCls = p.stock <= 0 ? 'bg-secondary' : (p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark');
+        const outCls = (validaStock && p.stock <= 0) ? ' out-of-stock' : '';
+        let imgHtml;
+        if (p.imagen_url) {
+            imgHtml = `<img class="modal-prod-img" src="${p.imagen_url}" alt="" onerror="this.onerror=null;this.remove();this.nextElementSibling.style.display='flex';">`;
+            imgHtml += `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};display:none;">${initial}</div>`;
+        } else {
+            imgHtml = `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};">${initial}</div>`;
+        }
         html += `
         <div class="col-4 col-md-3 col-lg-2">
-            <div class="modal-prod-card" onclick="agregarProductoDesdeModal(${id})">
+            <div class="modal-prod-card${outCls}" onclick="agregarProductoDesdeModal(${id})">
                 <span class="modal-prod-stock-badge badge ${stockCls}">${stockTxt}</span>
-                ${p.tiene_imagen
-                    ? `<img src="${p.imagen_url}" alt="${escHtml(p.nombre)}" style="width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;" loading="lazy">`
-                    : `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};">${initial}</div>`}
+                ${imgHtml}
                 <div class="modal-prod-name">${escHtml(p.nombre)}</div>
                 <div class="modal-prod-price">RD$ ${Number(p.precio).toFixed(2)}</div>
                 <div class="modal-prod-qty" onclick="event.stopPropagation()">
@@ -351,9 +352,14 @@ function cambiarQtyModal(productoId, delta) {
     if (span) span.textContent = nueva;
 }
 
+function showToast(msg, tipo) {
+    // no-op; cart feedback is sufficient
+}
+
 function agregarProductoDesdeModal(id) {
     const p = productos.find(x => x.id === id);
     if (!p) return;
+    if (validaStock && p.stock <= 0) { showToast('Producto sin stock', 'warning'); return; }
     const qty = cantidadesModal[id] || 1;
     const curso = document.getElementById('modal-item-curso').value;
     const notas = document.getElementById('modal-item-notas').value.trim();
