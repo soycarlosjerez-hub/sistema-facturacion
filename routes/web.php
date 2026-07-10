@@ -174,6 +174,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{orden}', [\App\Http\Controllers\OrdenPosController::class, 'show'])->name('show')->middleware('permission:ordenes.view');
         Route::patch('/{orden}', [\App\Http\Controllers\OrdenPosController::class, 'update'])->name('update')->middleware('permission:ordenes.update');
         Route::delete('/{orden}', [\App\Http\Controllers\OrdenPosController::class, 'destroy'])->name('destroy')->middleware('permission:ordenes.cancel');
+        Route::delete('/{orden}/force', [\App\Http\Controllers\OrdenPosController::class, 'forceDestroy'])->name('forceDestroy')->middleware('permission:ordenes.cancel');
         Route::get('/buscar-producto', [\App\Http\Controllers\OrdenPosController::class, 'buscarProducto'])->name('buscarProducto')->middleware('permission:ordenes.create');
         Route::post('/{orden}/agregar', [\App\Http\Controllers\OrdenPosController::class, 'agregarItem'])->name('agregarItem')->middleware('permission:ordenes.create');
         Route::delete('/{orden}/quitar/{detalle}', [\App\Http\Controllers\OrdenPosController::class, 'quitarItem'])->name('quitarItem')->middleware('permission:ordenes.create');

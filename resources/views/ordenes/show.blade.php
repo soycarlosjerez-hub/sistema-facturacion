@@ -19,6 +19,12 @@
                 <button class="btn btn-danger">Anular</button>
             </form>
             @endif
+            @if($orden->estado === 'anulada')
+            <form action="{{ route('ordenes.forceDestroy', $orden) }}" method="POST" class="d-inline form-borrar-show">
+                @csrf @method('DELETE')
+                <button type="button" class="btn btn-dark btn-trigger-borrar-show">Eliminar permanentemente</button>
+            </form>
+            @endif
             <a href="{{ route('ordenes.create') }}" class="btn btn-primary">Nueva Orden</a>
             <a href="{{ route('ordenes.index') }}" class="btn btn-secondary">Volver</a>
         </div>
@@ -313,6 +319,39 @@ if (modalProductSelect) {
         }
     });
 }
+
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-trigger-borrar-show');
+    if (!btn) return;
+    const form = btn.closest('.form-borrar-show');
+    if (!form) return;
+    Swal.fire({
+        title: 'Eliminar Orden Permanentemente',
+        html: 'Esta acción <strong>no se puede deshacer</strong>. Se eliminará la orden y todos sus registros asociados.',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc2626',
+        preConfirm: () => {
+            return Swal.fire({
+                title: 'Confirma escribiendo ELIMINAR',
+                input: 'text',
+                inputPlaceholder: 'Escribe ELIMINAR',
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc2626',
+                preConfirm: (input) => {
+                    if (input !== 'ELIMINAR') {
+                        Swal.showValidationMessage('Debes escribir ELIMINAR');
+                        return false;
+                    }
+                }
+            }).then(r => r.isConfirmed ? Promise.resolve() : Promise.reject());
+        }
+    }).then(r => { if (r.isConfirmed) form.submit(); });
+});
 </script>
 @endpush
 @endsection

@@ -12,6 +12,7 @@ use App\Services\OrdenNotificationService;
 use App\Services\PrintService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrdenPosController extends Controller
 {
@@ -110,6 +111,21 @@ class OrdenPosController extends Controller
             return redirect()->back()->with('error', $result['error']);
         }
         return redirect()->route('ordenes.index')->with('success', 'Orden anulada.');
+    }
+
+    public function forceDestroy(Orden $orden)
+    {
+        DB::beginTransaction();
+        try {
+            $orden->detalles()->delete();
+            $orden->pagos()->delete();
+            $orden->delete();
+            DB::commit();
+            return redirect()->route('ordenes.index')->with('success', 'Orden eliminada permanentemente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error al eliminar: ' . $e->getMessage());
+        }
     }
 
     public function buscarProducto(Request $request)
