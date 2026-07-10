@@ -125,8 +125,7 @@ class OrdenPosController extends Controller
             $query->where('stock', '>', 0);
         }
 
-        $productos = $query->with('categorias')
-            ->orderBy('nombre')
+        $productos = $query->orderBy('nombre')
             ->limit(20)
             ->get(['id', 'nombre', 'precio', 'codigo_barras', 'stock']);
 
