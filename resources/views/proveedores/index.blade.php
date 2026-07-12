@@ -1,40 +1,22 @@
 @extends('layouts.app')
-
 @section('title', 'Gestión de Proveedores')
 
 @push('styles')
 @include('partials.premium-ui')
+@include('partials.datatable-ui')
 <style>
-.proveedores-table {
-    --bs-table-bg: transparent;
-    --bs-table-hover-bg: rgba(59,130,246,.04);
-    margin: 0;
+:root {
+    --dt-accent: #3b82f6;
+    --dt-accent-gradient: linear-gradient(135deg, #3b82f6, #6366f1);
+    --dt-accent-rgb: 59,130,246;
 }
-.proveedores-table thead th {
-    background: rgba(241,245,249,.8);
-    color: #64748b;
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    font-weight: 700;
-    padding: .85rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-.proveedores-table tbody td {
-    padding: .85rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-    font-size: .9rem;
-}
-.proveedores-table tbody tr:last-child td { border-bottom: none; }
-.proveedores-table tbody tr { transition: background .15s; }
-.proveedores-table tbody tr:hover { background: rgba(59,130,246,.03); }
 .avatar-circle {
     width: 44px; height: 44px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-weight: 600; font-size: 1.2rem;
     transition: transform 0.2s;
+    flex-shrink: 0;
 }
 tr:hover .avatar-circle { transform: scale(1.1); }
 .status-badge {
@@ -43,16 +25,12 @@ tr:hover .avatar-circle { transform: scale(1.1); }
     font-weight: 500;
     font-size: 0.75rem;
     letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all .2s;
 }
-body.dark-mode .proveedores-table thead th {
-    background: rgba(15,23,42,.5);
-    color: #94a3b8;
-    border-color: #1e293b;
-}
-body.dark-mode .proveedores-table tbody td {
-    border-bottom-color: #1e293b;
-    color: #cbd5e1;
-}
+.status-badge:hover { filter: brightness(1.1); }
+body.dark-mode .avatar-circle { color: #f1f5f9 !important; }
+body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
 </style>
 @endpush
 
@@ -75,11 +53,14 @@ body.dark-mode .proveedores-table tbody td {
                         Gestión de proveedores y contactos de negocio
                         <span class="mx-2">·</span>
                         <i class="bi bi-list-ul me-1"></i>
-                        {{ $proveedores->total() }} registro(s)
+                        {{ $proveedores->count() }} registro(s)
                     </small>
                 </div>
             </div>
-            <div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('proveedores.exportar') }}" class="btn btn-light rounded-pill px-3 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);">
+                    <i class="bi bi-download me-1"></i> Exportar
+                </a>
                 @can('proveedores.create')
                 <a href="{{ route('proveedores.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo Proveedor
@@ -127,142 +108,250 @@ body.dark-mode .proveedores-table tbody td {
     <div class="premium-card" style="animation-delay:.15s;">
         <div class="card-accent blue"></div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table proveedores-table">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Proveedor</th>
-                            <th>Contacto</th>
-                            <th class="text-center">Identificación (RNC)</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-end pe-4">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="proveedores-tbody">
-                        @forelse($proveedores as $p)
-                            <tr>
-                                <td class="ps-4">
-                                    @php
-                                        $nombreProv = $p->nombre ?? 'P';
-                                        $firstLetter = strtoupper(substr($nombreProv, 0, 1));
-                                        $colors = ['#f87171', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa', '#f472b6'];
-                                        $color = $colors[crc32($nombreProv) % count($colors)];
-                                    @endphp
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle text-white me-3 shadow-sm" style="background-color: {{ $color }};">
-                                            <i class="bi bi-building fs-5"></i>
-                                        </div>
-                                        <div class="text-truncate">
-                                            <div class="fw-bold text-dark fs-6 text-truncate" title="{{ $p->nombre }}">{{ $p->nombre }}</div>
-                                            <div class="text-muted small text-truncate"><i class="bi bi-geo-alt me-1"></i>{{ $p->direccion ?? 'Sin dirección' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="fw-medium text-dark"><i class="bi bi-telephone text-muted me-2"></i>{{ $p->telefono ?? '—' }}</div>
-                                    <div class="text-muted small mt-1"><i class="bi bi-envelope text-muted me-2"></i>{{ $p->email ?? '—' }}</div>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-light text-dark border rounded-pill">
-                                        <i class="bi bi-card-text me-1"></i> {{ $p->rnc_cedula ?? 'Sin RNC' }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                    @if($p->activo)
-                    <span class="status-badge bg-success bg-opacity-10 text-success">
-                        <i class="bi bi-check-circle-fill me-1"></i> Activo
-                    </span>
-                    @else
-                    <span class="status-badge bg-secondary bg-opacity-10 text-secondary">
-                        <i class="bi bi-x-circle-fill me-1"></i> Inactivo
-                    </span>
-                    @endif
-                                </td>
-                                <td class="text-end pe-4">
-                                    <a href="{{ route('proveedores.show', $p) }}" class="premium-btn-edit" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="{{ route('proveedores.edit', $p) }}" class="premium-btn-edit" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form action="{{ route('proveedores.destroy', $p) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este proveedor?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="premium-btn-delete" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="bi bi-truck fs-1" style="color:#cbd5e1;"></i>
-                                    <p class="mt-2 mb-0 fw-semibold">No hay proveedores registrados</p>
-                                    @can('proveedores.create')
-                                    <a href="{{ route('proveedores.create') }}" class="btn btn-primary rounded-pill mt-2">Registrar primer proveedor</a>
-                                    @endcan
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+            <table id="proveedores-table" class="table dt-table nowrap no-footer" style="width:100%">
+                <thead>
+                    <tr>
+                        <th class="ps-4" style="width:50px;">#</th>
+                        <th>Proveedor</th>
+                        <th>Contacto</th>
+                        <th>RNC</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
-
-    @if(method_exists($proveedores, 'links') && $proveedores->hasPages())
-    <div class="d-flex justify-content-center mt-3">
-        {{ $proveedores->withQueryString()->links() }}
-    </div>
-    @endif
 </div>
 @endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('busqueda-proveedor');
-    const tableBody = document.getElementById('proveedores-tbody');
-    let timeout = null;
+$(function() {
+    const data = @json($proveedores);
+    const csrfToken = '{{ csrf_token() }}';
 
-    if (!searchInput) return;
-
-    const incluirInactivos = document.getElementById('incluir_inactivos');
-    function actualizarBusqueda() {
-        const query = searchInput.value;
-        const url = new URL(window.location.href);
-        url.searchParams.set('buscar', query);
-        url.searchParams.set('incluir_inactivos', incluirInactivos && incluirInactivos.checked ? '1' : '');
-
-        if (tableBody) tableBody.style.opacity = '0.5';
-
-        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then(r => r.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newTbody = doc.getElementById('proveedores-tbody');
-            const newPaginator = doc.querySelector('.pagination')?.outerHTML;
-            if (newPaginator) {
-                const oldPaginator = document.querySelector('.pagination')?.closest('.d-flex');
-                if (oldPaginator) oldPaginator.outerHTML = doc.querySelector('.pagination')?.closest('.d-flex')?.outerHTML || '';
+    const table = $('#proveedores-table').DataTable({
+        data: data,
+        columns: [
+            {
+                data: null,
+                className: 'text-center ps-4',
+                orderable: false,
+                searchable: false,
+                width: '50px',
+                render: function(data, type, row, meta) {
+                    return '<span class="text-muted fw-bold">' + (meta.row + meta.settings._iDisplayStart + 1) + '</span>';
+                }
+            },
+            {
+                data: null,
+                orderable: true,
+                searchable: true,
+                render: function(data) {
+                    const nombre = escapeHtml(data.nombre || '');
+                    const letter = nombre.charAt(0).toUpperCase();
+                    const colors = ['#f87171','#60a5fa','#34d399','#fbbf24','#a78bfa','#f472b6','#f97316','#14b8a6'];
+                    const color = colors[crc32(nombre) % colors.length];
+                    return '<div class="d-flex align-items-center">' +
+                        '<div class="avatar-circle text-white me-3 shadow-sm" style="background:' + color + ';">' +
+                            '<i class="bi bi-building fs-5"></i>' +
+                        '</div>' +
+                        '<div class="text-truncate">' +
+                            '<div class="fw-bold text-dark fs-6 text-truncate" title="' + escapeHtml(nombre) + '">' + escapeHtml(nombre) + '</div>' +
+                            (data.direccion ? '<div class="text-muted small text-truncate" style="max-width:220px;"><i class="bi bi-geo-alt me-1"></i>' + escapeHtml(data.direccion) + '</div>' : '<div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>Sin dirección</div>') +
+                        '</div></div>';
+                }
+            },
+            {
+                data: null,
+                orderable: true,
+                searchable: true,
+                render: function(data) {
+                    let html = '<div class="fw-medium text-dark"><i class="bi bi-telephone text-muted me-2"></i>' + escapeHtml(data.telefono || '—') + '</div>';
+                    if (data.email) {
+                        html += '<div class="text-muted small mt-1"><i class="bi bi-envelope text-muted me-2"></i>' + escapeHtml(data.email) + '</div>';
+                    }
+                    return html;
+                }
+            },
+            {
+                data: 'rnc',
+                defaultContent: '',
+                render: function(data) {
+                    return data ? '<span class="badge bg-light text-dark border rounded-pill"><i class="bi bi-card-text me-1"></i> ' + escapeHtml(data) + '</span>' : '<span class="text-muted small">—</span>';
+                }
+            },
+            {
+                data: 'activo',
+                className: 'text-center',
+                render: function(data, type, row) {
+                    const id = row.id;
+                    const active = data;
+                    return active
+                        ? '<span class="status-badge bg-success bg-opacity-10 text-success toggle-activo" data-id="' + id + '" style="cursor:pointer;">' +
+                            '<i class="bi bi-check-circle-fill me-1"></i> Activo</span>'
+                        : '<span class="status-badge bg-secondary bg-opacity-10 text-secondary toggle-activo" data-id="' + id + '" style="cursor:pointer;">' +
+                            '<i class="bi bi-x-circle-fill me-1"></i> Inactivo</span>';
+                }
+            },
+            {
+                data: null,
+                className: 'text-end pe-4',
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    return renderAcciones(data.id, {
+                        show: '{{ url("proveedores") }}/' + data.id,
+                        edit: '{{ url("proveedores") }}/' + data.id + '/edit',
+                        delete: '{{ url("proveedores") }}/' + data.id,
+                        csrf: csrfToken,
+                        nombre: data.nombre
+                    });
+                }
             }
-            if (newTbody && tableBody) {
-                tableBody.innerHTML = newTbody.innerHTML;
-                tableBody.style.opacity = '1';
+        ],
+        language: {
+            search: '',
+            lengthMenu: '_MENU_',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ proveedores',
+            infoEmpty: 'No hay proveedores',
+            infoFiltered: '(de _MAX_ totales)',
+            paginate: {
+                first: '<i class="bi bi-chevron-double-left"></i>',
+                last: '<i class="bi bi-chevron-double-right"></i>',
+                next: '<i class="bi bi-chevron-right"></i>',
+                previous: '<i class="bi bi-chevron-left"></i>'
+            },
+            zeroRecords: '<div class="text-center py-5">' +
+                '<i class="bi bi-truck d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i>' +
+                '<p class="fw-semibold mb-1" style="color:#475569;">No se encontraron proveedores</p>' +
+                '<p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>'
+        },
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+        order: [[1, 'asc']],
+        responsive: {
+            details: {
+                type: 'column',
+                target: 'tr',
+                renderer: function(api, rowIdx, columns) {
+                    let data = '';
+                    columns.forEach(function(col) {
+                        if (col.hidden) {
+                            data += '<li>' +
+                                '<span class="child-label">' + col.title + '</span>' +
+                                '<span class="child-value">' + col.data + '</span>' +
+                            '</li>';
+                        }
+                    });
+                    return data ? $('<ul class="d-flex flex-wrap gap-2 p-2 mb-0">' + data + '</ul>') : false;
+                }
             }
-        })
-        .catch(() => {
-            if (tableBody) tableBody.style.opacity = '1';
+        },
+        dom: '<"row px-3 pt-2"<"col-sm-6"l><"col-sm-6"f>>' +
+             '<"row"<"col-12"tr>>' +
+             '<"row px-3 pb-2"<"col-sm-5"i><"col-sm-7"p>>'
+    });
+
+    // Toggle activo via SweetAlert2
+    $('#proveedores-table').on('click', '.toggle-activo', function() {
+        const id = $(this).data('id');
+        const badge = $(this);
+        const isActive = badge.hasClass('text-success');
+
+        Swal.fire({
+            title: isActive ? '¿Desactivar proveedor?' : '¿Activar proveedor?',
+            text: isActive ? 'El proveedor quedará inactivo en el sistema.' : 'El proveedor volverá a estar activo.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: isActive ? '#dc2626' : '#22c55e',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, ' + (isActive ? 'desactivar' : 'activar'),
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ url("proveedores") }}/' + id + '/toggle',
+                    method: 'PUT',
+                    data: { _token: csrfToken },
+                    success: function(res) {
+                        if (res.success) {
+                            const row = table.row($(badge).closest('tr'));
+                            row.data().activo = res.activo;
+                            row.invalidate();
+                            table.draw(false);
+                            Swal.fire({
+                                icon: 'success',
+                                title: res.activo ? 'Proveedor activado' : 'Proveedor desactivado',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 2500
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'No se pudo cambiar el estado.', 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Delete con SweetAlert2
+    $('#proveedores-table').on('click', '.btn-delete-proveedor', function() {
+        const btn = $(this);
+        const url = btn.data('url');
+        const nombre = btn.data('nombre');
+
+        Swal.fire({
+            title: '¿Eliminar proveedor?',
+            text: 'Se eliminará: "' + nombre + '"',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                form.innerHTML = '<input type="hidden" name="_token" value="' + csrfToken + '"><input type="hidden" name="_method" value="DELETE">';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+
+    function renderAcciones(id, opts) {
+        let html = '<div class="d-flex justify-content-end gap-1">';
+        if (opts.show) {
+            html += '<a href="' + opts.show + '" class="premium-btn-edit" title="Ver"><i class="bi bi-eye"></i></a>';
+        }
+        html += '<a href="' + opts.edit + '" class="premium-btn-edit" title="Editar"><i class="bi bi-pencil"></i></a>';
+        html += '<button type="button" class="premium-btn-delete border-0 btn-delete-proveedor" data-url="' + opts.delete + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar"><i class="bi bi-trash"></i></button>';
+        html += '</div>';
+        return html;
+    }
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, function(c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
         });
     }
 
-    searchInput.addEventListener('input', function() {
-        clearTimeout(timeout);
-        timeout = setTimeout(actualizarBusqueda, 400);
-    });
-    if (incluirInactivos) {
-        incluirInactivos.addEventListener('change', actualizarBusqueda);
+    function crc32(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return Math.abs(hash);
     }
 });
 </script>

@@ -107,6 +107,16 @@ class CategoriaController extends Controller
             ->with('success', 'Categoría actualizada correctamente.');
     }
 
+    public function toggleActiva(Categoria $categoria)
+    {
+        $categoria->update(['activa' => !$categoria->activa]);
+        return response()->json([
+            'success' => true,
+            'activa'  => $categoria->fresh()->activa,
+            'label'   => $categoria->activa ? 'Activa' : 'Inactiva',
+        ]);
+    }
+
     public function exportExcel()
     {
         return Excel::download(new CategoriaExport, 'categorias.xlsx');

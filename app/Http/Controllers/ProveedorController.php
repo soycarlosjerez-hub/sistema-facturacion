@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProveedoresExport;
 use App\Models\Proveedor;
 use App\Services\ProveedorService;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProveedorController extends Controller
 {
@@ -14,7 +16,24 @@ class ProveedorController extends Controller
 
     public function index(Request $request)
     {
-        return view('proveedores.index', $this->proveedorService->list($request->all()));
+        $buscar = $request->input('buscar');
+        $incluirInactivos = $request->boolean('incluir_inactivos');
+
+        $query = Proveedor::query()->orderBy('nombre');
+        if (!$incluirInactivos) {
+            $query->activo();
+        }
+        if ($buscar) {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre', 'like', "%{$buscar}%")
+                  ->orWhere('email', 'like', "%{$buscar}%")
+                  ->orWhere('telefono', 'like', "%{$buscar}%")
+                  ->orWhere('rnc', 'like', "%{$buscar}%");
+            });
+        }
+
+        $proveedores = $query->get();
+        return view('proveedores.index', compact('proveedores'));
     }
 
     public function create()
@@ -68,6 +87,21 @@ class ProveedorController extends Controller
         $this->proveedorService->update($proveedore, $data);
 
         return redirect()->route('proveedores.index')->with('success', 'Proveedor actualizado correctamente');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new ProveedoresExport, 'proveedores.xlsx');
+    }
+
+    public function toggleActivo(Proveedor $proveedore)
+    {
+        $proveedor = $this->proveedorService->toggleActivo($proveedore);
+        return response()->json([
+            'success' => true,
+            'activo'  => $proveedor->activo,
+            'label'   => $proveedor->activo ? 'Activo' : 'Inactivo',
+        ]);
     }
 
     public function destroy(Proveedor $proveedore)

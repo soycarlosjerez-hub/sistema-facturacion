@@ -253,6 +253,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/categorias/{categoria}/edit', [CategoriaController::class, 'edit'])->name('categorias.edit');
         Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update');
+        Route::put('/categorias/{categoria}/toggle', [CategoriaController::class, 'toggleActiva'])->name('categorias.toggle');
     });
 
     Route::middleware('permission:productos.delete')->group(function () {
@@ -362,6 +363,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:proveedores.edit')->group(function () {
         Route::get('/proveedores/{proveedore}/edit', [ProveedorController::class, 'edit'])->name('proveedores.edit');
         Route::put('/proveedores/{proveedore}', [ProveedorController::class, 'update'])->name('proveedores.update');
+        Route::put('/proveedores/{proveedore}/toggle', [ProveedorController::class, 'toggleActivo'])->name('proveedores.toggle');
     });
     Route::middleware('permission:proveedores.delete')->group(function () {
         Route::delete('/proveedores/{proveedore}', [ProveedorController::class, 'destroy'])->name('proveedores.destroy');

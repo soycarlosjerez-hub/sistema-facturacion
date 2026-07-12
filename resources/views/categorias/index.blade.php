@@ -35,7 +35,10 @@ tr:hover .avatar-circle { transform: scale(1.1); }
     font-weight: 500;
     font-size: 0.75rem;
     letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all .2s;
 }
+.status-badge:hover { filter: brightness(1.1); }
 body.dark-mode .avatar-circle { color: #f1f5f9 !important; }
 body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
 </style>
@@ -150,11 +153,12 @@ $(function() {
             {
                 data: 'activa',
                 className: 'text-center',
-                render: function(data) {
+                render: function(data, type, row) {
+                    const id = row.id;
                     return data
-                        ? '<span class="status-badge bg-success bg-opacity-10 text-success">' +
+                        ? '<span class="status-badge bg-success bg-opacity-10 text-success toggle-activa" data-id="' + id + '">' +
                             '<i class="bi bi-check-circle-fill me-1"></i> Activa</span>'
-                        : '<span class="status-badge bg-secondary bg-opacity-10 text-secondary">' +
+                        : '<span class="status-badge bg-secondary bg-opacity-10 text-secondary toggle-activa" data-id="' + id + '">' +
                             '<i class="bi bi-x-circle-fill me-1"></i> Inactiva</span>';
                 }
             },
@@ -216,16 +220,85 @@ $(function() {
              '<"row px-3 pb-2"<"col-sm-5"i><"col-sm-7"p>>'
     });
 
+    // Toggle activa via SweetAlert2
+    $('#categorias-table').on('click', '.toggle-activa', function() {
+        const id = $(this).data('id');
+        const badge = $(this);
+        const isActive = badge.hasClass('text-success');
+
+        Swal.fire({
+            title: isActive ? '¿Desactivar categoría?' : '¿Activar categoría?',
+            text: isActive ? 'La categoría quedará inactiva en el sistema.' : 'La categoría volverá a estar activa.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: isActive ? '#dc2626' : '#22c55e',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, ' + (isActive ? 'desactivar' : 'activar'),
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/categorias/' + id + '/toggle',
+                    method: 'PUT',
+                    data: { _token: csrfToken },
+                    success: function(res) {
+                        if (res.success) {
+                            const row = table.row($(badge).closest('tr'));
+                            row.data().activa = res.activa;
+                            row.invalidate();
+                            table.draw(false);
+                            Swal.fire({
+                                icon: 'success',
+                                title: res.activa ? 'Categoría activada' : 'Categoría desactivada',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 2500
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'No se pudo cambiar el estado.', 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Delete con SweetAlert2
+    $('#categorias-table').on('click', '.btn-delete-categoria', function() {
+        const btn = $(this);
+        const url = btn.data('url');
+        const nombre = btn.data('nombre');
+
+        Swal.fire({
+            title: '¿Eliminar categoría?',
+            text: 'Se eliminará: "' + nombre + '". Solo es posible si no tiene productos asociados.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then(result => {
+            if (result.isConfirmed) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                form.innerHTML = '<input type="hidden" name="_token" value="' + csrfToken + '"><input type="hidden" name="_method" value="DELETE">';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+
     function renderAcciones(id, opts) {
         let html = '<div class="d-flex justify-content-end gap-1">';
         html += '<a href="' + opts.edit + '" class="premium-btn-edit" title="Editar">' +
             '<i class="bi bi-pencil"></i></a>';
         if (opts.delete) {
-            html += '<form action="' + opts.delete + '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar la categoría ' + escapeHtml(opts.nombre || '') + '? Solo es posible si no tiene productos asociados.\');">' +
-                '<input type="hidden" name="_token" value="' + opts.csrf + '">' +
-                '<input type="hidden" name="_method" value="DELETE">' +
-                '<button type="submit" class="premium-btn-delete border-0" title="Eliminar">' +
-                '<i class="bi bi-trash"></i></button></form>';
+            html += '<button type="button" class="premium-btn-delete border-0 btn-delete-categoria" data-url="' + opts.delete + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar">' +
+                '<i class="bi bi-trash"></i></button>';
         }
         html += '</div>';
         return html;

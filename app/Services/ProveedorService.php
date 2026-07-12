@@ -34,6 +34,12 @@ class ProveedorService
         return compact('proveedores', 'totalProveedores', 'totalActivos', 'totalInactivos');
     }
 
+    public function toggleActivo(Proveedor $proveedor): Proveedor
+    {
+        $proveedor->update(['activo' => !$proveedor->activo]);
+        return $proveedor->fresh();
+    }
+
     public function create(array $data): Proveedor
     {
         $this->validarRnc($data);

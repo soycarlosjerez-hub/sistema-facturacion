@@ -1,11 +1,8 @@
 @extends('layouts.app')
-
 @section('title', 'Nuevo Proveedor')
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-</style>
 @endpush
 
 @section('content')
@@ -34,39 +31,65 @@
         </div>
     </div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form id="proveedorForm" action="{{ route('proveedores.store') }}" method="POST">
         @csrf
 
         <div class="premium-card" style="animation-delay:.1s;">
             <div class="card-accent blue"></div>
-            <div class="premium-card-title">
-                <i class="bi bi-info-circle icon-blue"></i>
-                Información del Proveedor
-            </div>
-            <div class="premium-card-subtitle">Completa los datos del nuevo proveedor</div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-12">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="mb-4 pb-3 border-bottom">
+                    <h6 class="fw-bold mb-0" style="color:#4f46e5;">
+                        <i class="bi bi-building me-2"></i>Información General
+                    </h6>
+                    <small class="text-muted">Datos básicos del proveedor</small>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
                         <label class="form-label">Nombre comercial <span class="text-danger">*</span></label>
                         <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required placeholder="Ej. Distribuidora Corripio">
                         @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-lg-4">
                         <label class="form-label">Teléfono</label>
                         <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}" placeholder="(000) 000-0000">
                         @error('telefono') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-lg-6">
                         <label class="form-label">Correo electrónico</label>
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="correo@empresa.com">
                         @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-lg-6">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" name="direccion" class="form-control @error('direccion') is-invalid @enderror" value="{{ old('direccion') }}" placeholder="Calle, sector, ciudad">
+                        @error('direccion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
+                <div class="mb-4 pb-3 border-bottom">
+                    <h6 class="fw-bold mb-0" style="color:#4f46e5;">
+                        <i class="bi bi-card-text me-2"></i>Información Fiscal
+                    </h6>
+                    <small class="text-muted">Datos tributarios del proveedor</small>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-4">
                         <label class="form-label">RNC</label>
                         <input type="text" name="rnc" class="form-control @error('rnc') is-invalid @enderror" value="{{ old('rnc') }}" placeholder="000-00000-0">
                         @error('rnc') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-lg-4">
                         <label class="form-label">Tipo de Persona</label>
                         <select name="tipo_persona" class="form-select @error('tipo_persona') is-invalid @enderror">
                             <option value="">Seleccionar</option>
@@ -75,11 +98,15 @@
                         </select>
                         @error('tipo_persona') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-12">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" name="direccion" class="form-control @error('direccion') is-invalid @enderror" value="{{ old('direccion') }}" placeholder="Calle, sector, ciudad">
-                        @error('direccion') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+                </div>
+
+                <div class="mb-3 pb-3 border-bottom">
+                    <h6 class="fw-bold mb-0" style="color:#4f46e5;">
+                        <i class="bi bi-gear me-2"></i>Configuración
+                    </h6>
+                    <small class="text-muted">Opciones de retención fiscal</small>
+                </div>
+                <div class="row g-4">
                     <div class="col-md-3">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="sujeto_retencion_isr" value="1" id="ret_isr" {{ old('sujeto_retencion_isr') ? 'checked' : '' }}>
@@ -101,11 +128,17 @@
 </div>
 
 <div class="premium-sticky-bar">
-    <div class="d-flex justify-content-end align-items-center">
-        <a href="{{ route('proveedores.index') }}" class="btn-cancel me-2">Cancelar</a>
-        <button type="submit" form="proveedorForm" class="btn-save">
-            <i class="bi bi-check-lg me-2"></i>Guardar Proveedor
-        </button>
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#4f46e5;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nuevo proveedor</span>
+        </div>
+        <div>
+            <a href="{{ route('proveedores.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="proveedorForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Proveedor
+            </button>
+        </div>
     </div>
 </div>
 @endsection
