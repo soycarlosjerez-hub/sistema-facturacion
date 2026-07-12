@@ -100,6 +100,16 @@
                 <a href="{{ route('kardex.index') }}" class="btn btn-outline-secondary rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;"><i class="bi bi-arrow-counterclockwise"></i></a>
             </div>
         </form>
+        @can('kardex.export')
+        <div class="d-flex gap-2 mt-3 pt-3 border-top">
+            <a href="{{ route('kardex.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                <i class="bi bi-file-excel me-1"></i> Excel
+            </a>
+            <a href="{{ route('kardex.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                <i class="bi bi-file-pdf me-1"></i> PDF
+            </a>
+        </div>
+        @endcan
     </div>
 
     <div id="kardex-container" class="table-responsive" style="min-height:400px;">

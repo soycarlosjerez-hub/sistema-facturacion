@@ -405,6 +405,10 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:kardex.view')->group(function () {
         Route::get('/kardex', [KardexController::class, 'index'])->name('kardex.index');
     });
+    Route::middleware('permission:kardex.export')->group(function () {
+        Route::get('/kardex/exportar', [KardexController::class, 'exportExcel'])->name('kardex.exportar');
+        Route::get('/kardex/pdf', [KardexController::class, 'exportPdf'])->name('kardex.pdf');
+    });
 
     // NCF
     Route::middleware('permission:ncf.view')->group(function () {
