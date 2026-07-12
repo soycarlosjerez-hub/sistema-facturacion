@@ -233,7 +233,7 @@ class OrdenService
     public function aplicarDescuento(Orden $orden, string $tipo, float $valor, string $motivo): array
     {
         $user = Auth::user();
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin = $user->hasRole(['admin', 'root', 'owner', 'admin-business']) || in_array($user->role, ['admin', 'root', 'owner']);
 
         if ($tipo === 'porcentaje') {
             if ($valor > 50 && !$isAdmin) {
@@ -269,7 +269,8 @@ class OrdenService
     public function anular(Orden $orden, string $motivo): array
     {
         $user = Auth::user();
-        if (!$user->hasRole('admin') && $orden->detalles->sum('subtotal') > 500) {
+        $isAdmin = $user->hasRole(['admin', 'root', 'owner', 'admin-business']) || in_array($user->role, ['admin', 'root', 'owner']);
+        if (!$isAdmin && $orden->detalles->sum('subtotal') > 500) {
             return ['error' => 'Se requiere autorización de administrador para anular órdenes mayores a RD$500', 'code' => 422];
         }
 
