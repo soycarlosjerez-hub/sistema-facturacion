@@ -128,6 +128,18 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="mb-0">
+                            <label for="proveedor_id" class="form-label">Proveedor</label>
+                            <select name="proveedor_id" id="proveedor_id" class="form-select @error('proveedor_id') is-invalid @enderror">
+                                <option value="">Seleccionar proveedor...</option>
+                                @foreach($proveedores as $proveedor)
+                                    <option value="{{ $proveedor->id }}" {{ old('proveedor_id') == $proveedor->id ? 'selected' : '' }}>{{ $proveedor->nombre }}</option>
+                                @endforeach
+                            </select>
+                            @error('proveedor_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="mb-0">
                             <label for="fecha_gasto" class="form-label">Fecha del Gasto <span class="text-danger">*</span></label>
                             <input type="date" name="fecha_gasto" id="fecha_gasto" class="form-control @error('fecha_gasto') is-invalid @enderror"
                                    value="{{ old('fecha_gasto', date('Y-m-d')) }}" required>

@@ -75,6 +75,10 @@
                         <div class="premium-detail-value">{{ $gasto->metodo_pago ? ucfirst($gasto->metodo_pago) : '—' }}</div>
                     </div>
                     <div class="premium-detail-row">
+                        <div class="premium-detail-label">Proveedor</div>
+                        <div class="premium-detail-value">{{ $gasto->proveedor?->nombre ?? '—' }}</div>
+                    </div>
+                    <div class="premium-detail-row">
                         <div class="premium-detail-label">N° Comprobante</div>
                         <div class="premium-detail-value">
                             @if($gasto->comprobante)

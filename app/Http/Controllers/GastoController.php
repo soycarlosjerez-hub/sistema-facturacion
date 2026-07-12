@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gasto;
 use App\Models\PlantaGasto;
+use App\Models\Proveedor;
 use App\Services\GastoService;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,8 @@ class GastoController extends Controller
     {
         $categorias = $this->gastoService->getCategorias();
         $plantillas = PlantaGasto::activas()->orderBy('nombre')->get();
-        return view('gastos.create', compact('categorias', 'plantillas'));
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        return view('gastos.create', compact('categorias', 'plantillas', 'proveedores'));
     }
 
     public function store(Request $request)
@@ -36,6 +38,7 @@ class GastoController extends Controller
             'metodo_pago'  => 'nullable|string|max:50',
             'comprobante'  => 'nullable|string|max:100',
             'planta_gasto_id' => 'nullable|exists:planta_gastos,id',
+            'proveedor_id'    => 'nullable|exists:proveedores,id',
         ]);
 
         $this->gastoService->create($data);
@@ -46,7 +49,7 @@ class GastoController extends Controller
 
     public function show(Gasto $gasto)
     {
-        $gasto->load('user', 'caja');
+        $gasto->load('user', 'caja', 'proveedor');
         return view('gastos.show', compact('gasto'));
     }
 
@@ -54,7 +57,8 @@ class GastoController extends Controller
     {
         $categorias = $this->gastoService->getCategorias();
         $plantillas = PlantaGasto::activas()->orderBy('nombre')->get();
-        return view('gastos.edit', compact('gasto', 'categorias', 'plantillas'));
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        return view('gastos.edit', compact('gasto', 'categorias', 'plantillas', 'proveedores'));
     }
 
     public function update(Request $request, Gasto $gasto)
@@ -68,6 +72,7 @@ class GastoController extends Controller
             'metodo_pago'  => 'nullable|string|max:50',
             'comprobante'  => 'nullable|string|max:100',
             'planta_gasto_id' => 'nullable|exists:planta_gastos,id',
+            'proveedor_id'    => 'nullable|exists:proveedores,id',
         ]);
 
         $this->gastoService->update($gasto, $data);

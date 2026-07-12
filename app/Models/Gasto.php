@@ -25,6 +25,7 @@ class Gasto extends Model
         'sucursal_id',
         'tenant_id',
         'planta_gasto_id',
+        'proveedor_id',
     ];
 
     protected $casts = [
@@ -55,6 +56,11 @@ class Gasto extends Model
     public function plantaGasto(): BelongsTo
     {
         return $this->belongsTo(PlantaGasto::class);
+    }
+
+    public function proveedor(): BelongsTo
+    {
+        return $this->belongsTo(Proveedor::class);
     }
 
     public function scopeOfCategoria($query, $categoria)

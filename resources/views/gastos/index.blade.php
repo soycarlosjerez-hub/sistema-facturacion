@@ -145,6 +145,7 @@ body.dark-mode .gastos-table tbody td {
                         <tr>
                             <th class="ps-4">Descripción</th>
                             <th>Categoría</th>
+                            <th>Proveedor</th>
                             <th>Monto</th>
                             <th>Método Pago</th>
                             <th>Registrado por</th>
@@ -168,6 +169,9 @@ body.dark-mode .gastos-table tbody td {
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
+                                </td>
+                                <td>
+                                    <span class="text-muted small">{{ $gasto->proveedor?->nombre ?? '—' }}</span>
                                 </td>
                                 <td class="fw-bold" style="color:#059669;">RD$ {{ number_format($gasto->monto, 2) }}</td>
                                 <td>
@@ -203,7 +207,7 @@ body.dark-mode .gastos-table tbody td {
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1" style="color:#cbd5e1;"></i>
                                     <p class="mt-2 mb-0 fw-semibold">No hay gastos registrados</p>
                                     @can('gastos.create')
