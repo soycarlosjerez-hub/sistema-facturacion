@@ -231,7 +231,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');
 
         Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
+        Route::get('/categorias/exportar', [CategoriaController::class, 'exportExcel'])->name('categorias.exportar');
         Route::get('/categorias/create', [CategoriaController::class, 'create'])->name('categorias.create');
+        Route::get('/categorias/importar', [CategoriaController::class, 'showImportForm'])->name('categorias.importar');
         Route::get('/categorias/{categoria}', [CategoriaController::class, 'show'])->name('categorias.show');
     });
 
@@ -241,6 +243,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/productos/import', [ProductoController::class, 'uploadPreview'])->name('productos.import.store');
 
         Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store');
+        Route::post('/categorias/importar', [CategoriaController::class, 'import'])->name('categorias.importar.procesar');
     });
 
     Route::middleware('permission:productos.edit')->group(function () {

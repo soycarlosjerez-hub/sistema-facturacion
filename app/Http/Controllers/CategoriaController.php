@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CategoriaExport;
+use App\Imports\CategoriaImport;
 use App\Models\Categoria;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CategoriaController extends Controller
 {
@@ -102,6 +105,33 @@ class CategoriaController extends Controller
 
         return redirect()->route('categorias.index')
             ->with('success', 'Categoría actualizada correctamente.');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new CategoriaExport, 'categorias.xlsx');
+    }
+
+    public function showImportForm()
+    {
+        return view('categorias.import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+        ]);
+
+        try {
+            Excel::import(new CategoriaImport, $request->file('file'));
+        } catch (\Throwable $e) {
+            return redirect()->route('categorias.index')
+                ->with('error', 'Error al importar: ' . $e->getMessage());
+        }
+
+        return redirect()->route('categorias.index')
+            ->with('success', 'Categorías importadas correctamente.');
     }
 
     public function destroy(Categoria $categoria)

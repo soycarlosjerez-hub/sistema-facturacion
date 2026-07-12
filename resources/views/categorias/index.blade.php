@@ -59,7 +59,15 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                     </small>
                 </div>
             </div>
-            <div>
+            <div class="d-flex gap-2">
+                @can('productos.view')
+                <a href="{{ route('categorias.exportar') }}" class="btn btn-light rounded-pill px-3 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);">
+                    <i class="bi bi-download me-1"></i> Exportar
+                </a>
+                <a href="{{ route('categorias.importar') }}" class="btn btn-light rounded-pill px-3 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);">
+                    <i class="bi bi-upload me-1"></i> Importar
+                </a>
+                @endcan
                 <a href="{{ route('categorias.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
                 </a>
