@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\CategoriaExport;
 use App\Imports\CategoriaImport;
 use App\Models\Categoria;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -120,6 +121,18 @@ class CategoriaController extends Controller
     public function exportExcel()
     {
         return Excel::download(new CategoriaExport, 'categorias.xlsx');
+    }
+
+    public function pdf(Request $request)
+    {
+        $query = Categoria::withCount('productos')->orderBy('nombre');
+        if (auth()->check() && auth()->user()->business_instance_id !== null) {
+            $query->where('tenant_id', auth()->user()->business_instance_id);
+        }
+        $categorias = $query->get();
+
+        $pdf = Pdf::loadView('categorias.pdf', compact('categorias'));
+        return $pdf->stream('categorias.pdf');
     }
 
     public function showImportForm()

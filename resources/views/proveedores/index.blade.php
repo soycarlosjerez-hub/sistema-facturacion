@@ -58,9 +58,6 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('proveedores.exportar') }}" class="btn btn-light rounded-pill px-3 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);">
-                    <i class="bi bi-download me-1"></i> Exportar
-                </a>
                 @can('proveedores.create')
                 <a href="{{ route('proveedores.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo Proveedor
@@ -91,14 +88,16 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                     <a href="{{ route('proveedores.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-lg-4 text-end">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-download me-1"></i> Exportar
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
-                            <li><a class="dropdown-item py-2" href="{{ route('proveedores.pdf') }}"><i class="bi bi-file-pdf text-danger me-2"></i> Descargar PDF</a></li>
-                            <li><a class="dropdown-item py-2" href="{{ route('proveedores.exportar') }}"><i class="bi bi-file-excel text-success me-2"></i> Exportar a Excel</a></li>
-                        </ul>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{{ route('proveedores.importar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                            <i class="bi bi-upload me-1"></i> Importar CSV
+                        </a>
+                        <a href="{{ route('proveedores.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                            <i class="bi bi-file-excel me-1"></i> Excel
+                        </a>
+                        <a href="{{ route('proveedores.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                            <i class="bi bi-file-pdf me-1"></i> PDF
+                        </a>
                     </div>
                 </div>
             </form>

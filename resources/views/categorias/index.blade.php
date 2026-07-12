@@ -91,17 +91,20 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                         <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivas</option>
                     </select>
                 </div>
-                <div class="col-lg-3 d-flex gap-2">
+                <div class="col-lg-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                     <a href="{{ route('categorias.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
                 </div>
-                <div class="col-lg-2 text-end">
+                <div class="col-lg-3 text-end">
                     <div class="d-flex gap-2 justify-content-end">
-                        <a href="{{ route('categorias.exportar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('categorias.importar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                            <i class="bi bi-upload me-1"></i> Importar CSV
+                        </a>
+                        <a href="{{ route('categorias.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-excel me-1"></i> Excel
                         </a>
-                        <a href="{{ route('categorias.importar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
-                            <i class="bi bi-upload me-1"></i> Importar
+                        <a href="{{ route('categorias.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                            <i class="bi bi-file-pdf me-1"></i> PDF
                         </a>
                     </div>
                 </div>

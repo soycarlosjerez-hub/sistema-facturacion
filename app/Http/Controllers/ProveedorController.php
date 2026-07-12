@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ProveedoresExport;
+use App\Imports\ProveedoresImport;
 use App\Models\Proveedor;
 use App\Services\ProveedorService;
 use Illuminate\Http\Request;
@@ -93,6 +94,28 @@ class ProveedorController extends Controller
     public function exportExcel()
     {
         return Excel::download(new ProveedoresExport, 'proveedores.xlsx');
+    }
+
+    public function showImportForm()
+    {
+        return view('proveedores.import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+        ]);
+
+        try {
+            Excel::import(new ProveedoresImport, $request->file('file'));
+        } catch (\Throwable $e) {
+            return redirect()->route('proveedores.index')
+                ->with('error', 'Error al importar: ' . $e->getMessage());
+        }
+
+        return redirect()->route('proveedores.index')
+            ->with('success', 'Proveedores importados correctamente.');
     }
 
     public function toggleActivo(Proveedor $proveedore)

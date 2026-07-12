@@ -232,6 +232,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
         Route::get('/categorias/exportar', [CategoriaController::class, 'exportExcel'])->name('categorias.exportar');
+        Route::get('/categorias/pdf', [CategoriaController::class, 'pdf'])->name('categorias.pdf');
         Route::get('/categorias/create', [CategoriaController::class, 'create'])->name('categorias.create');
         Route::get('/categorias/importar', [CategoriaController::class, 'showImportForm'])->name('categorias.importar');
         Route::get('/categorias/{categoria}', [CategoriaController::class, 'show'])->name('categorias.show');
@@ -355,9 +356,11 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:proveedores.create')->group(function () {
         Route::get('/proveedores/create', [ProveedorController::class, 'create'])->name('proveedores.create');
         Route::post('/proveedores', [ProveedorController::class, 'store'])->name('proveedores.store');
+        Route::post('/proveedores/importar', [ProveedorController::class, 'import'])->name('proveedores.importar.procesar');
     });
     Route::middleware('permission:proveedores.view')->group(function () {
         Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
+        Route::get('/proveedores/importar', [ProveedorController::class, 'showImportForm'])->name('proveedores.importar');
         Route::get('/proveedores/{proveedore}', [ProveedorController::class, 'show'])->name('proveedores.show');
     });
     Route::middleware('permission:proveedores.edit')->group(function () {
