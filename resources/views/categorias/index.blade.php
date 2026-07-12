@@ -62,19 +62,50 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                     </small>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                @can('productos.view')
-                <a href="{{ route('categorias.exportar') }}" class="btn btn-light rounded-pill px-3 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);">
-                    <i class="bi bi-download me-1"></i> Exportar
-                </a>
-                <a href="{{ route('categorias.importar') }}" class="btn btn-light rounded-pill px-3 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);">
-                    <i class="bi bi-upload me-1"></i> Importar
-                </a>
-                @endcan
+            <div>
+                @can('productos.create')
                 <a href="{{ route('categorias.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
                 </a>
+                @endcan
             </div>
+        </div>
+    </div>
+
+    <div class="premium-card mb-4" style="animation-delay:.1s;">
+        <div class="card-accent purple"></div>
+        <div class="card-body p-3">
+            <form method="GET" action="{{ route('categorias.index') }}" id="filtros-form" class="row g-2 align-items-end">
+                <div class="col-lg-4">
+                    <label class="form-label small fw-bold text-muted">Buscar</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="nombre" id="busqueda-categoria" class="form-control" placeholder="Nombre de categoría..." value="{{ request('nombre') }}" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <label class="form-label small fw-bold text-muted">Estado</label>
+                    <select name="activo" id="filter-activo" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="1" {{ request('activo') === '1' ? 'selected' : '' }}>Activas</option>
+                        <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivas</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('categorias.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                </div>
+                <div class="col-lg-2 text-end">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{{ route('categorias.exportar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                            <i class="bi bi-file-excel me-1"></i> Excel
+                        </a>
+                        <a href="{{ route('categorias.importar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                            <i class="bi bi-upload me-1"></i> Importar
+                        </a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -169,6 +200,7 @@ $(function() {
                 searchable: false,
                 render: function(data) {
                     return renderAcciones(data.id, {
+                        show: '/categorias/' + data.id,
                         edit: '/categorias/' + data.id + '/edit',
                         delete: '/categorias/' + data.id,
                         csrf: csrfToken,
@@ -220,6 +252,35 @@ $(function() {
              '<"row px-3 pb-2"<"col-sm-5"i><"col-sm-7"p>>'
     });
 
+    // Filter form
+    $('#filtros-form').on('submit', function(e) {
+        e.preventDefault();
+        const nombre = $('#busqueda-categoria').val();
+        const activo = $('#filter-activo').val();
+
+        table.search(nombre).draw();
+
+        $.fn.dataTable.ext.search.push(function(settings, data) {
+            const isActivo = (data[4] || '').indexOf('Activa') !== -1;
+            if (activo === '1' && !isActivo) return false;
+            if (activo === '0' && isActivo) return false;
+            return true;
+        });
+
+        table.draw();
+        $.fn.dataTable.ext.search.pop();
+    });
+
+    // Real-time search
+    let searchTimeout;
+    $('#busqueda-categoria').on('input', function() {
+        clearTimeout(searchTimeout);
+        const val = $(this).val();
+        searchTimeout = setTimeout(function() {
+            table.search(val).draw();
+        }, 300);
+    });
+
     // Toggle activa via SweetAlert2
     $('#categorias-table').on('click', '.toggle-activa', function() {
         const id = $(this).data('id');
@@ -265,10 +326,10 @@ $(function() {
         });
     });
 
-    // Delete con SweetAlert2
-    $('#categorias-table').on('click', '.btn-delete-categoria', function() {
+    // Delete via AJAX
+    $(document).on('click', '.btn-delete-categoria', function() {
         const btn = $(this);
-        const url = btn.data('url');
+        const id = btn.data('id');
         const nombre = btn.data('nombre');
 
         Swal.fire({
@@ -280,24 +341,58 @@ $(function() {
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
-        }).then(result => {
+        }).then(function(result) {
             if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = url;
-                form.innerHTML = '<input type="hidden" name="_token" value="' + csrfToken + '"><input type="hidden" name="_method" value="DELETE">';
-                document.body.appendChild(form);
-                form.submit();
+                deleteCategoria(id, btn);
             }
         });
     });
 
+    function deleteCategoria(id, btn) {
+        const formData = new FormData();
+        formData.append('_method', 'DELETE');
+        formData.append('_token', csrfToken);
+
+        const row = btn.closest('tr');
+        if (row) row.style.opacity = '0.5';
+
+        fetch('/categorias/' + id, {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('El servidor respondió con estado ' + r.status);
+            const ct = r.headers.get('content-type') || '';
+            if (ct.indexOf('application/json') === -1) throw new Error('Respuesta inesperada del servidor.');
+            return r.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                if (row && row.closest('tbody')) {
+                    table.row(row).remove().draw();
+                }
+                Swal.fire({ icon: 'success', title: 'Eliminado', text: data.message, timer: 1500, showConfirmButton: false });
+            } else {
+                if (row) row.style.opacity = '1';
+                Swal.fire({ icon: 'error', title: 'No se pudo eliminar', text: data.message });
+            }
+        })
+        .catch(function(err) {
+            if (row) row.style.opacity = '1';
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo conectar con el servidor.' });
+        });
+    }
+
     function renderAcciones(id, opts) {
         let html = '<div class="d-flex justify-content-end gap-1">';
+        if (opts.show) {
+            html += '<a href="' + opts.show + '" class="premium-btn-edit" title="Ver" style="background:rgba(59,130,246,.1);color:#3b82f6;border-color:rgba(59,130,246,.2);">' +
+                '<i class="bi bi-eye"></i></a>';
+        }
         html += '<a href="' + opts.edit + '" class="premium-btn-edit" title="Editar">' +
             '<i class="bi bi-pencil"></i></a>';
         if (opts.delete) {
-            html += '<button type="button" class="premium-btn-delete border-0 btn-delete-categoria" data-url="' + opts.delete + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar">' +
+            html += '<button type="button" class="premium-btn-delete border-0 btn-delete-categoria" data-id="' + id + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar">' +
                 '<i class="bi bi-trash"></i></button>';
         }
         html += '</div>';

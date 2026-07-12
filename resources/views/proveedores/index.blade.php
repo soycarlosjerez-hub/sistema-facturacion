@@ -300,10 +300,10 @@ $(function() {
         });
     });
 
-    // Delete con SweetAlert2
-    $('#proveedores-table').on('click', '.btn-delete-proveedor', function() {
+    // Delete via AJAX
+    $(document).on('click', '.btn-delete-proveedor', function() {
         const btn = $(this);
-        const url = btn.data('url');
+        const id = btn.data('id');
         const nombre = btn.data('nombre');
 
         Swal.fire({
@@ -315,17 +315,47 @@ $(function() {
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
-        }).then(result => {
+        }).then(function(result) {
             if (result.isConfirmed) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = url;
-                form.innerHTML = '<input type="hidden" name="_token" value="' + csrfToken + '"><input type="hidden" name="_method" value="DELETE">';
-                document.body.appendChild(form);
-                form.submit();
+                deleteProveedor(id, btn);
             }
         });
     });
+
+    function deleteProveedor(id, btn) {
+        const formData = new FormData();
+        formData.append('_method', 'DELETE');
+        formData.append('_token', csrfToken);
+
+        const row = btn.closest('tr');
+        if (row) row.style.opacity = '0.5';
+
+        fetch('/proveedores/' + id, {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('El servidor respondió con estado ' + r.status);
+            const ct = r.headers.get('content-type') || '';
+            if (ct.indexOf('application/json') === -1) throw new Error('Respuesta inesperada del servidor.');
+            return r.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                if (row && row.closest('tbody')) {
+                    table.row(row).remove().draw();
+                }
+                Swal.fire({ icon: 'success', title: 'Eliminado', text: data.message, timer: 1500, showConfirmButton: false });
+            } else {
+                if (row) row.style.opacity = '1';
+                Swal.fire({ icon: 'error', title: 'No se pudo eliminar', text: data.message });
+            }
+        })
+        .catch(function(err) {
+            if (row) row.style.opacity = '1';
+            Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo conectar con el servidor.' });
+        });
+    }
 
     function renderAcciones(id, opts) {
         let html = '<div class="d-flex justify-content-end gap-1">';
@@ -333,7 +363,7 @@ $(function() {
             html += '<a href="' + opts.show + '" class="premium-btn-edit" title="Ver"><i class="bi bi-eye"></i></a>';
         }
         html += '<a href="' + opts.edit + '" class="premium-btn-edit" title="Editar"><i class="bi bi-pencil"></i></a>';
-        html += '<button type="button" class="premium-btn-delete border-0 btn-delete-proveedor" data-url="' + opts.delete + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar"><i class="bi bi-trash"></i></button>';
+        html += '<button type="button" class="premium-btn-delete border-0 btn-delete-proveedor" data-id="' + id + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar"><i class="bi bi-trash"></i></button>';
         html += '</div>';
         return html;
     }

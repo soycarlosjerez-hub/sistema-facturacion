@@ -120,6 +120,12 @@
             </div>
         @endif
 
+        <div class="alert alert-info rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #8b5cf6 !important;background:rgba(139,92,246,0.06);">
+            <i class="bi bi-info-circle me-2" style="color:#8b5cf6;"></i>
+            <span class="fw-semibold">Estás editando la categoría:</span>
+            <strong>{{ $categoria->nombre }}</strong>
+        </div>
+
         <form id="categoriaForm" action="{{ route('categorias.update', $categoria) }}" method="POST">
             @csrf
             @method('PUT')

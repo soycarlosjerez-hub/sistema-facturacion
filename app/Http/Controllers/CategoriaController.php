@@ -144,13 +144,20 @@ class CategoriaController extends Controller
             ->with('success', 'Categorías importadas correctamente.');
     }
 
-    public function destroy(Categoria $categoria)
+    public function destroy(Request $request, Categoria $categoria)
     {
         if ($categoria->productos()->exists()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'No se puede eliminar la categoría porque tiene productos asociados.']);
+            }
             return back()->with('error', 'No se puede eliminar la categoría porque tiene productos asociados.');
         }
 
         $categoria->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Categoría eliminada correctamente.']);
+        }
 
         return redirect()->route('categorias.index')
             ->with('success', 'Categoría eliminada correctamente.');

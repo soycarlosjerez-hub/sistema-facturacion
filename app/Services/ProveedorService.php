@@ -45,6 +45,7 @@ class ProveedorService
         $this->validarRnc($data);
         $data['sujeto_retencion_isr'] = $data['sujeto_retencion_isr'] ?? false;
         $data['sujeto_retencion_itbis'] = $data['sujeto_retencion_itbis'] ?? false;
+        $data['activo'] = $data['activo'] ?? true;
         $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
         return Proveedor::create($data);
     }

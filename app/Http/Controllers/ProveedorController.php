@@ -52,6 +52,7 @@ class ProveedorController extends Controller
             'tipo_persona'          => 'nullable|string|in:fisica,juridica',
             'sujeto_retencion_isr'  => 'boolean',
             'sujeto_retencion_itbis' => 'boolean',
+            'activo'                => 'boolean',
         ]);
 
         $this->proveedorService->create($data);
@@ -104,9 +105,12 @@ class ProveedorController extends Controller
         ]);
     }
 
-    public function destroy(Proveedor $proveedore)
+    public function destroy(Request $request, Proveedor $proveedore)
     {
         $result = $this->proveedorService->delete($proveedore);
+        if ($request->expectsJson()) {
+            return response()->json($result);
+        }
         $type = $result['deactivated'] ? 'warning' : 'success';
         return redirect()->route('proveedores.index')->with($type, $result['message']);
     }

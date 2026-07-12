@@ -41,6 +41,12 @@
         </div>
     @endif
 
+    <div class="alert alert-info rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #3b82f6 !important;background:rgba(59,130,246,0.06);">
+        <i class="bi bi-info-circle me-2" style="color:#3b82f6;"></i>
+        <span class="fw-semibold">Estás editando el proveedor:</span>
+        <strong>{{ $proveedore->nombre }}</strong>
+    </div>
+
     <form id="proveedorForm" action="{{ route('proveedores.update', $proveedore) }}" method="POST">
         @csrf
         @method('PUT')
