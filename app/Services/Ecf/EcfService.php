@@ -81,7 +81,13 @@ class EcfService
             throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('e-CF: error al generar', ['venta_id' => $venta->id, 'error' => $e->getMessage()]);
+            if (isset($ecf) && $ecf->exists) {
+                $this->log($ecf, 'crear', 'error', $e->getMessage());
+            } else {
+                Log::error('e-CF: error al generar antes de crear el documento', [
+                    'venta_id' => $venta->id, 'tipo_ecf' => $tipoEcf, 'error' => $e->getMessage(),
+                ]);
+            }
             throw $e;
         }
     }
@@ -89,38 +95,46 @@ class EcfService
 
     public function firmar(EcfDocumento $ecf): EcfDocumento
     {
-        $ecf = $ecf->fresh(['secuencia', 'venta.cliente', 'venta.detalles.producto']);
-        $ecf->transicionarA('firmado');
+        try {
+            $ecf = $ecf->fresh(['secuencia', 'venta.cliente', 'venta.detalles.producto']);
+            $ecf->transicionarA('firmado');
 
-        $xml = $this->builder->build($ecf);
+            $xml = $this->builder->build($ecf);
 
-        $this->validarXml($xml, $ecf);
+            $this->validarXml($xml, $ecf);
 
-        $cert = $ecf->certificado_digital_id
-            ? \App\Models\CertificadoDigital::find($ecf->certificado_digital_id)
-            : null;
-        $result = $this->signature->sign($xml, $cert);
+            $cert = $ecf->certificado_digital_id
+                ? \App\Models\CertificadoDigital::find($ecf->certificado_digital_id)
+                : null;
+            $result = $this->signature->sign($xml, $cert);
 
-        $ecf->xml_content = $result['xml'];
-        $ecf->firma_digital = $result['firma'];
-        $ecf->fecha_firma = now();
-        $ecf->estado = 'firmado';
-        if ($cert) {
-            $ecf->certificado_digital_id = $cert->id;
+            $ecf->xml_content = $result['xml'];
+            $ecf->firma_digital = $result['firma'];
+            $ecf->fecha_firma = now();
+            $ecf->estado = 'firmado';
+            if ($cert) {
+                $ecf->certificado_digital_id = $cert->id;
+            }
+            $ecf->save();
+
+            $this->guardarXmlFirmado($ecf);
+
+            $this->log($ecf, 'firmar', 'exito', "Firmado con {$result['metodo']} (algoritmo: {$result['algoritmo']})", null, json_encode(['metodo' => $result['metodo'], 'serial' => $result['serial']]));
+
+            return $ecf;
+        } catch (\Throwable $e) {
+            if (isset($ecf) && $ecf->exists) {
+                $this->log($ecf, 'firmar', 'error', $e->getMessage());
+            }
+            throw $e;
         }
-        $ecf->save();
-
-        $this->guardarXmlFirmado($ecf);
-
-        $this->log($ecf, 'firmar', 'exito', "Firmado con {$result['metodo']} (algoritmo: {$result['algoritmo']})", null, json_encode(['metodo' => $result['metodo'], 'serial' => $result['serial']]));
-
-        return $ecf;
     }
 
     public function enviar(EcfDocumento $ecf): EcfDocumento
     {
         $ecf = $ecf->fresh();
         if (!in_array($ecf->estado, ['generado', 'firmado', 'rechazado'], true)) {
+            $this->log($ecf, 'enviar', 'error', "Estado inválido para envío: {$ecf->estado}");
             throw new \RuntimeException("El e-CF no está en un estado válido para envío (actual: {$ecf->estado})");
         }
 
