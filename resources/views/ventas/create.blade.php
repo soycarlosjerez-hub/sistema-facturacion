@@ -2837,7 +2837,6 @@ body:not(.dark-mode) {
         const container = $('modal-productos-grid');
         const q = (filtro || '').toLowerCase();
         const results = productos.filter(p => {
-            if (validaStock && p.stock <= 0) return false;
             const matchNombre = (p.nombre || '').toLowerCase().includes(q);
             const matchCodigo = (p.codigo_barras || '').toLowerCase().includes(q);
             const matchCategoria = !modalCategoriaFiltro || String(p.categoria_id) === modalCategoriaFiltro;
@@ -3272,7 +3271,7 @@ body:not(.dark-mode) {
     function seleccionarCliente(id, nombre) {
         const select = $('cliente_id');
         for (let opt of select.options) {
-            if (parseInt(opt.value) === id) {
+            if (parseInt(opt.value) == id) {
                 select.value = id;
                 break;
             }
@@ -3326,7 +3325,7 @@ body:not(.dark-mode) {
                 const tipo = c.tipo_cliente === 'credito_fiscal' ? 'Crédito Fiscal' :
                             c.tipo_cliente === 'gubernamental' ? 'Gubernamental' :
                             c.tipo_cliente === 'especial' ? 'Especial' : 'Consumo';
-                const nombreSeguro = JSON.stringify(c.nombre);
+                const nombreSeguro = escapeHtml(c.nombre);
                 return `<div class="cliente-result-item" data-cliente-id="${c.id}" data-cliente-nombre='${nombreSeguro}'>
                     <div class="cr-icon" style="background:rgba(14,165,233,0.1);color:#38bdf8;">${initial}</div>
                     <div class="cr-info">
