@@ -41,8 +41,7 @@ class KardexExport implements FromCollection, WithHeadings, WithMapping
         if ($this->buscar) {
             $query->where(function($q) {
                 $q->whereHas('producto', fn($pq) => $pq->where('nombre', 'like', "%{$this->buscar}%"))
-                  ->orWhere('nota', 'like', "%{$this->buscar}%")
-                  ->orWhere('motivo', 'like', "%{$this->buscar}%");
+                  ->orWhere('nota', 'like', "%{$this->buscar}%");
             });
         }
 
@@ -74,7 +73,7 @@ class KardexExport implements FromCollection, WithHeadings, WithMapping
             $movimiento->almacen->nombre,
             ucfirst($movimiento->tipo),
             ($movimiento->tipo === 'entrada' ? '+' : '-') . $movimiento->cantidad,
-            $movimiento->nota ?? $movimiento->motivo ?? 'Movimiento de inventario',
+            $movimiento->nota ?? 'Movimiento de inventario',
             $movimiento->user->name ?? 'Sistema',
         ];
     }

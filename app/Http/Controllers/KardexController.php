@@ -33,8 +33,7 @@ class KardexController extends Controller
             $query->where(function($q) use ($buscar) {
                 $q->whereHas('producto', function($pq) use ($buscar) {
                     $pq->where('nombre', 'like', "%{$buscar}%");
-                })->orWhere('nota', 'like', "%{$buscar}%")
-                  ->orWhere('motivo', 'like', "%{$buscar}%");
+                })->orWhere('nota', 'like', "%{$buscar}%");
             });
         }
 
@@ -76,8 +75,7 @@ class KardexController extends Controller
             $buscar = $request->buscar;
             $query->where(function($q) use ($buscar) {
                 $q->whereHas('producto', fn($pq) => $pq->where('nombre', 'like', "%{$buscar}%"))
-                  ->orWhere('nota', 'like', "%{$buscar}%")
-                  ->orWhere('motivo', 'like', "%{$buscar}%");
+                  ->orWhere('nota', 'like', "%{$buscar}%");
             });
         }
 

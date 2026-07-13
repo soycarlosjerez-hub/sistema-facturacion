@@ -36,7 +36,7 @@
                 <td>{{ $m->almacen->nombre }}</td>
                 <td>{{ $m->tipo }}</td>
                 <td>{{ $m->cantidad }}</td>
-                <td>{{ $m->user->name }}</td>
+                <td>{{ $m->user->name ?? 'Sistema' }}</td>
             </tr>
         @endforeach
     </tbody>
