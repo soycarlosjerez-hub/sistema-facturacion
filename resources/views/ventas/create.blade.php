@@ -2446,7 +2446,7 @@ body:not(.dark-mode) {
         $('pago-total').innerText = fmt(total);
         // Reset
         $('propina-input').value = '0';
-        $('monto-recibido').value = total.toFixed(2);
+        $('monto-recibido').value = '';
         document.getElementById('cambio-info').classList.add('d-none');
         $('mixto-efectivo').value = '';
         $('mixto-tarjeta').value = '';
@@ -2464,8 +2464,6 @@ body:not(.dark-mode) {
         document.getElementById('pago-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
         document.getElementById('pago-mixto').style.display = metodo === 'mixto' ? 'block' : 'none';
         if (metodo === 'efectivo') {
-            const total = parseFloat($('hidden-total').value) || 0;
-            $('monto-recibido').value = total.toFixed(2);
             document.getElementById('cambio-info').classList.add('d-none');
             setTimeout(() => $('monto-recibido')?.focus(), 200);
         }

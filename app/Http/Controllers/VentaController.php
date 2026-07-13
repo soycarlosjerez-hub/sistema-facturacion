@@ -284,7 +284,7 @@ class VentaController extends Controller
 
     public function facturar($id)
     {
-        $venta = Venta::findOrFail($id);
+        $venta = Venta::with('cliente', 'detalles.producto', 'usuario')->findOrFail($id);
         try {
             $ecfService = app(\App\Services\Ecf\EcfService::class);
             $ecf = $ecfService->generarEcf($venta);
@@ -292,7 +292,8 @@ class VentaController extends Controller
             $ecfService->enviar($firmado);
             return response()->json(['success' => true, 'message' => 'e-CF generado y enviado a DGII.']);
         } catch (\Throwable $e) {
-            return response()->json(['error' => 'Error al facturar: ' . $e->getMessage()], 500);
+            $debug = config('app.debug') ? ' ['.get_class($e).'] '.$e->getFile().':'.$e->getLine() : '';
+            return response()->json(['error' => 'Error al facturar: ' . $e->getMessage() . $debug], 500);
         }
     }
 }

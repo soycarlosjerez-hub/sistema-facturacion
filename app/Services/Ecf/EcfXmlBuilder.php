@@ -57,7 +57,7 @@ class EcfXmlBuilder
         $idDoc = $xml->createElement('IdDoc');
         $idDoc->appendChild($xml->createElement('TipoeCF', $ecf->tipo_ecf));
         $idDoc->appendChild($xml->createElement('eNCF', $ecf->encf));
-        $idDoc->appendChild($xml->createElement('FechaVencimientoSecuencia', $ecf->secuencia->fecha_vencimiento->format('Y-m-d')));
+        $idDoc->appendChild($xml->createElement('FechaVencimientoSecuencia', $ecf->secuencia?->fecha_vencimiento?->format('Y-m-d') ?? ''));
         $idDoc->appendChild($xml->createElement('FechaEmision', $ecf->fecha_emision->format('Y-m-d')));
         $idDoc->appendChild($xml->createElement('HoraEmision', $ecf->fecha_emision->format('H:i:s')));
         $encabezado->appendChild($idDoc);
@@ -70,6 +70,9 @@ class EcfXmlBuilder
         $encabezado->appendChild($emisor);
 
         $cliente = $venta->cliente;
+        if (!$cliente) {
+            throw new \RuntimeException('La venta no tiene un cliente asociado para generar el e-CF');
+        }
         $tipoDoc = RncValidator::tipoDocumentoDgii($cliente->tipo_documento ?? null);
         $rncComprador = $this->cleanRnc($cliente->rnc_cedula ?? '');
         if ($ecf->tipo_ecf === 'E32' && $rncComprador === '') {
