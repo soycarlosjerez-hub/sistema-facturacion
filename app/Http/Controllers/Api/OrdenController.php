@@ -33,6 +33,14 @@ class OrdenController extends Controller
         $user = Auth::user();
         $tenantId = $user->business_instance_id;
 
+        Log::info('[Orden API] resolverCliente inicio', [
+            'tenant_id' => $tenantId,
+            'cliente_id_request' => $request->input('cliente_id'),
+            'cliente_rnc_cedula' => $request->input('cliente_rnc_cedula'),
+            'cliente_nombre' => $request->input('cliente_nombre'),
+            'nombre_cliente' => $request->input('nombre_cliente'),
+        ]);
+
         // Caso 1: Se envió cliente_id → buscar por ID
         if ($request->filled('cliente_id')) {
             $cliente = Cliente::where('id', $request->cliente_id)
@@ -82,16 +90,26 @@ class OrdenController extends Controller
         $telefono = $request->input('cliente_telefono') ?: $request->input('telefono_contacto');
         $email = $request->input('cliente_email') ?: $request->input('correo_electronico');
         if (!empty($nombre)) {
-            $cliente = Cliente::firstOrCreate(
-                ['nombre' => $nombre, 'tenant_id' => $tenantId],
-                [
-                    'telefono'   => $telefono,
-                    'email'      => $email,
-                    'rnc_cedula' => $request->input('cliente_rnc_cedula'),
+            $cliente = Cliente::withoutGlobalScope('tenant')
+                ->where('tenant_id', $tenantId)
+                ->where('nombre', $nombre)
+                ->first();
+
+            if (!$cliente) {
+                $cliente = Cliente::create([
+                    'nombre'       => $nombre,
+                    'tenant_id'    => $tenantId,
+                    'telefono'     => $telefono,
+                    'email'        => $email,
+                    'rnc_cedula'   => $request->input('cliente_rnc_cedula'),
                     'tipo_cliente' => $request->input('tipo_cliente', 'consumo'),
-                ]
-            );
-            Log::info('[Orden API] Cliente resuelto por nombre', ['cliente_id' => $cliente->id, 'nombre' => $cliente->nombre]);
+                    'activo'       => true,
+                ]);
+                Log::info('[Orden API] Cliente CREADO', ['cliente_id' => $cliente->id, 'nombre' => $cliente->nombre, 'tenant_id' => $tenantId]);
+            } else {
+                Log::info('[Orden API] Cliente ENCONTRADO', ['cliente_id' => $cliente->id, 'nombre' => $cliente->nombre, 'tenant_id' => $tenantId]);
+            }
+
             return [
                 'cliente_id'       => $cliente->id,
                 'cliente_nombre'   => $cliente->nombre,
