@@ -3403,25 +3403,7 @@ body:not(.dark-mode) {
                 if (!isNaN(index)) POS.updateQty(index, cart[index].qty - 1);
                 break;
             case 'set-discount':
-                e.preventDefault();
-                if (!isNaN(index)) {
-                    const value = parseFloat(target.value) || 0;
-                    const item = cart[index];
-                    const lineTotal = item.precio * item.qty;
-                    if (lineTotal > 0) {
-                        const descuentoAplicado = item.descuento_tipo === 'porcentaje' ? value : (value / lineTotal * 100);
-                        if (descuentoAplicado > 50) {
-                            if (!confirm('Descuento superior al 50%. ¿Confirmar?')) {
-                                target.value = item.descuento || 0;
-                                return;
-                            }
-                        }
-                    }
-                    item.descuento = Math.max(0, value);
-                    renderCart();
-                    A11y && A11y.announce(`Descuento actualizado: ${item.descuento}`);
-                }
-                break;
+                return;
             case 'toggle-discount-type':
                 e.preventDefault();
                 if (!isNaN(index)) {
@@ -3559,6 +3541,30 @@ body:not(.dark-mode) {
 
         // Event delegation (CRITICAL FIX)
         document.addEventListener('click', handleClick);
+
+        // Discount input change
+        document.addEventListener('change', function(e) {
+            const target = e.target.closest('[data-action="set-discount"]');
+            if (!target) return;
+            const index = parseInt(target.dataset.index);
+            if (!isNaN(index)) {
+                const value = parseFloat(target.value) || 0;
+                const item = cart[index];
+                const lineTotal = item.precio * item.qty;
+                if (lineTotal > 0) {
+                    const descuentoAplicado = item.descuento_tipo === 'porcentaje' ? value : (value / lineTotal * 100);
+                    if (descuentoAplicado > 50) {
+                        if (!confirm('Descuento superior al 50%. ¿Confirmar?')) {
+                            target.value = item.descuento || 0;
+                            return;
+                        }
+                    }
+                }
+                item.descuento = Math.max(0, value);
+                renderCart();
+                A11y && A11y.announce(`Descuento actualizado: ${item.descuento}`);
+            }
+        });
 
         // Global keyboard
         document.addEventListener('keydown', handleGlobalKeys);
