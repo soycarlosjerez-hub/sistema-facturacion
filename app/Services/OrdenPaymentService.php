@@ -65,6 +65,22 @@ class OrdenPaymentService
             if (abs($sumaPagos - $totalConPropina) > 0.01) {
                 return ['error' => "La suma de los pagos no cubre el total de RD$ " . number_format($totalConPropina, 2), 'code' => 422];
             }
+        } elseif ($metodo !== 'fiado') {
+            $montoColumna = match ($metodo) {
+                'efectivo' => $data['monto_recibido'] ?? 0,
+                'tarjeta' => $data['monto_tarjeta'] ?? 0,
+                'transferencia' => $data['monto_transferencia'] ?? 0,
+                default => 0,
+            };
+            if ((float)$montoColumna < $totalConPropina - 0.01) {
+                $label = match ($metodo) {
+                    'efectivo' => 'recibido',
+                    'tarjeta' => 'de tarjeta',
+                    'transferencia' => 'de transferencia',
+                    default => '',
+                };
+                return ['error' => "El monto {$label} no cubre el total de RD$ " . number_format($totalConPropina, 2), 'code' => 422];
+            }
         }
 
         DB::beginTransaction();

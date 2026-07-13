@@ -191,21 +191,41 @@ Route::middleware(['api-auth', 'tenant'])->group(function () {
         ->except(['edit', 'create']);
 
     // Orders
-    Route::apiResource('orders', OrdenController::class)
-        ->names('api.orders')
-        ->except(['edit', 'create']);
+    Route::get('orders', [OrdenController::class, 'index'])
+        ->name('api.orders.index')
+        ->middleware('permission:ordenes.view');
 
-    Route::post('orders/{order}/pay', [\App\Http\Controllers\Api\OrdenPaymentController::class, 'process'])
-        ->name('api.orders.pay');
+    Route::post('orders', [OrdenController::class, 'store'])
+        ->name('api.orders.store')
+        ->middleware('permission:ordenes.create');
+
+    Route::get('orders/{orden}', [OrdenController::class, 'show'])
+        ->name('api.orders.show')
+        ->middleware('permission:ordenes.view');
+
+    Route::match(['put', 'patch'], 'orders/{orden}', [OrdenController::class, 'update'])
+        ->name('api.orders.update')
+        ->middleware('permission:ordenes.update');
+
+    Route::delete('orders/{orden}', [OrdenController::class, 'destroy'])
+        ->name('api.orders.destroy')
+        ->middleware('permission:ordenes.cancel');
+
+    Route::post('orders/{orden}/pay', [\App\Http\Controllers\Api\OrdenPaymentController::class, 'process'])
+        ->name('api.orders.pay')
+        ->middleware('permission:ordenes.pay');
 
     Route::delete('orders/{orden}/details/{detalle}', [\App\Http\Controllers\Api\OrdenDetailController::class, 'destroy'])
-        ->name('api.orders.details.destroy');
+        ->name('api.orders.details.destroy')
+        ->middleware('permission:ordenes.create');
 
     Route::patch('orders/{orden}/details/{detalle}', [\App\Http\Controllers\Api\OrdenDetailController::class, 'update'])
-        ->name('api.orders.details.update');
+        ->name('api.orders.details.update')
+        ->middleware('permission:ordenes.create');
 
     Route::post('orders/{orden}/details', [\App\Http\Controllers\Api\OrdenDetailController::class, 'store'])
-        ->name('api.orders.details.store');
+        ->name('api.orders.details.store')
+        ->middleware('permission:ordenes.create');
 
     // KDS
     Route::get('kds/orders', [\App\Http\Controllers\Api\KitchenDisplayController::class, 'index'])

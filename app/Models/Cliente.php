@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Cliente extends Model
 {
@@ -51,8 +52,9 @@ class Cliente extends Model
     // Helper to get or create the generic consumer client
     public static function consumidorFinal(): self
     {
+        $tenantId = Auth::check() ? Auth::user()->business_instance_id : null;
         return static::firstOrCreate(
-            ['nombre' => 'Consumidor Final'],
+            ['nombre' => 'Consumidor Final', 'tenant_id' => $tenantId],
             [
                 'tipo_documento' => '1', // Cédula genérica
                 'rnc_cedula'     => '00000000000',
