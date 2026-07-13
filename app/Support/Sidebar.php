@@ -103,11 +103,11 @@ class Sidebar
             ];
             $items[] = ['section' => 'API'];
             $items[] = [
-                'route'  => 'api-requests',
-                'icon'   => 'bi-list-ul',
-                'label'  => 'Requests del API',
-                'is_route' => 'api-requests*',
-                'exact_route' => 'api-requests',
+                'url'       => route('owner.api-requests'),
+                'icon'      => 'bi-list-ul',
+                'label'     => 'Requests del API',
+                'is_route'  => 'owner.api-requests*',
+                'exact_route' => 'owner.api-requests',
             ];
             $items[] = [
                 'route'  => 'api.documentation',
