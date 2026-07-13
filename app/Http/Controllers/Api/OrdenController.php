@@ -78,13 +78,15 @@ class OrdenController extends Controller
         }
 
         // Caso 3: Crear o buscar por nombre, guardando todos los datos
-        $nombre = $request->input('cliente_nombre');
+        $nombre = $request->input('cliente_nombre') ?: $request->input('nombre_cliente');
+        $telefono = $request->input('cliente_telefono') ?: $request->input('telefono_contacto');
+        $email = $request->input('cliente_email') ?: $request->input('correo_electronico');
         if (!empty($nombre)) {
             $cliente = Cliente::firstOrCreate(
                 ['nombre' => $nombre, 'tenant_id' => $tenantId],
                 [
-                    'telefono'   => $request->input('cliente_telefono'),
-                    'email'      => $request->input('cliente_email'),
+                    'telefono'   => $telefono,
+                    'email'      => $email,
                     'rnc_cedula' => $request->input('cliente_rnc_cedula'),
                     'tipo_cliente' => $request->input('tipo_cliente', 'consumo'),
                 ]
@@ -126,7 +128,20 @@ class OrdenController extends Controller
             'telefono_contacto'  => 'nullable|string|max:30',
             'hora_retiro'        => 'nullable|date',
             'notas'              => 'nullable|string',
+            'nombre_cliente'     => 'nullable|string|max:200',
+            'correo_electronico' => 'nullable|email|max:200',
         ]);
+
+        // Mapear campos alternativos del request externo
+        if ($request->filled('nombre_cliente') && ! $request->filled('cliente_nombre')) {
+            $validated['cliente_nombre'] = $request->nombre_cliente;
+        }
+        if ($request->filled('telefono_contacto') && ! $request->filled('cliente_telefono')) {
+            $validated['cliente_telefono'] = $request->telefono_contacto;
+        }
+        if ($request->filled('correo_electronico') && ! $request->filled('cliente_email')) {
+            $validated['cliente_email'] = $request->correo_electronico;
+        }
 
         Log::info('[Orden API] store request', $validated);
 
