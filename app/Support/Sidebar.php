@@ -101,15 +101,14 @@ class Sidebar
                 'is_route' => 'owner.online.*',
                 'exact_route' => 'owner.online.index',
             ];
-            if ($user->can('cuentas-bancarias.view')) {
-                $items[] = [
-                    'route'  => 'owner.cuentas-bancarias.index',
-                    'icon'   => 'bi-bank',
-                    'label'  => 'Cuentas Bancarias',
-                    'is_route' => 'owner.cuentas-bancarias.*',
-                    'exact_route' => 'owner.cuentas-bancarias.index',
-                ];
-            }
+            $items[] = ['section' => 'API'];
+            $items[] = [
+                'route'  => 'api-requests',
+                'icon'   => 'bi-list-ul',
+                'label'  => 'Requests del API',
+                'is_route' => 'api-requests*',
+                'exact_route' => 'api-requests',
+            ];
             $items[] = [
                 'route'  => 'api.documentation',
                 'icon'   => 'bi-code-slash',
