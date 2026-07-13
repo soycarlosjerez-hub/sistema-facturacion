@@ -109,18 +109,21 @@ body.dark-mode .ventas-table tbody td {
                     <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                     <a href="{{ route('ventas.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
                 </div>
-                <div class="col-lg-2 text-end">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" data-bs-toggle="dropdown">
-                            <i class="bi bi-download me-1"></i> Exportar
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
-                            <li><a class="dropdown-item py-2" href="{{ route('ventas.pdf', request()->query()) }}"><i class="bi bi-file-pdf text-danger me-2"></i> Descargar PDF</a></li>
-                            <li><a class="dropdown-item py-2" href="{{ route('ventas.exportar', request()->query()) }}"><i class="bi bi-file-excel text-success me-2"></i> Exportar a Excel</a></li>
-                        </ul>
-                    </div>
-                </div>
+                <div class="col-lg-2 text-end"></div>
             </form>
+            @can('ventas.export')
+            <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                <a href="{{ route('ventas.csv', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                    <i class="bi bi-filetype-csv me-1"></i> CSV
+                </a>
+                <a href="{{ route('ventas.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                    <i class="bi bi-file-excel me-1"></i> Excel
+                </a>
+                <a href="{{ route('ventas.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                    <i class="bi bi-file-pdf me-1"></i> PDF
+                </a>
+            </div>
+            @endcan
         </div>
     </div>
 

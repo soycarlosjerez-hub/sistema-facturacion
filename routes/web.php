@@ -156,6 +156,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('permission:ventas.export')->group(function () {
         Route::get('/ventas/exportar', [VentaController::class, 'exportExcel'])->name('ventas.exportar');
+        Route::get('/ventas/csv', [VentaController::class, 'exportCsv'])->name('ventas.csv');
         Route::get('/ventas/pdf/all', [VentaController::class, 'exportAllPdf'])->name('ventas.pdf');
     });
 

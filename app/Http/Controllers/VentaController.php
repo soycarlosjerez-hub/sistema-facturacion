@@ -9,11 +9,13 @@ use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\Venta;
+use App\Exports\VentasExport;
 use App\Services\PrintService;
 use App\Services\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class VentaController extends Controller
 {
@@ -201,6 +203,23 @@ class VentaController extends Controller
         $pdf = Pdf::loadView('ventas.all-pdf', compact('ventas'))->setPaper('a4', 'landscape');
 
         return $pdf->download('ventas_reporte.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(
+            new VentasExport($request->cliente, $request->desde, $request->hasta),
+            'ventas.xlsx'
+        );
+    }
+
+    public function exportCsv(Request $request)
+    {
+        return Excel::download(
+            new VentasExport($request->cliente, $request->desde, $request->hasta),
+            'ventas.csv',
+            \Maatwebsite\Excel\Excel::CSV
+        );
     }
 
     public function getCuentaAbierta($cliente_id)
