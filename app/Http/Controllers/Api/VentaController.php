@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VentaResource;
+use App\Models\Cliente;
 use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class VentaController extends Controller
 {
@@ -25,6 +27,57 @@ class VentaController extends Controller
         return VentaResource::collection($query->orderBy('fecha', 'desc')->paginate(15));
     }
 
+    private function resolverCliente(Request $request): array
+    {
+        $user = Auth::user();
+        $tenantId = $user->business_instance_id;
+
+        if ($request->filled('cliente_id')) {
+            $cliente = Cliente::where('id', $request->cliente_id)
+                ->where('tenant_id', $tenantId)
+                ->first();
+
+            if ($cliente) {
+                return ['cliente_id' => $cliente->id];
+            }
+
+            Log::warning('[Venta API] cliente_id no encontrado o no pertenece al tenant', [
+                'cliente_id' => $request->cliente_id, 'tenant_id' => $tenantId,
+            ]);
+        }
+
+        $rncCedula = $request->input('cliente_rnc_cedula');
+        if (!empty($rncCedula)) {
+            $cliente = Cliente::where('rnc_cedula', $rncCedula)
+                ->where('tenant_id', $tenantId)
+                ->first();
+
+            if ($cliente) {
+                Log::info('[Venta API] Cliente resuelto por RNC/Cédula', [
+                    'cliente_id' => $cliente->id, 'nombre' => $cliente->nombre,
+                ]);
+                return ['cliente_id' => $cliente->id];
+            }
+        }
+
+        $nombre = $request->input('cliente_nombre');
+        if (!empty($nombre)) {
+            $cliente = Cliente::firstOrCreate(
+                ['nombre' => $nombre, 'tenant_id' => $tenantId],
+                [
+                    'telefono'   => $request->input('cliente_telefono'),
+                    'email'      => $request->input('cliente_email'),
+                    'rnc_cedula' => $request->input('cliente_rnc_cedula'),
+                    'tipo_cliente' => $request->input('tipo_cliente', 'consumo'),
+                ]
+            );
+            Log::info('[Venta API] Cliente resuelto por nombre', ['cliente_id' => $cliente->id, 'nombre' => $cliente->nombre]);
+            return ['cliente_id' => $cliente->id];
+        }
+
+        return [];
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -34,7 +87,12 @@ class VentaController extends Controller
             'encf' => 'nullable|string|max:50',
             'user_id' => 'required|exists:users,id',
             'caja_id' => 'required|exists:cajas,id',
-            'cliente_id' => 'nullable|exists:clientes,id',
+            'cliente_id' => 'nullable|integer|min:1',
+            'cliente_nombre' => 'nullable|string|max:200',
+            'cliente_telefono' => 'nullable|string|max:30',
+            'cliente_email' => 'nullable|email|max:200',
+            'cliente_rnc_cedula' => 'nullable|string|max:50',
+            'tipo_cliente' => 'nullable|string|in:credito_fiscal,consumo,gubernamental,especial',
             'tipo_venta_id' => 'nullable|exists:tipos_ventas,id',
             'sucursal_id' => 'required|exists:sucursales,id',
             'fecha' => 'nullable|date',
@@ -55,6 +113,8 @@ class VentaController extends Controller
             'detalles.*.impuesto' => 'nullable|numeric|min:0',
         ]);
 
+        $clienteData = $this->resolverCliente($request);
+        $validated = array_merge($validated, $clienteData);
         $validated['tenant_id'] = Auth::user()->business_instance_id;
 
         $venta = Venta::create($validated);

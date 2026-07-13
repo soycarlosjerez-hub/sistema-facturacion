@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'setup.wizard'     => \App\Http\Middleware\CheckSetupWizard::class,
             'tenant'           => \App\Http\Middleware\TenantMiddleware::class,
             'api-auth'         => \App\Http\Middleware\AuthenticateApiKey::class,
+            'api.request.logger' => \App\Http\Middleware\ApiRequestLogger::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);

@@ -701,6 +701,10 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
 
     // Cuentas Bancarias (Owner)
     Route::get('/cuentas-bancarias',[\App\Http\Controllers\OwnerController::class,'cuentasBancarias'])->name('cuentas-bancarias.index');
+    // API Request Logs
+    Route::get('/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'index'])->name('api-requests');
+    Route::get('/api/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'apiIndex'])->name('api.api-requests');
+    Route::get('/api-requests/{apiRequestLog}', [\App\Http\Controllers\OwnerApiController::class, 'show'])->name('api-requests.show');
     // (owner role management removed — roles are managed per-instance)
 });
 
