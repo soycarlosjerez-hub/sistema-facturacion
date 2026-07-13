@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BusinessInstance;
 use App\Models\SecuenciaEcf;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -113,22 +114,32 @@ class SecuenciaEcfSeeder extends Seeder
             ],
         ];
 
-        foreach ($secuencias as $data) {
-            $existing = SecuenciaEcf::where('tipo_ecf', $data['tipo_ecf'])->first();
-            if ($existing) {
-                // Preservar el contador actual y solo actualizar metadatos
-                $existing->update([
-                    'nombre'            => $data['nombre'],
-                    'hasta'             => $data['hasta'],
-                    'fecha_vencimiento' => $data['fecha_vencimiento'],
-                    'activo'            => $data['activo'],
-                    'descripcion'       => $data['descripcion'],
-                ]);
-            } else {
-                SecuenciaEcf::create($data);
+        $instancias = BusinessInstance::all();
+
+        foreach ($instancias as $instancia) {
+            foreach ($secuencias as $data) {
+                $existing = SecuenciaEcf::withoutGlobalScopes()
+                    ->where('tipo_ecf', $data['tipo_ecf'])
+                    ->where('tenant_id', $instancia->id)
+                    ->first();
+
+                if ($existing) {
+                    $existing->update([
+                        'nombre'            => $data['nombre'],
+                        'hasta'             => $data['hasta'],
+                        'fecha_vencimiento' => $data['fecha_vencimiento'],
+                        'activo'            => $data['activo'],
+                        'descripcion'       => $data['descripcion'],
+                    ]);
+                } else {
+                    SecuenciaEcf::withoutGlobalScopes()->create(
+                        array_merge($data, ['tenant_id' => $instancia->id])
+                    );
+                }
             }
         }
 
-        $this->command->info('✓ ' . count($secuencias) . ' secuencias e-CF creadas');
+        $total = count($secuencias) * $instancias->count();
+        $this->command->info("✓ {$total} secuencias e-CF creadas para {$instancias->count()} instancias");
     }
 }
