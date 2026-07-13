@@ -97,6 +97,9 @@ class OrdenService
         $data['estado'] = OrdenState::Pendiente->value;
 
         if (empty($data['cliente_id'])) {
+            Log::warning('[OrdenService] Sin cliente_id, asignando Consumidor Final', [
+                'data_keys' => array_keys($data),
+            ]);
             $data['cliente_id'] = Cliente::consumidorFinal()->id ?? null;
         }
 
