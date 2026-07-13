@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreVentaRequest extends FormRequest
 {
@@ -14,7 +15,10 @@ class StoreVentaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cliente_id'    => 'nullable|exists:clientes,id',
+            'cliente_id'    => [
+                Rule::requiredIf(fn () => in_array($this->metodo_pago, ['fiado', 'cuenta_abierta'])),
+                'exists:clientes,id',
+            ],
             'tipo_venta_id' => 'required|exists:tipos_ventas,id',
             'producto_id'   => 'required|array|min:1',
             'producto_id.*' => 'exists:productos,id',

@@ -2608,18 +2608,18 @@ body:not(.dark-mode) {
     // ============ Crédito/Fiado Validation ============
     function validarCreditoFiado() {
         const select = $('cliente_id');
-        if (!select) return true;
-        const opt = select.options[select.selectedIndex];
-        if (!opt) return true;
-        const esFinal = opt.dataset.esFinal === '1';
-        const limite = parseFloat(opt.dataset.limite) || 0;
-        const deuda = parseFloat(opt.dataset.deuda) || 0;
-        const total = parseFloat($('hidden-total').value) || 0;
-        // Si es Consumidor Final, exigir seleccionar cliente
-        if (esFinal) {
+        if (!select || !select.value) {
             showToast('Selecciona un cliente antes de marcar como Fiado', 'warning');
             return false;
         }
+        const opt = select.options[select.selectedIndex];
+        if (!opt || opt.dataset.esFinal === '1') {
+            showToast('Selecciona un cliente antes de marcar como Fiado', 'warning');
+            return false;
+        }
+        const limite = parseFloat(opt.dataset.limite) || 0;
+        const deuda = parseFloat(opt.dataset.deuda) || 0;
+        const total = parseFloat($('hidden-total').value) || 0;
         // Si no tiene límite configurado, permitir
         if (limite <= 0) return true;
         const nuevoTotal = deuda + total;
