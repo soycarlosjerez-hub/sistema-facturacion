@@ -286,9 +286,6 @@ class VentaController extends Controller
     {
         $venta = Venta::with('cliente', 'detalles.producto', 'usuario')->findOrFail($id);
 
-        if (!$venta->cliente) {
-            return response()->json(['error' => 'La venta debe tener un cliente asociado para generar el e-CF'], 422);
-        }
         if ($venta->detalles->isEmpty()) {
             return response()->json(['error' => 'La venta no tiene productos para facturar'], 422);
         }

@@ -2724,12 +2724,12 @@ body:not(.dark-mode) {
             headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ _token: document.querySelector('input[name="_token"]')?.value })
         })
-        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(r => { if (!r.ok) return r.json().then(e => Promise.reject(e.error || 'Error')); return r.json(); })
         .then(res => {
             $('factura-status').innerHTML = `<span class="text-success"><i class="bi bi-check-circle me-1"></i> ${res.message || 'Facturado exitosamente'}</span>`;
         })
-        .catch(() => {
-            $('factura-status').innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i> Error al facturar</span>';
+        .catch(err => {
+            $('factura-status').innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-circle me-1"></i> ${err}</span>`;
         })
         .finally(() => {
             btn.disabled = false;

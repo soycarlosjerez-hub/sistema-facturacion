@@ -71,7 +71,16 @@ class EcfXmlBuilder
 
         $cliente = $venta->cliente;
         if (!$cliente) {
-            throw new \RuntimeException('La venta no tiene un cliente asociado para generar el e-CF');
+            if ($ecf->tipo_ecf === 'E32') {
+                $cliente = (object)[
+                    'tipo_documento' => null,
+                    'rnc_cedula' => '',
+                    'nombre' => 'Consumidor Final',
+                    'email' => null,
+                ];
+            } else {
+                throw new \RuntimeException('La venta debe tener un cliente asociado para generar el e-CF');
+            }
         }
         $tipoDoc = RncValidator::tipoDocumentoDgii($cliente->tipo_documento ?? null);
         $rncComprador = $this->cleanRnc($cliente->rnc_cedula ?? '');
