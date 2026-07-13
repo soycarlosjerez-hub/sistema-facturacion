@@ -282,8 +282,12 @@ class VentaController extends Controller
         }
     }
 
-    public function facturar($id)
+    public function facturar(Request $request, $id)
     {
+        if ($request->isMethod('get')) {
+            return redirect()->route('ventas.create');
+        }
+
         $venta = Venta::with('cliente', 'detalles.producto', 'usuario')->findOrFail($id);
 
         if ($venta->detalles->isEmpty()) {

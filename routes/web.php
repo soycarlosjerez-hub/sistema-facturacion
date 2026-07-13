@@ -165,7 +165,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::post('/ventas/imprimir/{id}', [VentaController::class, 'imprimir'])->name('ventas.imprimir');
-    Route::post('/ventas/facturar/{id}', [VentaController::class, 'facturar'])->name('ventas.facturar');
+    Route::match(['GET', 'POST'], '/ventas/facturar/{id}', [VentaController::class, 'facturar'])->name('ventas.facturar');
 
     // POS - Ordenes (sin mesas)
     Route::prefix('ordenes')->name('ordenes.')->group(function () {
