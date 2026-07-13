@@ -1984,6 +1984,7 @@ body:not(.dark-mode) {
                         <label>Propina</label>
                         <div class="d-flex gap-2 align-items-center">
                             <input type="number" id="propina-input" step="0.01" min="0" value="0" inputmode="decimal" oninput="actualizarTotalPago()">
+                            <button type="button" class="propina-btn" onclick="asignarPropina(0, this)">0%</button>
                             <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
                             <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
                             <button type="button" class="propina-btn" onclick="asignarPropina(18, this)">18%</button>
