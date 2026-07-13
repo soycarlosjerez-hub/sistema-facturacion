@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrdenResource;
+use App\Models\Cliente;
 use App\Models\Orden;
 use App\Services\OrdenService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrdenController extends Controller
 {
@@ -30,12 +32,24 @@ class OrdenController extends Controller
         $validated = $request->validate([
             'tipo_orden'       => 'required|string|in:mostrador,delivery,pickup',
             'cliente_id'       => 'nullable|exists:clientes,id',
+            'cliente_nombre'   => 'nullable|string|max:200',
+            'cliente_telefono' => 'nullable|string|max:30',
+            'cliente_email'    => 'nullable|email|max:200',
             'entrega_empresa_id' => 'nullable|exists:delivery_companies,id',
             'direccion_entrega'  => 'nullable|string',
             'telefono_contacto'  => 'nullable|string|max:30',
             'hora_retiro'        => 'nullable|date',
             'notas'              => 'nullable|string',
         ]);
+
+        if (empty($validated['cliente_id']) && !empty($validated['cliente_nombre'])) {
+            $user = Auth::user();
+            $cliente = Cliente::firstOrCreate(
+                ['nombre' => $validated['cliente_nombre'], 'tenant_id' => $user->business_instance_id],
+                ['telefono' => $validated['cliente_telefono'] ?? null, 'email' => $validated['cliente_email'] ?? null]
+            );
+            $validated['cliente_id'] = $cliente->id;
+        }
 
         $orden = $this->ordenService->createOrden($validated);
 
@@ -51,12 +65,24 @@ class OrdenController extends Controller
     {
         $validated = $request->validate([
             'cliente_id'       => 'nullable|exists:clientes,id',
+            'cliente_nombre'   => 'nullable|string|max:200',
+            'cliente_telefono' => 'nullable|string|max:30',
+            'cliente_email'    => 'nullable|email|max:200',
             'entrega_empresa_id' => 'nullable|exists:delivery_companies,id',
             'direccion_entrega'  => 'nullable|string',
             'telefono_contacto'  => 'nullable|string|max:30',
             'hora_retiro'        => 'nullable|date',
             'notas'              => 'nullable|string',
         ]);
+
+        if (empty($validated['cliente_id']) && !empty($validated['cliente_nombre'])) {
+            $user = Auth::user();
+            $cliente = Cliente::firstOrCreate(
+                ['nombre' => $validated['cliente_nombre'], 'tenant_id' => $user->business_instance_id],
+                ['telefono' => $validated['cliente_telefono'] ?? null, 'email' => $validated['cliente_email'] ?? null]
+            );
+            $validated['cliente_id'] = $cliente->id;
+        }
 
         $orden->update($validated);
 
