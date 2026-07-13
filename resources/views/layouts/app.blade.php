@@ -475,7 +475,8 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         $currentItemRoute = null;
                         foreach ($sidebarItems as $item) {
                             if (isset($item['section'])) continue;
-                            $rname = $item['route'];
+                            $rname = $item['route'] ?? '';
+                            if (! $rname) continue;
                             $rnameMatch = $item['is_route'] ?? $rname . '.*';
                             if (request()->routeIs($rnameMatch)) {
                                 $currentItemRoute = $rnameMatch;
@@ -494,10 +495,12 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             } elseif ($currentSection !== null) {
                                 $groupedItems[$currentSection][] = $item;
                                 // Check if this item is active
-                                $rname = $item['route'];
-                                $rnameMatch = $item['is_route'] ?? $rname . '.*';
-                                if (request()->routeIs($rnameMatch)) {
-                                    $activeSectionId = str_replace(' ', '-', strtolower($currentSection));
+                                $rname = $item['route'] ?? '';
+                                if ($rname) {
+                                    $rnameMatch = $item['is_route'] ?? $rname . '.*';
+                                    if (request()->routeIs($rnameMatch)) {
+                                        $activeSectionId = str_replace(' ', '-', strtolower($currentSection));
+                                    }
                                 }
                             }
                         }
