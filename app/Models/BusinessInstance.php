@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
@@ -14,7 +13,6 @@ use Illuminate\Support\Facades\Crypt;
 class BusinessInstance extends Model
 {
     use SoftDeletes;
-
     protected $fillable = [
         'nombre',
         'slug',
@@ -32,7 +30,7 @@ class BusinessInstance extends Model
         'motivo_bloqueo',
         'bloqueado_en',
         'setup_completed',
-        'trashed_at',
+        'deleted_at',
     ];
 
     protected $casts = [
@@ -43,7 +41,7 @@ class BusinessInstance extends Model
         'fecha_vencimiento' => 'datetime',
         'bloqueado_en' => 'datetime',
         'costo_mensual' => 'decimal:2',
-        'trashed_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function businessType(): BelongsTo
@@ -88,12 +86,10 @@ class BusinessInstance extends Model
 
     public function isModuloVisible(string $moduloKey): bool
     {
-        // Check instance-level override first
         $override = $this->modules()->where('modulo_key', $moduloKey)->first();
         if ($override !== null) {
             return $override->visible;
         }
-        // Fallback to BusinessType level
         return $this->businessType?->isModuloVisible($moduloKey, $this->businessType->slug) ?? false;
     }
 
@@ -171,67 +167,17 @@ class BusinessInstance extends Model
         return $query->where('bloqueado', true);
     }
 
-    public function scopeWithTrashed($query)
-    {
-        return $query->withTrashed();
-    }
-
-    public function scopeWithoutTrashed($query)
-    {
-        return $query->withoutTrashed();
-    }
-
-    public function restore()
-    {
-        if ($this->trashed()) {
-            $this->trashed_at = null;
-            $this->save();
-            $this->fireModelEvent('restored', false);
-        }
-    }
-
-    public function forceRestore()
-    {
-        return $this->restore();
-    }
-
-    public function forceDelete()
-    {
-        if ($this->trashed()) {
-            $this->fireModelEvent('deleting', false);
-            parent::forceDelete();
-            $this->fireModelEvent('deleted', false);
-        }
-    }
-
-    public function trashed()
-    {
-        return $this->trashed_at !== null;
-    }
-
     protected static function booted(): void
     {
         static::created(function (self $instance) {
             self::seedSmtpSettings($instance->id);
-        });
-
-        static::restoring(function (self $instance) {
-            $instance->trashed_at = null;
-        });
-
-        static::removing(function (self $instance) {
-            if (!$instance->trashed()) {
-                $instance->trashed_at = now();
-                $instance->save();
-            }
-            return true;
         });
     }
 
     private static function seedSmtpSettings(int $tenantId): void
     {
         $mailPassword = env('MAIL_SMTP_PASSWORD', env('SMTP_PASSWORD', ''));
-        
+
         $settings = [
             'mail_mailer'     => env('MAIL_MAILER', 'smtp'),
             'mail_host'       => env('MAIL_HOST', '127.0.0.1'),
