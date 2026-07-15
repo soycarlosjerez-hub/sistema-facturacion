@@ -505,6 +505,7 @@ Route::middleware(['auth'])->group(function () {
         // Caja
         Route::get('/reportes/caja', [ReporteController::class, 'caja'])->name('reportes.caja');
         Route::get('/reportes/caja/csv', [ReporteController::class, 'cajaCsv'])->name('reportes.caja.csv');
+        Route::get('/reportes/caja/pdf', [ReporteController::class, 'cajaPdf'])->name('reportes.caja.pdf');
 
         // Utilidades
         Route::get('/reportes/utilidades', [ReporteController::class, 'utilidades'])->name('reportes.utilidades');
@@ -622,16 +623,6 @@ Route::middleware(['auth', 'role:admin|owner'])->group(function () {
     Route::resource('roles', RoleController::class);
     Route::get('roles-matrix', [RoleController::class, 'matrix'])->name('roles.matrix');
 });
-
-// Admin de Instancia (admin-business) - gestión de usuarios solo en su instancia
-// Instance user management routes removed for admin-business role
-// Route::get('/users', [\App\Http\Controllers\OwnerController::class, 'instanceUsersIndex'])->name('users.index');
-// Route::get('/users/create', [\App\Http\Controllers\OwnerController::class, 'instanceUserCreate'])->name('users.create');
-// Route::post('/users', [\App\Http\Controllers\OwnerController::class, 'instanceUserStore'])->name('users.store');
-// Route::get('/users/{user}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceUserEdit'])->name('users.edit');
-// Route::put('/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserUpdate'])->name('users.update');
-// Route::delete('/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserDestroy'])->name('users.destroy');
-
 
 // API Documentation
 Route::middleware('auth')->get('/docs/api', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'index'])->name('api.documentation');

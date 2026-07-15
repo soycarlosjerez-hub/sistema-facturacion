@@ -6,11 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 
 class BusinessInstance extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'nombre',
         'slug',
@@ -28,6 +32,7 @@ class BusinessInstance extends Model
         'motivo_bloqueo',
         'bloqueado_en',
         'setup_completed',
+        'trashed_at',
     ];
 
     protected $casts = [
@@ -38,6 +43,7 @@ class BusinessInstance extends Model
         'fecha_vencimiento' => 'datetime',
         'bloqueado_en' => 'datetime',
         'costo_mensual' => 'decimal:2',
+        'trashed_at' => 'datetime',
     ];
 
     public function businessType(): BelongsTo
@@ -152,7 +158,12 @@ class BusinessInstance extends Model
 
     public function scopeConAtraso($query)
     {
-        return $query->where('activo', true)->where('bloqueado', false);
+        return $query->where('activo', true)
+            ->where('bloqueado', false)
+            ->whereHas('ultimoPago', function ($q) {
+                $q->where('mes_pagado', '<', now()->startOfMonth());
+            })
+            ->orWhereDoesntHave('ultimoPago');
     }
 
     public function scopeBloqueadas($query)
@@ -160,24 +171,76 @@ class BusinessInstance extends Model
         return $query->where('bloqueado', true);
     }
 
+    public function scopeWithTrashed($query)
+    {
+        return $query->withTrashed();
+    }
+
+    public function scopeWithoutTrashed($query)
+    {
+        return $query->withoutTrashed();
+    }
+
+    public function restore()
+    {
+        if ($this->trashed()) {
+            $this->trashed_at = null;
+            $this->save();
+            $this->fireModelEvent('restored', false);
+        }
+    }
+
+    public function forceRestore()
+    {
+        return $this->restore();
+    }
+
+    public function forceDelete()
+    {
+        if ($this->trashed()) {
+            $this->fireModelEvent('deleting', false);
+            parent::forceDelete();
+            $this->fireModelEvent('deleted', false);
+        }
+    }
+
+    public function trashed()
+    {
+        return $this->trashed_at !== null;
+    }
+
     protected static function booted(): void
     {
         static::created(function (self $instance) {
             self::seedSmtpSettings($instance->id);
         });
+
+        static::restoring(function (self $instance) {
+            $instance->trashed_at = null;
+        });
+
+        static::removing(function (self $instance) {
+            if (!$instance->trashed()) {
+                $instance->trashed_at = now();
+                $instance->save();
+            }
+            return true;
+        });
     }
 
     private static function seedSmtpSettings(int $tenantId): void
     {
+        $mailPassword = env('MAIL_SMTP_PASSWORD', env('SMTP_PASSWORD', ''));
+        
         $settings = [
-            'mail_mailer'     => 'smtp',
-            'mail_host'       => 'mail.armada.do',
-            'mail_port'       => '465',
-            'mail_username'   => 'no-reply@armada.do',
-            'mail_password'   => Crypt::encryptString('Dn%q#U0tV,65FqSU'),
-            'mail_encryption' => 'ssl',
-            'mail_from_address' => 'no-reply@armada.do',
-            'mail_from_name'    => 'Sistema de Facturación',
+            'mail_mailer'     => env('MAIL_MAILER', 'smtp'),
+            'mail_host'       => env('MAIL_HOST', '127.0.0.1'),
+            'mail_port'       => env('MAIL_PORT', '2525'),
+            'mail_username'   => env('MAIL_USERNAME'),
+            'mail_password'   => $mailPassword ? Crypt::encryptString($mailPassword) : null,
+            'mail_encryption' => env('MAIL_ENCRYPTION'),
+            'mail_from_address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+            'mail_from_name'    => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
         ];
 
         foreach ($settings as $key => $value) {

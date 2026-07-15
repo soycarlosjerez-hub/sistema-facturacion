@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class InstanceRole extends Model
 {
@@ -48,18 +49,25 @@ class InstanceRole extends Model
 
     public function syncModules(array $moduleKeys): void
     {
-        $data = [];
-        $orden = 0;
-        foreach ($moduleKeys as $key) {
-            $data[$key] = [
-                'modulo_key' => $key,
-                'is_visible' => true,
-                'orden' => $orden++,
-            ];
-        }
-        $this->modules()->delete();
-        foreach ($data as $item) {
-            $this->modules()->create($item);
+        DB::beginTransaction();
+        try {
+            $data = [];
+            $orden = 0;
+            foreach ($moduleKeys as $key) {
+                $data[$key] = [
+                    'modulo_key' => $key,
+                    'is_visible' => true,
+                    'orden' => $orden++,
+                ];
+            }
+            $this->modules()->delete();
+            foreach ($data as $item) {
+                $this->modules()->create($item);
+            }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 }

@@ -209,6 +209,17 @@ class ReporteController extends Controller
         return view('reportes.caja', $data);
     }
 
+    public function cajaPdf(Request $request)
+    {
+        $data = $this->reporteService->caja(
+            $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            $request->input('hasta', today()->format('Y-m-d')),
+            $request->input('caja_id')
+        );
+        $filename = "caja_{$data['desde']}_{$data['hasta']}.pdf";
+        return $this->exportPdf('reportes.caja-pdf', $data, $filename);
+    }
+
     public function cajaCsv(Request $request)
     {
         $data = $this->reporteService->caja(

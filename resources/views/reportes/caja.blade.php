@@ -28,7 +28,8 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
                 <p class="text-white-50 mb-0">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} sesión(es)</p>
             </div>
             <div class="d-flex gap-2 align-items-center">
-                <a href="{{ route('reportes.caja.csv', request()->all()) }}" class="btn btn-success rounded-pill"><i class="bi bi-download me-1"></i> CSV</a>
+                <a href="{{ route('reportes.caja.pdf', ['desde' => $desde, 'hasta' => $hasta, 'caja_id' => request('caja_id')]) }}" class="btn btn-danger rounded-pill"><i class="bi bi-file-pdf me-1"></i> PDF</a>
+                <a href="{{ route('reportes.caja.csv', ['desde' => $desde, 'hasta' => $hasta, 'caja_id' => request('caja_id')]) }}" class="btn btn-success rounded-pill"><i class="bi bi-download me-1"></i> CSV</a>
                 <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
                 <div class="premium-avatar-circle ms-2">
                     <i class="bi bi-bar-chart-line"></i>
@@ -64,7 +65,7 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
 
     <div class="premium-card overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table id="cajaTable" class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;">
                         <th class="ps-4 py-3">Caja</th><th>Cajero</th><th>Apertura</th><th>Cierre</th>
@@ -105,3 +106,21 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#cajaTable').DataTable({
+        responsive: true,
+        order: [[2, 'desc']],
+        pageLength: 25,
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        columnDefs: [
+            { orderable: false, targets: [1, 4, 5, 6, 7, 8, 9] }
+        ]
+    });
+});
+</script>
+@endpush

@@ -17,9 +17,11 @@ use App\Services\UserBusinessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Database\Eloquent\Model;
 
 class OwnerController extends Controller
 {
@@ -29,9 +31,30 @@ class OwnerController extends Controller
         $this->middleware('role:owner');
     }
 
+    private function logOwnerAction(string $action, string $description, ?array $oldValues = null, ?array $newValues = null, ?Model $model = null): void
+    {
+        try {
+            \App\Models\AuditLog::create([
+                'user_id' => auth()->id(),
+                'action' => $action,
+                'model_type' => $model ? get_class($model) : null,
+                'model_id' => $model?->id,
+                'description' => $description,
+                'old_values' => $oldValues ? json_encode($oldValues) : null,
+                'new_values' => $newValues ? json_encode($newValues) : null,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'tenant_id' => null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to log owner action: ' . $e->getMessage());
+        }
+    }
+
     public function index()
     {
-        $totalInstancias = BusinessInstance::count();
+        $totalInstancias = BusinessInstance::withTrashed()->count();
+        $archivadas = BusinessInstance::onlyTrashed()->count();
         $activas = BusinessInstance::where('activo', true)->count();
         $bloqueadas = BusinessInstance::where('bloqueado', true)->count();
         $vencidas = BusinessInstance::where('activo', true)
@@ -66,7 +89,7 @@ class OwnerController extends Controller
         $totalUsuarios = User::count();
 
         return view('owner.dashboard', compact(
-            'totalInstancias', 'activas', 'bloqueadas', 'vencidas', 'porVencer',
+            'totalInstancias', 'activas', 'bloqueadas', 'vencidas', 'porVencer', 'archivadas',
             'instancias', 'instanciasPorTipo', 'instanciasConAtraso',
             'proximosVencimientos', 'ingresosEsperados', 'ingresosRealesMes',
             'totalTipos', 'totalUsuarios'
@@ -288,7 +311,13 @@ class OwnerController extends Controller
 
     public function instances()
     {
-        $instances = BusinessInstance::with(['businessType', 'owner', 'ultimoPago'])
+        $query = BusinessInstance::with(['businessType', 'owner', 'ultimoPago']);
+        
+        if (request('show_trashed') === '1') {
+            $query->withTrashed();
+        }
+
+        $instances = $query
             ->orderByRaw('bloqueado DESC, activo DESC')
             ->latest()
             ->paginate(15);
@@ -326,7 +355,7 @@ class OwnerController extends Controller
             $allRoles = \Spatie\Permission\Models\Role::pluck('name')->toArray();
             $rules['user_name'] = 'required|string|max:255';
             $rules['user_email'] = 'required|email|max:255|unique:users,email';
-            $rules['user_password'] = 'required|string|min:6|confirmed';
+            $rules['user_password'] = 'required|string|min:12|confirmed';
             $rules['user_role'] = ['required', 'string', Rule::in($allRoles)];
         }
 
@@ -360,13 +389,15 @@ class OwnerController extends Controller
             $newUser->assignRole($data['user_role']);
         }
 
+        $this->logOwnerAction('INSTANCE_CREATE', "Instancia '{$instance->nombre}' creada", null, ['id' => $instance->id, 'slug' => $instance->slug], $instance);
+
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Instancia creada correctamente.');
     }
 
     public function instancesShow($id)
     {
-        $instance = BusinessInstance::with(['businessType', 'owner', 'users.tokens', 'ultimoPago'])
+        $instance = BusinessInstance::withTrashed()->with(['businessType', 'owner', 'users.tokens', 'ultimoPago'])
             ->findOrFail($id);
         $pagosRecientes = PagoInstancia::where('business_instance_id', $id)
             ->with('registradoPor')
@@ -384,7 +415,7 @@ class OwnerController extends Controller
 
     public function instancesEdit($id)
     {
-        $instance = BusinessInstance::findOrFail($id);
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
         $owners = User::role('owner')->orderBy('name')->get();
         return view('owner.instances.edit', compact('instance', 'businessTypes', 'owners'));
@@ -407,6 +438,7 @@ class OwnerController extends Controller
             'activo' => 'boolean',
         ]);
 
+        $oldData = $instance->getAttributes();
         $instance->update([
             'nombre' => $data['nombre'],
             'rnc' => $data['rnc'] ?? null,
@@ -420,22 +452,31 @@ class OwnerController extends Controller
             'activo' => $request->boolean('activo', true),
         ]);
 
+        $this->logOwnerAction('INSTANCE_UPDATE', "Instancia '{$instance->nombre}' actualizada", $oldData, $instance->getAttributes(), $instance);
+
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Instancia actualizada correctamente.');
     }
 
     public function instancesDestroy($id)
     {
-        $instance = BusinessInstance::findOrFail($id);
-        $instance->update(['activo' => false]);
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
+        
+        if ($instance->trashed()) {
+            $instance->forceDelete();
+            $msg = 'Instancia eliminada permanentemente.';
+        } else {
+            $instance->delete();
+            $msg = 'Instancia archivada correctamente.';
+        }
 
         return redirect()->route('owner.instances.index')
-            ->with('success', 'Instancia desactivada correctamente.');
+            ->with('success', $msg);
     }
 
     public function instancesConfig($id)
     {
-        $instance = BusinessInstance::with('businessType')->findOrFail($id);
+        $instance = BusinessInstance::withTrashed()->with('businessType')->findOrFail($id);
         $globalSettings = [
             'nombre_empresa' => SystemSetting::get('nombre_empresa', ''),
             'slogan' => SystemSetting::get('slogan', ''),
@@ -478,7 +519,7 @@ class OwnerController extends Controller
 
     public function cleanInstance(Request $request, $id)
     {
-        $instance = BusinessInstance::findOrFail($id);
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
 
         $request->validate([
             'confirm_name' => 'required|string|in:' . $instance->nombre,
@@ -487,9 +528,8 @@ class OwnerController extends Controller
         $tenantId = $instance->id;
 
         DB::transaction(function () use ($tenantId) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
-            // Orden: detalles primero, luego cabeceras, luego maestros
+            // FK integrity preserved - filtered by tenant_id only
             $tables = [
                 // Ventas y sus relaciones
                 'split_bill_persons',
@@ -530,14 +570,28 @@ class OwnerController extends Controller
                 'reservaciones',
                 'waitlist_entries',
                 'mesas',
-                'mesa_ubicaciones',  // nueva
+                'mesa_ubicaciones',
                 'mesa_categorias',
-                'categories',        // categorías extra (restaurante/lavadero)
+                'categories',
 
                 // Lavadero
                 'lavadero_citas',
                 'lavadero_servicios',
                 'lavadores',
+
+                // Alquiler
+                'alquiler_contratos',
+                'alquiler_inquilinos',
+                'alquiler_viviendas',
+                'alquiler_pagos',
+
+                // Tattoo
+                'tattoo_appointments',
+                'tattoo_artists',
+                'tattoo_designs',
+
+                // Vehículos
+                'vehiculos',
 
                 // Cajas
                 'sesion_cajas',
@@ -562,19 +616,23 @@ class OwnerController extends Controller
             ];
 
             foreach ($tables as $table) {
-                // Verificar que la tabla exista antes de intentar limpiar
                 if (DB::getSchemaBuilder()->hasTable($table)) {
                     DB::table($table)->where('tenant_id', $tenantId)->delete();
                 }
             }
 
-            // Resetear setup_completed para que vuelva a hacer el wizard
             \App\Models\BusinessInstance::where('id', $tenantId)->update([
                 'setup_completed' => false,
             ]);
-
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
         });
+
+        $this->logOwnerAction(
+            'INSTANCE_CLEAN',
+            "Datos operacionales de '{$instance->nombre}' eliminados completamente",
+            null,
+            ['tenant_id' => $tenantId],
+            $instance
+        );
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', "Todos los datos operacionales de {$instance->nombre} han sido eliminados. El wizard de configuración se reiniciará en el próximo inicio de sesión.");
@@ -583,18 +641,27 @@ class OwnerController extends Controller
 
     public function alternarBloqueo(Request $request, $id)
     {
-        $instance = BusinessInstance::findOrFail($id);
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
 
         $data = $request->validate([
             'bloqueado' => 'required|boolean',
             'motivo_bloqueo' => 'required_if:bloqueado,1|string|max:500',
         ]);
 
+        $oldBlockState = $instance->bloqueado;
         $instance->update([
             'bloqueado' => $data['bloqueado'],
             'motivo_bloqueo' => $data['bloqueado'] ? $data['motivo_bloqueo'] : null,
             'bloqueado_en' => $data['bloqueado'] ? now() : null,
         ]);
+
+        $this->logOwnerAction(
+            $data['bloqueado'] ? 'INSTANCE_BLOCK' : 'INSTANCE_UNBLOCK',
+            "Instancia '{$instance->nombre}' " . ($data['bloqueado'] ? 'bloqueada' : 'desbloqueada') . ($data['bloqueado'] && $data['motivo_bloqueo'] ? ': ' . $data['motivo_bloqueo'] : ''),
+            ['bloqueado' => $oldBlockState],
+            ['bloqueado' => $data['bloqueado']],
+            $instance
+        );
 
         $msg = $data['bloqueado']
             ? 'Instancia bloqueada correctamente.'
@@ -660,10 +727,17 @@ class OwnerController extends Controller
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
+            'email' => 'required|email|max:255',
+            'password' => 'required|string|min:12|confirmed',
             'instance_role_id' => 'nullable|exists:instance_roles,id',
         ]);
+
+        $duplicateEmail = User::where('email', $data['email'])
+            ->where('business_instance_id', $instance->id)
+            ->exists();
+        if ($duplicateEmail) {
+            return back()->withInput()->with('error', 'Ya existe un usuario con ese email en esta instancia.');
+        }
 
         $user = User::create([
             'name' => $data['name'],
@@ -677,6 +751,8 @@ class OwnerController extends Controller
         ]);
 
         $user->assignRole('admin-business');
+
+        $this->logOwnerAction('USER_CREATE', "Usuario '{$user->name}' creado para instancia '{$instance->nombre}'", null, ['user_id' => $user->id], $instance);
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', "Usuario {$user->name} creado correctamente para {$instance->nombre}.");
@@ -699,7 +775,7 @@ class OwnerController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:6|confirmed',
+            'password' => 'nullable|string|min:12|confirmed',
             'instance_role_id' => 'nullable|exists:instance_roles,id',
         ]);
 
@@ -728,6 +804,7 @@ class OwnerController extends Controller
         }
 
         $name = $user->name;
+        $this->logOwnerAction('USER_DELETE', "Usuario '{$name}' eliminado de instancia '{$instance->nombre}'", ['user_id' => $user->id, 'email' => $user->email], null, $instance);
         $user->delete();
 
         return redirect()->route('owner.instances.show', $instance)
@@ -778,6 +855,8 @@ class OwnerController extends Controller
         if (!empty($data['modulos'])) {
             $role->syncModules($data['modulos']);
         }
+
+        $this->logOwnerAction('ROLE_CREATE', "Rol '{$role->name}' creado para instancia '{$instance->nombre}'", null, ['role_id' => $role->id], $instance);
 
         return redirect()->route('owner.instances.roles', $instance)
             ->with('success', "Rol '{$role->name}' creado correctamente.");
@@ -836,6 +915,7 @@ class OwnerController extends Controller
         }
 
         $name = $role->name;
+        $this->logOwnerAction('ROLE_DELETE', "Rol '{$name}' eliminado de instancia '{$instance->nombre}'", ['role_id' => $role->id], null, $instance);
         $role->delete();
 
         return redirect()->route('owner.instances.roles', $instance)
@@ -1064,8 +1144,10 @@ class OwnerController extends Controller
 
         $user = User::where('business_instance_id', $instance->id)->findOrFail($data['user_id']);
 
-        $abilities = $request->input('abilities', ['*']);
+        $abilities = $request->input('abilities', ['instancia:*']);
         $token = $user->createToken($data['name'], (array) $abilities);
+
+        $this->logOwnerAction('TOKEN_CREATE', "Token '{$data['name']}' creado para usuario '{$user->name}' en instancia '{$instance->nombre}'", null, ['token_id' => $token->accessToken->id], $instance);
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Token creado correctamente.')
@@ -1081,6 +1163,7 @@ class OwnerController extends Controller
         $user = User::where('business_instance_id', $instance->id)
             ->findOrFail($token->tokenable_id);
 
+        $this->logOwnerAction('TOKEN_REVOKE', "Token revocado para usuario '{$user->name}' en instancia '{$instance->nombre}'", ['token_id' => $token->id], null, $instance);
         $token->delete();
 
         return redirect()->route('owner.instances.show', $instance)
@@ -1118,6 +1201,8 @@ class OwnerController extends Controller
             'is_active' => true,
             'created_by' => auth()->id(),
         ]);
+
+        $this->logOwnerAction('API_KEY_CREATE', "API Key '{$apiKey->name}' creada para instancia '{$instance->nombre}'", null, ['api_key_id' => $apiKey->id], $instance);
 
         return redirect()->route('owner.instances.api-keys', $instance)
             ->with('success', 'API Key creada correctamente.')
@@ -1158,6 +1243,7 @@ class OwnerController extends Controller
             ->findOrFail($apiKeyId);
 
         $name = $apiKey->name;
+        $this->logOwnerAction('API_KEY_DELETE', "API Key '{$name}' eliminada de instancia '{$instance->nombre}'", ['api_key_id' => $apiKey->id], null, $instance);
         $apiKey->delete();
 
         return redirect()->route('owner.instances.api-keys', $instance)
@@ -1202,5 +1288,5 @@ class OwnerController extends Controller
         ];
 
         return view('owner.cuentas-bancarias.index', compact('cuentas', 'instances', 'stats'));
-    }}
-// TEST LINE
+    }
+}
