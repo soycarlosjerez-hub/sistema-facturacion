@@ -74,6 +74,33 @@ body.dark-mode #cajaTable_wrapper .dataTables_filter input {
     border-color: #334155;
     color: #f1f5f9;
 }
+.filter-card > .card-accent {
+    height: 5px;
+    border-radius: 1.2rem 1.2rem 0 0;
+}
+.filter-card .form-control:focus,
+.filter-card .form-select:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79,70,229,.15) !important;
+}
+.filter-card .form-control,
+.filter-card .form-select {
+    min-width: 180px;
+}
+.filter-card .btn-primary {
+    background: linear-gradient(135deg, #4f46e5, #3b82f6) !important;
+    border: none !important;
+}
+.filter-card .btn-primary:hover {
+    background: linear-gradient(135deg, #4338ca, #2563eb) !important;
+    box-shadow: 0 6px 20px rgba(79,70,229,.4) !important;
+}
+@media (max-width: 575.98px) {
+    .filter-card .form-control,
+    .filter-card .form-select {
+        min-width: 100%;
+    }
+}
 </style>
 @endpush
 
@@ -99,29 +126,41 @@ body.dark-mode #cajaTable_wrapper .dataTables_filter input {
         </div>
     </div>
 
-    <div class="premium-card card-accent blue p-4 mb-4">
-        <form method="GET" class="row g-3 align-items-end">
-            <div class="col-auto">
-                <label class="form-label small fw-semibold mb-1">Desde</label>
-                <input type="date" name="desde" class="form-control" value="{{ $desde }}">
-            </div>
-            <div class="col-auto">
-                <label class="form-label small fw-semibold mb-1">Hasta</label>
-                <input type="date" name="hasta" class="form-control" value="{{ $hasta }}">
-            </div>
-            <div class="col-auto">
-                <label class="form-label small fw-semibold mb-1">Caja</label>
-                <select name="caja_id" class="form-select">
-                    <option value="">Todas las cajas</option>
-                    @foreach($cajas as $c)
-                        <option value="{{ $c->id }}" {{ request('caja_id') == $c->id ? 'selected' : '' }}>{{ $c->nombre }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-primary rounded-pill px-4"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-            </div>
-        </form>
+    <div class="premium-card filter-card mb-4">
+        <div class="card-accent blue"></div>
+        <div class="px-4 py-3">
+            <form method="GET" class="row gx-3 gy-3 align-items-end">
+                <div class="col-12 col-sm-auto">
+                    <label class="form-label small fw-semibold mb-1">
+                        <i class="bi bi-calendar3 text-primary me-1"></i>Desde
+                    </label>
+                    <input type="date" name="desde" class="form-control" value="{{ $desde }}">
+                </div>
+                <div class="col-12 col-sm-auto">
+                    <label class="form-label small fw-semibold mb-1">
+                        <i class="bi bi-calendar3 text-primary me-1"></i>Hasta
+                    </label>
+                    <input type="date" name="hasta" class="form-control" value="{{ $hasta }}">
+                </div>
+                <div class="col-12 col-sm-auto">
+                    <label class="form-label small fw-semibold mb-1">
+                        <i class="bi bi-layers text-primary me-1"></i>Caja
+                    </label>
+                    <select name="caja_id" class="form-select">
+                        <option value="">Todas las cajas</option>
+                        @foreach($cajas as $c)
+                            <option value="{{ $c->id }}" {{ request('caja_id') == $c->id ? 'selected' : '' }}>{{ $c->nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-sm-auto">
+                    <label class="form-label small fw-semibold mb-1 d-sm-block d-none">&nbsp;</label>
+                    <button class="btn btn-primary rounded-pill px-4 shadow-sm w-100 w-sm-auto">
+                        <i class="bi bi-funnel me-1"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="row g-4 mb-4">
