@@ -5,14 +5,29 @@
 @include('partials.premium-ui')
 <style>
 .premium-header {
-    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #06b6d4 100%) !important;
+    background: linear-gradient(135deg, #1e40af 0%, #4f46e5 50%, #0891b2 100%) !important;
     background-size: 300% 300% !important;
     animation: premiumGradientShift 6s ease infinite !important;
     box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
+    border-radius: 16px !important;
+    padding: 20px 24px !important;
+}
+.premium-header .btn-outline-secondary {
+    color: #fff !important;
+    border-color: rgba(255,255,255,.6) !important;
+}
+.premium-header .btn-outline-secondary:hover {
+    background: rgba(255,255,255,.15) !important;
+    border-color: #fff !important;
 }
 body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
 body.dark-mode .premium-card-title { color: #f1f5f9; }
 body.dark-mode .premium-card-subtitle { color: #94a3b8; }
+#cajaTable_wrapper .dataTables_length,
+#cajaTable_wrapper .dataTables_filter { margin-bottom: 12px; }
+#cajaTable td, #cajaTable th { padding: 10px 12px !important; vertical-align: middle; }
+#cajaTable tbody tr { transition: background .2s; }
+#cajaTable tbody tr:hover { background: rgba(59,130,246,.04); }
 </style>
 @endpush
 
@@ -24,12 +39,12 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
         <div class="bubble"></div>
         <div class="d-flex flex-wrap justify-content-between align-items-center position-relative w-100" style="z-index:2;">
             <div>
-                <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line text-white me-2"></i>Reporte de Caja / Turnos</h2>
-                <p class="text-white-50 mb-0">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} sesión(es)</p>
+                <h2 class="fw-bold mb-1" style="color:#fff;"><i class="bi bi-bar-chart-line me-2"></i>Reporte de Caja / Turnos</h2>
+                <p class="mb-0" style="color:rgba(255,255,255,.8);">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} sesión(es)</p>
             </div>
-            <div class="d-flex gap-2 align-items-center">
-                <a href="{{ route('reportes.caja.pdf', ['desde' => $desde, 'hasta' => $hasta, 'caja_id' => request('caja_id')]) }}" class="btn btn-danger rounded-pill"><i class="bi bi-file-pdf me-1"></i> PDF</a>
-                <a href="{{ route('reportes.caja.csv', ['desde' => $desde, 'hasta' => $hasta, 'caja_id' => request('caja_id')]) }}" class="btn btn-success rounded-pill"><i class="bi bi-download me-1"></i> CSV</a>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <a href="{{ route('reportes.caja.pdf', ['desde' => $desde, 'hasta' => $hasta, 'caja_id' => request('caja_id')]) }}" class="btn btn-danger rounded-pill shadow-sm"><i class="bi bi-file-pdf me-1"></i> PDF</a>
+                <a href="{{ route('reportes.caja.csv', ['desde' => $desde, 'hasta' => $hasta, 'caja_id' => request('caja_id')]) }}" class="btn btn-success rounded-pill shadow-sm"><i class="bi bi-download me-1"></i> CSV</a>
                 <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
                 <div class="premium-avatar-circle ms-2">
                     <i class="bi bi-bar-chart-line"></i>
@@ -38,13 +53,18 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
         </div>
     </div>
 
-    <div class="premium-card card-accent blue p-3 mb-4">
-        <form method="GET" class="row g-2 align-items-center">
-            <div class="col-auto"><label class="form-label small fw-semibold mb-0">Desde</label></div>
-            <div class="col-auto"><input type="date" name="desde" class="form-control border-0 bg-white" value="{{ $desde }}"></div>
-            <div class="col-auto"><label class="form-label small fw-semibold mb-0">Hasta</label></div>
-            <div class="col-auto"><input type="date" name="hasta" class="form-control border-0 bg-white" value="{{ $hasta }}"></div>
+    <div class="premium-card card-accent blue p-4 mb-4">
+        <form method="GET" class="row g-3 align-items-end">
             <div class="col-auto">
+                <label class="form-label small fw-semibold mb-1">Desde</label>
+                <input type="date" name="desde" class="form-control border-0 bg-white" value="{{ $desde }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label small fw-semibold mb-1">Hasta</label>
+                <input type="date" name="hasta" class="form-control border-0 bg-white" value="{{ $hasta }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label small fw-semibold mb-1">Caja</label>
                 <select name="caja_id" class="form-select border-0 bg-white">
                     <option value="">Todas las cajas</option>
                     @foreach($cajas as $c)
@@ -52,11 +72,13 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
                     @endforeach
                 </select>
             </div>
-            <div class="col-auto"><button class="btn btn-primary rounded-pill"><i class="bi bi-funnel me-1"></i>Filtrar</button></div>
+            <div class="col-auto">
+                <button class="btn btn-primary rounded-pill px-4"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+            </div>
         </form>
     </div>
 
-    <div class="row g-3 mb-4">
+    <div class="row g-4 mb-4">
         <div class="col-md-3"><div class="premium-card card-accent blue h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Sesiones</small><h4 class="fw-bold mb-0 mt-1">{{ $cantidad }} <small class="text-muted" style="font-size:.6rem;">({{ $abiertas }} abiertas / {{ $cerradas }} cerradas)</small></h4></div></div></div>
         <div class="col-md-3"><div class="premium-card card-accent blue h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Total Ventas</small><h4 class="fw-bold mb-0 mt-1 text-primary">RD$ {{ number_format($totalVentas, 2) }}</h4></div></div></div>
         <div class="col-md-3"><div class="premium-card card-accent blue h-100"><div class="card-body p-3 text-center"><small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;">Descuadre Total</small><h4 class="fw-bold mb-0 mt-1 {{ $totalDescuadre >= 0 ? 'text-success' : 'text-danger' }}">RD$ {{ number_format($totalDescuadre, 2) }}</h4></div></div></div>
@@ -114,12 +136,16 @@ $(document).ready(function() {
         responsive: true,
         order: [[2, 'desc']],
         pageLength: 25,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
         },
         columnDefs: [
-            { orderable: false, targets: [1, 4, 5, 6, 7, 8, 9] }
-        ]
+            { orderable: false, targets: [4, 5, 6, 7, 8, 9] }
+        ],
+        drawCallback: function() {
+            $('#cajaTable_wrapper .dataTables_info, #cajaTable_wrapper .dataTables_paginate').addClass('mt-2');
+        }
     });
 });
 </script>
