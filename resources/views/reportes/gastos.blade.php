@@ -10,6 +10,15 @@
     animation: premiumGradientShift 6s ease infinite !important;
     box-shadow: 0 8px 32px rgba(245,158,11,.25) !important;
 }
+.premium-header .btn-outline-secondary {
+    color: #fff !important;
+    border-color: rgba(255,255,255,.6) !important;
+    background: rgba(255,255,255,.1) !important;
+}
+.premium-header .btn-outline-secondary:hover {
+    background: rgba(255,255,255,.25) !important;
+    border-color: #fff !important;
+}
 body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
 body.dark-mode .premium-card-title { color: #f1f5f9; }
 body.dark-mode .premium-card-subtitle { color: #94a3b8; }
@@ -61,7 +70,7 @@ body.dark-mode #gastosTable tfoot td { background:rgba(15,23,42,.6);border-top-c
     </div>
 
     <div class="premium-card filter-card mb-4"><div class="card-accent blue"></div><div class="px-4 py-3">
-        <form method="GET" class="row g-2 align-items-center">
+        <form method="GET" class="row g-2 align-items-end">
             <div class="col-auto"><label class="form-label small fw-semibold mb-0">Desde</label></div>
             <div class="col-auto"><input type="date" name="desde" class="form-control" value="{{ $desde }}"></div>
             <div class="col-auto"><label class="form-label small fw-semibold mb-0">Hasta</label></div>

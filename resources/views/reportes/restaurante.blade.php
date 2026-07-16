@@ -88,13 +88,13 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(59,13
     <div class="premium-card filter-card mb-4">
         <div class="card-accent blue"></div>
         <div class="px-4 py-3">
-            <form method="GET" class="row g-2">
+            <form method="GET" class="row g-2 align-items-end">
                 <div class="col-auto">
-                    <label class="form-label small fw-bold">Desde</label>
+                    <label class="form-label small fw-semibold mb-0">Desde</label>
                     <input type="date" name="desde" class="form-control" value="{{ $desde }}">
                 </div>
                 <div class="col-auto">
-                    <label class="form-label small fw-bold">Hasta</label>
+                    <label class="form-label small fw-semibold mb-0">Hasta</label>
                     <input type="date" name="hasta" class="form-control" value="{{ $hasta }}">
                 </div>
                 <div class="col-auto d-flex align-items-end">

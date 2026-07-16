@@ -10,9 +10,21 @@
     animation: premiumGradientShift 6s ease infinite !important;
     box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
 }
+.premium-header .btn-outline-secondary {
+    color: #fff !important;
+    border-color: rgba(255,255,255,.6) !important;
+    background: rgba(255,255,255,.1) !important;
+}
+.premium-header .btn-outline-secondary:hover {
+    background: rgba(255,255,255,.25) !important;
+    border-color: #fff !important;
+}
 body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
 body.dark-mode .premium-card-title { color: #f1f5f9; }
 body.dark-mode .premium-card-subtitle { color: #94a3b8; }
+body.dark-mode .card-header.bg-white { background: rgba(15,23,42,.5) !important; border-color: rgba(255,255,255,.06) !important; }
+body.dark-mode .card-header.bg-white h6 { color: #f1f5f9; }
+body.dark-mode .card-header.bg-white h6 i { opacity: .9; }
 .filter-card > .card-accent { height:5px;border-radius:1.2rem 1.2rem 0 0; }
 .filter-card .form-control:focus,
 .filter-card .form-select:focus { border-color:#4f46e5!important;box-shadow:0 0 0 3px rgba(79,70,229,.15)!important; }
@@ -61,13 +73,13 @@ body.dark-mode #propinasTable tbody tr:hover { background:rgba(59,130,246,.08); 
     <div class="premium-card filter-card mb-4">
         <div class="card-accent blue"></div>
         <div class="px-4 py-3">
-            <form method="GET" class="row g-2">
+            <form method="GET" class="row g-2 align-items-end">
                 <div class="col-auto">
-                    <label class="form-label small fw-bold">Desde</label>
+                    <label class="form-label small fw-semibold mb-0">Desde</label>
                     <input type="date" name="desde" class="form-control" value="{{ $desde }}">
                 </div>
                 <div class="col-auto">
-                    <label class="form-label small fw-bold">Hasta</label>
+                    <label class="form-label small fw-semibold mb-0">Hasta</label>
                     <input type="date" name="hasta" class="form-control" value="{{ $hasta }}">
                 </div>
                 <div class="col-auto d-flex align-items-end">
