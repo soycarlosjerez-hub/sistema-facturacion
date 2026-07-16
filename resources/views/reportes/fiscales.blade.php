@@ -14,6 +14,28 @@
 body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
 body.dark-mode .premium-card-title { color: #f1f5f9; }
 body.dark-mode .premium-card-subtitle { color: #94a3b8; }
+.filter-card > .card-accent { height:5px;border-radius:1.2rem 1.2rem 0 0; }
+.filter-card .form-control:focus,
+.filter-card .form-select:focus { border-color:#4f46e5!important;box-shadow:0 0 0 3px rgba(79,70,229,.15)!important; }
+.filter-card .btn-primary { background:linear-gradient(135deg,#4f46e5,#3b82f6)!important;border:none!important; }
+.filter-card .btn-primary:hover { background:linear-gradient(135deg,#4338ca,#2563eb)!important;box-shadow:0 6px 20px rgba(79,70,229,.4)!important; }
+@media(max-width:575.98px){.filter-card .form-control,.filter-card .form-select{min-width:100%;}}
+.premium-stat-card { background:rgba(255,255,255,.85);border-radius:1.2rem;box-shadow:0 4px 24px rgba(0,0,0,.04);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden; }
+.premium-stat-card:hover { transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.08); }
+.premium-stat-card .stat-label { font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:#64748b;font-weight:700;margin-bottom:4px; }
+.premium-stat-card .stat-value { font-size:1.5rem;font-weight:800; }
+body.dark-mode .premium-stat-card { background:rgba(15,23,42,.7);border:1px solid rgba(255,255,255,.06); }
+body.dark-mode .premium-stat-card .stat-label { color:#94a3b8; }
+body.dark-mode .premium-stat-card .stat-value { color:#f1f5f9; }
+#fiscalesTable thead th { border-bottom:2px solid #e2e8f0;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;padding:14px 12px;background:#f8fafc; }
+#fiscalesTable tbody td { padding:12px;vertical-align:middle;border-bottom:1px solid #f1f5f9;font-size:.88rem; }
+#fiscalesTable tbody tr { transition:background .15s; }
+#fiscalesTable tbody tr:hover { background:rgba(59,130,246,.04); }
+#fiscalesTable tfoot td { padding:14px 12px;border-top:2px solid #e2e8f0;background:#f8fafc; }
+body.dark-mode #fiscalesTable thead th { background:rgba(15,23,42,.6);border-bottom-color:#334155;color:#94a3b8; }
+body.dark-mode #fiscalesTable tbody td { border-bottom-color:#1e293b;color:#cbd5e1; }
+body.dark-mode #fiscalesTable tbody tr:hover { background:rgba(59,130,246,.08); }
+body.dark-mode #fiscalesTable tfoot td { background:rgba(15,23,42,.6);border-top-color:#334155;color:#f1f5f9; }
 </style>
 @endpush
 
@@ -29,7 +51,7 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
                     <i class="bi bi-bar-chart-line text-white me-2"></i>
                     {{ $titulo }}
                 </h2>
-                <p class="text-white-50 mb-0">Período: {{ ucfirst($periodo->translatedFormat('F Y')) }}</p>
+                <p class="mb-0" style="color:rgba(255,255,255,.8);">Período: {{ ucfirst($periodo->translatedFormat('F Y')) }}</p>
             </div>
             <div class="d-flex gap-2 align-items-center">
                 <a href="{{ route('reportes.fiscales', ['tipo' => $tipo === '607' ? '606' : '607', 'mes' => $mes, 'anio' => $anio]) }}" 
@@ -55,14 +77,16 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
         </div>
     </div>
 
-    <div class="premium-card card-accent blue p-3 mb-4">
-        <form method="GET" action="{{ route('reportes.fiscales') }}" class="row g-2 align-items-center">
+    <div class="premium-card filter-card mb-4">
+        <div class="card-accent blue"></div>
+        <div class="px-4 py-3">
+        <form method="GET" action="{{ route('reportes.fiscales') }}" class="row g-2 align-items-end">
             <input type="hidden" name="tipo" value="{{ $tipo }}">
             <div class="col-auto">
                 <label class="form-label small fw-semibold mb-0">Mes</label>
             </div>
             <div class="col-auto">
-                <select name="mes" class="form-select border-0 bg-white">
+                <select name="mes" class="form-select">
                     @foreach(range(1, 12) as $m)
                         <option value="{{ $m }}" {{ $mes == $m ? 'selected' : '' }}>
                             {{ Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
@@ -71,7 +95,7 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
                 </select>
             </div>
             <div class="col-auto">
-                <select name="anio" class="form-select border-0 bg-white">
+                <select name="anio" class="form-select">
                     @for($y = now()->year; $y >= now()->year - 3; $y--)
                         <option value="{{ $y }}" {{ $anio == $y ? 'selected' : '' }}>{{ $y }}</option>
                     @endfor
@@ -82,38 +106,31 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
             </div>
         </form>
     </div>
+</div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="premium-card card-accent blue h-100">
-                <div class="card-body p-3 text-center">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Registros</small>
-                    <h4 class="fw-bold mb-0 mt-1">{{ number_format($cantidad) }}</h4>
-                </div>
+            <div class="premium-stat-card text-center p-3">
+                <div class="stat-label">Registros</div>
+                <div class="stat-value">{{ number_format($cantidad) }}</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-card card-accent blue h-100">
-                <div class="card-body p-3 text-center">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Monto Facturado</small>
-                    <h4 class="fw-bold mb-0 mt-1 text-primary">RD$ {{ number_format($total_monto, 2) }}</h4>
-                </div>
+            <div class="premium-stat-card text-center p-3">
+                <div class="stat-label">Monto Facturado</div>
+                <div class="stat-value text-primary">RD$ {{ number_format($total_monto, 2) }}</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-card card-accent blue h-100">
-                <div class="card-body p-3 text-center">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">ITBIS</small>
-                    <h4 class="fw-bold mb-0 mt-1 text-warning">RD$ {{ number_format($total_itbis, 2) }}</h4>
-                </div>
+            <div class="premium-stat-card text-center p-3">
+                <div class="stat-label">ITBIS</div>
+                <div class="stat-value text-warning">RD$ {{ number_format($total_itbis, 2) }}</div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-card card-accent blue h-100">
-                <div class="card-body p-3 text-center">
-                    <small class="text-muted text-uppercase fw-bold" style="font-size:.65rem;letter-spacing:.5px;">Total General</small>
-                    <h4 class="fw-bold mb-0 mt-1 text-success">RD$ {{ number_format($total_general, 2) }}</h4>
-                </div>
+            <div class="premium-stat-card text-center p-3">
+                <div class="stat-label">Total General</div>
+                <div class="stat-value text-success">RD$ {{ number_format($total_general, 2) }}</div>
             </div>
         </div>
     </div>
@@ -125,10 +142,10 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
             </h5>
             <small class="text-muted">{{ $cantidad }} registro(s)</small>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;">
+        <div class="table-responsive px-3 py-3">
+            <table id="fiscalesTable" class="table align-middle mb-0">
+                <thead>
+                    <tr>
                         <th class="ps-4 py-3">RNC/Cédula</th>
                         <th>{{ $tipo === '607' ? 'Cliente' : 'Proveedor' }}</th>
                         <th>NCF / Comprobante</th>
@@ -160,7 +177,7 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
                         </tr>
                     @endforelse
                 </tbody>
-                <tfoot class="table-light fw-bold">
+                <tfoot class="fw-bold">
                     <tr>
                         <td colspan="5" class="ps-4 py-3 text-end text-uppercase small">Totales</td>
                         <td class="text-end py-3">RD$ {{ number_format($total_monto, 2) }}</td>
@@ -190,4 +207,20 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
         </div>
     </div>
 </div>
+<!-- Spacing --><div class="mb-5"></div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    $('#fiscalesTable').DataTable({
+        responsive: true,
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        columnDefs: [{ orderable: false, targets: [5,6,7] }],
+        dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
+    });
+});
+</script>
+@endpush
