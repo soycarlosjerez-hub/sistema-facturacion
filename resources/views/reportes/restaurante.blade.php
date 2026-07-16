@@ -10,9 +10,22 @@
     animation: premiumGradientShift 6s ease infinite !important;
     box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
 }
+.premium-header .btn-outline-secondary {
+    color: #fff !important;
+    border-color: rgba(255,255,255,.6) !important;
+    background: rgba(255,255,255,.1) !important;
+}
+.premium-header .btn-outline-secondary:hover {
+    background: rgba(255,255,255,.25) !important;
+    border-color: #fff !important;
+}
 body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
 body.dark-mode .premium-card-title { color: #f1f5f9; }
 body.dark-mode .premium-card-subtitle { color: #94a3b8; }
+body.dark-mode .card-header.bg-white { background: rgba(15,23,42,.5) !important; border-color: rgba(255,255,255,.06) !important; }
+body.dark-mode .card-header.bg-white h6 { color: #f1f5f9; }
+body.dark-mode .card-header.bg-white h6 i { opacity: .9; }
+.card-accent-bar { height: 4px; border-radius: 1.2rem 1.2rem 0 0; }
 .filter-card > .card-accent { height:5px;border-radius:1.2rem 1.2rem 0 0; }
 .filter-card .form-control:focus,
 .filter-card .form-select:focus { border-color:#4f46e5!important;box-shadow:0 0 0 3px rgba(79,70,229,.15)!important; }
@@ -96,7 +109,8 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(59,13
     <div class="row g-4">
         {{-- Ventas por mesero --}}
         <div class="col-md-6">
-            <div class="premium-card card-accent blue h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent-bar blue"></div>
                 <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
                     <h6 class="fw-bold mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>Ventas por Mesero</h6>
                 </div>
@@ -125,7 +139,8 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(59,13
 
         {{-- Ventas por mesa --}}
         <div class="col-md-6">
-            <div class="premium-card card-accent blue h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent-bar blue"></div>
                 <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
                     <h6 class="fw-bold mb-0"><i class="bi bi-grid-3x3 me-2 text-success"></i>Ventas por Mesa</h6>
                 </div>
@@ -154,7 +169,8 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(59,13
 
         {{-- Ventas por turno --}}
         <div class="col-md-6">
-            <div class="premium-card card-accent blue h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent-bar blue"></div>
                 <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
                     <h6 class="fw-bold mb-0"><i class="bi bi-sun me-2 text-warning"></i>Ventas por Turno</h6>
                 </div>
@@ -183,7 +199,8 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(59,13
 
         {{-- Productos más vendidos --}}
         <div class="col-md-6">
-            <div class="premium-card card-accent blue h-100">
+            <div class="premium-card h-100">
+                <div class="card-accent-bar blue"></div>
                 <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
                     <h6 class="fw-bold mb-0"><i class="bi bi-trophy me-2 text-danger"></i>Productos más Vendidos</h6>
                 </div>
