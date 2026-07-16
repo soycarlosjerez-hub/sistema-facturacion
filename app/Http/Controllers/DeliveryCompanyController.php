@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DeliveryCompany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DeliveryCompanyController extends Controller
 {
@@ -28,6 +29,7 @@ class DeliveryCompanyController extends Controller
         ]);
 
         $data['activo'] = $request->boolean('activo', true);
+        $data['tenant_id'] = Auth::user()->business_instance_id;
 
         DeliveryCompany::create($data);
 

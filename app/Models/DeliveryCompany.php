@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DeliveryCompany extends Model
 {
+    use TenantScope;
+
     protected $table = 'delivery_companies';
 
     protected $fillable = [
@@ -14,6 +17,7 @@ class DeliveryCompany extends Model
         'nombre_corto',
         'comision_porcentaje',
         'activo',
+        'tenant_id',
     ];
 
     protected $casts = [
