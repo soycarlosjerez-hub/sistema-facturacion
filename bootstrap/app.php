@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant'           => \App\Http\Middleware\TenantMiddleware::class,
             'api-auth'         => \App\Http\Middleware\AuthenticateApiKey::class,
             'api.request.logger' => \App\Http\Middleware\ApiRequestLogger::class,
+            'auth.cliente'       => \App\Http\Middleware\AuthenticateCliente::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);

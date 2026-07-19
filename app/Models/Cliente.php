@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
-class Cliente extends Model
+class Cliente extends Authenticatable
 {
-    use Auditable, TenantScope;
+    use Auditable, TenantScope, Notifiable;
 
     protected $fillable = [
         'nombre', 'email', 'telefono', 'direccion', 'rnc_cedula', 'rnc',
@@ -21,6 +24,12 @@ class Cliente extends Model
         'ciudad', 'provincia', 'codigo_postal',
         'segmento', 'origen_cliente', 'sector_actividad',
         'activo', 'tenant_id',
+        'password', 'email_verified_at',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [
@@ -31,7 +40,56 @@ class Cliente extends Model
         'auto_bloquear_credito' => 'boolean',
         'regimen_mensual'        => 'boolean',
         'plazo_pago_dias'       => 'integer',
+        'email_verified_at'     => 'datetime',
     ];
+
+    public function setPasswordAttribute(string $value): void
+    {
+        $this->attributes['password'] = Hash::make($value);
+    }
+
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ClientApiToken::class);
+    }
+
+    public function createToken(string $name, array $abilities = ['*'], ?\DateTime $expiresAt = null): ClientApiToken
+    {
+        $plain = bin2hex(random_bytes(32));
+        $token = $this->apiTokens()->create([
+            'name'       => $name,
+            'token'      => hash('sha256', $plain),
+            'abilities'  => $abilities,
+            'expires_at' => $expiresAt,
+        ]);
+        $token->plain_text = $plain;
+        return $token;
+    }
+
+    public function currentAccessToken(): ?ClientApiToken
+    {
+        return request()->attributes->get('client_api_token');
+    }
+
+    public function tokenCan(string $ability): bool
+    {
+        return $this->currentAccessToken()?->tokenCan($ability) ?? false;
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    public function markEmailAsVerified(): bool
+    {
+        return $this->forceFill(['email_verified_at' => $this->freshTimestamp()])->save();
+    }
+
+    public function routeNotificationForMail(): string
+    {
+        return $this->email;
+    }
 
     // Relationships
     public function ventas()

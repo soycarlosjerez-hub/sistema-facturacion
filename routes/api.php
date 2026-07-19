@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\PaymentProcessorController;
 use App\Http\Controllers\Api\ImpresoraController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\NcfSequenceController;
+use App\Http\Controllers\Api\Auth\ClienteAuthController;
+use App\Http\Controllers\Api\ClientePedidoController;
 use App\Http\Controllers\Api\OrdenController;
 use App\Http\Controllers\Api\TerminalController;
 use App\Http\Controllers\Api\SystemSettingController;
@@ -72,6 +74,26 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
     Route::apiResource('products', ProductoController::class)
         ->names('api.products')
         ->except(['edit', 'create']);
+
+    // Cliente Auth (público)
+    Route::prefix('auth')->name('api.auth.')->group(function () {
+        Route::post('cliente/register', [ClienteAuthController::class, 'register'])->name('cliente.register');
+        Route::post('cliente/login', [ClienteAuthController::class, 'login'])->name('cliente.login');
+        Route::post('cliente/forgot-password', [ClienteAuthController::class, 'forgotPassword'])->name('cliente.forgot-password');
+        Route::post('cliente/reset-password', [ClienteAuthController::class, 'resetPassword'])->name('cliente.reset-password');
+        Route::post('cliente/resend-verification', [ClienteAuthController::class, 'resendVerification'])->name('cliente.resend-verification');
+        Route::get('cliente/verify-email/{id}/{hash}', [ClienteAuthController::class, 'verifyEmail'])->name('cliente.verify-email');
+    });
+
+    // Cliente Authenticated Routes
+    Route::prefix('cliente')->middleware('auth.cliente')->name('api.cliente.')->group(function () {
+        Route::post('logout', [ClienteAuthController::class, 'logout'])->name('logout');
+        Route::get('me', [ClienteAuthController::class, 'me'])->name('me');
+        Route::put('profile', [ClienteAuthController::class, 'updateProfile'])->name('profile.update');
+        Route::post('change-password', [ClienteAuthController::class, 'changePassword'])->name('change-password');
+        Route::get('pedidos', [ClientePedidoController::class, 'index'])->name('pedidos.index');
+        Route::get('pedidos/{id}', [ClientePedidoController::class, 'show'])->name('pedidos.show');
+    });
 
     // Sales
     Route::apiResource('sales', VentaController::class)
