@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Services\ClienteService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Rules\RncValido;
 
 class ClienteController extends Controller
@@ -34,7 +33,7 @@ class ClienteController extends Controller
             $request->merge(['tipo_documento' => strlen($clean) === 11 ? 'rnc' : 'cedula']);
         }
 
-        $data = $request->validate([
+        $rules = [
             'nombre'            => 'required|string|max:255',
             'rnc_cedula'        => ['nullable', 'digits_between:9,11', new RncValido],
             'tipo_documento'    => 'nullable|in:rnc,cedula,pasaporte,ninguno',
@@ -61,11 +60,13 @@ class ClienteController extends Controller
             'sector_actividad'  => 'nullable|string|max:100',
             'activo'            => 'boolean',
             'acceso_api'        => 'boolean',
-            'password'          => [
-                Rule::requiredIf(fn() => $request->boolean('acceso_api')),
-                'string', 'min:12',
-            ],
-        ]);
+        ];
+
+        if ($request->boolean('acceso_api')) {
+            $rules['password'] = 'required|string|min:12';
+        }
+
+        $data = $request->validate($rules);
 
         $data['activo'] = $request->boolean('activo');
         $data['acceso_api'] = $request->boolean('acceso_api');
@@ -103,7 +104,7 @@ class ClienteController extends Controller
             $request->merge(['tipo_documento' => strlen($clean) === 11 ? 'rnc' : 'cedula']);
         }
 
-        $data = $request->validate([
+        $rules = [
             'nombre'            => 'required|string|max:255',
             'rnc_cedula'        => ['nullable', 'digits_between:9,11', new RncValido],
             'tipo_documento'    => 'nullable|in:rnc,cedula,pasaporte,ninguno',
@@ -130,11 +131,13 @@ class ClienteController extends Controller
             'sector_actividad'  => 'nullable|string|max:100',
             'activo'            => 'boolean',
             'acceso_api'        => 'boolean',
-            'password'          => [
-                Rule::requiredIf(fn() => $request->boolean('acceso_api') && empty($cliente->password)),
-                'string', 'min:12',
-            ],
-        ]);
+        ];
+
+        if ($request->boolean('acceso_api') && empty($cliente->password)) {
+            $rules['password'] = 'required|string|min:12';
+        }
+
+        $data = $request->validate($rules);
 
         $data['activo'] = $request->boolean('activo');
         $data['acceso_api'] = $request->boolean('acceso_api');
