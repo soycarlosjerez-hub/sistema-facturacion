@@ -72,7 +72,9 @@ class ClienteController extends Controller
         $data['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
         $data['regimen_mensual'] = $request->boolean('regimen_mensual');
 
-        if (empty($data['password'])) {
+        if (!$data['acceso_api']) {
+            $data['password'] = null;
+        } elseif (empty($data['password'])) {
             unset($data['password']);
         }
 
@@ -139,7 +141,9 @@ class ClienteController extends Controller
         $data['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
         $data['regimen_mensual'] = $request->boolean('regimen_mensual');
 
-        if (empty($data['password'])) {
+        if (!$data['acceso_api']) {
+            $data['password'] = null;
+        } elseif (empty($data['password'])) {
             unset($data['password']);
         }
 
