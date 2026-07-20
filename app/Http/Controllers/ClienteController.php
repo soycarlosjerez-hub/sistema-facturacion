@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Services\ClienteService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Rules\RncValido;
 
 class ClienteController extends Controller
@@ -59,13 +60,18 @@ class ClienteController extends Controller
             'origen_cliente'    => 'nullable|in:referencia,web,walkin,publicidad,otro',
             'sector_actividad'  => 'nullable|string|max:100',
             'activo'            => 'boolean',
+            'acceso_api'        => 'boolean',
+            'password'          => [
+                Rule::requiredIf(fn() => $request->boolean('acceso_api')),
+                'string', 'min:12',
+            ],
         ]);
 
         $data['activo'] = $request->boolean('activo');
+        $data['acceso_api'] = $request->boolean('acceso_api');
         $data['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
         $data['regimen_mensual'] = $request->boolean('regimen_mensual');
 
-        // Si no se envió password, limpiarlo para que no se guarde vacío
         if (empty($data['password'])) {
             unset($data['password']);
         }
@@ -122,7 +128,10 @@ class ClienteController extends Controller
             'sector_actividad'  => 'nullable|string|max:100',
             'activo'            => 'boolean',
             'acceso_api'        => 'boolean',
-            'password'          => 'nullable|string|min:12',
+            'password'          => [
+                Rule::requiredIf(fn() => $request->boolean('acceso_api') && empty($cliente->password)),
+                'string', 'min:12',
+            ],
         ]);
 
         $data['activo'] = $request->boolean('activo');
