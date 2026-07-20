@@ -50,7 +50,6 @@ class Reservacion extends Model
 
     public function scopePendientes($query)
     {
-        return $query->whereIn('estado', ['pendiente', 'confirmada'])
-            ->where('fecha_hora', '>=', now()->subHours(2));
+        return $query->whereIn('estado', ['pendiente', 'confirmada']);
     }
 }

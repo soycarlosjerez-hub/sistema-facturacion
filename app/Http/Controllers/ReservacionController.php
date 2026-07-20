@@ -19,17 +19,6 @@ class ReservacionController extends Controller
     {
         $query = Reservacion::with('mesa', 'user', 'cliente')->deSucursal();
 
-        // DEBUG: Log query info
-        \Illuminate\Support\Facades\Log::debug('Reservacion::index', [
-            'user_id' => Auth::id(),
-            'business_instance_id' => Auth::user()?->business_instance_id,
-            'session_sucursal_id' => session('sucursal_id'),
-            'sql' => $query->toSql(),
-            'bindings' => $query->getBindings(),
-            'total_with_scopes' => Reservacion::count(),
-            'total_without_scopes' => Reservacion::withoutGlobalScopes()->count(),
-        ]);
-
         if ($busqueda = request('busqueda')) {
             $query->where(function ($q) use ($busqueda) {
                 $q->where('cliente_nombre', 'like', "%{$busqueda}%")
@@ -54,6 +43,7 @@ class ReservacionController extends Controller
     {
         $data = $request->validate([
             'mesa_id'          => 'required|exists:mesas,id',
+            'cliente_id'       => 'nullable|exists:clientes,id',
             'cliente_nombre'   => 'required|string|max:200',
             'cliente_telefono' => 'nullable|string|max:30',
             'cliente_email'    => 'nullable|email|max:200',
@@ -62,18 +52,25 @@ class ReservacionController extends Controller
             'notas'            => 'nullable|string|max:500',
         ]);
 
-        $mesa = Mesa::findOrFail($data['mesa_id']);
+        $mesa = Mesa::with('ordenActiva')->findOrFail($data['mesa_id']);
         if ($mesa->estado !== 'disponible') {
             return back()->with('error', 'La mesa seleccionada no está disponible.');
+        }
+        if ($mesa->ordenActiva) {
+            return back()->with('error', 'La mesa tiene una orden activa.');
+        }
+
+        $overlap = Reservacion::where('mesa_id', $data['mesa_id'])
+            ->whereIn('estado', ['pendiente', 'confirmada'])
+            ->where('fecha_hora', '>=', now()->subHour())
+            ->where('id', '!=', $data['mesa_id'])
+            ->exists();
+        if ($overlap) {
+            return back()->with('error', 'La mesa ya tiene una reservación en ese horario.');
         }
 
         $data['user_id'] = Auth::id();
         $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
-
-        if (empty($data['cliente_telefono']) && !empty($data['cliente_id'])) {
-            $cliente = \App\Models\Cliente::find($data['cliente_id']);
-            $data['cliente_telefono'] = $cliente?->telefono;
-        }
 
         DB::beginTransaction();
         try {
@@ -99,6 +96,7 @@ class ReservacionController extends Controller
     {
         $data = $request->validate([
             'mesa_id'          => 'required|exists:mesas,id',
+            'cliente_id'       => 'nullable|exists:clientes,id',
             'cliente_nombre'   => 'required|string|max:200',
             'cliente_telefono' => 'nullable|string|max:30',
             'cliente_email'    => 'nullable|email|max:200',
@@ -110,10 +108,27 @@ class ReservacionController extends Controller
         DB::beginTransaction();
         try {
             $mesaAnterior = $reservacion->mesa;
-            $nuevaMesa = Mesa::findOrFail($data['mesa_id']);
+            $nuevaMesa = Mesa::with('ordenActiva')->findOrFail($data['mesa_id']);
 
-            if ($nuevaMesa->id !== $mesaAnterior->id && $nuevaMesa->estado !== 'disponible') {
-                return back()->with('error', 'La mesa seleccionada no está disponible.');
+            if ($nuevaMesa->id !== $mesaAnterior->id) {
+                if ($nuevaMesa->estado !== 'disponible') {
+                    DB::rollBack();
+                    return back()->with('error', 'La mesa seleccionada no está disponible.');
+                }
+                if ($nuevaMesa->ordenActiva) {
+                    DB::rollBack();
+                    return back()->with('error', 'La mesa destino tiene una orden activa.');
+                }
+
+                $overlap = Reservacion::where('mesa_id', $nuevaMesa->id)
+                    ->whereIn('estado', ['pendiente', 'confirmada'])
+                    ->where('fecha_hora', '>=', now()->subHour())
+                    ->where('id', '!=', $reservacion->id)
+                    ->exists();
+                if ($overlap) {
+                    DB::rollBack();
+                    return back()->with('error', 'La mesa destino ya tiene una reservación en ese horario.');
+                }
             }
 
             $reservacion->update($data);

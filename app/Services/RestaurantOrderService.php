@@ -64,10 +64,17 @@ class RestaurantOrderService
             DB::beginTransaction();
             try {
                 $mesa = $reservacion->mesa;
-                $cliente = $reservacion->cliente ?? Cliente::firstOrCreate(
-                    ['nombre' => $reservacion->cliente_nombre],
-                    ['telefono' => $reservacion->cliente_telefono, 'email' => $reservacion->cliente_email]
-                );
+                $cliente = $reservacion->cliente;
+                if (!$cliente && $reservacion->cliente_telefono) {
+                    $cliente = Cliente::firstWhere('telefono', $reservacion->cliente_telefono);
+                }
+                if (!$cliente) {
+                    $cliente = Cliente::create([
+                        'nombre'   => $reservacion->cliente_nombre ?: 'Cliente ' . $reservacion->cliente_telefono,
+                        'telefono' => $reservacion->cliente_telefono,
+                        'email'    => $reservacion->cliente_email,
+                    ]);
+                }
 
                 $sesion = SesionCaja::where('user_id', Auth::id())
                     ->where('estado', 'abierta')
@@ -106,6 +113,15 @@ class RestaurantOrderService
     {
         if ($mesa->estado !== 'disponible' && $mesa->estado !== 'reservada') {
             return ['error' => 'La mesa no está disponible', 'code' => 422];
+        }
+        if ($mesa->estado === 'reservada') {
+            $reservacionPendiente = Reservacion::where('mesa_id', $mesa->id)
+                ->whereIn('estado', ['pendiente', 'confirmada'])
+                ->latest('fecha_hora')
+                ->first();
+            if ($reservacionPendiente && $reservacionPendiente->fecha_hora > now()->addHour()) {
+                return ['error' => 'La mesa tiene una reservación futura. Confirme o cancele la reservación antes de abrir.', 'code' => 422];
+            }
         }
 
         $sesion = SesionCaja::where('user_id', Auth::id())
@@ -474,8 +490,23 @@ class RestaurantOrderService
 
         DB::beginTransaction();
         try {
+            $itemsDevueltos = 0;
+            $productosDevueltos = [];
+
             foreach ($orden->detalles as $detalle) {
-                $detalle->producto->increment('stock', $detalle->cantidad);
+                if ($detalle->producto) {
+                    $detalle->producto->increment('stock', $detalle->cantidad);
+                    $productosDevueltos[] = [
+                        'nombre'        => $detalle->producto->nombre,
+                        'cantidad'      => $detalle->cantidad,
+                        'precio'        => $detalle->precio_unitario,
+                    ];
+                }
+
+                foreach ($detalle->producto?->ingredientes ?? [] as $ingrediente) {
+                    $ingrediente->increment('stock', $ingrediente->pivot->cantidad * $detalle->cantidad);
+                }
+
                 AlmacenMovimiento::create([
                     'tenant_id'   => Auth::user()->business_instance_id,
                     'producto_id' => $detalle->producto_id,
@@ -485,13 +516,21 @@ class RestaurantOrderService
                     'nota'        => 'Anulación orden Mesa #' . $mesa->numero . ': ' . $motivo,
                     'user_id'     => Auth::id(),
                 ]);
+                $itemsDevueltos++;
             }
 
-            $orden->update(['estado' => 'anulada', 'notas' => $motivo]);
+            $orden->update(['estado' => 'anulada', 'notas' => $motivo, 'total' => 0, 'subtotal' => 0, 'impuestos' => 0]);
             $mesa->update(['estado' => 'disponible']);
             DB::commit();
 
-            return ['success' => true];
+            return [
+                'success' => true,
+                'orden_id' => $orden->id,
+                'mesa' => "Mesa #{$mesa->numero}",
+                'motivo' => $motivo,
+                'items_devueltos' => $itemsDevueltos,
+                'productos' => $productosDevueltos,
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
             return ['error' => 'Error al anular: ' . $e->getMessage(), 'code' => 500];
