@@ -14,17 +14,22 @@ Requires authentication with `auth` session cookie.
 
 ---
 
-## GET /api/kds/orders
+## Endpoint Orders
 
-Retrieve all active orders for the kitchen display system. Returns raw data from the KDS service.
+### Órdenes Activas
 
-### Query Parameters
+**`GET /api/kds/orders`**
 
-None.
+Retorna todas las órdenes activas para el sistema de visualización de cocina. Retorna datos crudos del servicio KDS.
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -68,23 +73,29 @@ None.
 
 ---
 
-## PATCH /api/kds/orders/{detalle}/status
+## Endpoint Update Status
 
-Update the kitchen preparation status of a specific order detail (line item).
+### Actualizar Estado de Cocina
 
-### Path Parameters
+**`PATCH /api/kds/orders/{detalle}/status`**
 
-| Parameter | Type | Description |
+Actualiza el estado de preparación de cocina de un detalle de orden específico (item).
+
+**Path Parameters:**
+
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
-| `detalle` | integer | Order detail (line item) ID |
+| `detalle` | `integer` | ID del detalle de orden (item) |
 
-### Request Body
+**Headers:**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `estado_cocina` | string | Yes | In: `pendiente`, `en_preparacion`, `listo`, `entregado` |
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
-### Example Request
+**Request Body:**
 
 ```json
 {
@@ -92,9 +103,19 @@ Update the kitchen preparation status of a specific order detail (line item).
 }
 ```
 
-### Response
+**Campos:**
 
-`200 OK`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `estado_cocina` | `string` | **Sí** | Estado de cocina |
+
+**Validations:**
+
+```
+estado_cocina: required|in:pendiente,en_preparacion,listo,entregado
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -113,19 +134,27 @@ Update the kitchen preparation status of a specific order detail (line item).
 
 ## Field Reference
 
-### KDS Order Detail Status Values
+### Valores de Estado de Cocina
 
-| Value | Description |
+| Valor | Descripción |
 |-------|-------------|
-| `pendiente` | Waiting to be prepared |
-| `en_preparacion` | Currently being prepared |
-| `listo` | Ready for pickup/delivery |
-| `entregado` | Delivered to customer |
+| `pendiente` | Esperando preparación |
+| `en_preparacion` | En proceso de preparación |
+| `listo` | Listo para retiro/entrega |
+| `entregado` | Entregado al cliente |
 
-### Order Types
+### Tipos de Orden
 
-| Value | Description |
+| Valor | Descripción |
 |-------|-------------|
-| `mostrador` | Counter/order-at-counter |
-| `delivery` | Delivery order |
-| `pickup` | Pickup order |
+| `mostrador` | Orden en mostrador |
+| `delivery` | Orden de delivery |
+| `pickup` | Orden para retirar |
+
+---
+
+## Notas
+
+- Los estados de cocina siguen el flujo: `pendiente` → `en_preparacion` → `listo` → `entregado`
+- Cada detalle de orden tiene su propio estado de cocina independiente
+- Las notas de cada item se muestran en pantalla para la cocina

@@ -14,27 +14,36 @@ Requires authentication with `auth` session cookie. Each endpoint enforces speci
 
 ---
 
-## GET /api/orders
+## Endpoint Index
 
-List orders scoped to the authenticated user's branch (`deSucursal()`). Loads `detalles.producto`, `cliente`, `usuario`, and `terminal` relationships.
+### Listar Órdenes
 
-### Permissions
+**`GET /api/orders`**
+
+Lista órdenes scopeadas a la sucursal del usuario autenticado (`deSucursal()`). Carga `detalles.producto`, `cliente`, `usuario`, y `terminal`.
+
+**Permissions:**
 
 `permission:ordenes.view`
 
-### Query Parameters
+**Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tipo` | string | Optional | Filter by order type (`mostrador`, `delivery`, `pickup`) — maps to `tipo_orden` |
-| `estado` | string | Optional | Filter by order status |
-| `cliente_id` | integer | Optional | Filter by customer ID |
-| `fecha` | date | Optional | Filter by order date (YYYY-MM-DD) |
-| `page` | integer | Optional | Page number (default: 1) |
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `tipo` | `string` | No | Filtrar por tipo (`mostrador`, `delivery`, `pickup`) — mapea a `tipo_orden` |
+| `estado` | `string` | No | Filtrar por estado |
+| `cliente_id` | `integer` | No | Filtrar por ID de cliente |
+| `fecha` | `date` | No | Filtrar por fecha (YYYY-MM-DD) |
+| `page` | `integer` | No | Número de página (default: 1) |
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -79,46 +88,27 @@ List orders scoped to the authenticated user's branch (`deSucursal()`). Loads `d
 
 ---
 
-## POST /api/orders
+## Endpoint Store
 
-Create a new order with automatic client resolution. Uses a database transaction + `OrdenService`.
+### Crear Orden
 
-### Permissions
+**`POST /api/orders`**
+
+Crea una nueva orden con resolución automática de cliente. Usa transacción de base de datos + `OrdenService`.
+
+**Permissions:**
 
 `permission:ordenes.create`
 
-### Request Body
+**Headers:**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `tipo_orden` | string | Yes | In: `mostrador`, `delivery`, `pickup` |
-| `cliente_id` | integer | No | Used for auto-client resolution |
-| `cliente_nombre` | string | No | Customer name |
-| `cliente_telefono` | string | No | Customer phone |
-| `cliente_email` | string | No | Customer email |
-| `cliente_rnc_cedula` | string | No | Customer RNC/Cédula |
-| `tipo_cliente` | string | No | Customer type |
-| `entrega_empresa_id` | integer | No | Delivery company — must exist |
-| `direccion_entrega` | string | No | Delivery address |
-| `telefono_contacto` | string | No | Contact phone for delivery |
-| `hora_retiro` | string | No | Pickup time |
-| `notas` | string | No | Order notes |
-| `nombre_cliente` | string | No | Alias for customer name |
-| `correo_electronico` | string | No | Alias for customer email |
-| `items` | array | No | Array of order line items |
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
-#### Items Array Structure
-
-Each item in `items`:
-
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `producto_id` | integer | Yes | Product ID |
-| `cantidad` | integer | Yes | Quantity |
-| `notas` | string | No | Item-specific notes |
-| `curso` | string | No | Course type — In: `entrada`, `fuerte`, `postre`, `bebida` |
-
-### Example Request
+**Request Body:**
 
 ```json
 {
@@ -142,9 +132,36 @@ Each item in `items`:
 }
 ```
 
-### Response
+**Campos:**
 
-`201 Created`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `tipo_orden` | `string` | **Sí** | `mostrador`, `delivery`, `pickup` |
+| `cliente_id` | `integer` | No | Para auto-resolución de cliente |
+| `cliente_nombre` | `string` | No | Nombre del cliente |
+| `cliente_telefono` | `string` | No | Teléfono del cliente |
+| `cliente_email` | `string` | No | Email del cliente |
+| `cliente_rnc_cedula` | `string` | No | RNC/Cédula del cliente |
+| `tipo_cliente` | `string` | No | Tipo de cliente |
+| `entrega_empresa_id` | `integer` | No | Empresa de delivery (existe) |
+| `direccion_entrega` | `string` | No | Dirección de entrega |
+| `telefono_contacto` | `string` | No | Teléfono de contacto |
+| `hora_retiro` | `string` | No | Hora de retiro |
+| `notas` | `string` | No | Notas de la orden |
+| `nombre_cliente` | `string` | No | Alias para nombre del cliente |
+| `correo_electronico` | `string` | No | Alias para email del cliente |
+| `items` | `array` | No | Items de la orden |
+
+**Items Array Structure:**
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `producto_id` | `integer` | **Sí** | ID del producto |
+| `cantidad` | `integer` | **Sí** | Cantidad |
+| `notas` | `string` | No | Notas del item |
+| `curso` | `string` | No | Curso: `entrada`, `fuerte`, `postre`, `bebida` |
+
+**Response `201 Created`:**
 
 ```json
 {
@@ -171,17 +188,26 @@ Each item in `items`:
 
 ---
 
-## GET /api/orders/{orden}
+## Endpoint Show
 
-Show a single order with `detalles.producto`, `cliente`, `usuario`, `terminal`, `pagos`, and `entregaEmpresa` relationships loaded.
+### Obtener Orden
 
-### Permissions
+**`GET /api/orders/{orden}`**
+
+Muestra una orden con `detalles.producto`, `cliente`, `usuario`, `terminal`, `pagos`, y `entregaEmpresa`.
+
+**Permissions:**
 
 `permission:ordenes.view`
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -234,33 +260,56 @@ Show a single order with `detalles.producto`, `cliente`, `usuario`, `terminal`, 
 
 ---
 
-## PUT /api/orders/{orden}
+## Endpoint Update
 
-Update client information and order fields. Recalculates subtotal and total.
+### Actualizar Orden
 
-### Permissions
+**`PUT /api/orders/{orden}`**
+**`PATCH /api/orders/{orden}`**
+
+Actualiza información del cliente y campos de la orden. Recalcula subtotal y total.
+
+**Permissions:**
 
 `permission:ordenes.update`
 
-### Request Body
+**Headers:**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `cliente_nombre` | string | No | Update customer name |
-| `cliente_telefono` | string | No | Update customer phone |
-| `cliente_email` | string | No | Update customer email |
-| `cliente_rnc_cedula` | string | No | Update customer RNC/Cédula |
-| `tipo_cliente` | string | No | Update customer type |
-| `entrega_empresa_id` | integer | No | Update delivery company |
-| `direccion_entrega` | string | No | Update delivery address |
-| `telefono_contacto` | string | No | Update contact phone |
-| `hora_retiro` | string | No | Update pickup time |
-| `notas` | string | No | Update order notes |
-| `tipo_orden` | string | No | Update order type |
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
-### Response
+**Request Body:**
 
-`200 OK`
+```json
+{
+  "cliente_nombre": "Juan Carlos Pérez",
+  "entrega_empresa_id": 5,
+  "direccion_entrega": "Calle Principal #45",
+  "telefono_contacto": "+1-809-555-0200",
+  "notas": "Sin hielo"
+}
+```
+
+**Campos aceptados:**
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `cliente_nombre` | `string` | Actualizar nombre del cliente |
+| `cliente_telefono` | `string` | Actualizar teléfono |
+| `cliente_email` | `string` | Actualizar email |
+| `cliente_rnc_cedula` | `string` | Actualizar RNC/Cédula |
+| `tipo_cliente` | `string` | Actualizar tipo |
+| `entrega_empresa_id` | `integer` | Actualizar empresa de entrega |
+| `direccion_entrega` | `string` | Actualizar dirección |
+| `telefono_contacto` | `string` | Actualizar teléfono de contacto |
+| `hora_retiro` | `string` | Actualizar hora de retiro |
+| `notas` | `string` | Actualizar notas |
+| `tipo_orden` | `string` | Actualizar tipo de orden |
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -287,43 +336,38 @@ Update client information and order fields. Recalculates subtotal and total.
 
 ---
 
-## PATCH /api/orders/{orden}
+## Endpoint Destroy
 
-Partially update an order. Same body fields as PUT.
+### Anular Orden
 
-### Permissions
+**`DELETE /api/orders/{orden}`**
 
-`permission:ordenes.update`
+Anula una orden vía `OrdenService->anular()`.
 
-### Response
-
-`200 OK`
-
----
-
-## DELETE /api/orders/{orden}
-
-Annul/cancel an order via `OrdenService->anular()`.
-
-### Permissions
+**Permissions:**
 
 `permission:ordenes.cancel`
 
-### Query Parameters
+**Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `motivo` | string | Optional | Reason for cancellation |
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `motivo` | `string` | No | Razón de cancelación |
 
-### Example Request
+**Headers:**
 
 ```
-DELETE /api/orders/100?motivo=Cliente_canceló_ordena
+Accept: application/json
+Cookie: _session={cookie}
 ```
 
-### Response
+**Example Request:**
 
-`200 OK`
+```
+DELETE /api/orders/100?motivo=Cliente_canceló_orden
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -333,26 +377,27 @@ DELETE /api/orders/100?motivo=Cliente_canceló_ordena
 
 ---
 
-## POST /api/orders/{orden}/pay
+## Endpoint Pay
 
-Process payment for an order.
+### Procesar Pago
 
-### Permissions
+**`POST /api/orders/{orden}/pay`**
+
+Procesa el pago de una orden.
+
+**Permissions:**
 
 `permission:ordenes.pay`
 
-### Request Body
+**Headers:**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `metodo_pago` | string | Yes | In: `efectivo`, `tarjeta`, `transferencia`, `mixto`, `fiado` |
-| `monto_recibido` | float | Conditional | Amount received (for efectivo/mixto) |
-| `monto_tarjeta` | float | Conditional | Card amount (for tarjeta/mixto) |
-| `monto_transferencia` | float | Conditional | Transfer amount (for transferencia/mixto) |
-| `propina` | float | No | Tip amount |
-| `cargo_servicio` | boolean | No | Service charge flag |
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
-### Example Request
+**Request Body:**
 
 ```json
 {
@@ -363,9 +408,18 @@ Process payment for an order.
 }
 ```
 
-### Response
+**Campos:**
 
-`200 OK`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `metodo_pago` | `string` | **Sí** | `efectivo`, `tarjeta`, `transferencia`, `mixto`, `fiado` |
+| `monto_recibido` | `float` | Condicional | Monto recibido (para efectivo/mixto) |
+| `monto_tarjeta` | `float` | Condicional | Monto tarjeta (para tarjeta/mixto) |
+| `monto_transferencia` | `float` | Condicional | Monto transferencia (para transferencia/mixto) |
+| `propina` | `float` | No | Monto propina |
+| `cargo_servicio` | `boolean` | No | Flag cargo por servicio |
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -383,24 +437,27 @@ Process payment for an order.
 
 ---
 
-## POST /api/orders/{orden}/details
+## Endpoint Add Detail
 
-Add a line item to an existing order.
+### Agregar Item
 
-### Permissions
+**`POST /api/orders/{orden}/details`**
+
+Agrega un item a una orden existente.
+
+**Permissions:**
 
 `permission:ordenes.create`
 
-### Request Body
+**Headers:**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `producto_id` | integer | Yes | Must exist in database |
-| `cantidad` | integer | Yes | Minimum 1 |
-| `notas` | string | No | Item-specific notes |
-| `curso` | string | No | In: `entrada`, `fuerte`, `postre`, `bebida` |
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
-### Example Request
+**Request Body:**
 
 ```json
 {
@@ -411,9 +468,16 @@ Add a line item to an existing order.
 }
 ```
 
-### Response
+**Campos:**
 
-`201 Created`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `producto_id` | `integer` | **Sí** | Existe en BD |
+| `cantidad` | `integer` | **Sí** | Mínimo 1 |
+| `notas` | `string` | No | Notas del item |
+| `curso` | `string` | No | `entrada`, `fuerte`, `postre`, `bebida` |
+
+**Response `201 Created`:**
 
 ```json
 {
@@ -436,21 +500,27 @@ Add a line item to an existing order.
 
 ---
 
-## PATCH /api/orders/{orden}/details/{detalle}
+## Endpoint Update Detail
 
-Update the quantity of a line item.
+### Actualizar Item
 
-### Permissions
+**`PATCH /api/orders/{orden}/details/{detalle}`**
+
+Actualiza la cantidad de un item.
+
+**Permissions:**
 
 `permission:ordenes.create`
 
-### Request Body
+**Headers:**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `cantidad` | integer | Yes | Minimum 1 |
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
-### Example Request
+**Request Body:**
 
 ```json
 {
@@ -458,9 +528,7 @@ Update the quantity of a line item.
 }
 ```
 
-### Response
-
-`200 OK`
+**Response `200 OK`:**
 
 ```json
 {
@@ -477,17 +545,26 @@ Update the quantity of a line item.
 
 ---
 
-## DELETE /api/orders/{orden}/details/{detalle}
+## Endpoint Delete Detail
 
-Remove a line item from an order.
+### Eliminar Item
 
-### Permissions
+**`DELETE /api/orders/{orden}/details/{detalle}`**
+
+Elimina un item de una orden.
+
+**Permissions:**
 
 `permission:ordenes.create`
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -499,44 +576,44 @@ Remove a line item from an order.
 
 ## Field Reference
 
-### Order Fields
+### Campos de Orden
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | integer | Order ID |
-| `tipo_orden` | string | Order type: `mostrador`, `delivery`, `pickup` |
-| `estado` | string | Order status |
-| `cliente_id` | integer | Associated customer ID |
-| `cliente` | object | Nested customer object |
-| `usuario_id` | integer | Staff member who created the order |
-| `usuario` | object | Nested staff object |
-| `terminal_id` | integer | POS terminal used |
-| `terminal` | object | Nested terminal object |
-| `entrega_empresa_id` | integer | Delivery company (for delivery orders) |
-| `entregaEmpresa` | object | Nested delivery company |
-| `subtotal` | float | Subtotal before taxes/tips |
-| `total` | float | Grand total |
-| `notas` | string | General order notes |
-| `created_at` | datetime | Order creation timestamp |
-| `updated_at` | datetime | Last update timestamp |
+| `id` | `integer` | ID de la orden |
+| `tipo_orden` | `string` | Tipo: `mostrador`, `delivery`, `pickup` |
+| `estado` | `string` | Estado de la orden |
+| `cliente_id` | `integer` | ID del cliente asociado |
+| `cliente` | `object` | Objeto cliente anidado |
+| `usuario_id` | `integer` | Empleado que creó la orden |
+| `usuario` | `object` | Objeto empleado anidado |
+| `terminal_id` | `integer` | Terminal POS usada |
+| `terminal` | `object` | Objeto terminal anidado |
+| `entrega_empresa_id` | `integer` | Empresa de entrega |
+| `entregaEmpresa` | `object` | Objeto empresa de entrega |
+| `subtotal` | `float` | Subtotal sin impuestos/propinas |
+| `total` | `float` | Total final |
+| `notas` | `string` | Notas generales |
+| `created_at` | `datetime` | Fecha creación |
+| `updated_at` | `datetime` | Última actualización |
 
-### Order Detail Fields
+### Campos de Detalle de Orden
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | integer | Line item ID |
-| `orden_id` | integer | Parent order ID |
-| `producto_id` | integer | Product ID |
-| `producto` | object | Nested product object |
-| `cantidad` | integer | Quantity ordered |
-| `notas` | string | Item-specific notes |
-| `curso` | string | Course type: `entrada`, `fuerte`, `postre`, `bebida` |
-| `subtotal` | float | Line item subtotal |
+| `id` | `integer` | ID del item |
+| `orden_id` | `integer` | ID de la orden padre |
+| `producto_id` | `integer` | ID del producto |
+| `producto` | `object` | Objeto producto anidado |
+| `cantidad` | `integer` | Cantidad pedida |
+| `notas` | `string` | Notas específicas del item |
+| `curso` | `string` | Curso: `entrada`, `fuerte`, `postre`, `bebida` |
+| `subtotal` | `float` | Subtotal del item |
 
-### Permission Matrix
+### Matriz de Permisos
 
-| Endpoint | Permission |
-|----------|-----------|
+| Endpoint | Permiso |
+|----------|---------|
 | `GET /api/orders` | `permission:ordenes.view` |
 | `POST /api/orders` | `permission:ordenes.create` |
 | `GET /api/orders/{orden}` | `permission:ordenes.view` |

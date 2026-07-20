@@ -18,17 +18,22 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGci...
 
 ---
 
-## POST /api/cliente/logout
+## Endpoint Logout
 
-Invalidate the current API session by deleting the access token.
+### Cerrar Sesión
 
-### Request Body
+**`POST /api/cliente/logout`**
 
-None.
+Invalida la sesión actual eliminando el access token.
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -38,17 +43,22 @@ None.
 
 ---
 
-## GET /api/cliente/me
+## Endpoint Me
 
-Return the authenticated customer's profile information.
+### Perfil del Cliente
 
-### Request Body
+**`GET /api/cliente/me`**
 
-None.
+Retorna la información del perfil del cliente autenticado.
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -72,22 +82,23 @@ None.
 
 ---
 
-## PUT /api/cliente/profile
+## Endpoint Update Profile
 
-Update the customer's profile information. Uniqueness validation excludes the current user.
+### Actualizar Perfil
 
-### Request Body
+**`PUT /api/cliente/profile`**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `nombre` | string | No | Updated full name |
-| `email` | string | No | Must be unique (excluding current user) |
-| `telefono` | string | No | Must be unique (excluding current user) |
-| `direccion` | string | No | Mailing address |
-| `ciudad` | string | No | City |
-| `provincia` | string | No | Province |
+Actualiza la información del perfil del cliente. Validación de unicidad excluye al usuario actual.
 
-### Example Request
+**Headers:**
+
+```
+Authorization: Bearer {token}
+Accept: application/json
+Content-Type: application/json
+```
+
+**Request Body:**
 
 ```json
 {
@@ -99,9 +110,18 @@ Update the customer's profile information. Uniqueness validation excludes the cu
 }
 ```
 
-### Response
+**Campos:**
 
-`200 OK`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `nombre` | `string` | No | Nombre completo actualizado |
+| `email` | `string` | No | Debe ser único (excluyendo usuario actual) |
+| `telefono` | `string` | No | Debe ser único (excluyendo usuario actual) |
+| `direccion` | `string` | No | Dirección de envío |
+| `ciudad` | `string` | No | Ciudad |
+| `provincia` | `string` | No | Provincia |
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -120,19 +140,23 @@ Update the customer's profile information. Uniqueness validation excludes the cu
 
 ---
 
-## POST /api/cliente/change-password
+## Endpoint Change Password
 
-Change the customer's password. Invalidates all other active sessions.
+### Cambiar Contraseña
 
-### Request Body
+**`POST /api/cliente/change-password`**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `current_password` | string | Yes | Current password for verification |
-| `new_password` | string | Yes | Minimum 12 characters, with confirmation |
-| `new_password_confirmation` | string | Yes | Must match `new_password` |
+Cambia la contraseña del cliente. Invalida todas las demás sesiones activas.
 
-### Example Request
+**Headers:**
+
+```
+Authorization: Bearer {token}
+Accept: application/json
+Content-Type: application/json
+```
+
+**Request Body:**
 
 ```json
 {
@@ -142,11 +166,17 @@ Change the customer's password. Invalidates all other active sessions.
 }
 ```
 
-### Response
+**Campos:**
 
-`200 OK`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `current_password` | `string` | **Sí** | Contraseña actual |
+| `new_password` | `string` | **Sí** | Mínimo 12 caracteres |
+| `new_password_confirmation` | `string` | **Sí** | Debe coincidir con `new_password` |
 
-Invalidates all other sessions and returns a new access token.
+**Response `200 OK`:**
+
+Invalida otras sesiones y retorna nuevo access token.
 
 ```json
 {
@@ -160,19 +190,28 @@ Invalidates all other sessions and returns a new access token.
 
 ---
 
-## GET /api/cliente/pedidos
+## Endpoint Orders List
 
-List orders placed by the authenticated customer. Loads `detalles.producto`, `sucursal`, and `entregaEmpresa` relationships. Uses custom pagination wrapper.
+### Mis Pedidos
 
-### Query Parameters
+**`GET /api/cliente/pedidos`**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `page` | integer | No | Page number (default: 1) |
+Lista los pedidos realizados por el cliente autenticado. Carga `detalles.producto`, `sucursal`, y `entregaEmpresa`. Usa paginación personalizada.
 
-### Response
+**Query Parameters:**
 
-`200 OK` — Custom pagination wrapper with `pedidos` array.
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `page` | `integer` | No | Número de página (default: 1) |
+
+**Headers:**
+
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response `200 OK` — Wrapper personalizado con array `pedidos`:**
 
 ```json
 {
@@ -220,19 +259,28 @@ List orders placed by the authenticated customer. Loads `detalles.producto`, `su
 
 ---
 
-## GET /api/cliente/pedidos/{id}
+## Endpoint Order Show
 
-View a single order belonging to the authenticated customer. Loads `pagos` and `entregaEmpresa` relationships.
+### Detalle de Pedido
 
-### Path Parameters
+**`GET /api/cliente/pedidos/{id}`**
 
-| Parameter | Type | Description |
+Visualiza un solo pedido perteneciente al cliente autenticado. Carga `pagos` y `entregaEmpresa`.
+
+**Path Parameters:**
+
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
-| `id` | integer | Order ID (must belong to authenticated customer) |
+| `id` | `integer` | ID del pedido (debe pertenecer al cliente autenticado) |
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -282,45 +330,45 @@ View a single order belonging to the authenticated customer. Loads `pagos` and `
 
 ## Field Reference
 
-### Cliente Profile Fields
+### Campos de Perfil de Cliente
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | integer | Customer ID |
-| `nombre` | string | Full name |
-| `email` | string | Email address |
-| `telefono` | string | Phone number |
-| `tipo_cliente` | string | Customer type |
-| `activo` | boolean | Account active status |
-| `email_verified_at` | datetime|null | Email verification timestamp |
-| `acceso_api` | boolean | API access flag |
-| `direccion` | string|null | Mailing address |
-| `ciudad` | string|null | City |
-| `provincia` | string|null | Province |
-| `created_at` | datetime | Registration timestamp |
-| `updated_at` | datetime | Last update timestamp |
+| `id` | `integer` | ID del cliente |
+| `nombre` | `string` | Nombre completo |
+| `email` | `string` | Email |
+| `telefono` | `string` | Teléfono |
+| `tipo_cliente` | `string` | Tipo de cliente |
+| `activo` | `boolean` | Estado de la cuenta |
+| `email_verified_at` | `datetime\|null` | Timestamp verificación email |
+| `acceso_api` | `boolean` | Flag acceso API |
+| `direccion` | `string\|null` | Dirección de envío |
+| `ciudad` | `string\|null` | Ciudad |
+| `provincia` | `string\|null` | Provincia |
+| `created_at` | `datetime` | Fecha registro |
+| `updated_at` | `datetime` | Última actualización |
 
-### Order Summary Fields (in list view)
+### Campos de Resumen de Pedido
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | integer | Order ID |
-| `tipo_orden` | string | Order type: `mostrador`, `delivery`, `pickup` |
-| `estado` | string | Order status |
-| `subtotal` | float | Subtotal before taxes |
-| `total` | float | Grand total |
-| `notas` | string | Order notes |
-| `sucursal` | object | Branch/location information |
-| `entregaEmpresa` | object|null | Delivery company (if applicable) |
-| `detalles` | array | Line items with product details |
-| `created_at` | datetime | Order creation timestamp |
+| `id` | `integer` | ID del pedido |
+| `tipo_orden` | `string` | Tipo: `mostrador`, `delivery`, `pickup` |
+| `estado` | `string` | Estado del pedido |
+| `subtotal` | `float` | Subtotal sin impuestos |
+| `total` | `float` | Total final |
+| `notas` | `string` | Notas del pedido |
+| `sucursal` | `object` | Información de sucursal |
+| `entregaEmpresa` | `object\|null` | Empresa de entrega |
+| `detalles` | `array` | Items con detalles del producto |
+| `created_at` | `datetime` | Fecha creación |
 
-### Payment Fields
+### Campos de Pago
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | integer | Payment ID |
-| `metodo_pago` | string | Payment method: `efectivo`, `tarjeta`, `transferencia`, `mixto`, `fiado` |
-| `monto` | float | Amount paid |
-| `cambio` | float|null | Change given (for cash payments) |
-| `created_at` | datetime | Payment timestamp |
+| `id` | `integer` | ID del pago |
+| `metodo_pago` | `string` | Método: `efectivo`, `tarjeta`, `transferencia`, `mixto`, `fiado` |
+| `monto` | `float` | Monto pagado |
+| `cambio` | `float\|null` | Cambio dado (para pagos en efectivo) |
+| `created_at` | `datetime` | Timestamp del pago |

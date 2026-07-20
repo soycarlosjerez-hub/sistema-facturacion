@@ -14,17 +14,22 @@ Requires authentication with `auth` session cookie.
 
 ---
 
-## GET /api/reports/dashboard
+## Endpoint Dashboard
 
-Return comprehensive business dashboard statistics.
+### Estadísticas del Dashboard
 
-### Query Parameters
+**`GET /api/reports/dashboard`**
 
-None.
+Retorna estadísticas integrales del negocio para el dashboard.
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -43,42 +48,51 @@ None.
 }
 ```
 
-### Field Descriptions
+**Descripción de Campos:**
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `ventas_hoy` | float | Total sales today |
-| `ventas_mes` | float | Total sales this month |
-| `compras_hoy` | float | Total purchases today |
-| `compras_mes` | float | Total purchases this month |
-| `clientes_totales` | integer | Total registered clients |
-| `productos_activos` | integer | Number of active products |
-| `inventario_bajo_stock` | integer | Count of products below minimum stock |
-| `ingresos_mes` | float | Total income this month |
-| `gastos_mes` | float | Total expenses this month |
-| `ganancia_neta` | float | Net profit (income minus expenses) |
+| `ventas_hoy` | `float` | Total de ventas hoy |
+| `ventas_mes` | `float` | Total de ventas este mes |
+| `compras_hoy` | `float` | Total de compras hoy |
+| `compras_mes` | `float` | Total de compras este mes |
+| `clientes_totales` | `integer` | Clientes registrados totales |
+| `productos_activos` | `integer` | Productos activos |
+| `inventario_bajo_stock` | `integer` | Productos bajo stock mínimo |
+| `ingresos_mes` | `float` | Ingresos totales del mes |
+| `gastos_mes` | `float` | Gastos totales del mes |
+| `ganancia_neta` | `float` | Ganancia neta (ingresos - gastos) |
 
 ---
 
-## GET /api/reports/top-products
+## Endpoint Top Products
 
-Retrieve top-selling products ranked by quantity sold.
+### Productos Más Vendidos
 
-### Query Parameters
+**`GET /api/reports/top-products`**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `limit` | integer | No | Number of products to return (default: 10) |
+Retorna productos más vendidos ordenados por cantidad vendida.
 
-### Example Request
+**Query Parameters:**
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `limit` | `integer` | No | Cantidad de productos (default: 10) |
+
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Example Request:**
 
 ```
 GET /api/reports/top-products?limit=5
 ```
 
-### Response
-
-`200 OK`
+**Response `200 OK`:**
 
 ```json
 {
@@ -99,36 +113,45 @@ GET /api/reports/top-products?limit=5
 }
 ```
 
-### Field Descriptions
+**Descripción de Campos:**
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `producto_id` | integer | Product ID |
-| `producto_nombre` | string | Product name |
-| `cantidad_vendida` | integer | Total units sold |
-| `ingreso_total` | float | Total revenue generated |
+| `producto_id` | `integer` | ID del producto |
+| `producto_nombre` | `string` | Nombre del producto |
+| `cantidad_vendida` | `integer` | Unidades vendidas totales |
+| `ingreso_total` | `float` | Ingresos generados |
 
 ---
 
-## GET /api/reports/top-customers
+## Endpoint Top Customers
 
-Retrieve top customers ranked by total spending.
+### Mejores Clientes
 
-### Query Parameters
+**`GET /api/reports/top-customers`**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `limit` | integer | No | Number of customers to return (default: 10) |
+Retorna mejores clientes ordenados por gasto total.
 
-### Example Request
+**Query Parameters:**
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `limit` | `integer` | No | Cantidad de clientes (default: 10) |
+
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Example Request:**
 
 ```
 GET /api/reports/top-customers?limit=5
 ```
 
-### Response
-
-`200 OK`
+**Response `200 OK`:**
 
 ```json
 {
@@ -149,28 +172,33 @@ GET /api/reports/top-customers?limit=5
 }
 ```
 
-### Field Descriptions
+**Descripción de Campos:**
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `cliente_id` | integer | Customer ID |
-| `cliente_nombre` | string | Customer name |
-| `total_comprado` | float | Total amount spent |
-| `pedidos_realizados` | integer | Number of orders placed |
+| `cliente_id` | `integer` | ID del cliente |
+| `cliente_nombre` | `string` | Nombre del cliente |
+| `total_comprado` | `float` | Monto total gastado |
+| `pedidos_realizados` | `integer` | Número de pedidos |
 
 ---
 
-## GET /api/reports/inventory-low-stock
+## Endpoint Low Stock
 
-List products below their minimum stock threshold. Joins `almacen_productos` with `productos`.
+### Inventario Bajo Stock
 
-### Query Parameters
+**`GET /api/reports/inventory-low-stock`**
 
-None.
+Lista productos por debajo de su umbral mínimo de stock. Une `almacen_productos` con `productos`.
 
-### Response
+**Headers:**
 
-`200 OK`
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -195,13 +223,22 @@ None.
 }
 ```
 
-### Field Descriptions
+**Descripción de Campos:**
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `producto_id` | integer | Product ID |
-| `producto_nombre` | string | Product name |
-| `stock_actual` | integer | Current stock level |
-| `stock_minimo` | integer | Minimum stock threshold |
-| `diferencia` | integer | Deficit (negative = below minimum) |
-| `unidad_medida` | string | Unit of measurement |
+| `producto_id` | `integer` | ID del producto |
+| `producto_nombre` | `string` | Nombre del producto |
+| `stock_actual` | `integer` | Nivel de stock actual |
+| `stock_minimo` | `integer` | Umbral mínimo de stock |
+| `diferencia` | `integer` | Défict (negativo = por debajo del mínimo) |
+| `unidad_medida` | `string` | Unidad de medida |
+
+---
+
+## Notas
+
+- Todas las rutas requieren autenticación con cookie de sesión
+- Los valores monetarios están en la moneda configurada del tenant
+- `inventario_bajo_stock` se calcula comparando `stock_actual` vs `stock_minimo`
+- `ganancia_neta` = `ingresos_mes` - `gastos_mes`

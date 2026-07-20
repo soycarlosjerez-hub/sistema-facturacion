@@ -14,24 +14,33 @@ Requires authentication with `auth` session cookie.
 
 ---
 
-## GET /api/audit-logs
+## Endpoint Index
 
-Lists audit log entries with user and auditable information. Paginated at 15 records per page.
+### Listar Registros de Auditoría
 
-### Query Parameters
+**`GET /api/audit-logs`**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `user_id` | integer | Optional | Filter by user ID |
-| `action` | string | Optional | Filter by action (created, updated, deleted, etc.) |
-| `model_type` | string | Optional | Filter by model type |
-| `fecha_desde` | date | Optional | Start date filter (YYYY-MM-DD) |
-| `fecha_hasta` | date | Optional | End date filter (YYYY-MM-DD) |
-| `page` | integer | Optional | Page number (default: 1) |
+Lista entradas de registros de auditoría con información de usuario y auditable. Paginado a 15 registros por página.
 
-### Response
+**Query Parameters:**
 
-`200 OK` — Wrapped in `{ data: [...] }` object with pagination metadata.
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `user_id` | `integer` | No | Filtrar por ID de usuario |
+| `action` | `string` | No | Filtrar por acción (created, updated, deleted, etc.) |
+| `model_type` | `string` | No | Filtrar por tipo de modelo |
+| `fecha_desde` | `date` | No | Fecha inicio (YYYY-MM-DD) |
+| `fecha_hasta` | `date` | No | Fecha fin (YYYY-MM-DD) |
+| `page` | `integer` | No | Número de página (default: 1) |
+
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK` — Envuelto en `{ data: [...] }` con metadatos de paginación:**
 
 ```json
 {
@@ -65,24 +74,34 @@ Lists audit log entries with user and auditable information. Paginated at 15 rec
 }
 ```
 
-### Field Descriptions
+**Descripción de Campos:**
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | integer | Audit log entry ID |
-| `user_id` | integer | ID of the user who performed the action |
-| `user` | object | Nested user object with id, nombre, email |
-| `auditable_id` | integer | ID of the affected model record |
-| `auditable_type` | string | Fully qualified class name of the affected model |
-| `action` | string | Action performed (created, updated, deleted) |
-| `values` | object | Changes made (old/new values) |
-| `fecha` | datetime | Timestamp of the action (ISO 8601) |
-| `ip_address` | string | IP address from which the action was performed |
+| `id` | `integer` | ID de entrada de auditoría |
+| `user_id` | `integer` | ID del usuario que realizó la acción |
+| `user` | `object` | Objeto usuario anidado con id, nombre, email |
+| `auditable_id` | `integer` | ID del registro del modelo afectado |
+| `auditable_type` | `string` | Nombre clase completamente calificado del modelo afectado |
+| `action` | `string` | Acción realizada (created, updated, deleted) |
+| `values` | `object` | Cambios realizados (valores viejos/nuevos) |
+| `fecha` | `datetime` | Timestamp de la acción (ISO 8601) |
+| `ip_address` | `string` | IP desde la cual se realizó la acción |
 
-### Example Requests
+**Ejemplos de Request:**
 
 ```
 GET /api/audit-logs
 GET /api/audit-logs?action=deleted
 GET /api/audit-logs?user_id=5&fecha_desde=2026-07-01&fecha_hasta=2026-07-20
 ```
+
+---
+
+## Notas
+
+- Solo lectura — no hay endpoints de escritura
+- `auditable_type` usa el namespace completo del modelo (ej: `App\Models\Orden`)
+- `values` contiene un objeto JSON con los cambios detectados
+- `ip_address` registra la IP del cliente que realizó la acción
+- Los registros se mantienen indefinidamente para cumplimiento

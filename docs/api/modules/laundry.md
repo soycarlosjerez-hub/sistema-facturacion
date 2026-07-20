@@ -2,64 +2,270 @@
 
 Service module for managing laundry/lavadero services.
 
-## Endpoints
+## Base URL
 
-### LIST `/api/modules/laundry`
+```
+/api/modules/laundry
+```
 
-Retrieve paginated list of laundry records with filters.
+## Authentication
+
+Requires authentication with `auth` session cookie.
+
+---
+
+## Endpoint Index
+
+### Listar Lavandería
+
+**`GET /api/modules/laundry`**
+
+Retorna lista paginada de registros de lavandería con filtros.
 
 **Query Parameters:**
 
-| Parameter | Type | Description |
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
-| `cliente_id` | integer | Filter by client |
-| `sucursal_id` | integer | Filter by branch |
-| `estado` | string | Filter by status |
+| `cliente_id` | `integer` | Filtrar por cliente |
+| `sucursal_id` | `integer` | Filtrar por sucursal |
+| `estado` | `string` | Filtrar por estado |
 
-**Response:** Paginated collection of laundry objects.
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK` — Colección paginada de objetos de lavandería:**
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "folio": "LAV-2024-001",
+      "cliente_id": 5,
+      "sucursal_id": 1,
+      "user_id": 5,
+      "vehiculo_id": null,
+      "fecha_ingreso": "2024-01-28T08:00:00.000000Z",
+      "fecha_entrega": "2024-02-01T18:00:00.000000Z",
+      "estado": "en_proceso",
+      "servicio": "lavado_y_planchado",
+      "total": 1500.00,
+      "notas": "Ropa delicada",
+      "cliente": {
+        "id": 5,
+        "nombre": "María López"
+      },
+      "sucursal": {
+        "id": 1,
+        "nombre": "Matriz"
+      },
+      "created_at": "2024-01-28T08:00:00.000000Z",
+      "updated_at": "2024-01-28T10:00:00.000000Z"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "last_page": 3,
+    "from": 1,
+    "to": 15,
+    "total": 42
+  }
+}
+```
 
 ---
 
-### CREATE `/api/modules/laundry`
+## Endpoint Store
 
-Create a new laundry record.
+### Crear Registro de Lavandería
+
+**`POST /api/modules/laundry`**
+
+Crea un nuevo registro de servicio de lavandería.
+
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
 **Request Body:**
 
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `folio` | Yes | string | Laundry identifier |
-| `cliente_id` | Yes | integer | Client ID (must exist) |
-| `sucursal_id` | Yes | integer | Branch ID (must exist) |
-| `user_id` | Yes | integer | User ID (must exist) |
-| `vehiculo_id` | No | integer | Vehicle ID |
-| `fecha_ingreso` | No | datetime | Entry date/time |
-| `fecha_entrega` | No | datetime | Delivery date/time |
-| `estado` | Yes | string | Service status |
-| `servicio` | Yes | string | Service type |
-| `total` | Yes | numeric | Total amount (>= 0) |
-| `notas` | No | string | Notes |
+```json
+{
+  "folio": "LAV-2024-001",
+  "cliente_id": 5,
+  "sucursal_id": 1,
+  "user_id": 5,
+  "fecha_ingreso": "2024-01-28T08:00:00",
+  "fecha_entrega": "2024-02-01T18:00:00",
+  "estado": "en_proceso",
+  "servicio": "lavado_y_planchado",
+  "total": 1500.00,
+  "notas": "Ropa delicada"
+}
+```
+
+**Campos:**
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `folio` | `string` | **Sí** | Identificador de lavandería |
+| `cliente_id` | `integer` | **Sí** | ID de cliente (existe) |
+| `sucursal_id` | `integer` | **Sí** | ID de sucursal (existe) |
+| `user_id` | `integer` | **Sí** | ID de usuario (existe) |
+| `vehiculo_id` | `integer` | No | ID de vehículo |
+| `fecha_ingreso` | `datetime` | No | Fecha/hora de ingreso |
+| `fecha_entrega` | `datetime` | No | Fecha/hora de entrega |
+| `estado` | `string` | **Sí** | Estado del servicio |
+| `servicio` | `string` | **Sí** | Tipo de servicio |
+| `total` | `numeric` | **Sí** | Monto total (≥ 0) |
+| `notas` | `string` | No | Notas |
+
+**Validations:**
+
+```
+folio: required|string|max:255
+cliente_id: required|exists:clientes,id
+sucursal_id: required|exists:sucursales,id
+user_id: required|exists:users,id
+estado: required|string
+servicio: required|string
+total: required|numeric|min:0
+```
+
+**Response `201 Created`:**
+
+```json
+{
+  "data": {
+    "id": 10,
+    "folio": "LAV-2024-001",
+    "cliente_id": 5,
+    "sucursal_id": 1,
+    "estado": "en_proceso",
+    "servicio": "lavado_y_planchado",
+    "total": 1500.00,
+    "created_at": "2024-01-28T08:00:00.000000Z"
+  },
+  "message": "Created successfully"
+}
+```
 
 ---
 
-### SHOW `/api/modules/laundry/{id}`
+## Endpoint Show
 
-Retrieve a single laundry record by ID.
+### Obtener Registro de Lavandería
 
-**Response:** Laundry object with all fields.
+**`GET /api/modules/laundry/{id}`**
+
+Retorna un solo registro de lavandería por ID.
+
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
+
+```json
+{
+  "data": {
+    "id": 1,
+    "folio": "LAV-2024-001",
+    "cliente_id": 5,
+    "sucursal_id": 1,
+    "user_id": 5,
+    "vehiculo_id": null,
+    "fecha_ingreso": "2024-01-28T08:00:00.000000Z",
+    "fecha_entrega": "2024-02-01T18:00:00.000000Z",
+    "estado": "en_proceso",
+    "servicio": "lavado_y_planchado",
+    "total": 1500.00,
+    "notas": "Ropa delicada",
+    "cliente": { "id": 5, "nombre": "María López" },
+    "sucursal": { "id": 1, "nombre": "Matriz" },
+    "created_at": "2024-01-28T08:00:00.000000Z",
+    "updated_at": "2024-01-28T10:00:00.000000Z"
+  }
+}
+```
 
 ---
 
-### UPDATE `/api/modules/laundry/{id}`
+## Endpoint Update
 
-Update an existing laundry record.
+### Actualizar Registro de Lavandería
 
-**Request Body:** Same fields as CREATE (all optional for partial updates).
+**`PUT /api/modules/laundry/{id}`**
+**`PATCH /api/modules/laundry/{id}`**
+
+Actualiza un registro de lavandería existente.
+
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
+
+**Request Body:** Mismos campos que Store (todos opcionales para actualizaciones parciales).
+
+**Response `200 OK`:**
+
+```json
+{
+  "data": {
+    "id": 1,
+    "estado": "entregado",
+    "updated_at": "2024-02-01T18:00:00.000000Z"
+  },
+  "message": "Updated successfully"
+}
+```
 
 ---
 
-### DELETE `/api/modules/laundry/{id}`
+## Endpoint Destroy
 
-Delete a laundry record by ID.
+### Eliminar Registro de Lavandería
 
-**Response:** Success confirmation.
+**`DELETE /api/modules/laundry/{id}`**
+
+Elimina un registro de lavandería por ID.
+
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
+
+```json
+{
+  "message": "Deleted successfully"
+}
+```
+
+---
+
+## Notas
+
+- `folio` es el identificador único del servicio
+- `fecha_ingreso` y `fecha_entrega` definen el período del servicio
+- `servicio` clasifica el tipo: `lavado`, `planchado`, `lavado_y_planchado`, `manchas`, etc.
+- `estado` refleja el progreso del servicio: `recibido`, `en_proceso`, `listo`, `entregado`
+- `vehiculo_id` es opcional y vincula el servicio a un vehículo específico

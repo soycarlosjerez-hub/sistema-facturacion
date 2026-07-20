@@ -10,22 +10,22 @@ Customer portal authentication endpoints. **These routes are PUBLIC** — no aut
 
 ---
 
-## POST /api/auth/cliente/register
+## Endpoint Register
 
-Register a new customer account. On successful registration, automatically assigns `tipo_cliente="consumo"`, `activo=true`, `acceso_api=true`, and sends a verification email.
+### Registrar Cliente
 
-### Request Body
+**`POST /api/auth/cliente/register`**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `nombre` | string | Yes | Customer full name |
-| `email` | string | Yes | Must be unique |
-| `telefono` | string | Yes | Must be unique |
-| `password` | string | Yes | Minimum 12 characters, with confirmation |
-| `password_confirmation` | string | Yes | Must match `password` |
-| `tenant_id` | integer | No | Tenant — must exist |
+Registra un nuevo cliente. Asigna automáticamente `tipo_cliente="consumo"`, `activo=true`, `acceso_api=true` y envía email de verificación.
 
-### Example Request
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+```
+
+**Request Body:**
 
 ```json
 {
@@ -38,9 +38,29 @@ Register a new customer account. On successful registration, automatically assig
 }
 ```
 
-### Response
+**Campos:**
 
-`201 Created`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `nombre` | `string` | **Sí** | Nombre completo del cliente |
+| `email` | `string` | **Sí** | Email único |
+| `telefono` | `string` | **Sí** | Teléfono único |
+| `password` | `string` | **Sí** | Mínimo 12 caracteres |
+| `password_confirmation` | `string` | **Sí** | Debe coincidir con `password` |
+| `tenant_id` | `integer` | No | ID del tenant (existe) |
+
+**Validations:**
+
+```
+nombre: required|string|max:255
+email: required|string|email|unique:clientes,email
+telefono: required|string|unique:clientes,telefono
+password: required|string|min:12
+password_confirmation: required|string|same:password
+tenant_id: nullable|exists:tenants,id
+```
+
+**Response `201 Created`:**
 
 ```json
 {
@@ -65,18 +85,22 @@ Register a new customer account. On successful registration, automatically assig
 
 ---
 
-## POST /api/auth/cliente/login
+## Endpoint Login
 
-Authenticate a customer using phone number and password. Validates `acceso_api` flag and email verification status.
+### Autenticar Cliente
 
-### Request Body
+**`POST /api/auth/cliente/login`**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `telefono` | string | Yes | Registered phone number |
-| `password` | string | Yes | Account password |
+Autentica un cliente usando teléfono y contraseña. Valida `acceso_api` y estado de verificación de email.
 
-### Example Request
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+```
+
+**Request Body:**
 
 ```json
 {
@@ -85,9 +109,14 @@ Authenticate a customer using phone number and password. Validates `acceso_api` 
 }
 ```
 
-### Response
+**Campos:**
 
-`200 OK`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `telefono` | `string` | **Sí** | Teléfono registrado |
+| `password` | `string` | **Sí** | Contraseña de la cuenta |
+
+**Response `200 OK`:**
 
 ```json
 {
@@ -112,17 +141,22 @@ Authenticate a customer using phone number and password. Validates `acceso_api` 
 
 ---
 
-## POST /api/auth/cliente/forgot-password
+## Endpoint Forgot Password
 
-Send a password reset link to the customer's email address.
+### Olvidé Contraseña
 
-### Request Body
+**`POST /api/auth/cliente/forgot-password`**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `email` | string | Yes | Must exist in database |
+Envía un enlace de restablecimiento al email del cliente.
 
-### Example Request
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+```
+
+**Request Body:**
 
 ```json
 {
@@ -130,11 +164,13 @@ Send a password reset link to the customer's email address.
 }
 ```
 
-### Response
+**Campos:**
 
-`200 OK`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `email` | `string` | **Sí** | Email registrado |
 
-Generates a reset token, stores its hash, and sends a `ClienteResetPassword` notification.
+**Response `200 OK`:**
 
 ```json
 {
@@ -144,20 +180,22 @@ Generates a reset token, stores its hash, and sends a `ClienteResetPassword` not
 
 ---
 
-## POST /api/auth/cliente/reset-password
+## Endpoint Reset Password
 
-Reset the customer's password using the token received via email. Token expires after 60 minutes.
+### Restablecer Contraseña
 
-### Request Body
+**`POST /api/auth/cliente/reset-password`**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `email` | string | Yes | Must exist in database |
-| `token` | string | Yes | Password reset token from email |
-| `password` | string | Yes | Minimum 12 characters, with confirmation |
-| `password_confirmation` | string | Yes | Must match `password` |
+Restablece la contraseña usando el token recibido por email. Token expira después de 60 minutos.
 
-### Example Request
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+```
+
+**Request Body:**
 
 ```json
 {
@@ -168,11 +206,16 @@ Reset the customer's password using the token received via email. Token expires 
 }
 ```
 
-### Response
+**Campos:**
 
-`200 OK`
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `email` | `string` | **Sí** | Email registrado |
+| `token` | `string` | **Sí** | Token de restablecimiento |
+| `password` | `string` | **Sí** | Mínimo 12 caracteres |
+| `password_confirmation` | `string` | **Sí** | Debe coincidir |
 
-Validates token age (60-minute expiry) and deletes old tokens.
+**Response `200 OK`:**
 
 ```json
 {
@@ -182,17 +225,22 @@ Validates token age (60-minute expiry) and deletes old tokens.
 
 ---
 
-## POST /api/auth/cliente/resend-verification
+## Endpoint Resend Verification
 
-Re-send the email verification link.
+### Reenviar Verificación
 
-### Request Body
+**`POST /api/auth/cliente/resend-verification`**
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `email` | string | Yes | Must exist and not yet verified |
+Reenvía el enlace de verificación por email.
 
-### Example Request
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+```
+
+**Request Body:**
 
 ```json
 {
@@ -200,9 +248,7 @@ Re-send the email verification link.
 }
 ```
 
-### Response
-
-`200 OK`
+**Response `200 OK`:**
 
 ```json
 {
@@ -212,28 +258,28 @@ Re-send the email verification link.
 
 ---
 
-## GET /api/auth/cliente/verify-email/{id}/{hash}
+## Endpoint Verify Email
 
-Verify the customer's email address. The hash must match SHA1 of the customer's email.
+### Verificar Email
 
-### Path Parameters
+**`GET /api/auth/cliente/verify-email/{id}/{hash}`**
 
-| Parameter | Type | Description |
+Verifica el email del cliente. El hash debe coincir con SHA1 del email.
+
+**Path Parameters:**
+
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
-| `id` | integer | Customer ID |
-| `hash` | string | SHA1 hash of the customer's email |
+| `id` | `integer` | ID del cliente |
+| `hash` | `string` | Hash SHA1 del email |
 
-### Example Request
+**Example Request:**
 
 ```
 GET /api/auth/cliente/verify-email/50/a94a8fe5ccb19ba61c4c0873d391e987982fbbd3
 ```
 
-### Response
-
-`200 OK`
-
-Marks the customer's email as verified.
+**Response `200 OK`:**
 
 ```json
 {
@@ -247,24 +293,24 @@ Marks the customer's email as verified.
 
 ### Cliente Model Fields
 
-| Field | Type | Description |
+| Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | integer | Primary key |
-| `nombre` | string | Full name |
-| `email` | string | Email address |
-| `telefono` | string | Phone number |
-| `tipo_cliente` | string | Customer type (auto-set to `"consumo"` on registration) |
-| `activo` | boolean | Account active status (auto-set to `true` on registration) |
-| `email_verified_at` | datetime|null | Email verification timestamp |
-| `acceso_api` | boolean | API access flag (auto-set to `true` on registration) |
-| `created_at` | datetime | Registration timestamp |
-| `updated_at` | datetime | Last update timestamp |
+| `id` | `integer` | Primary key |
+| `nombre` | `string` | Nombre completo |
+| `email` | `string` | Email |
+| `telefono` | `string` | Teléfono |
+| `tipo_cliente` | `string` | Tipo de cliente (auto-set a `"consumo"`) |
+| `activo` | `boolean` | Estado activo (auto-set a `true`) |
+| `email_verified_at` | `datetime\|null` | Timestamp de verificación |
+| `acceso_api` | `boolean` | Flag acceso API (auto-set a `true`) |
+| `created_at` | `datetime` | Registro |
+| `updated_at` | `datetime` | Última actualización |
 
-### Authentication Flow
+### Flujo de Autenticación
 
-1. **Register** → `POST /api/auth/cliente/register` — creates account, sends verification email
-2. **Verify Email** → `GET /api/auth/cliente/verify-email/{id}/{hash}` — verifies email address
-3. **Login** → `POST /api/auth/cliente/login` — obtains JWT access token
-4. **Forgot Password** → `POST /api/auth/cliente/forgot-password` — triggers reset email
-5. **Reset Password** → `POST /api/auth/cliente/reset-password` — sets new password
-6. **Resend Verification** → `POST /api/auth/cliente/resend-verification` — re-sends verification email
+1. **Registrar** → `POST /api/auth/cliente/register` — crea cuenta, envía email de verificación
+2. **Verificar Email** → `GET /api/auth/cliente/verify-email/{id}/{hash}` — verifica email
+3. **Login** → `POST /api/auth/cliente/login` — obtiene JWT access token
+4. **Olvidé Contraseña** → `POST /api/auth/cliente/forgot-password` — dispara email de reset
+5. **Restablecer Contraseña** → `POST /api/auth/cliente/reset-password` — establece nueva contraseña
+6. **Reenviar Verificación** → `POST /api/auth/cliente/resend-verification` — reenvía email de verificación

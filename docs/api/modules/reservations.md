@@ -2,72 +2,268 @@
 
 Service module for managing restaurant table reservations.
 
-## Endpoints
+## Base URL
 
-### LIST `/api/modules/reservations`
+```
+/api/modules/reservations
+```
 
-Retrieve paginated list of reservations with filters.
+## Authentication
+
+Requires authentication with `auth` session cookie.
+
+---
+
+## Endpoint Index
+
+### Listar Reservaciones
+
+**`GET /api/modules/reservations`**
+
+Retorna lista paginada de reservaciones con filtros.
 
 **Query Parameters:**
 
-| Parameter | Type | Description |
+| Parámetro | Tipo | Descripción |
 |-----------|------|-------------|
-| `cliente_id` | integer | Filter by client |
-| `mesa_id` | integer | Filter by table |
-| `estado` | string | Filter by status |
-| `fecha` | date | Filter by date |
+| `cliente_id` | `integer` | Filtrar por cliente |
+| `mesa_id` | `integer` | Filtrar por mesa |
+| `estado` | `string` | Filtrar por estado |
+| `fecha` | `date` | Filtrar por fecha |
 
-**Response:** Paginated collection of reservation objects.
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK` — Colección paginada de objetos de reservación:**
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "cliente_nombre": "María López",
+      "cliente_id": 5,
+      "cliente_telefono": "+1-809-555-0100",
+      "cliente_email": "maria@example.com",
+      "mesa_id": 3,
+      "mesa": {
+        "id": 3,
+        "numero": 3,
+        "nombre": "Mesa 3 - Ventana"
+      },
+      "fecha_hora": "2024-01-28T19:00:00.000000Z",
+      "personas": 4,
+      "estado": "confirmada",
+      "notas": "Cumpleaños",
+      "user_id": 5,
+      "tenant_id": 1,
+      "created_at": "2024-01-27T10:00:00.000000Z",
+      "updated_at": "2024-01-27T10:00:00.000000Z"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "last_page": 2,
+    "from": 1,
+    "to": 15,
+    "total": 23
+  }
+}
+```
 
 ---
 
-### CREATE `/api/modules/reservations`
+## Endpoint Store
 
-Create a new reservation.
+### Crear Reservación
+
+**`POST /api/modules/reservations`**
+
+Crea una nueva reservación de mesa.
+
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
 
 **Request Body:**
 
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `cliente_nombre` | Yes | string | Client name |
-| `cliente_id` | No | integer | Client ID (if exists, auto-updates client info) |
-| `cliente_telefono` | No | string | Client phone |
-| `cliente_email` | No | string | Client email (validates email format) |
-| `mesa_id` | Yes | integer | Table ID (must exist) |
-| `fecha_hora` | Yes | datetime | Reservation date/time |
-| `personas` | Yes | integer | Number of people (>= 1) |
-| `estado` | Yes | string | Reservation status |
-| `notas` | No | string | Notes |
+```json
+{
+  "cliente_nombre": "María López",
+  "cliente_id": 5,
+  "cliente_telefono": "+1-809-555-0100",
+  "cliente_email": "maria@example.com",
+  "mesa_id": 3,
+  "fecha_hora": "2024-01-28T19:00:00",
+  "personas": 4,
+  "estado": "confirmada",
+  "notas": "Cumpleaños"
+}
+```
 
-**Notes:**
-- `user_id` and `tenant_id` are automatically set from authentication.
-- If `cliente_id` is provided, existing client information is auto-updated.
-- If `cliente_email` is present, sends `ReservacionRecibidaMail` notification.
-- Confirmation and cancellation emails are sent automatically on state changes.
-- Blocks table opening if a pending reservation exists for that table (within >1 hour window).
+**Campos:**
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `cliente_nombre` | `string` | **Sí** | Nombre del cliente |
+| `cliente_id` | `integer` | No | ID del cliente (si existe, actualiza info automáticamente) |
+| `cliente_telefono` | `string` | No | Teléfono del cliente |
+| `cliente_email` | `string` | No | Email del cliente (valida formato) |
+| `mesa_id` | `integer` | **Sí** | ID de mesa (existe) |
+| `fecha_hora` | `datetime` | **Sí** | Fecha/hora de la reservación |
+| `personas` | `integer` | **Sí** | Número de personas (≥ 1) |
+| `estado` | `string` | **Sí** | Estado de la reservación |
+| `notas` | `string` | No | Notas |
+
+**Notas de Validación:**
+
+- `user_id` y `tenant_id` se establecen automáticamente desde la autenticación
+- Si `cliente_id` es proporcionado, la información del cliente existente se actualiza automáticamente
+- Si `cliente_email` está presente, envía notificación `ReservacionRecibidaMail`
+- Confirma y cancela emails se envían automáticamente en cambios de estado
+- Bloquea apertura de mesa si existe reservación pendiente para esa mesa (ventana > 1 hora)
+
+**Response `201 Created`:**
+
+```json
+{
+  "data": {
+    "id": 10,
+    "cliente_nombre": "María López",
+    "cliente_id": 5,
+    "mesa_id": 3,
+    "fecha_hora": "2024-01-28T19:00:00.000000Z",
+    "personas": 4,
+    "estado": "confirmada",
+    "notas": "Cumpleaños",
+    "created_at": "2024-01-27T10:00:00.000000Z"
+  },
+  "message": "Reservación creada exitosamente"
+}
+```
 
 ---
 
-### SHOW `/api/modules/reservations/{id}`
+## Endpoint Show
 
-Retrieve a single reservation by ID.
+### Obtener Reservación
 
-**Response:** Reservation object with all fields.
+**`GET /api/modules/reservations/{id}`**
+
+Retorna una sola reservación por ID.
+
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
+
+```json
+{
+  "data": {
+    "id": 1,
+    "cliente_nombre": "María López",
+    "cliente_id": 5,
+    "cliente_telefono": "+1-809-555-0100",
+    "cliente_email": "maria@example.com",
+    "mesa_id": 3,
+    "mesa": {
+      "id": 3,
+      "numero": 3,
+      "nombre": "Mesa 3 - Ventana"
+    },
+    "fecha_hora": "2024-01-28T19:00:00.000000Z",
+    "personas": 4,
+    "estado": "confirmada",
+    "notas": "Cumpleaños",
+    "user_id": 5,
+    "tenant_id": 1,
+    "created_at": "2024-01-27T10:00:00.000000Z",
+    "updated_at": "2024-01-27T10:00:00.000000Z"
+  }
+}
+```
 
 ---
 
-### UPDATE `/api/modules/reservations/{id}`
+## Endpoint Update
 
-Update an existing reservation.
+### Actualizar Reservación
 
-**Request Body:** Same fields as CREATE (all optional for partial updates).
+**`PUT /api/modules/reservations/{id}`**
+**`PATCH /api/modules/reservations/{id}`**
 
-**Notes:** State changes trigger automatic email notifications (confirmation on confirm, cancellation on cancel).
+Actualiza una reservación existente.
+
+**Headers:**
+
+```
+Accept: application/json
+Content-Type: application/json
+Cookie: _session={cookie}
+```
+
+**Request Body:** Mismos campos que Store (todos opcionales para actualizaciones parciales).
+
+**Notas:** Los cambios de estado disparan notificaciones automáticas por email (confirmación al confirmar, cancelación al cancelar).
+
+**Response `200 OK`:**
+
+```json
+{
+  "data": {
+    "id": 1,
+    "estado": "cancelada",
+    "notas": "Cliente canceló",
+    "updated_at": "2024-01-28T10:00:00.000000Z"
+  },
+  "message": "Updated successfully"
+}
+```
 
 ---
 
-### DELETE `/api/modules/reservations/{id}`
+## Endpoint Destroy
 
-Delete a reservation by ID.
+### Eliminar Reservación
 
-**Response:** Success confirmation.
+**`DELETE /api/modules/reservations/{id}`**
+
+Elimina una reservación por ID.
+
+**Headers:**
+
+```
+Accept: application/json
+Cookie: _session={cookie}
+```
+
+**Response `200 OK`:**
+
+```json
+{
+  "message": "Deleted successfully"
+}
+```
+
+---
+
+## Notas
+
+- `fecha_hora` define cuándo el cliente llegará
+- `personas` se valida contra la capacidad de la mesa asignada
+- `estado` puede ser: `pendiente`, `confirmada`, `cancelada`, `completada`
+- Las reservaciones bloquean la mesa durante la ventana horaria especificada
+- Los emails automáticos mejoran la comunicación con el cliente
