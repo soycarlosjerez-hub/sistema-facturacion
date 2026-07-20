@@ -44,9 +44,9 @@ class Cliente extends Authenticatable
         'email_verified_at'     => 'datetime',
     ];
 
-    public function setPasswordAttribute(string $value): void
+    public function setPasswordAttribute(?string $value): void
     {
-        $this->attributes['password'] = Hash::make($value);
+        $this->attributes['password'] = $value !== null ? Hash::make($value) : null;
     }
 
     public function apiTokens(): HasMany
