@@ -182,9 +182,9 @@ class BusinessInstance extends Model
             'mail_mailer'     => env('MAIL_MAILER', 'smtp'),
             'mail_host'       => env('MAIL_HOST', '127.0.0.1'),
             'mail_port'       => env('MAIL_PORT', '2525'),
-            'mail_username'   => env('MAIL_USERNAME'),
-            'mail_password'   => $mailPassword ? Crypt::encryptString($mailPassword) : null,
-            'mail_encryption' => env('MAIL_ENCRYPTION'),
+            'mail_username'   => env('MAIL_USERNAME', ''),
+            'mail_password'   => $mailPassword ? Crypt::encryptString($mailPassword) : '',
+            'mail_encryption' => env('MAIL_ENCRYPTION', ''),
             'mail_from_address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
             'mail_from_name'    => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
         ];
@@ -192,7 +192,7 @@ class BusinessInstance extends Model
         foreach ($settings as $key => $value) {
             \App\Models\SystemSetting::updateOrCreate(
                 ['key' => $key, 'tenant_id' => $tenantId],
-                ['value' => $value]
+                ['value' => $value ?? '']
             );
         }
 

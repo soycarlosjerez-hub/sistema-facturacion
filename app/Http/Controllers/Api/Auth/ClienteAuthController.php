@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\BusinessInstance;
+use App\Models\ClientApiToken;
 use App\Models\Cliente;
 use App\Notifications\ClienteResetPassword;
 use App\Notifications\ClienteVerifyEmail;
@@ -38,6 +39,7 @@ class ClienteAuthController extends Controller
         $validated['tipo_cliente'] = 'consumo';
         $validated['tipo_documento'] = '1';
         $validated['activo'] = true;
+        $validated['acceso_api'] = true;
 
         $cliente = Cliente::create($validated);
 
