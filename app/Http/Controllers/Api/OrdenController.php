@@ -9,6 +9,7 @@ use App\Models\Orden;
 use App\Services\OrdenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrdenController extends Controller
@@ -148,9 +149,13 @@ class OrdenController extends Controller
             'notas'              => 'nullable|string',
             'nombre_cliente'     => 'nullable|string|max:200',
             'correo_electronico' => 'nullable|email|max:200',
+            'items'              => 'nullable|array',
+            'items.*.producto_id' => 'required_with:items|integer|exists:productos,id',
+            'items.*.cantidad'    => 'required_with:items|integer|min:1',
+            'items.*.notas'       => 'nullable|string|max:200',
+            'items.*.curso'       => 'nullable|string|in:entrada,fuerte,postre,bebida',
         ]);
 
-        // Mapear campos alternativos del request externo
         if ($request->filled('nombre_cliente') && ! $request->filled('cliente_nombre')) {
             $validated['cliente_nombre'] = $request->nombre_cliente;
         }
@@ -161,14 +166,36 @@ class OrdenController extends Controller
             $validated['cliente_email'] = $request->correo_electronico;
         }
 
-        Log::info('[Orden API] store request', $validated);
-
         $clienteData = $this->resolverCliente($request);
         $validated = array_merge($validated, $clienteData);
 
-        $orden = $this->ordenService->createOrden($validated);
+        $items = $validated['items'] ?? [];
+        unset($validated['items']);
 
-        return new OrdenResource($orden->load(['detalles.producto', 'cliente', 'usuario']));
+        $orden = DB::transaction(function () use ($validated, $items) {
+            $orden = $this->ordenService->createOrden($validated);
+
+            foreach ($items as $item) {
+                $result = $this->ordenService->agregarItem(
+                    $orden,
+                    $item['producto_id'],
+                    $item['cantidad'],
+                    $item['notas'] ?? null,
+                    $item['curso'] ?? null
+                );
+
+                if (isset($result['error'])) {
+                    throw new \RuntimeException($result['error']);
+                }
+            }
+
+            $orden->total = ($orden->subtotal ?? 0) + ($orden->impuestos ?? 0) - ($orden->descuento ?? 0);
+            $orden->saveQuietly();
+
+            return $orden->fresh()->load(['detalles.producto', 'cliente', 'usuario']);
+        });
+
+        return new OrdenResource($orden);
     }
 
     public function show(Orden $orden)
@@ -190,6 +217,7 @@ class OrdenController extends Controller
             'telefono_contacto'  => 'nullable|string|max:30',
             'hora_retiro'        => 'nullable|date',
             'notas'              => 'nullable|string',
+            'tipo_orden'         => 'nullable|string|in:mostrador,delivery,pickup',
         ]);
 
         if ($request->hasAny(['cliente_id', 'cliente_nombre', 'cliente_rnc_cedula'])) {
@@ -197,9 +225,18 @@ class OrdenController extends Controller
             $validated = array_merge($validated, $clienteData);
         }
 
+        $fillable = (new Orden)->getFillable();
+        $validated = array_intersect_key($validated, array_flip($fillable));
+
         $orden->update($validated);
 
-        return new OrdenResource($orden->load(['detalles.producto', 'cliente', 'usuario']));
+        $orden->load('detalles');
+
+        $orden->subtotal = $orden->detalles->sum('subtotal');
+        $orden->total = ($orden->subtotal ?? 0) + ($orden->impuestos ?? 0) - ($orden->descuento ?? 0);
+        $orden->saveQuietly();
+
+        return new OrdenResource($orden->fresh()->load(['detalles.producto', 'cliente', 'usuario']));
     }
 
     public function destroy(Orden $orden)

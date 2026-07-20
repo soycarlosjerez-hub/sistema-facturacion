@@ -22,7 +22,7 @@ class OrdenDetalleResource extends JsonResource
             'notas'          => $this->notas,
             'curso'          => $this->curso,
             'estado_cocina'  => $this->estado_cocina,
-            'cocina_updated_at' => $this->cocina_updated_at?->toIso8601String(),
+            'cocina_updated_at' => $this->cocina_updated_at instanceof \Carbon\Carbon ? $this->cocina_updated_at->toIso8601String() : $this->cocina_updated_at,
         ];
     }
 }

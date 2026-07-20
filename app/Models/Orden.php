@@ -20,7 +20,9 @@ class Orden extends Model
         'propina'        => 'decimal:2',
         'cargo_servicio' => 'decimal:2',
         'delivery_fee'   => 'decimal:2',
+        'total'          => 'decimal:2',
         'hora_retiro'    => 'datetime',
+        'ncf_vencimiento' => 'datetime',
     ];
 
     protected $fillable = [

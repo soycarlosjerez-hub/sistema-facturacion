@@ -10,9 +10,10 @@ class OrdenDetalle extends Model
     use TenantScope;
 
     protected $casts = [
-        'cantidad'        => 'decimal:2',
-        'precio_unitario' => 'decimal:2',
-        'subtotal'        => 'decimal:2',
+        'cantidad'          => 'decimal:2',
+        'precio_unitario'   => 'decimal:2',
+        'subtotal'          => 'decimal:2',
+        'cocina_updated_at' => 'datetime',
     ];
 
     protected $fillable = [

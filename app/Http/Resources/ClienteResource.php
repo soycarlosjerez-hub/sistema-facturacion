@@ -50,7 +50,7 @@ class ClienteResource extends JsonResource
             'estado_credito_label' => $this->estado_credito_label,
             'ventas_count' => $this->whenLoaded('ventas', fn () => $this->ventas->count()),
             'cotizaciones_count' => $this->whenLoaded('cotizaciones', fn () => $this->cotizaciones->count()),
-            'ultima_compra' => $this->ultima_compra?->toISOString(),
+            'ultima_compra' => $this->ultima_compra instanceof \Carbon\Carbon ? $this->ultima_compra->toISOString() : $this->ultima_compra,
             'total_compras' => $this->total_compras,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
