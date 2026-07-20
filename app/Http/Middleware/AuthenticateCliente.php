@@ -23,6 +23,11 @@ class AuthenticateCliente
             return response()->json(['message' => 'Token inválido.'], 401);
         }
 
+        if (!$token->cliente->acceso_api) {
+            $token->delete();
+            return response()->json(['message' => 'Acceso API deshabilitado para esta cuenta.'], 403);
+        }
+
         if ($token->expires_at && $token->expires_at->isPast()) {
             return response()->json(['message' => 'Token expirado.'], 401);
         }

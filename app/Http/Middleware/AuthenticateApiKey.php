@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ClientApiToken;
 use App\Models\InstanceApiKey;
 use App\Models\User;
 use Closure;
@@ -21,6 +22,24 @@ class AuthenticateApiKey
 
         if (str_starts_with($token, 'iak_')) {
             return $this->authenticateWithApiKey($token, $request, $next);
+        }
+
+        $clientToken = ClientApiToken::with('cliente')
+            ->where('token', hash('sha256', $token))
+            ->first();
+
+        if ($clientToken && $clientToken->cliente) {
+            if (!$clientToken->cliente->acceso_api) {
+                $clientToken->delete();
+                return response()->json(['message' => 'Acceso API deshabilitado para esta cuenta.'], 403);
+            }
+            if ($clientToken->expires_at && $clientToken->expires_at->isPast()) {
+                return response()->json(['message' => 'Token expirado.'], 401);
+            }
+            $clientToken->update(['last_used_at' => now()]);
+            $request->attributes->set('client_api_token', $clientToken);
+            $request->setUserResolver(fn() => $clientToken->cliente);
+            return $next($request);
         }
 
         return $this->authenticateWithSanctum($token, $request, $next);
@@ -77,4 +96,5 @@ class AuthenticateApiKey
 
         return $next($request);
     }
+
 }

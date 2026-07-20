@@ -12,7 +12,12 @@ class TenantMiddleware
     {
         $user = Auth::user();
 
+        // Client token auth — no Auth::user, pero ya pasó AuthenticateApiKey
         if (!$user) {
+            $clientToken = $request->attributes->get('client_api_token');
+            if ($clientToken && $clientToken->cliente) {
+                return $next($request);
+            }
             return response()->json(['message' => 'No autenticado.'], 401);
         }
 
