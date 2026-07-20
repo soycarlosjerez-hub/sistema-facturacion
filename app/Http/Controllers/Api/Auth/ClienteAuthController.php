@@ -68,6 +68,10 @@ class ClienteAuthController extends Controller
             ]);
         }
 
+        if (!$cliente->acceso_api) {
+            return response()->json(['message' => 'Acceso API no habilitado para esta cuenta.'], 403);
+        }
+
         if (is_null($cliente->email_verified_at)) {
             return response()->json([
                 'message' => 'Email no verificado. Revisa tu bandeja de entrada.',

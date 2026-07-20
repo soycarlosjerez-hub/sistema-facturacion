@@ -274,6 +274,21 @@
                                 <label class="form-check-label" for="chk-activo"></label>
                             </div>
                         </div>
+                        <hr>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="fw-bold">Acceso API</span>
+                                <p class="text-muted small mb-0">Permite login por API</p>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" name="acceso_api" value="1" id="chk-acceso-api" {{ $cliente->acceso_api ? 'checked' : '' }} role="switch" onchange="document.getElementById('pwd-fields').style.display=this.checked?'block':'none'">
+                                <label class="form-check-label" for="chk-acceso-api"></label>
+                            </div>
+                        </div>
+                        <div id="pwd-fields" style="{{ $cliente->acceso_api ? 'block' : 'none' }};margin-top:1rem;">
+                            <label class="form-label">Nueva Contraseña</label>
+                            <input type="password" name="password" class="form-control form-control-sm" placeholder="Dejar vacío para mantener actual" minlength="12">
+                        </div>
                     </div>
                 </div>
                 <div class="premium-card mt-3" style="animation-delay:.2s;">

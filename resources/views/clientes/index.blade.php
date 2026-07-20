@@ -153,6 +153,7 @@ body.dark-mode .clientes-table tbody td {
                             <th class="text-end">Balance Pte.</th>
                             <th class="text-center">Crédito</th>
                             <th class="text-center">Activo</th>
+                            <th class="text-center">API</th>
                             <th class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
@@ -233,6 +234,13 @@ body.dark-mode .clientes-table tbody td {
                                     </button>
                                     @endcan
                                 </td>
+                                <td class="text-center">
+                                    @if($c->acceso_api)
+                                        <span class="status-badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle-fill me-1"></i>API</span>
+                                    @else
+                                        <span class="status-badge bg-secondary bg-opacity-10 text-secondary">—</span>
+                                    @endif
+                                </td>
                                 <td class="text-end pe-4">
                                     <a href="{{ route('clientes.show', $c) }}" class="premium-btn-edit" title="Ver">
                                         <i class="bi bi-eye"></i>
@@ -250,7 +258,7 @@ body.dark-mode .clientes-table tbody td {
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center py-5 text-muted">
+                                <td colspan="10" class="text-center py-5 text-muted">
                                     <i class="bi bi-people fs-1" style="color:#cbd5e1;"></i>
                                     <p class="mt-2 mb-0 fw-semibold">No hay clientes registrados</p>
                                     @can('clientes.create')

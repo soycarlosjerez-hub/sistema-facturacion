@@ -23,7 +23,7 @@ class Cliente extends Authenticatable
         'persona_contacto', 'cargo_contacto', 'whatsapp',
         'ciudad', 'provincia', 'codigo_postal',
         'segmento', 'origen_cliente', 'sector_actividad',
-        'activo', 'tenant_id',
+        'activo', 'acceso_api', 'tenant_id',
         'password', 'email_verified_at',
     ];
 
@@ -37,6 +37,7 @@ class Cliente extends Authenticatable
         'balance_pendiente'     => 'decimal:2',
         'tasa_descuento_pct'    => 'decimal:2',
         'activo'                => 'boolean',
+        'acceso_api'            => 'boolean',
         'auto_bloquear_credito' => 'boolean',
         'regimen_mensual'        => 'boolean',
         'plazo_pago_dias'       => 'integer',

@@ -65,6 +65,11 @@ class ClienteController extends Controller
         $data['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
         $data['regimen_mensual'] = $request->boolean('regimen_mensual');
 
+        // Si no se envió password, limpiarlo para que no se guarde vacío
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
+
         $this->clienteService->create($data);
 
         return redirect()->route('clientes.index')->with('success', 'Cliente creado correctamente');
@@ -116,11 +121,18 @@ class ClienteController extends Controller
             'origen_cliente'    => 'nullable|in:referencia,web,walkin,publicidad,otro',
             'sector_actividad'  => 'nullable|string|max:100',
             'activo'            => 'boolean',
+            'acceso_api'        => 'boolean',
+            'password'          => 'nullable|string|min:12',
         ]);
 
         $data['activo'] = $request->boolean('activo');
+        $data['acceso_api'] = $request->boolean('acceso_api');
         $data['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
         $data['regimen_mensual'] = $request->boolean('regimen_mensual');
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
 
         $this->clienteService->update($cliente, $data);
 
