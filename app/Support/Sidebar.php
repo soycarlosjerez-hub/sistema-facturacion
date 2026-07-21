@@ -489,7 +489,7 @@ class Sidebar
         // Formularios Fiscales
         if ($mod('formulario-14-14') && $can('reportes.view')) {
             $items[] = ['section' => 'Formularios Fiscales'];
-            $items[] = ['route' => 'formulario.14-14', 'icon' => 'bi-file-earmark-text', 'label' => 'Formulario 14-14', 'is_route' => 'formulario.14-14*', 'exact_route' => 'formulario.14-14'];
+            $items[] = ['route' => 'formulario.14-14.index', 'icon' => 'bi-file-earmark-text', 'label' => 'Formulario 14-14', 'is_route' => 'formulario.14-14*', 'exact_route' => 'formulario.14-14.index'];
         }
 
         // Sistema — cuando hay InstanceRole, requiere el módulo asignado

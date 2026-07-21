@@ -102,17 +102,17 @@ class ModuloSeeder extends Seeder
 
             // Libros Fiscales
             ['key' => 'libros-ventas', 'label' => 'Libro de Ventas', 'icon' => 'bi-book', 'categoria' => 'reportes', 'orden' => 59,
-             'sidebar_route' => 'libros.ventas', 'sidebar_is_route' => 'libros.ventas*', 'sidebar_exact_route' => 'libros.ventas', 'sidebar_permission' => 'reportes.view'],
-            ['key' => 'libros-compras', 'label' => 'Libro de Compras', 'icon' => 'bi-book-half', 'categoria' => 'reportes', 'orden' => 60,
-             'sidebar_route' => 'libros.compras', 'sidebar_is_route' => 'libros.compras*', 'sidebar_exact_route' => 'libros.compras', 'sidebar_permission' => 'reportes.view'],
+             'sidebar_route' => 'libros.ventas.index', 'sidebar_is_route' => 'libros.ventas*', 'sidebar_exact_route' => 'libros.ventas.index', 'sidebar_permission' => 'reportes.view'],
+             ['key' => 'libros-compras', 'label' => 'Libro de Compras', 'icon' => 'bi-book-half', 'categoria' => 'reportes', 'orden' => 60,
+              'sidebar_route' => 'libros.compras.index', 'sidebar_is_route' => 'libros.compras*', 'sidebar_exact_route' => 'libros.compras.index', 'sidebar_permission' => 'reportes.view'],
 
-            // Formularios Fiscales
-            ['key' => 'formulario-14-14', 'label' => 'Formulario 14-14', 'icon' => 'bi-file-earmark-text', 'categoria' => 'reportes', 'orden' => 61,
-             'sidebar_route' => 'formulario.14-14', 'sidebar_is_route' => 'formulario.14-14*', 'sidebar_exact_route' => 'formulario.14-14', 'sidebar_permission' => 'reportes.view'],
+             // Formularios Fiscales
+             ['key' => 'formulario-14-14', 'label' => 'Formulario 14-14', 'icon' => 'bi-file-earmark-text', 'categoria' => 'reportes', 'orden' => 61,
+              'sidebar_route' => 'formulario.14-14.index', 'sidebar_is_route' => 'formulario.14-14*', 'sidebar_exact_route' => 'formulario.14-14.index', 'sidebar_permission' => 'reportes.view'],
 
             // Configuración
             ['key' => 'configuracion-general', 'label' => 'Ajustes / Parámetros', 'icon' => 'bi-gear', 'categoria' => 'configuracion', 'orden' => 60,
-             'sidebar_route' => 'settings.index', 'sidebar_is_route' => 'settings.*', 'sidebar_exact_route' => 'settings.index', 'sidebar_permission' => 'configuracion.view'],
+             'sidebar_route' => 'configuracion.index', 'sidebar_is_route' => 'configuracion.*', 'sidebar_exact_route' => 'configuracion.index', 'sidebar_permission' => 'configuracion.view'],
 
             // Sistema e Integraciones
             ['key' => 'ncf', 'label' => 'Comprobantes (NCF)', 'icon' => 'bi-receipt', 'categoria' => 'sistema', 'orden' => 63,
@@ -132,7 +132,7 @@ class ModuloSeeder extends Seeder
             ['key' => 'delivery-companies', 'label' => 'Delivery / Plataformas', 'icon' => 'bi-truck', 'categoria' => 'configuracion', 'orden' => 66,
              'sidebar_route' => 'delivery-companies.index', 'sidebar_is_route' => 'delivery-companies.*', 'sidebar_exact_route' => 'delivery-companies.index', 'sidebar_permission' => 'delivery-companies.view'],
             ['key' => 'auditoria', 'label' => 'Registro de Auditoría', 'icon' => 'bi-clipboard-check', 'categoria' => 'sistema', 'orden' => 67,
-             'sidebar_route' => 'auditoria.index', 'sidebar_is_route' => 'auditoria.*', 'sidebar_exact_route' => 'auditoria.index', 'sidebar_permission' => 'auditoria.view'],
+             'sidebar_route' => 'audit-logs.index', 'sidebar_is_route' => 'audit-logs.*', 'sidebar_exact_route' => 'audit-logs.index', 'sidebar_permission' => 'auditoria.view'],
             ['key' => 'backups', 'label' => 'Copias de Seguridad', 'icon' => 'bi-database-down', 'categoria' => 'sistema', 'orden' => 68,
              'sidebar_route' => 'backups.index', 'sidebar_is_route' => 'backups.*', 'sidebar_exact_route' => 'backups.index', 'sidebar_permission' => 'backups.view'],
 
