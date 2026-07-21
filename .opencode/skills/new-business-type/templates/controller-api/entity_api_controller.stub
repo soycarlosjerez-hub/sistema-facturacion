@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\{{ENTITY}};
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class {{ENTITY}}ApiController extends Controller
+{
+    public function index(): JsonResponse
+    {
+        $query = {{ENTITY}}::query();
+
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+{{SEARCH_CONDITIONS}}
+            });
+        }
+
+        $items = $query->latest()->paginate(request('per_page', 15));
+        return response()->json($items);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+{{VALIDATION_RULES}}
+        ]);
+
+        ${{SINGULAR_LOWER}} = {{ENTITY}}::create(array_merge($validated, [
+            'tenant_id' => auth()->user()->business_instance_id,
+        ]));
+
+        return response()->json(${{SINGULAR_LOWER}}, 201);
+    }
+
+    public function show({{ENTITY}} ${{SINGULAR_LOWER}}): JsonResponse
+    {
+        return response()->json(${{SINGULAR_LOWER}});
+    }
+
+    public function update(Request $request, {{ENTITY}} ${{SINGULAR_LOWER}}): JsonResponse
+    {
+        $validated = $request->validate([
+{{VALIDATION_RULES}}
+        ]);
+
+        ${{SINGULAR_LOWER}}->update($validated);
+
+        return response()->json(${{SINGULAR_LOWER}});
+    }
+
+    public function destroy({{ENTITY}} ${{SINGULAR_LOWER}}): JsonResponse
+    {
+        ${{SINGULAR_LOWER}}->delete();
+        return response()->json(['message' => '{{ENTITY_LABEL}} eliminado.']);
+    }
+}

@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\{{ENTITY}};
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+
+class {{ENTITY}}Controller extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    public function index()
+    {
+        $query = {{ENTITY}}::query();
+
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+{{SEARCH_CONDITIONS}}
+            });
+        }
+
+        $items = $query->latest()->paginate(15)->withQueryString();
+        return view('{{VIEW_FOLDER}}.index', compact('items'));
+    }
+
+    public function create()
+    {
+        return view('{{VIEW_FOLDER}}.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+{{VALIDATION_RULES}}
+        ]);
+
+        {{ENTITY}}::create(array_merge($validated, [
+            'tenant_id' => auth()->user()->business_instance_id,
+        ]));
+
+        return redirect()->route('{{ROUTE_PREFIX}}.index')
+            ->with('success', '{{ENTITY_LABEL}} creado correctamente.');
+    }
+
+    public function show({{ENTITY}} ${{SINGULAR_LOWER}})
+    {
+        return view('{{VIEW_FOLDER}}.show', compact('{{SINGULAR_LOWER}}'));
+    }
+
+    public function edit({{ENTITY}} ${{SINGULAR_LOWER}})
+    {
+        return view('{{VIEW_FOLDER}}.edit', compact('{{SINGULAR_LOWER}}'));
+    }
+
+    public function update(Request $request, {{ENTITY}} ${{SINGULAR_LOWER}})
+    {
+        $validated = $request->validate([
+{{VALIDATION_RULES}}
+        ]);
+
+        ${{SINGULAR_LOWER}}->update($validated);
+
+        return redirect()->route('{{ROUTE_PREFIX}}.index')
+            ->with('success', '{{ENTITY_LABEL}} actualizado correctamente.');
+    }
+
+    public function destroy({{ENTITY}} ${{SINGULAR_LOWER}})
+    {
+        ${{SINGULAR_LOWER}}->delete();
+        return back()->with('success', '{{ENTITY_LABEL}} eliminado.');
+    }
+}

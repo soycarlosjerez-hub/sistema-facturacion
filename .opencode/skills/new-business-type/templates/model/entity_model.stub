@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\TenantScope;
+
+class {{ENTITY}} extends Model
+{
+    use HasFactory, TenantScope;
+
+    protected $table = '{{TABLE}}';
+
+    protected $fillable = [
+        'tenant_id',
+{{FIELDS_FILLABLE}}
+    ];
+
+    protected $casts = [
+{{FIELDS_CASTS}}
+    ];
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(BusinessInstance::class, 'tenant_id');
+    }
+
+{{RELATIONSHIPS}}
+}

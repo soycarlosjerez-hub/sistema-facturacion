@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\{{ENTITY}};
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\DB;
+
+class {{ENTITY}}Service
+{
+    public function getAll(array $filters = [])
+    {
+        $query = {{ENTITY}}::query();
+
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+{{SERVICE_SEARCH}}
+            });
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query->latest()->paginate($filters['per_page'] ?? 15);
+    }
+
+    public function create(array $data): {{ENTITY}}
+    {
+        return DB::transaction(function () use ($data) {
+            return {{ENTITY}}::create($data);
+        });
+    }
+
+    public function update({{ENTITY}} $item, array $data): {{ENTITY}}
+    {
+        return DB::transaction(function () use ($item, $data) {
+            $item->update($data);
+            return $item->fresh();
+        });
+    }
+
+    public function destroy({{ENTITY}} $item): bool
+    {
+        return DB::transaction(function () use ($item) {
+            return $item->delete();
+        });
+    }
+
+    public function findById(int $id): ?{{ENTITY}}
+    {
+        return {{ENTITY}}::find($id);
+    }
+
+    public function findByTenantAndId(int $tenantId, int $id): ?{{ENTITY}}
+    {
+        return {{ENTITY}}::where('tenant_id', $tenantId)->find($id);
+    }
+}

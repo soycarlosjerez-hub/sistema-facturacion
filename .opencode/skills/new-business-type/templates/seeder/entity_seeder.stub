@@ -1,0 +1,24 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\{{ENTITY}};
+use Illuminate\Database\Seeder;
+
+class {{ENTITY}}Seeder extends Seeder
+{
+    public function run(): void
+    {
+        $tenantId = \App\Models\BusinessInstance::first()?->id ?? 1;
+
+        $samples = [
+{{SEEDER_SAMPLES}}
+        ];
+
+        foreach ($samples as &$sample) {
+            $sample['tenant_id'] = $tenantId;
+        }
+
+        {{ENTITY}}::insert($samples);
+    }
+}
