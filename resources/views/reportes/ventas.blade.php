@@ -56,7 +56,7 @@ body.dark-mode #ventasTable tfoot td { background:rgba(15,23,42,.6);border-top-c
         <div class="d-flex flex-wrap justify-content-between align-items-center position-relative w-100" style="z-index:2;">
             <div>
                 <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line text-white me-2"></i>Resumen de Ventas</h2>
-                <p style="color:rgba(255,255,255,.8);" class="mb-0">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} venta(s)</p>
+                <p style="color:rgba(255,255,255,.8);" class="mb-0">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} venta(s) &middot; {{ $totalCajas }} caja(s)</p>
             </div>
             <div class="d-flex gap-2 align-items-center">
                 <a href="{{ route('reportes.ventas', ['desde' => $desde, 'hasta' => $hasta, 'csv' => 1]) }}" class="btn btn-success rounded-pill" onclick="event.preventDefault();window.location='{{ route('reportes.ventas.csv', ['desde' => $desde, 'hasta' => $hasta]) }}'"><i class="bi bi-download me-1"></i> CSV</a>
@@ -102,6 +102,55 @@ body.dark-mode #ventasTable tfoot td { background:rgba(15,23,42,.6);border-top-c
             <div class="premium-stat-card text-center p-3">
                 <div class="stat-label">Efectivo Recibido</div>
                 <div class="stat-value text-success">RD$ {{ number_format($totalEfectivo, 2) }}</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Resumen por Cajero --}}
+    <div class="premium-card mb-4">
+        <div class="card-accent purple"></div>
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-person-badge me-2"></i>Resumen por Cajero</h5>
+            <div class="row g-3">
+                @foreach($ventasPorCajero as $cajero)
+                <div class="col-lg-6 col-xl-4">
+                    <div class="premium-stat-card p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="stat-label">Cajero</div>
+                                <div class="fw-bold fs-6">{{ $cajero['cajero_nombre'] }}</div>
+                            </div>
+                            <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-semibold">
+                                {{ $cajero['cantidad'] }} venta(s)
+                            </span>
+                        </div>
+                        <hr class="my-2 opacity-25">
+                        <div class="row g-2 small">
+                            <div class="col-6">
+                                <div class="text-muted small">Total Vendido</div>
+                                <div class="fw-bold text-primary">RD$ {{ number_format($cajero['total'], 2) }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Cajas Usadas</div>
+                                <div class="fw-bold">{{ $cajero['cajas_count'] }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Subtotal</div>
+                                <div class="fw-semibold">RD$ {{ number_format($cajero['subtotal'], 2) }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">ITBIS</div>
+                                <div class="fw-semibold text-warning">RD$ {{ number_format($cajero['itbis'], 2) }}</div>
+                            </div>
+                        </div>
+                        @if($cajero['cajas_usadas']->isNotEmpty())
+                        <div class="mt-2">
+                            <small class="text-muted">Cajas: {{ $cajero['cajas_usadas']->join(', ') }}</small>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
             </div>
         </div>
     </div>

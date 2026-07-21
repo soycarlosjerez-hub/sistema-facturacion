@@ -6,6 +6,7 @@ use App\Models\Conduce;
 use App\Models\Cotizacion;
 use App\Models\HistorialImpresion;
 use App\Models\Impresora;
+use App\Models\Orden;
 use App\Models\Venta;
 use Illuminate\Support\Facades\Log;
 
@@ -446,5 +447,135 @@ class PrintService
     private function wordWrap(string $text, int $width): string
     {
         return wordwrap($text, $width, "\n", true);
+    }
+
+    /**
+     * Imprimir una venta directamente (metodo comodín usado por VentaController)
+     */
+    public function imprimir(Venta $venta): string
+    {
+        $impresora = Impresora::activas()->first();
+        if (!$impresora) {
+            throw new \RuntimeException('No hay impresoras activas configuradas.');
+        }
+        return $this->imprimirDocumento('venta', $venta->id, $impresora);
+    }
+
+    /**
+     * Imprimir una orden de restaurante (POS)
+     */
+    public function printOrden(Orden $orden): string
+    {
+        $impresora = Impresora::activas()->first();
+        if (!$impresora) {
+            throw new \RuntimeException('No hay impresoras activas configuradas.');
+        }
+
+        $paperWidth = $impresora->papel_tamano === '58mm' ? self::PAPER_58MM : self::PAPER_80MM;
+        $texto = $this->renderOrdenTicket($orden, $paperWidth);
+
+        HistorialImpresion::create([
+            'imprimible_type' => get_class($orden),
+            'imprimible_id' => $orden->id,
+            'impresora_id' => $impresora->id,
+            'user_id' => auth()->id(),
+            'tipo_documento' => 'orden',
+            'documento_numero' => $orden->ncf ?? '#' . str_pad($orden->id, 6, '0', STR_PAD_LEFT),
+            'formato' => 'ticket',
+            'copias' => 1,
+            'papel_tamano' => $impresora->papel_tamano ?? '80mm',
+            'exitoso' => true,
+            'error_mensaje' => null,
+            'tamanio_bytes' => strlen($texto),
+        ]);
+
+        if ($impresora->tipo_conexion === 'pdf') {
+            return $this->enviarAPdf($impresora, $texto, "orden_{$orden->id}");
+        } elseif (class_exists('\Mike42\Escpos\Printer')) {
+            $this->imprimirConEscpos($impresora, $texto);
+            return "Orden #{$orden->id} impresa correctamente en {$impresora->nombre}";
+        } else {
+            return $this->enviarATexto($impresora, $texto);
+        }
+    }
+
+    /**
+     * Renderizar ticket de orden de restaurante
+     */
+    public function renderOrdenTicket(Orden $orden, int $paperWidth = self::PAPER_80MM): string
+    {
+        $orden->load(['cliente', 'usuario', 'detalles.producto', 'pagos']);
+        $charsPerLine = $this->getCharsPerLine($paperWidth);
+        $output = '';
+
+        $output .= $this->center(config('app.name', 'Sistema'), $charsPerLine) . "\n";
+        $output .= $this->separator($charsPerLine) . "\n";
+        $output .= $this->center('*** ORDEN DE COCINA ***', $charsPerLine) . "\n";
+        $output .= $this->center($orden->ncf ?? ('#' . str_pad($orden->id, 6, '0', STR_PAD_LEFT)), $charsPerLine) . "\n";
+        $output .= $this->separator($charsPerLine) . "\n";
+
+        $fechaOrden = $orden->created_at instanceof \DateTimeInterface
+            ? $orden->created_at
+            : \Carbon\Carbon::parse($orden->created_at);
+        $output .= $this->leftRight('Hora:', $fechaOrden->format('d/m/Y H:i'), $charsPerLine) . "\n";
+        $output .= $this->leftRight('Mesero:', substr($orden->usuario?->name ?? 'N/A', 0, 20), $charsPerLine) . "\n";
+
+        if ($orden->cliente) {
+            $output .= $this->leftRight('Cliente:', substr($orden->cliente->nombre ?? 'N/A', 0, 20), $charsPerLine) . "\n";
+        }
+
+        $output .= $this->separator($charsPerLine) . "\n";
+        $output .= "PRODUCTOS:\n";
+        $output .= $this->separator($charsPerLine) . "\n";
+
+        foreach ($orden->detalles as $det) {
+            $productName = $det->producto?->nombre ?? 'N/A';
+            $output .= $this->truncate($productName, $charsPerLine - 2) . "\n";
+
+            $qtyLine = $det->cantidad . ' x ';
+            $priceFormatted = 'RD$' . number_format($det->precio_unitario, 2);
+            $output .= $this->leftRight($qtyLine, $priceFormatted, $charsPerLine) . "\n";
+
+            if ($det->subtotal > 0) {
+                $output .= $this->leftRight('', 'Subtotal: RD$' . number_format($det->subtotal, 2), $charsPerLine) . "\n";
+            }
+
+            if ($det->notas) {
+                $output .= $this->leftRight('  Nota:', $det->notas, $charsPerLine) . "\n";
+            }
+
+            if ($det->curso) {
+                $output .= $this->leftRight('  Curso:', $det->curso, $charsPerLine) . "\n";
+            }
+
+            $output .= "\n";
+        }
+
+        $output .= $this->separator($charsPerLine) . "\n";
+        $output .= $this->leftRight('Subtotal:', 'RD$' . number_format($orden->subtotal, 2), $charsPerLine) . "\n";
+        if ($orden->impuestos > 0) {
+            $output .= $this->leftRight('ITBIS:', 'RD$' . number_format($orden->impuestos, 2), $charsPerLine) . "\n";
+        }
+        if ($orden->descuento > 0) {
+            $output .= $this->leftRight('Descuento:', '-RD$' . number_format($orden->descuento, 2), $charsPerLine) . "\n";
+        }
+        if ($orden->propina > 0) {
+            $output .= $this->leftRight('Propina:', 'RD$' . number_format($orden->propina, 2), $charsPerLine) . "\n";
+        }
+        $output .= $this->separator($charsPerLine, '=') . "\n";
+        $output .= $this->leftRight('TOTAL:', 'RD$' . number_format($orden->total, 2), $charsPerLine) . "\n";
+        $output .= $this->separator($charsPerLine, '=') . "\n";
+
+        if ($orden->notas) {
+            $output .= "\n";
+            $output .= $this->center('Notas:', $charsPerLine) . "\n";
+            $output .= $this->wordWrap($orden->notas, $charsPerLine) . "\n";
+        }
+
+        $output .= "\n";
+        $output .= $this->center('*** IMPRESO POR SISTEMA ***', $charsPerLine) . "\n";
+        $output .= "\n\n\n";
+
+        return $output;
     }
 }

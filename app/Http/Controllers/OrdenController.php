@@ -282,11 +282,14 @@ class OrdenController extends Controller
     {
         $venta = \App\Models\Venta::with('detalles.producto', 'cliente', 'pagos', 'mesa')
             ->findOrFail($request->input('venta_id'));
-        $empresa = (object) config('app.empresa', []);
 
         try {
-            $this->printService->imprimirDocumento($venta, 'ventas', $empresa);
-            return response()->json(['success' => true, 'message' => 'Ticket enviado a impresora']);
+            $impresora = \App\Models\Impresora::activas()->first();
+            if (!$impresora) {
+                throw new \RuntimeException('No hay impresoras activas configuradas.');
+            }
+            $resultado = $this->printService->imprimirDocumento('venta', $venta->id, $impresora);
+            return response()->json(['success' => true, 'message' => $resultado]);
         } catch (\Throwable $e) {
             return response()->json(['error' => 'Error al imprimir: ' . $e->getMessage()], 500);
         }

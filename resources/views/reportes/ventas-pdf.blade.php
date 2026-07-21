@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Ventas {{ $desde }} al {{ $hasta }}</title>
-<style>body{font-family:DejaVu Sans,sans-serif;font-size:8px;}table{width:100%;border-collapse:collapse;margin-top:10px;}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;}th{background:#f0f0f0;font-weight:700;text-transform:uppercase;font-size:7px;}td.text-end{text-align:right;}.totals{background:#f8f8f8;font-weight:700;}h2{margin:0;color:#333;}.meta{color:#666;margin:5px 0;}</style>
+<style>body{font-family:DejaVu Sans,sans-serif;font-size:8px;}table{width:100%;border-collapse:collapse;margin-top:10px;}th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;}th{background:#f0f0f0;font-weight:700;text-transform:uppercase;font-size:7px;}td.text-end{text-align:right;}.totals{background:#f8f8f8;font-weight:700;}h2{margin:0;color:#333;}.meta{color:#666;margin:5px 0;}.cajero-section{margin-top:20px;page-break-before:auto;}h3{margin:10px 0 5px 0;font-size:9px;color:#444;}</style>
 </head><body>
 @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
 <div style="text-align:center;margin-bottom:8px;">
@@ -8,7 +8,8 @@
     <span style="font-size:7px;color:#666;">RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</span>
 </div>
 <h2>Resumen de Ventas</h2>
-<p class="meta">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} venta(s)</p>
+<p class="meta">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $cantidad }} venta(s) &middot; {{ $totalCajas }} caja(s)</p>
+
 <table><thead><tr>
 <th>#</th><th>Cliente</th><th>Vendedor</th><th>NCF</th><th>Fecha</th><th class="text-end">Subtotal</th><th class="text-end">ITBIS</th><th class="text-end">Total</th>
 </tr></thead><tbody>
@@ -33,5 +34,36 @@
 <td class="text-end">RD$ {{ number_format($ventas->sum('total'), 2) }}</td>
 </tr>
 </tfoot></table>
+
+<div class="cajero-section">
+<h3>Resumen por Cajero</h3>
+<table>
+<thead><tr>
+<th>Cajero</th><th class="text-end">Ventas</th><th class="text-end">Subtotal</th><th class="text-end">ITBIS</th><th class="text-end">Total</th><th class="text-end">Cajas</th>
+</tr></thead><tbody>
+@foreach($ventasPorCajero as $cajero)
+<tr>
+<td>{{ $cajero['cajero_nombre'] }}</td>
+<td class="text-end">{{ $cajero['cantidad'] }}</td>
+<td class="text-end">RD$ {{ number_format($cajero['subtotal'], 2) }}</td>
+<td class="text-end">RD$ {{ number_format($cajero['itbis'], 2) }}</td>
+<td class="text-end">RD$ {{ number_format($cajero['total'], 2) }}</td>
+<td class="text-end">{{ $cajero['cajas_count'] }}</td>
+</tr>
+@endforeach
+</tbody>
+<tfoot>
+<tr class="totals">
+<td>TOTALES</td>
+<td class="text-end">{{ $ventasPorCajero->sum('cantidad') }}</td>
+<td class="text-end">RD$ {{ number_format($ventasPorCajero->sum('subtotal'), 2) }}</td>
+<td class="text-end">RD$ {{ number_format($ventasPorCajero->sum('itbis'), 2) }}</td>
+<td class="text-end">RD$ {{ number_format($ventasPorCajero->sum('total'), 2) }}</td>
+<td class="text-end">{{ $totalCajas }}</td>
+</tr>
+</tfoot>
+</table>
+</div>
+
 <p style="color:#999;font-size:7px;margin-top:20px;">Generado: {{ now()->format('d/m/Y H:i') }}</p>
 </body></html>

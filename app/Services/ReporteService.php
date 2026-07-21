@@ -70,6 +70,26 @@ class ReporteService
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $ventasPorCajero = $ventas->groupBy(function ($v) {
+            return $v->user_id ?? 'sin_cajero';
+        })->map(function ($grupo) {
+            $cajero = $grupo->first()->usuario;
+            $cajasUsadas = $grupo->pluck('caja.nombre')->filter()->unique()->values();
+            return [
+                'cajero_id'       => $cajero?->id,
+                'cajero_nombre'   => $cajero?->name ?? 'Sin Cajero',
+                'cantidad'        => $grupo->count(),
+                'total'           => $grupo->sum('total'),
+                'subtotal'        => $grupo->sum('subtotal'),
+                'itbis'           => $grupo->sum('impuestos'),
+                'efectivo'        => $grupo->sum('total'),
+                'cajas_usadas'    => $cajasUsadas,
+                'cajas_count'     => $cajasUsadas->count(),
+            ];
+        })->sortByDesc('total')->values();
+
+        $totalCajas = $ventas->pluck('caja.nombre')->filter()->unique()->count();
+
         return [
             'ventas'        => $ventas,
             'desde'         => $desde,
@@ -78,6 +98,8 @@ class ReporteService
             'totalItbis'    => $ventas->sum('impuestos'),
             'totalEfectivo' => $ventas->sum('total'),
             'cantidad'      => $ventas->count(),
+            'ventasPorCajero' => $ventasPorCajero,
+            'totalCajas'    => $totalCajas,
         ];
     }
 
