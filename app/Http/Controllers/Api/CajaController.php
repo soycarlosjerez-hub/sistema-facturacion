@@ -27,9 +27,9 @@ class CajaController extends Controller
             'ubicacion' => 'nullable|string|max:255',
             'estado' => 'nullable|string|max:20',
             'activo' => 'boolean',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $caja = Caja::create($validated);
 
         return new CajaResource($caja->load(['sucursal', 'sesiones']));
@@ -49,7 +49,6 @@ class CajaController extends Controller
             'ubicacion' => 'nullable|string|max:255',
             'estado' => 'nullable|string|max:20',
             'activo' => 'boolean',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $caja->update($validated);

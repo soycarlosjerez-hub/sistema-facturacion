@@ -29,9 +29,9 @@ class ImpresoraController extends Controller
             'ip' => 'nullable|string|max:50',
             'activa' => 'boolean',
             'configuracion' => 'nullable|array',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $impresora = Impresora::create($validated);
 
         return new ImpresoraResource($impresora);
@@ -52,7 +52,6 @@ class ImpresoraController extends Controller
             'ip' => 'nullable|string|max:50',
             'activa' => 'boolean',
             'configuracion' => 'nullable|array',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $impresora->update($validated);

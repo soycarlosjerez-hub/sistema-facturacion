@@ -24,9 +24,9 @@ class AlmacenController extends Controller
             'nombre' => 'required|string|max:255',
             'ubicacion' => 'nullable|string|max:500',
             'sucursal_id' => 'required|exists:sucursales,id',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $almacen = Almacen::create($validated);
 
         return new AlmacenResource($almacen->load('sucursal'));
@@ -43,7 +43,6 @@ class AlmacenController extends Controller
             'nombre' => 'sometimes|string|max:255',
             'ubicacion' => 'nullable|string|max:500',
             'sucursal_id' => 'sometimes|exists:sucursales,id',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $almacen->update($validated);

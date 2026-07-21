@@ -24,7 +24,6 @@ class CompraController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tenant_id' => 'required|exists:tenants,id',
             'proveedor_id' => 'required|exists:proveedores,id',
             'sucursal_id' => 'required|exists:sucursales,id',
             'almacen_id' => 'nullable|exists:almacenes,id',
@@ -47,6 +46,7 @@ class CompraController extends Controller
             'detalles.*.itbis_porcentaje' => 'required|numeric|min:0',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $compra = Compra::create($validated);
 
         foreach ($validated['detalles'] as $detalle) {

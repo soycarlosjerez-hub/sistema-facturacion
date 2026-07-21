@@ -37,9 +37,9 @@ class ProductoController extends Controller
             'stock' => 'nullable|integer|min:0',
             'stock_minimo' => 'nullable|integer|min:0',
             'imagen' => 'nullable|string',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id ?? auth()->user()->tenant_id;
         $producto = Producto::create($validated);
 
         return new ProductoResource($producto->load(['categoria', 'ingredientes']));
@@ -64,7 +64,6 @@ class ProductoController extends Controller
             'stock' => 'sometimes|integer|min:0',
             'stock_minimo' => 'sometimes|integer|min:0',
             'imagen' => 'nullable|string',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $producto->update($validated);

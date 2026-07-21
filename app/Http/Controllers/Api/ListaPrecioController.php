@@ -26,9 +26,9 @@ class ListaPrecioController extends Controller
             'porcentaje' => 'required|numeric|min:0',
             'sucursal_id' => 'required|exists:sucursales,id',
             'activa' => 'boolean',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $lista = ListaPrecio::create($validated);
 
         return new ListaPrecioResource($lista->load(['sucursal', 'productos']));
@@ -47,7 +47,6 @@ class ListaPrecioController extends Controller
             'porcentaje' => 'sometimes|numeric|min:0',
             'sucursal_id' => 'sometimes|exists:sucursales,id',
             'activa' => 'boolean',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $listaPrecio->update($validated);

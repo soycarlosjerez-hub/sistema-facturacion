@@ -25,9 +25,9 @@ class PaymentProcessorController extends Controller
             'codigo' => 'nullable|string|max:50',
             'activa' => 'boolean',
             'configuracion' => 'nullable|array',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $processor = PaymentProcessor::create($validated);
 
         return new PaymentProcessorResource($processor);
@@ -45,7 +45,6 @@ class PaymentProcessorController extends Controller
             'codigo' => 'sometimes|string|max:50',
             'activa' => 'boolean',
             'configuracion' => 'nullable|array',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $paymentProcessor->update($validated);

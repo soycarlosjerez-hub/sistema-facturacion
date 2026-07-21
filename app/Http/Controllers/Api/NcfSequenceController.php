@@ -27,9 +27,9 @@ class NcfSequenceController extends Controller
             'inicio' => 'required|string|max:50',
             'fin' => 'required|string|max:50',
             'activa' => 'boolean',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $sequence = NcfSequence::create($validated);
 
         return new NcfSequenceResource($sequence);
@@ -48,7 +48,6 @@ class NcfSequenceController extends Controller
             'inicio' => 'sometimes|string|max:50',
             'fin' => 'sometimes|string|max:50',
             'activa' => 'boolean',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $ncfSequence->update($validated);

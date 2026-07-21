@@ -33,9 +33,9 @@ class ProveedorController extends Controller
             'tipo_persona' => 'nullable|string|max:20',
             'sujeto_retencion_isr' => 'nullable|boolean',
             'sujeto_retencion_itbis' => 'nullable|boolean',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $proveedor = Proveedor::create($validated);
 
         return new ProveedorResource($proveedor->load('compras'));
@@ -57,7 +57,6 @@ class ProveedorController extends Controller
             'tipo_persona' => 'nullable|string|max:20',
             'sujeto_retencion_isr' => 'nullable|boolean',
             'sujeto_retencion_itbis' => 'nullable|boolean',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $proveedor->update($validated);

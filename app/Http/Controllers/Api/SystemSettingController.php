@@ -25,9 +25,9 @@ class SystemSettingController extends Controller
             'valor' => 'required',
             'tipo' => 'required|string|max:20',
             'descripcion' => 'nullable|string',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $setting = SystemSetting::create($validated);
 
         return new SystemSettingResource($setting);
@@ -46,7 +46,6 @@ class SystemSettingController extends Controller
             'valor' => 'sometimes|required',
             'tipo' => 'sometimes|string|max:20',
             'descripcion' => 'nullable|string',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $systemSetting->update($validated);

@@ -32,9 +32,9 @@ class SucursalController extends Controller
             'rnc' => 'nullable|string|max:20',
             'activa' => 'boolean',
             'es_matriz' => 'boolean',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $sucursal = Sucursal::create($validated);
 
         return new SucursalResource($sucursal->load(['usuarios', 'ventas', 'compras', 'cajas', 'gastos', 'mesas']));
@@ -56,7 +56,6 @@ class SucursalController extends Controller
             'rnc' => 'sometimes|string|max:20',
             'activa' => 'boolean',
             'es_matriz' => 'boolean',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $sucursal->update($validated);

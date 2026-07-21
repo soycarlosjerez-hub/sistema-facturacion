@@ -36,9 +36,9 @@ class MesaController extends Controller
             'categoria_id' => 'nullable|exists:mesa_categorias,id',
             'pos_x' => 'nullable|integer',
             'pos_y' => 'nullable|integer',
-            'tenant_id' => 'required|exists:tenants,id',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $mesa = Mesa::create($validated);
 
         return new MesaResource($mesa->load(['categoria', 'ubicacion', 'sucursal']));
@@ -62,7 +62,6 @@ class MesaController extends Controller
             'categoria_id' => 'nullable|exists:mesa_categorias,id',
             'pos_x' => 'nullable|integer',
             'pos_y' => 'nullable|integer',
-            'tenant_id' => 'sometimes|exists:tenants,id',
         ]);
 
         $mesa->update($validated);
