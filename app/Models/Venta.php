@@ -21,6 +21,7 @@ class Venta extends Model
         'total'          => 'decimal:2',
         'delivery_fee'   => 'decimal:2',
         'fecha'          => 'datetime',
+        'retenciones'    => 'array',
     ];
 
     protected $fillable = [
@@ -31,7 +32,7 @@ class Venta extends Model
         'fecha', 'subtotal', 'impuestos', 'descuento', 'total', 'estado',
         'descuento_tipo', 'descuento_motivo', 'notas', 'tipo_orden', 'propina',
         'delivery_company_id', 'delivery_fee', 'cargo_servicio', 'vehiculo_id',
-        'tenant_id',
+        'tenant_id', 'retenciones',
     ];
 
     public function sucursal()

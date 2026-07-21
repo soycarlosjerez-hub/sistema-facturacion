@@ -475,6 +475,23 @@ class Sidebar
             }
         }
 
+        // Libros Fiscales
+        if ($mod('libros-ventas') || $mod('libros-compras')) {
+            $items[] = ['section' => 'Libros Fiscales'];
+            if ($mod('libros-ventas') && $can('reportes.view')) {
+                $items[] = ['route' => 'libros.ventas', 'icon' => 'bi-book', 'label' => 'Libro de Ventas', 'is_route' => 'libros.ventas*', 'exact_route' => 'libros.ventas'];
+            }
+            if ($mod('libros-compras') && $can('reportes.view')) {
+                $items[] = ['route' => 'libros.compras', 'icon' => 'bi-book-half', 'label' => 'Libro de Compras', 'is_route' => 'libros.compras*', 'exact_route' => 'libros.compras'];
+            }
+        }
+
+        // Formularios Fiscales
+        if ($mod('formulario-14-14') && $can('reportes.view')) {
+            $items[] = ['section' => 'Formularios Fiscales'];
+            $items[] = ['route' => 'formulario.14-14', 'icon' => 'bi-file-earmark-text', 'label' => 'Formulario 14-14', 'is_route' => 'formulario.14-14*', 'exact_route' => 'formulario.14-14'];
+        }
+
         // Sistema — cuando hay InstanceRole, requiere el módulo asignado
         $hasSis = fn(string $k) => $user->instance_role_id ? $mod($k) : true;
         if (

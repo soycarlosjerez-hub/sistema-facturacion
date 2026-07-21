@@ -19,9 +19,11 @@ class LibroVentasController extends Controller
         $desde = \Carbon\Carbon::create($anio, $mes, 1)->startOfMonth()->format('Y-m-d');
         $hasta = \Carbon\Carbon::create($anio, $mes, 1)->endOfMonth()->format('Y-m-d');
 
+        $sucursalId = session('sucursal_id');
+
         $query = Venta::with(['cliente', 'usuario', 'caja', 'sucursal'])
             ->whereBetween('created_at', [$desde, $hasta])
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->when($request->filled('cliente'), function ($q) use ($request) {
                 $term = $request->cliente;
                 $q->whereHas('cliente', fn($qq) => $qq->where('nombre', 'like', "%{$term}%")
@@ -39,20 +41,20 @@ class LibroVentasController extends Controller
         // Totales agrupados por tipo de NCF
         $totales = Venta::selectRaw('ncf_tipo, COUNT(*) as cantidad, SUM(total) as total_ventas, SUM(subtotal) as subtotal, SUM(impuestos) as itbis_total')
             ->whereBetween('created_at', [$desde, $hasta])
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->groupBy('ncf_tipo')
             ->get();
 
         // Resumen general
         $resumenGeneral = Venta::selectRaw('COUNT(*) as total, SUM(total) as gran_total, SUM(subtotal) as gran_subtotal, SUM(impuestos) as gran_itbis')
             ->whereBetween('created_at', [$desde, $hasta])
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->first();
 
         // Ventas por método de pago
         $pagosMetodo = Venta::join('pagos', 'ventas.id', '=', 'pagos.venta_id')
             ->whereBetween('ventas.created_at', [$desde, $hasta])
-            ->whereNotNull('ventas.deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('ventas.sucursal_id', $sucursalId))
             ->selectRaw('pagos.metodo_pago, COUNT(DISTINCT pagos.venta_id) as cantidad, SUM(pagos.monto) as total')
             ->groupBy('pagos.metodo_pago')
             ->get();
@@ -70,9 +72,11 @@ class LibroVentasController extends Controller
         $desde = \Carbon\Carbon::create($anio, $mes, 1)->startOfMonth()->format('Y-m-d');
         $hasta = \Carbon\Carbon::create($anio, $mes, 1)->endOfMonth()->format('Y-m-d');
 
+        $sucursalId = session('sucursal_id');
+
         $ventas = Venta::with(['cliente', 'usuario'])
             ->whereBetween('created_at', [$desde, $hasta])
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->orderBy('created_at')
             ->get();
 
@@ -123,21 +127,23 @@ class LibroVentasController extends Controller
         $desde = \Carbon\Carbon::create($anio, $mes, 1)->startOfMonth()->format('Y-m-d');
         $hasta = \Carbon\Carbon::create($anio, $mes, 1)->endOfMonth()->format('Y-m-d');
 
+        $sucursalId = session('sucursal_id');
+
         $ventas = Venta::with(['cliente', 'usuario', 'caja', 'sucursal'])
             ->whereBetween('created_at', [$desde, $hasta])
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->orderBy('created_at')
             ->get();
 
         $totales = Venta::selectRaw('ncf_tipo, COUNT(*) as cantidad, SUM(total) as total_ventas, SUM(subtotal) as subtotal, SUM(impuestos) as itbis_total')
             ->whereBetween('created_at', [$desde, $hasta])
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->groupBy('ncf_tipo')
             ->get();
 
         $resumenGeneral = Venta::selectRaw('COUNT(*) as total, SUM(total) as gran_total, SUM(subtotal) as gran_subtotal, SUM(impuestos) as gran_itbis')
             ->whereBetween('created_at', [$desde, $hasta])
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->first();
 
         $mesNombre = \Carbon\Carbon::create($anio, $mes, 1)->format('F');

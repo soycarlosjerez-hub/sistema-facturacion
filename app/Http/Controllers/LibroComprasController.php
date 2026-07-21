@@ -19,8 +19,11 @@ class LibroComprasController extends Controller
         $desde = \Carbon\Carbon::create($anio, $mes, 1)->startOfMonth()->format('Y-m-d');
         $hasta = \Carbon\Carbon::create($anio, $mes, 1)->endOfMonth()->format('Y-m-d');
 
+        $sucursalId = session('sucursal_id');
+
         $query = Compra::with(['proveedor', 'almacen', 'user'])
             ->whereBetween('fecha', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->when($request->filled('proveedor'), function ($q) use ($request) {
                 $term = $request->proveedor;
                 $q->whereHas('proveedor', fn($qq) => $qq->where('nombre', 'like', "%{$term}%")
@@ -35,6 +38,7 @@ class LibroComprasController extends Controller
         // Totales por proveedor
         $totalesProveedor = Compra::selectRaw('proveedor_id, COUNT(*) as cantidad, SUM(subtotal) as subtotal, SUM(itbis_total) as itbis, SUM(retencion_itbis) as itbis_retenido, SUM(retencion_isr) as isr_retenido, SUM(total) as total_compras')
             ->whereBetween('fecha', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->groupBy('proveedor_id')
             ->with('proveedor:id,nombre,rnc')
             ->get();
@@ -42,17 +46,18 @@ class LibroComprasController extends Controller
         // Resumen general
         $resumenGeneral = Compra::selectRaw('COUNT(*) as total, SUM(subtotal) as gran_subtotal, SUM(itbis_total) as gran_itbis, SUM(retencion_itbis) as gran_itbis_retenido, SUM(retencion_isr) as gran_isr_retenido, SUM(total) as gran_total')
             ->whereBetween('fecha', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->first();
 
         // Retenciones por tipo
         $retencionesResumen = [
-            'itbis' => Compra::whereBetween('fecha', [$desde, $hasta])->sum('retencion_itbis'),
-            'isr' => Compra::whereBetween('fecha', [$desde, $hasta])->sum('retencion_isr'),
+            'itbis' => Compra::whereBetween('fecha', [$desde, $hasta])->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))->sum('retencion_itbis'),
+            'isr' => Compra::whereBetween('fecha', [$desde, $hasta])->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))->sum('retencion_isr'),
         ];
 
         return view('libros.compras.index', compact(
             'compras', 'totalesProveedor', 'resumenGeneral', 'retencionesResumen',
-            'mes', 'anio', 'desde', 'hasta'
+            'mes', 'anio', 'desde', 'hasta', 'sucursalId'
         ));
     }
 
@@ -63,8 +68,11 @@ class LibroComprasController extends Controller
         $desde = \Carbon\Carbon::create($anio, $mes, 1)->startOfMonth()->format('Y-m-d');
         $hasta = \Carbon\Carbon::create($anio, $mes, 1)->endOfMonth()->format('Y-m-d');
 
+        $sucursalId = session('sucursal_id');
+
         $compras = Compra::with(['proveedor', 'user'])
             ->whereBetween('fecha', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->orderBy('fecha')
             ->get();
 
@@ -112,13 +120,17 @@ class LibroComprasController extends Controller
         $desde = \Carbon\Carbon::create($anio, $mes, 1)->startOfMonth()->format('Y-m-d');
         $hasta = \Carbon\Carbon::create($anio, $mes, 1)->endOfMonth()->format('Y-m-d');
 
+        $sucursalId = session('sucursal_id');
+
         $compras = Compra::with(['proveedor', 'user', 'almacen'])
             ->whereBetween('fecha', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->orderBy('fecha')
             ->get();
 
         $resumenGeneral = Compra::selectRaw('COUNT(*) as total, SUM(subtotal) as gran_subtotal, SUM(itbis_total) as gran_itbis, SUM(retencion_itbis) as gran_itbis_retenido, SUM(retencion_isr) as gran_isr_retenido, SUM(total) as gran_total')
             ->whereBetween('fecha', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->first();
 
         $mesNombre = \Carbon\Carbon::create($anio, $mes, 1)->format('F');

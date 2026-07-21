@@ -13,6 +13,7 @@ use App\Models\VentaDetalle;
 use App\Support\RncValidator;
 use App\Services\Ecf\EcfService;
 use App\Services\NcfService;
+use App\Services\RetentionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,11 +22,13 @@ class SaleService
 {
     protected NcfService $ncfService;
     protected EcfService $ecfService;
+    protected RetentionService $retentionService;
 
-    public function __construct(NcfService $ncfService, EcfService $ecfService)
+    public function __construct(NcfService $ncfService, EcfService $ecfService, RetentionService $retentionService)
     {
         $this->ncfService = $ncfService;
         $this->ecfService = $ecfService;
+        $this->retentionService = $retentionService;
     }
 
     public function createSale(array $data, SesionCaja $sesion): Venta
@@ -120,6 +123,13 @@ class SaleService
 
             $this->procesarDetalles($venta, $data, $ventaExistente);
             $this->procesarPago($venta, $sesion, $metodo, $estado, $data);
+
+            // Calcular y guardar retenciones ITBIS vendedor
+            $cliente = $venta->cliente;
+            if ($cliente) {
+                $retenciones = $this->retentionService->calcularRetencionesVenta($venta, $cliente);
+                $this->retentionService->guardarRetencionesVenta($venta, $retenciones);
+            }
 
             return $venta;
         });

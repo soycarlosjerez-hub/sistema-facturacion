@@ -59,11 +59,14 @@ class RetentionService
             $tipoPersona = $proveedor->tipo_persona ?? 'juridica';
             $tipoPago = $this->determinarTipoPagoCompra($compra);
             
+            $sucursalId = session('sucursal_id');
+            
             // Calcular acumulado mensual del proveedor
             $acumuladoMes = $this->getAcumuladoMensualProveedor(
                 $proveedor->id,
                 now()->month,
-                now()->year
+                now()->year,
+                $sucursalId
             );
 
             $calc = RetencionCalculator::calcularRetencionIsr(
@@ -147,14 +150,27 @@ class RetentionService
     }
 
     /**
+     * Guarda las retenciones calculadas en la venta (campo JSON).
+     */
+    public function guardarRetencionesVenta(Venta $venta, array $retenciones): void
+    {
+        $existing = $venta->retenciones ?? [];
+        $merged = array_merge($existing, $retenciones);
+
+        $venta->update([
+            'retenciones' => $merged,
+        ]);
+    }
+
+    /**
      * Obtiene el acumulado mensual de un proveedor para cálculo ISR.
      */
-    public function getAcumuladoMensualProveedor(int $proveedorId, int $mes, int $anio): float
+    public function getAcumuladoMensualProveedor(int $proveedorId, int $mes, int $anio, ?int $sucursalId = null): float
     {
         return Compra::where('proveedor_id', $proveedorId)
             ->whereMonth('fecha', $mes)
             ->whereYear('fecha', $anio)
-            ->whereNotNull('deleted_at') // Solo compras no anuladas
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->sum('subtotal');
     }
 
@@ -192,17 +208,17 @@ class RetentionService
     /**
      * Genera un resumen de retenciones por período para Formulario 14-14.
      */
-    public function generarResumenRetenciones(int $mes, int $anio): array
+    public function generarResumenRetenciones(int $mes, int $anio, ?int $sucursalId = null): array
     {
         $compras = Compra::whereMonth('fecha', $mes)
             ->whereYear('fecha', $anio)
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->with(['proveedor'])
             ->get();
 
         $ventas = Venta::whereMonth('created_at', $mes)
             ->whereYear('created_at', $anio)
-            ->whereNotNull('deleted_at')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->where('estado', 'completada')
             ->with(['cliente'])
             ->get();
