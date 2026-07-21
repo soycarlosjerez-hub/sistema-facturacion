@@ -326,6 +326,27 @@ body.dark-mode .endpoint-card:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.endpoint-path:hover {
+    color: var(--api-method-post);
+}
+
+.endpoint-path .bi-files {
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.endpoint-card-header:hover .endpoint-path .bi-files {
+    opacity: 0.5;
+}
+
+.endpoint-card-header:hover .endpoint-path .bi-files:hover {
+    opacity: 1;
 }
 
 .endpoint-action-title {
@@ -773,7 +794,7 @@ body.dark-mode .endpoint-card:hover {
             <div class="endpoint-card" id="{{ $endpointId }}">
                 <div class="endpoint-card-header" onclick="toggleEndpoint(this)">
                     <span class="method-badge method-{{ $endpoint['method'] }}">{{ $endpoint['method'] }}</span>
-                    <span class="endpoint-path">{{ $endpoint['path'] }}</span>
+                    <span class="endpoint-path" title="Copiar endpoint" onclick="event.stopPropagation(); copyPath(this)" style="cursor:pointer;">{{ $endpoint['path'] }} <i class="bi bi-files"></i></span>
                     <span class="endpoint-action-title">{{ $endpoint['action_title'] ?: $endpoint['name'] }}</span>
                     <i class="bi bi-chevron-down endpoint-expand-icon"></i>
                 </div>
@@ -1054,6 +1075,20 @@ function toggleEndpoint(header) {
 function toggleApiSidebar() {
     document.getElementById('apiSidebar').classList.toggle('open');
     document.getElementById('apiSidebarOverlay').classList.toggle('open');
+}
+
+// ---- Copy endpoint path ----
+function copyPath(el) {
+    const path = el.textContent.trim();
+    navigator.clipboard.writeText(path).then(() => {
+        const orig = el.innerHTML;
+        el.innerHTML = '<i class="bi bi-check-lg me-1"></i>' + path;
+        el.style.color = 'var(--api-method-get)';
+        setTimeout(() => {
+            el.innerHTML = orig;
+            el.style.color = '';
+        }, 1500);
+    });
 }
 
 // ---- Copy code ----
