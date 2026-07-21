@@ -479,10 +479,10 @@ class Sidebar
         if ($mod('libros-ventas') || $mod('libros-compras')) {
             $items[] = ['section' => 'Libros Fiscales'];
             if ($mod('libros-ventas') && $can('reportes.view')) {
-                $items[] = ['route' => 'libros.ventas', 'icon' => 'bi-book', 'label' => 'Libro de Ventas', 'is_route' => 'libros.ventas*', 'exact_route' => 'libros.ventas'];
+                $items[] = ['route' => 'libros.ventas.index', 'icon' => 'bi-book', 'label' => 'Libro de Ventas', 'is_route' => 'libros.ventas*', 'exact_route' => 'libros.ventas.index'];
             }
             if ($mod('libros-compras') && $can('reportes.view')) {
-                $items[] = ['route' => 'libros.compras', 'icon' => 'bi-book-half', 'label' => 'Libro de Compras', 'is_route' => 'libros.compras*', 'exact_route' => 'libros.compras'];
+                $items[] = ['route' => 'libros.compras.index', 'icon' => 'bi-book-half', 'label' => 'Libro de Compras', 'is_route' => 'libros.compras*', 'exact_route' => 'libros.compras.index'];
             }
         }
 
