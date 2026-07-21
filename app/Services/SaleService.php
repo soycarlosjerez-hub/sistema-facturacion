@@ -130,8 +130,17 @@ class SaleService
         $motivo = strip_tags(trim($motivo));
 
         DB::transaction(function () use ($id, $motivo) {
-            $venta = Venta::with('detalles')->findOrFail($id);
+            $venta = Venta::with(['detalles', 'ecfDocumento'])->findOrFail($id);
 
+            if ($venta->trashed()) {
+                throw new \Exception('Esta venta ya fue anulada previamente.');
+            }
+
+            if ($venta->estado === 'anulada') {
+                throw new \Exception('Esta venta ya se encuentra anulada.');
+            }
+
+            // Restaurar stock de productos
             foreach ($venta->detalles as $detalle) {
                 $almacenId = ($detalle->almacen_id > 0) ? $detalle->almacen_id : 1;
                 AlmacenMovimiento::create([
@@ -150,6 +159,7 @@ class SaleService
                 }
             }
 
+            // Devolver deuda del cliente si estaba pendiente
             if ($venta->cliente_id && in_array($venta->estado, ['pendiente', 'cuenta_abierta'])) {
                 $cliente = Cliente::find($venta->cliente_id);
                 if ($cliente) {
@@ -160,6 +170,7 @@ class SaleService
                 }
             }
 
+            // Devolver montos de caja
             if ($venta->sesion_caja_id) {
                 $sesion = SesionCaja::find($venta->sesion_caja_id);
                 if ($sesion) {
@@ -174,14 +185,31 @@ class SaleService
                 }
             }
 
-            Log::info('Venta anulada', [
+            // Generar Nota de Crédito E34 si tiene e-CF aprobado
+            if ($venta->ecfDocumento && $venta->ecfDocumento->estado === 'aprobado') {
+                try {
+                    $ecfService = app(EcfService::class);
+                    $nc = $ecfService->generarNotaCredito($venta->ecfDocumento, 'Anulación de venta #' . $venta->id . ': ' . $motivo);
+                    Log::info('Nota de crédito E34 generada por anulación', [
+                        'venta_id' => $venta->id,
+                        'nc_encf' => $nc->encf,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::warning('Falló generación de E34 por anulación', [
+                        'venta_id' => $venta->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Actualizar estado y soft delete
+            $venta->update(['estado' => 'anulada']);
+            $venta->delete();
+
+            Log::info('Venta anulada (soft delete)', [
                 'venta_id' => $venta->id, 'total' => $venta->total,
                 'motivo' => $motivo, 'user_id' => Auth::id(),
             ]);
-
-            $venta->detalles()->delete();
-            $venta->pagos()->delete();
-            $venta->delete();
         });
     }
 

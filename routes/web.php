@@ -48,6 +48,9 @@ use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ModuloController;
 use App\Http\Controllers\LavadorController;
 use App\Http\Controllers\CuentaBancariaController;
+use App\Http\Controllers\LibroVentasController;
+use App\Http\Controllers\LibroComprasController;
+use App\Http\Controllers\Formulario1414Controller;
 use App\Http\Middleware\RoleMiddleware;
 
 // Home / Welcome
@@ -516,9 +519,24 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reportes/gastos/csv', [ReporteController::class, 'gastosCsv'])->name('reportes.gastos.csv');
         Route::get('/reportes/gastos/pdf', [ReporteController::class, 'gastosPdf'])->name('reportes.gastos.pdf');
 
-        // Retenciones
-        Route::get('/reportes/retenciones', [ReporteController::class, 'retenciones'])->name('reportes.retenciones');
-        Route::get('/reportes/retenciones/csv', [ReporteController::class, 'retencionesCsv'])->name('reportes.retenciones.csv');
+    // Retenciones
+    Route::get('/reportes/retenciones', [ReporteController::class, 'retenciones'])->name('reportes.retenciones');
+    Route::get('/reportes/retenciones/csv', [ReporteController::class, 'retencionesCsv'])->name('reportes.retenciones.csv');
+
+    // Libros Fiscales (DGII)
+    Route::middleware('permission:reportes.view')->group(function () {
+        Route::get('/libros/ventas', [LibroVentasController::class, 'index'])->name('libros.ventas.index');
+        Route::get('/libros/ventas/csv', [LibroVentasController::class, 'exportCsv'])->name('libros.ventas.csv');
+        Route::get('/libros/ventas/pdf', [LibroVentasController::class, 'exportPdf'])->name('libros.ventas.pdf');
+
+        Route::get('/libros/compras', [LibroComprasController::class, 'index'])->name('libros.compras.index');
+        Route::get('/libros/compras/csv', [LibroComprasController::class, 'exportCsv'])->name('libros.compras.csv');
+        Route::get('/libros/compras/pdf', [LibroComprasController::class, 'exportPdf'])->name('libros.compras.pdf');
+
+        Route::get('/formulario-14-14', [Formulario1414Controller::class, 'index'])->name('formulario.14-14.index');
+        Route::get('/formulario-14-14/pdf', [Formulario1414Controller::class, 'exportPdf'])->name('formulario.14-14.pdf');
+        Route::get('/formulario-14-14/csv', [Formulario1414Controller::class, 'exportCsv'])->name('formulario.14-14.csv');
+    });
 
         // Fiscales (606/607) - existing
         Route::get('/reportes/fiscales', [ReporteFiscalController::class, 'index'])->name('reportes.fiscales');

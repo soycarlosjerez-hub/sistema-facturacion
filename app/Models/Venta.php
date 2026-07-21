@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
 class Venta extends Model
 {
-    use Auditable, TenantScope;
+    use Auditable, TenantScope, SoftDeletes;
 
     protected $casts = [
         'subtotal'       => 'decimal:2',
