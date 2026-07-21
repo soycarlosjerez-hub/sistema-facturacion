@@ -18,6 +18,11 @@ Customer portal authentication endpoints. **These routes are PUBLIC** — no aut
 
 Registra un nuevo cliente. Asigna automáticamente `tipo_cliente="consumo"`, `activo=true`, `acceso_api=true` y envía email de verificación.
 
+El `tenant_id` se resuelve automáticamente en este orden si no se envía:
+1. Del `User` autenticado por API Key (`iak_`) o Sanctum token (`business_instance_id`)
+2. Del `Cliente` autenticado por `client_api_token` (`tenant_id`)
+3. Primera instancia disponible en la BD
+
 **Headers:**
 
 ```
@@ -33,8 +38,7 @@ Content-Type: application/json
   "email": "ana@example.com",
   "telefono": "+1-809-555-0100",
   "password": "miPasswordSeguro123",
-  "password_confirmation": "miPasswordSeguro123",
-  "tenant_id": 1
+  "password_confirmation": "miPasswordSeguro123"
 }
 ```
 
@@ -47,7 +51,7 @@ Content-Type: application/json
 | `telefono` | `string` | **Sí** | Teléfono único |
 | `password` | `string` | **Sí** | Mínimo 12 caracteres |
 | `password_confirmation` | `string` | **Sí** | Debe coincidir con `password` |
-| `tenant_id` | `integer` | No | ID del tenant (existe) |
+| `tenant_id` | `integer` | No | ID del tenant. Si no se envía, se resuelve del token de autenticación |
 
 **Validations:**
 
@@ -57,7 +61,7 @@ email: required|string|email|unique:clientes,email
 telefono: required|string|unique:clientes,telefono
 password: required|string|min:12
 password_confirmation: required|string|same:password
-tenant_id: nullable|exists:tenants,id
+tenant_id: nullable|exists:business_instances,id
 ```
 
 **Response `201 Created`:**

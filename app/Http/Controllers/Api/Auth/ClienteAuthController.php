@@ -28,13 +28,30 @@ class ClienteAuthController extends Controller
             'tenant_id'      => 'nullable|exists:business_instances,id',
         ]);
 
-        if (empty($validated['tenant_id'])) {
+        $tenantId = $validated['tenant_id'] ?? null;
+
+        if (!$tenantId) {
+            $authUser = $request->user();
+            if ($authUser) {
+                $tenantId = $authUser->business_instance_id ?? $authUser->tenant_id ?? null;
+            }
+            if (!$tenantId) {
+                $clientToken = $request->attributes->get('client_api_token');
+                if ($clientToken && $clientToken->cliente) {
+                    $tenantId = $clientToken->cliente->tenant_id;
+                }
+            }
+        }
+
+        if (!$tenantId) {
             $first = BusinessInstance::orderBy('id')->first();
             if (!$first) {
                 return response()->json(['message' => 'No hay instancias disponibles.'], 400);
             }
-            $validated['tenant_id'] = $first->id;
+            $tenantId = $first->id;
         }
+
+        $validated['tenant_id'] = $tenantId;
 
         $validated['tipo_cliente'] = 'consumo';
         $validated['tipo_documento'] = '1';
