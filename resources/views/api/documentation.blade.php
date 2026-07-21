@@ -794,7 +794,7 @@ body.dark-mode .endpoint-card:hover {
             <div class="endpoint-card" id="{{ $endpointId }}">
                 <div class="endpoint-card-header" onclick="toggleEndpoint(this)">
                     <span class="method-badge method-{{ $endpoint['method'] }}">{{ $endpoint['method'] }}</span>
-                    <span class="endpoint-path" title="Copiar endpoint" onclick="event.stopPropagation(); copyPath(this)" style="cursor:pointer;">{{ $endpoint['path'] }} <i class="bi bi-files"></i></span>
+                    <span class="endpoint-path" title="Copiar endpoint" onclick="event.stopPropagation(); copyPath(this)" style="cursor:pointer;" data-path="{{ $endpoint['path'] }}">{{ $endpoint['path'] }} <i class="bi bi-files"></i></span>
                     <span class="endpoint-action-title">{{ $endpoint['action_title'] ?: $endpoint['name'] }}</span>
                     <i class="bi bi-chevron-down endpoint-expand-icon"></i>
                 </div>
@@ -1079,23 +1079,49 @@ function toggleApiSidebar() {
 
 // ---- Copy endpoint path ----
 function copyPath(el) {
-    const path = el.textContent.trim();
-    navigator.clipboard.writeText(path).then(() => {
+    const path = el.getAttribute('data-path') || el.textContent.trim();
+    copyToClipboard(path, el);
+}
+
+// ---- General copy helper with fallback ----
+function copyToClipboard(text, el) {
+    const done = () => {
         const orig = el.innerHTML;
-        el.innerHTML = '<i class="bi bi-check-lg me-1"></i>' + path;
+        el.innerHTML = '<i class="bi bi-check-lg me-1"></i>' + text;
         el.style.color = 'var(--api-method-get)';
         setTimeout(() => {
             el.innerHTML = orig;
             el.style.color = '';
         }, 1500);
-    });
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    } else {
+        fallbackCopy(text, done);
+    }
+}
+
+function fallbackCopy(text, cb) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        if (cb) cb();
+    } catch (e) {}
+    document.body.removeChild(ta);
 }
 
 // ---- Copy code ----
 function copyCode(btn) {
     const pre = btn.closest('.code-block-wrapper').querySelector('pre');
     const text = pre.textContent;
-    navigator.clipboard.writeText(text).then(() => {
+    const done = () => {
         const orig = btn.innerHTML;
         btn.innerHTML = '<i class="bi bi-check-lg"></i> Copiado';
         btn.classList.add('copied');
@@ -1103,7 +1129,12 @@ function copyCode(btn) {
             btn.innerHTML = orig;
             btn.classList.remove('copied');
         }, 2000);
-    });
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    } else {
+        fallbackCopy(text, done);
+    }
 }
 
 // ---- Search / Filter ----
