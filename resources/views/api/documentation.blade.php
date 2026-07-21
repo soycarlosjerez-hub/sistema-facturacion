@@ -769,6 +769,9 @@ body.dark-mode .endpoint-card:hover {
                 <span class="api-base-url">
                     <i class="bi bi-link-45deg"></i> {{ request()->getScheme() }}://{{ request()->getHost() }}/api
                 </span>
+                <a href="{{ route('api.documentation.export') }}" class="btn btn-sm btn-outline-success rounded-pill ms-auto" title="Exportar documentación para IA">
+                    <i class="bi bi-download me-1"></i> Exportar
+                </a>
             </div>
             <h1>Documentación de la API</h1>
             <p>Referencia completa de todos los endpoints REST disponibles. Cada módulo incluye parámetros, ejemplos de solicitud y respuesta.</p>

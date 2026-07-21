@@ -409,4 +409,50 @@ class ApiDocumentationController extends Controller
 
         return $references;
     }
+
+    public function export()
+    {
+        $docsDir = base_path('docs/api');
+        $modulesDir = $docsDir . '/modules';
+        $lines = [];
+
+        $lines[] = '# API Documentation — Export';
+        $lines[] = '>';
+        $lines[] = '> Generado el ' . now()->format('Y-m-d H:i:s');
+        $lines[] = '>';
+        $lines[] = '> Total de módulos: ' . count(glob($modulesDir . '/*.md'));
+        $lines[] = '';
+        $lines[] = '---';
+        $lines[] = '';
+
+        foreach (['README.md', 'authentication.md', 'response-format.md'] as $baseFile) {
+            $path = $docsDir . '/' . $baseFile;
+            if (file_exists($path)) {
+                $lines[] = file_get_contents($path);
+                $lines[] = '';
+                $lines[] = '---';
+                $lines[] = '';
+            }
+        }
+
+        $files = collect(scandir($modulesDir))
+            ->filter(fn($f) => pathinfo($f, PATHINFO_EXTENSION) === 'md')
+            ->sort()
+            ->values();
+
+        foreach ($files as $filename) {
+            $lines[] = file_get_contents($modulesDir . '/' . $filename);
+            $lines[] = '';
+            $lines[] = '---';
+            $lines[] = '';
+        }
+
+        $content = implode("\n", $lines);
+
+        return response()->streamDownload(function () use ($content) {
+            echo $content;
+        }, 'api-documentation-' . now()->format('Y-m-d') . '.md', [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
+        ]);
+    }
 }

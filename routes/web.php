@@ -626,6 +626,7 @@ Route::middleware(['auth', 'role:admin|owner'])->group(function () {
 
 // API Documentation
 Route::middleware('auth')->get('/docs/api', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'index'])->name('api.documentation');
+Route::middleware('auth')->get('/docs/api/export', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'export'])->name('api.documentation.export');
 
 // Owner (Dueño del Sistema)
 Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
