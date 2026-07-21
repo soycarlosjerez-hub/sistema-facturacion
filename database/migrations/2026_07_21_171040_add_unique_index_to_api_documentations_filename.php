@@ -10,8 +10,14 @@ return new class extends Migration
     {
         Schema::table('api_documentations', function (Blueprint $table) {
             $table->string('filename', 191)->change();
-            $table->unique('filename');
         });
+
+        $indexes = DB::select("SHOW INDEX FROM api_documentations WHERE Key_name = 'api_documentations_filename_unique'");
+        if (empty($indexes)) {
+            Schema::table('api_documentations', function (Blueprint $table) {
+                $table->unique('filename');
+            });
+        }
     }
 
     public function down(): void
