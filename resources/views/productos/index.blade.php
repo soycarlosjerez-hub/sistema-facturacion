@@ -432,7 +432,7 @@ $(function() {
     const productos = @json($productos);
     const csrfToken = '{{ csrf_token() }}';
     const canEdit = {{ auth()->user()->can('productos.edit') ? 'true' : 'false' }};
-    const canToggle = {{ auth()->user()->can('productos.toggle') ? 'true' : 'false' }};
+    const canToggle = {{ auth()->user()->can('productos.edit') ? 'true' : 'false' }};
     const canDelete = {{ auth()->user()->can('productos.delete') ? 'true' : 'false' }};
 
     const table = $('#productos-table').DataTable({
