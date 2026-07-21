@@ -194,7 +194,7 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                         @if($ecf->estado === 'aprobado' && $ecf->tipo_ecf !== 'E33')
                             <form action="{{ route('ecf.nota-debito', $ecf) }}" method="POST">
                                 @csrf
-                                <button class="btn btn-outline-warning w-100 rounded-pill" onclick="return confirm('¿Generar Nota de Débito (E33) para corregir al alza este comprobante?')">
+                                <button class="btn btn-outline-warning w-100 rounded-pill" onclick="confirmAction({title:'Nota de Débito E33', text:'¿Generar Nota de Débito (E33) para corregir al alza este comprobante?', icon:'warning', color:'#f59e0b', confirmText:'Generar E33', onSubmit:function(){ this.closest('form').submit(); }})">
                                     <i class="bi bi-file-earmark-plus me-1"></i>Nota de Débito E33
                                 </button>
                             </form>

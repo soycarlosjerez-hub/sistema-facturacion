@@ -63,7 +63,7 @@ class ReporteService
 
     public function ventas(string $desde, string $hasta): array
     {
-        $ventas = Venta::with('cliente:id,nombre,rnc_cedula', 'usuario:id,name', 'caja:id,nombre')
+        $ventas = Venta::with('cliente:id,nombre,rnc_cedula', 'usuario:id,name', 'caja:id,nombre', 'pagos')
             ->when($this->sucursalId(), fn($q) => $q->where('sucursal_id', $this->sucursalId()))
             ->whereDate('created_at', '>=', $desde)
             ->whereDate('created_at', '<=', $hasta)
@@ -82,7 +82,7 @@ class ReporteService
                 'total'           => $grupo->sum('total'),
                 'subtotal'        => $grupo->sum('subtotal'),
                 'itbis'           => $grupo->sum('impuestos'),
-                'efectivo'        => $grupo->sum('total'),
+                'efectivo'        => $grupo->sum(fn($v) => $v->pagos->where('metodo_pago', 'efectivo')->sum('monto')),
                 'cajas_usadas'    => $cajasUsadas,
                 'cajas_count'     => $cajasUsadas->count(),
             ];
@@ -96,7 +96,7 @@ class ReporteService
             'hasta'         => $hasta,
             'totalGeneral'  => $ventas->sum('total'),
             'totalItbis'    => $ventas->sum('impuestos'),
-            'totalEfectivo' => $ventas->sum('total'),
+            'totalEfectivo' => $ventas->sum(fn($v) => $v->pagos->where('metodo_pago', 'efectivo')->sum('monto')),
             'cantidad'      => $ventas->count(),
             'ventasPorCajero' => $ventasPorCajero,
             'totalCajas'    => $totalCajas,

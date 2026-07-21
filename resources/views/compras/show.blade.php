@@ -65,7 +65,7 @@ body.dark-mode .detalles-table tbody td {
                 @if($compra->puede_generar_ecf)
                 <form action="{{ route('compras.generar-ecf', $compra) }}" method="POST" class="d-inline">
                     @csrf
-                    <button class="btn btn-warning rounded-pill px-4 fw-bold" onclick="return confirm('¿Generar e-CF E41 para esta compra?')">
+                    <button class="btn btn-warning rounded-pill px-4 fw-bold" onclick="confirmAction({title:'Generar e-CF E41', text:'¿Generar Nota de Compra (E41) para esta compra?', icon:'info', color:'#06b6d4', confirmText:'Generar E41', onSubmit:function(){ this.closest('form').submit(); }})">
                         <i class="bi bi-shield-check me-1"></i>Generar e-CF E41
                     </button>
                 </form>

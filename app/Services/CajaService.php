@@ -36,12 +36,23 @@ class CajaService
             'inactivas' => $cajas->where('activo', false)->count(),
         ];
 
-        $cajasConStats = $cajas->map(function ($caja) {
-            $ultimaSesion = SesionCaja::where('caja_id', $caja->id)
-                ->latest('fecha_apertura')->first();
-            $caja->ultima_sesion = $ultimaSesion;
-            $caja->total_sesiones = SesionCaja::where('caja_id', $caja->id)->count();
-            $caja->ventas_historico = Venta::where('caja_id', $caja->id)->sum('total');
+        // Bulk load session counts and ventas historico to eliminate N+1
+        $cajaIds = $cajas->pluck('id');
+        $sesionesPorCaja = SesionCaja::whereIn('caja_id', $cajaIds)
+            ->orderBy('fecha_apertura', 'desc')
+            ->get()
+            ->groupBy('caja_id');
+        $ventasPorCaja = Venta::selectRaw('caja_id, SUM(total) as total')
+            ->whereIn('caja_id', $cajaIds)
+            ->groupBy('caja_id')
+            ->pluck('total', 'caja_id');
+
+        $cajasConStats = $cajas->map(function ($caja) use ($sesionesPorCaja, $ventasPorCaja) {
+            $sesiones = $sesionesPorCaja->get($caja->id, collect());
+            $caja->setRelation('sesiones', $sesiones);
+            $caja->ultima_sesion = $sesiones->first();
+            $caja->total_sesiones = $sesiones->count();
+            $caja->ventas_historico = (float) ($ventasPorCaja[$caja->id] ?? 0);
             return $caja;
         });
 
@@ -195,7 +206,9 @@ class CajaService
         $cobrosEfectivo = (float) ($data['cobros_efectivo'] ?? 0);
         $cobrosTarjeta = (float) ($data['cobros_tarjeta'] ?? 0);
         $cobrosTransferencia = (float) ($data['cobros_transferencia'] ?? 0);
-        $totalEsperado = (float) ($data['total_esperado'] ?? 0);
+
+        // Server-side calculation — prevents client manipulation via hidden field
+        $totalEsperado = $sesion->monto_inicial + $cobrosEfectivo;
         $descuadre = $montoDeclarado - $totalEsperado;
 
         $sesion->update([

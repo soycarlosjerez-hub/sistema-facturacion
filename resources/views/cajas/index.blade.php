@@ -420,9 +420,9 @@
     <div class="row g-4">
         @foreach($cajasConStats as $caja)
             @php
-                $sesionActiva = $caja->sesionActiva();
+                $sesionActiva = $caja->sesiones->where('estado','abierta')->first();
                 $isMySession = $sesionActiva && $sesionActiva->user_id == auth()->id();
-                $esAdmin = auth()->user()->role === 'admin' || auth()->user()->hasRole('admin') || auth()->user()->hasRole('admin-business') || auth()->user()->hasRole('root');
+                $esAdmin = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root']);
                 $estadoClass = !$caja->activo ? 'inactiva' : $caja->estado;
                 $headerGradient = match($estadoClass) {
                     'abierta' => 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -845,7 +845,7 @@
     </div>
 </div>
 
-@if(auth()->user()->role === 'admin')
+@if(in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root']))
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modalQuickEdit');

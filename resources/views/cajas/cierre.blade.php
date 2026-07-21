@@ -69,7 +69,6 @@
                                     <div class="p-2 bg-success bg-opacity-10 rounded-3 d-flex justify-content-between align-items-center">
                                         <span class="fw-bold text-success small">EFECTIVO ESPERADO EN CAJA:</span>
                                         <span class="fs-5 fw-bold text-success">RD${{ number_format($totalEsperado, 2) }}</span>
-                                        <input type="hidden" name="total_esperado" id="total-esperado" value="{{ $totalEsperado }}">
                                     </div>
                                 </div>
                             </div>
@@ -82,7 +81,7 @@
                                         <label class="form-label fw-bold text-muted small">Efectivo Físico Contado</label>
                                         <div class="input-group input-group-lg">
                                             <span class="input-group-text bg-light border-0">RD$</span>
-                                            <input type="number" name="monto_declarado" id="monto-declarado" class="form-control fw-bold border-0 bg-light" placeholder="0.00" step="0.01" required>
+                                            <input type="number" name="monto_declarado" id="monto-declarado" class="form-control fw-bold border-0 bg-light" value="{{ number_format($totalEsperado, 2) }}" step="0.01" required>
                                         </div>
                                         <small class="text-muted d-block mt-1">Cuenta todo el dinero en la gaveta, incluyendo el fondo inicial.</small>
                                     </div>
@@ -107,7 +106,7 @@
                                 </a>
                             </div>
                             <div class="col-6">
-                                <button type="submit" class="btn btn-warning w-100 rounded-pill py-3 fw-bold shadow-sm" onclick="return confirm('¿Estás seguro de que deseas cerrar la caja? Esta acción no se puede deshacer.')">
+                                <button type="button" class="btn btn-warning w-100 rounded-pill py-3 fw-bold shadow-sm" onclick="confirmAction({title:'Cerrar Caja', text:'¿Estás seguro de que deseas cerrar la caja? Esta acción no se puede deshacer.', icon:'warning', color:'#f59e0b', confirmText:'Sí, cerrar caja', onSubmit:function(){ this.closest('form').submit(); }})">
                                     <i class="bi bi-lock-fill me-1"></i>PROCESAR CIERRE
                                 </button>
                             </div>
@@ -118,8 +117,9 @@
 </div>
 
 <script>
+    const totalEsperadoJs = {{ $totalEsperado }};
     document.getElementById('monto-declarado').addEventListener('input', function() {
-        const esperado = parseFloat(document.getElementById('total-esperado').value) || 0;
+        const esperado = totalEsperadoJs || 0;
         const declarado = parseFloat(this.value) || 0;
         const diferencia = declarado - esperado;
         

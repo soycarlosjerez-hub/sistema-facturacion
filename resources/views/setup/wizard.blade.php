@@ -93,7 +93,7 @@ body.dark-mode .final-checklist .check-item.done { background: #052e16; }
                     <hr class="my-4">
                     <div class="text-center">
                         <a href="{{ route('setup.restart') }}" class="text-muted small"
-                           onclick="return confirm('¿Reiniciar la configuración inicial? Se marcarán como pendientes los pasos incompletos.')">
+                           onclick="confirmAction({title:'Reiniciar Asistente', text:'¿Reiniciar la configuración inicial? Se marcarán como pendientes los pasos incompletos.', icon:'warning', color:'#f59e0b', confirmText:'Reiniciar', onSubmit:function(){ var f=document.createElement('form');f.method='POST';f.action=this.getAttribute('href');f.innerHTML='@csrf';document.body.appendChild(f);f.submit(); }})">
                             <i class="bi bi-arrow-counterclockwise me-1"></i> Reinizar configuración
                         </a>
                     </div>

@@ -45,7 +45,7 @@
                 </a>
                 <form method="POST" action="{{ route('backups.store') }}" style="display:inline;">
                     @csrf
-                    <button type="submit" class="btn btn-light text-success rounded-pill px-4 fw-bold shadow-sm" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);" onclick="return confirm('¿Iniciar backup ahora?')">
+                    <button type="button" class="btn btn-light text-success rounded-pill px-4 fw-bold shadow-sm" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);" onclick="confirmAction({title:'Backup', text:'¿Iniciar backup ahora?', icon:'info', color:'#3b82f6', confirmText:'Iniciar Backup', onSubmit:function(){ this.closest('form').submit(); }})">
                         <i class="bi bi-shield-check me-1"></i> Crear Backup
                     </button>
                 </form>

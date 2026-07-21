@@ -224,7 +224,7 @@ body.dark-mode .devoluciones-show-table tbody td {
         @if($devolucion->estado === 'borrador')
             <form action="{{ route('devoluciones.confirmar', $devolucion) }}" method="POST" class="d-inline">
                 @csrf
-                <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="return confirm('¿Confirmar devolución? El stock será reintegrado.')">
+                <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="confirmAction({title:'Confirmar Devolución', text:'¿Confirmar devolución? El stock será reintegrado al inventario.', icon:'info', color:'#3b82f6', confirmText:'Confirmar', onSubmit:function(){ this.closest('form').submit(); }})">
                     <i class="bi bi-check-lg me-2"></i>Confirmar y Reintegrar Stock
                 </button>
             </form>

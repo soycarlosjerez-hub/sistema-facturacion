@@ -143,7 +143,7 @@
                                             <form action="{{ route('tattoo.citas.cambiar-estado', $c) }}" method="POST" class="d-inline">
                                                 @csrf @method('PATCH')
                                                 <input type="hidden" name="estado" value="cancelada">
-                                                <button class="btn btn-sm btn-outline-danger rounded-pill ms-1" title="Cancelar" onclick="return confirm('¿Cancelar esta cita?')"><i class="bi bi-x"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger rounded-pill ms-1" title="Cancelar" onclick="confirmAction({title:'Cancelar Cita', text:'¿Cancelar esta cita?', icon:'warning', color:'#f59e0b', confirmText:'Cancelar', onSubmit:function(){ this.closest('form').submit(); }})"><i class="bi bi-x"></i></button>
                                             </form>
                                         @endif
                                         @if(in_array($c->estado, ['pendiente','confirmada', 'en_progreso']) && $c->saldo_pendiente > 0)

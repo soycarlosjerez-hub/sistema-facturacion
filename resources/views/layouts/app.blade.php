@@ -748,6 +748,74 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         }
 
         document.addEventListener('DOMContentLoaded', function () {});
+
+        /**
+         * Global confirmation dialog helper using SweetAlert2
+         * Usage: confirmAction({ title, text, icon, color, confirmText, cancelText, form, url, onSubmit, callback })
+         */
+        function confirmAction(options) {
+            var opts = Object.assign({}, {
+                title: '\u00bfEst\u00e1 seguro?',
+                text: '',
+                icon: 'warning',
+                color: '#dc2626',
+                confirmText: 'S\u00ed, continuar',
+                cancelText: 'Cancelar',
+                form: null,
+                url: null,
+                onSubmit: null,
+                callback: null
+            }, options);
+            
+            if (typeof Swal === 'undefined') {
+                return confirm(opts.text || opts.title);
+            }
+            
+            Swal.fire({
+                title: opts.title,
+                text: opts.text,
+                icon: opts.icon,
+                showCancelButton: true,
+                confirmButtonColor: opts.color,
+                cancelButtonColor: '#64748b',
+                confirmButtonText: opts.confirmText,
+                cancelButtonText: opts.cancelText,
+                reverseButtons: true,
+                allowOutsideClick: function() { return !Swal.isLoading(); }
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    if (opts.callback) opts.callback();
+                    else if (opts.onSubmit) opts.onSubmit();
+                    else if (opts.form) opts.form.submit();
+                    else if (opts.url) window.location.href = opts.url;
+                }
+            });
+        }
+
+        /**
+         * Shortcut for delete confirmations
+         * Usage: confirmDelete(url, id)
+         */
+        function confirmDelete(url, id) {
+            return confirmAction({
+                title: '\u00bfEliminar registro?',
+                text: 'Esta acci\u00f3n no se puede deshacer.',
+                icon: 'error',
+                color: '#dc2626',
+                url: url + '/' + (id || ''),
+                confirmText: 'S\u00ed, eliminar'
+            });
+        }
+
+        /**
+         * Submit a form via confirmation dialog
+         * Usage: confirmSubmit('#myForm', { title: '...', text: '...' })
+         */
+        function confirmSubmit(formSelector, options) {
+            return confirmAction(Object.assign({}, options, {
+                form: document.querySelector(formSelector)
+            }));
+        }
     </script>
     <script src="{{ asset('js/a11y.js') }}"></script>
     <script>

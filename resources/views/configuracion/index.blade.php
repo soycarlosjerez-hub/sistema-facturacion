@@ -170,7 +170,7 @@ body.dark-mode .premium-card .form-select:focus {
                             </div>
                             <div class="mt-2 text-center">
                                 <a href="{{ route('setup.restart') }}" class="text-muted small"
-                                   onclick="return confirm('¿Reiniciar la configuración?')">
+                                   onclick="confirmAction({title:'Reiniciar Configuración', text:'¿Reiniciar la configuración? Se perderán todos los ajustes personalizados.', icon:'warning', color:'#f59e0b', confirmText:'Reiniciar', onSubmit:function(){ var f=document.createElement('form');f.method='POST';f.action=this.getAttribute('href');f.innerHTML='@csrf';document.body.appendChild(f);f.submit(); }})">
                                     <i class="bi bi-arrow-counterclockwise me-1"></i> Reiniciar
                                 </a>
                             </div>
