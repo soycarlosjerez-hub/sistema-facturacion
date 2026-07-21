@@ -75,15 +75,15 @@ class ClienteAuthController extends Controller
     public function login(Request $request): JsonResponse
     {
         $request->validate([
-            'telefono' => 'required|string',
+            'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
 
-        $cliente = Cliente::where('telefono', $request->telefono)->first();
+        $cliente = Cliente::where('email', $request->email)->first();
 
         if (!$cliente || !Hash::check($request->password, $cliente->password)) {
             throw ValidationException::withMessages([
-                'telefono' => ['Credenciales incorrectas.'],
+                'email' => ['Credenciales incorrectas.'],
             ]);
         }
 

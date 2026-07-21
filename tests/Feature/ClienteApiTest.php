@@ -170,7 +170,7 @@ class ClienteApiTest extends TestCase
     public function test_login_requires_api_key(): void
     {
         $response = $this->postJson('/api/auth/cliente/login', [
-            'telefono' => '8095550001', 'password' => 'x',
+            'email' => 'login@test.com', 'password' => 'x',
         ]);
         $response->assertStatus(401);
     }
@@ -186,7 +186,7 @@ class ClienteApiTest extends TestCase
 
         $response = $this->withHeaders($this->apiKeyHeaders())
             ->postJson('/api/auth/cliente/login', [
-                'telefono' => '8095550001', 'password' => 'CorrectPass123!',
+                'email' => 'login@test.com', 'password' => 'CorrectPass123!',
             ]);
 
         $response->assertStatus(200)
@@ -206,7 +206,7 @@ class ClienteApiTest extends TestCase
 
         $response = $this->withHeaders($this->apiKeyHeaders())
             ->postJson('/api/auth/cliente/login', [
-                'telefono' => '8095550002', 'password' => 'WrongPass123!',
+                'email' => 'wrong@test.com', 'password' => 'WrongPass123!',
             ]);
         $response->assertStatus(422);
     }
@@ -222,7 +222,7 @@ class ClienteApiTest extends TestCase
 
         $response = $this->withHeaders($this->apiKeyHeaders())
             ->postJson('/api/auth/cliente/login', [
-                'telefono' => '8095550003', 'password' => 'Pass1234!',
+                'email' => 'noapi@test.com', 'password' => 'Pass1234!',
             ]);
         $response->assertStatus(403);
     }
@@ -238,7 +238,7 @@ class ClienteApiTest extends TestCase
 
         $response = $this->withHeaders($this->apiKeyHeaders())
             ->postJson('/api/auth/cliente/login', [
-                'telefono' => '8095550004', 'password' => 'Pass1234!',
+                'email' => 'unver@test.com', 'password' => 'Pass1234!',
             ]);
         $response->assertStatus(403);
     }

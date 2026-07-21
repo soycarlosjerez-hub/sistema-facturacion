@@ -95,7 +95,7 @@ tenant_id: nullable|exists:business_instances,id
 
 **`POST /api/auth/cliente/login`**
 
-Autentica un cliente usando teléfono y contraseña. Valida `acceso_api` y estado de verificación de email.
+Autentica un cliente usando email y contraseña. Valida `acceso_api` y estado de verificación de email.
 
 **Headers:**
 
@@ -108,7 +108,7 @@ Content-Type: application/json
 
 ```json
 {
-  "telefono": "+1-809-555-0100",
+  "email": "ana@example.com",
   "password": "miPasswordSeguro123"
 }
 ```
@@ -117,7 +117,7 @@ Content-Type: application/json
 
 | Campo | Tipo | Requerido | Descripción |
 |-------|------|-----------|-------------|
-| `telefono` | `string` | **Sí** | Teléfono registrado |
+| `email` | `string` | **Sí** | Email registrado |
 | `password` | `string` | **Sí** | Contraseña de la cuenta |
 
 **Response `200 OK`:**
