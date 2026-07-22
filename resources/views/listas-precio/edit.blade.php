@@ -11,13 +11,16 @@
     }
     .premium-header::before {
         background:
-            radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
+            radial-gradient(circle at 30% 44%, rgba(255,255,255,.12) 0%, transparent 50%),
             radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
     }
     .premium-card .form-check-input:checked {
         background-color: #8b5cf6;
         border-color: #8b5cf6;
     }
+    .margin-positive { color: #198754; font-weight: 600; }
+    .margin-negative { color: #dc3545; font-weight: 600; }
+    .margin-zero { color: #6c757d; font-weight: 600; }
 </style>
 @endpush
 
@@ -60,13 +63,15 @@
                                 <tr class="text-muted text-uppercase small">
                                     <th class="ps-4">C&oacute;digo</th>
                                     <th>Producto</th>
+                                    <th class="text-end">Costo</th>
+                                    <th class="text-end">Margen %</th>
                                     <th class="text-end">Precio Actual</th>
                                     <th class="text-end pe-4">Precio Lista</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="4" class="text-center py-3">
+                                    <td colspan="6" class="text-center py-3">
                                         <div class="input-group mb-3" style="max-width:400px;margin:0 auto;">
                                             <input type="text" id="filtroProducto" class="form-control" placeholder="Filtrar productos...">
                                             <button class="btn btn-outline-primary" id="btnAgregarProducto" type="button"><i class="bi bi-plus-lg"></i> Agregar</button>
@@ -74,10 +79,27 @@
                                     </td>
                                 </tr>
                                 @foreach($productos as $p)
-                                @php $item = $listaPrecio->items->firstWhere('producto_id', $p->id); @endphp
+                                @php
+                                    $item = $listaPrecio->items->firstWhere('producto_id', $p->id);
+                                    $costo = (float) ($p->precio_compra ?? 0);
+                                    $precioLista = $item ? (float) $item->precio : 0;
+                                    $margen = $costo > 0 && $precioLista > 0
+                                        ? ((($precioLista - $costo) / $costo) * 100)
+                                        : 0;
+                                    $marginClass = $margen > 0 ? 'margin-positive' : ($margen < 0 ? 'margin-negative' : 'margin-zero');
+                                    $marginSign = $margen > 0 ? '+' : '';
+                                @endphp
                                 <tr data-producto-id="{{ $p->id }}" class="{{ $item ? '' : 'd-none producto-no-lista' }}">
-                                    <td class="ps-4"><span class="badge bg-light text-muted rounded-pill">{{ $p->codigo_barras ?? '—' }}</span></td>
+                                    <td class="ps-4"><span class="badge bg-light text-muted rounded-pill">{{ $p->codigo_barras ?? '&mdash;' }}</span></td>
                                     <td class="fw-bold small">{{ $p->nombre }}</td>
+                                    <td class="text-end text-muted">RD$ {{ number_format($costo, 2) }}</td>
+                                    <td class="text-end {{ $marginClass }}">
+                                        @if($costo > 0 && $precioLista > 0)
+                                            {{ $marginSign }}{{ number_format($margen, 1) }}%
+                                        @else
+                                            &mdash;
+                                        @endif
+                                    </td>
                                     <td class="text-end text-muted">RD$ {{ number_format($p->precio, 2) }}</td>
                                     <td class="text-end pe-4">
                                         <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end precio-lista"
@@ -147,6 +169,12 @@
                     <div class="card-accent purple"></div>
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2" style="color: #8b5cf6;"></i>Acciones R&aacute;pidas</h6>
+                        <a href="{{ route('listas-precio.impacto', $listaPrecio) }}" class="btn btn-outline-warning w-100 rounded-pill btn-sm mb-2">
+                            <i class="bi bi-graph-up me-1"></i>Impacto de Precios
+                        </a>
+                        <a href="{{ route('listas-precio.logs', $listaPrecio) }}" class="btn btn-outline-secondary w-100 rounded-pill btn-sm mb-2">
+                            <i class="bi bi-clock-history me-1"></i>Historial de Cambios
+                        </a>
                         <form action="{{ route('listas-precio.duplicar', $listaPrecio) }}" method="POST" class="mb-2">
                             @csrf
                             <button class="btn btn-outline-info w-100 rounded-pill btn-sm">

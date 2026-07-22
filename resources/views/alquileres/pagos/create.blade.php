@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    <form action="{{ route('alquileres.pagos.store') }}" method="POST">
+    <form action="{{ route('alquileres.pagos.store') }}" method="POST" id="instanceForm">
         @csrf
         <div class="row g-4">
             <div class="col-lg-8">
@@ -111,10 +111,22 @@
                 </div>
             </div>
         </div>
-        <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background:linear-gradient(135deg,#f43f5e,#e11d48);border:0;"><i class="bi bi-save me-1"></i>Registrar Pago</button>
-            <a href="{{ route('alquileres.pagos.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-        </div>
     </form>
+    <div style="height: 80px;"></div>
 </div>
 @endsection
+
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#f43f5e;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Registrando pago</span>
+        </div>
+        <div>
+            <a href="{{ route('alquileres.pagos.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Registrar Pago
+            </button>
+        </div>
+    </div>
+</div>

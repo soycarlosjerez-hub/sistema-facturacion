@@ -16,11 +16,11 @@
                     <i class="bi bi-cash-coin"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">Registrar Pago</h2>
-                    <p class="mb-0 opacity-75">{{ $instance->nombre }} &middot; Costo mensual: {{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</p>
+                    <h4 class="fw-bold mb-1 text-white">Registrar Pago</h4>
+                    <small class="text-white opacity-75"><i class="bi bi-plus-circle me-1"></i>{{ $instance->nombre }} &middot; Costo mensual: {{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</small>
                 </div>
             </div>
-            <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+            <a href="{{ route('owner.instances.show', $instance) }}" class="btn rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                 <i class="bi bi-arrow-left me-2"></i>Volver
             </a>
         </div>
@@ -31,7 +31,7 @@
             <div class="premium-card">
                 <div class="card-accent green"></div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('owner.instances.pagos.store', $instance) }}">
+                    <form method="POST" action="{{ route('owner.instances.pagos.store', $instance) }}" id="instanceForm">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Mes a Pagar <span class="text-danger">*</span></label>
@@ -65,18 +65,27 @@
                             <label class="form-label fw-bold small">Notas</label>
                             <textarea name="notas" class="form-control rounded-4 @error('notas') is-invalid @enderror" rows="2" placeholder="Notas opcionales...">{{ old('notas') }}</textarea>
                         </div>
-                        <hr>
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
-                                <i class="bi bi-check-lg me-2"></i>Registrar Pago
-                            </button>
-                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    <div style="height: 80px;"></div>
 </div>
+</div>
+
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#10b981;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Registrando Pago</span>
+        </div>
+        <div>
+            <a href="{{ route('owner.instances.show', $instance) }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar
+            </button>
+        </div>
+    </div>
 </div>
 @endsection

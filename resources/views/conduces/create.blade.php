@@ -3,12 +3,6 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-body.dark-mode .sticky-save-bar {
-    background: #0f172a;
-    border-top-color: #fbbf24;
-}
-</style>
 @endpush
 
 @section('content')
@@ -21,17 +15,20 @@ body.dark-mode .sticky-save-bar {
                 <div class="bubble"></div>
                 <div class="bubble"></div>
                 <div class="bubble"></div>
-                <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2">
+                <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
                     <div class="d-flex align-items-center gap-3">
                         <div class="premium-avatar-circle">
                             <i class="bi bi-truck"></i>
                         </div>
                         <div>
-                            <h2 class="fw-bold mb-1">Nuevo Conduce</h2>
-                            <p class="mb-0 opacity-75">Nota de entrega de productos al cliente</p>
+                            <h4 class="fw-bold mb-1 text-white">Nuevo Conduce</h4>
+                            <small class="text-white opacity-75">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                Nota de entrega de productos al cliente
+                            </small>
                         </div>
                     </div>
-                    <a href="{{ route('conduces.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                    <a href="{{ route('conduces.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                         <i class="bi bi-arrow-left me-2"></i>Volver
                     </a>
                 </div>
@@ -74,15 +71,16 @@ body.dark-mode .sticky-save-bar {
     </div>
 </div>
 
-<div class="sticky-save-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small d-none d-md-inline">
-            <i class="bi bi-info-circle me-1"></i> Creando nuevo conduce
-        </span>
-        <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('conduces.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="formConduce" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none;">
-                <i class="bi bi-save me-2"></i>Guardar Conduce
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nuevo conduce</span>
+        </div>
+        <div>
+            <a href="{{ route('conduces.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="formConduce" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Conduce
             </button>
         </div>
     </div>

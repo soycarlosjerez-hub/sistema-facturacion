@@ -10,19 +10,24 @@
 
 @section('content')
 <div class="container-fluid px-4 premium-page">
-    <div class="premium-header">
-        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center">
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
             <div class="d-flex align-items-center gap-3">
                 <div class="premium-avatar-circle">
                     <i class="bi bi-printer"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold mb-1">Nueva Impresora</h3>
-                    <p class="mb-0 opacity-75">Registra una nueva impresora para facturación</p>
+                    <h4 class="fw-bold mb-1 text-white">Nueva Impresora</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Registra una nueva impresora para facturación
+                    </small>
                 </div>
             </div>
-            <a href="{{ route('impresoras.index') }}" class="btn btn-light rounded-pill px-3">
+            <a href="{{ route('impresoras.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                 <i class="bi bi-arrow-left me-1"></i> Volver
             </a>
         </div>
@@ -139,15 +144,14 @@
 </div>
 <div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
-        <div class="d-none d-md-flex align-items-center gap-2">
-            <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">
-                <i class="bi bi-hourglass-split me-1"></i> Creando nueva impresora
-            </span>
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#3b82f6;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva impresora</span>
         </div>
-        <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('impresoras.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="impresoraForm" class="btn btn-save rounded-pill px-4">
-                <i class="bi bi-check-lg me-1"></i> Guardar Impresora
+        <div>
+            <a href="{{ route('impresoras.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="impresoraForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Impresora
             </button>
         </div>
     </div>

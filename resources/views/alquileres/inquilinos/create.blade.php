@@ -28,7 +28,7 @@
         </div>
     </div>
 
-    <form action="{{ route('alquileres.inquilinos.store') }}" method="POST">
+    <form action="{{ route('alquileres.inquilinos.store') }}" method="POST" id="instanceForm">
         @csrf
         <div class="row g-4">
             <div class="col-lg-8">
@@ -48,14 +48,14 @@
                                 <div class="form-floating-modern">
                                     <i class="bi bi-credit-card form-icon"></i>
                                     <input type="text" name="cedula" id="cedula" class="form-control" value="{{ old('cedula') }}" placeholder=" ">
-                                    <label class="form-label-float" for="cedula">Cédula</label>
+                                    <label class="form-label-float" for="cedula">Cï¿½dula</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating-modern">
                                     <i class="bi bi-telephone form-icon"></i>
                                     <input type="text" name="telefono" id="telefono" class="form-control" value="{{ old('telefono') }}" placeholder=" ">
-                                    <label class="form-label-float" for="telefono">Teléfono</label>
+                                    <label class="form-label-float" for="telefono">Telï¿½fono</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -69,7 +69,7 @@
                                 <div class="form-floating-modern">
                                     <i class="bi bi-geo-alt form-icon"></i>
                                     <input type="text" name="direccion" id="direccion" class="form-control" value="{{ old('direccion') }}" placeholder=" ">
-                                    <label class="form-label-float" for="direccion">Dirección</label>
+                                    <label class="form-label-float" for="direccion">Direcciï¿½n</label>
                                 </div>
                             </div>
                             <div class="col-12">
@@ -88,15 +88,27 @@
                     <div class="card-accent green"></div>
                     <div class="card-body p-4 text-center">
                         <i class="bi bi-person-circle" style="font-size:4rem;color:#10b981;"></i>
-                        <p class="text-muted small mt-2 mb-0">Los inquilinos pueden tener uno o más contratos de alquiler activos.</p>
+                        <p class="text-muted small mt-2 mb-0">Los inquilinos pueden tener uno o mï¿½s contratos de alquiler activos.</p>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background:linear-gradient(135deg,#10b981,#059669);border:0;"><i class="bi bi-save me-1"></i>Guardar Inquilino</button>
-            <a href="{{ route('alquileres.inquilinos.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-        </div>
     </form>
+    <div style="height: 80px;"></div>
 </div>
 @endsection
+
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#10b981;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nuevo inquilino</span>
+        </div>
+        <div>
+            <a href="{{ route('alquileres.inquilinos.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Inquilino
+            </button>
+        </div>
+    </div>
+</div>

@@ -12,7 +12,7 @@
     }
     .premium-header::before {
         background:
-            radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
+            radial-gradient(circle at 30% 44%, rgba(255,255,255,.12) 0%, transparent 50%),
             radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
     }
     .price-card {
@@ -39,6 +39,15 @@
         opacity: 0; transition: opacity 0.3s ease;
     }
     .price-card:hover::before { opacity: 1; }
+    .price-card.status-expired::before {
+        background: linear-gradient(to bottom, #dc3545, #e74c5a);
+    }
+    .price-card.status-warning::before {
+        background: linear-gradient(to bottom, #ffc107, #ffca2c);
+    }
+    .price-card.status-notstarted::before {
+        background: linear-gradient(to bottom, #0dcaf0, #3dd9f1);
+    }
     .icon-wrapper {
         width: 48px; height: 48px;
         display: flex; align-items: center; justify-content: center;
@@ -61,12 +70,64 @@
         transition: background-color 0.2s;
     }
     .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
+
+    /* Alert banners */
+    .alert-banner {
+        border-radius: 1rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+        animation: slideDown 0.4s ease-out;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .alert-banner-warning {
+        background: linear-gradient(135deg, rgba(255,193,7,0.12), rgba(255,193,7,0.05));
+        border-color: rgba(255,193,7,0.4) !important;
+    }
+    .alert-banner-danger {
+        background: linear-gradient(135deg, rgba(220,53,69,0.12), rgba(220,53,69,0.05));
+        border-color: rgba(220,53,69,0.4) !important;
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="premium-page">
     <div class="container-fluid px-4 py-3">
+
+        {{-- Alert Banner: Lists Expiring Soon --}}
+        @php
+            $porExpirar = $listas->filter(fn($l) => isset($l->status) && $l->status['class'] === 'warning');
+            $expiradas = $listas->filter(fn($l) => isset($l->status) && $l->status['class'] === 'danger');
+        @endphp
+
+        @if($porExpirar->isNotEmpty())
+        <div class="alert-banner alert-banner-warning alert alert-warning d-flex align-items-center gap-3 mb-4 p-3">
+            <div class="flex-shrink-0">
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong>¡Atención!</strong> Hay <strong>{{ $porExpirar->count() }}</strong> {{ Str::plural('lista de precios', $porExpirar->count()) }} por expirar en los próximos 7 días:
+                <span class="fw-semibold">{{ $porExpirar->pluck('nombre')->join(', ') }}</span>.
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+
+        @if($expiradas->isNotEmpty())
+        <div class="alert-banner alert-banner-danger alert alert-danger d-flex align-items-center gap-3 mb-4 p-3">
+            <div class="flex-shrink-0">
+                <i class="bi bi-x-octagon-fill fs-4"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong>Lista(s) expirada(s):</strong> {{ $expiradas->count() }} {{ Str::plural('lista', $expiradas->count()) }} ha expirado{{ $expiradas->count() > 1 ? 'n' : '' }}:
+                <span class="fw-semibold">{{ $expiradas->pluck('nombre')->join(', ') }}</span>.
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
 
         <div class="premium-header d-flex justify-content-between align-items-center">
             <div class="bubble"></div>
@@ -92,8 +153,19 @@
 
         <div class="row g-4">
             @forelse($listas as $lista)
+            @php
+                $statusClass = $lista->status['class'] ?? 'success';
+                $statusLabel = $lista->status['label'] ?? 'Vigente';
+                $statusIcon = $lista->status['icon'] ?? 'bi-check-circle';
+                $cardStatusClass = match($statusClass) {
+                    'danger' => 'status-expired',
+                    'warning' => 'status-warning',
+                    'info' => 'status-notstarted',
+                    default => '',
+                };
+            @endphp
             <div class="col-md-6 col-lg-4 col-xl-3">
-                <div class="price-card h-100 d-flex flex-column">
+                <div class="price-card {{ $cardStatusClass }} h-100 d-flex flex-column">
                     <div class="p-4 d-flex flex-column h-100">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="icon-wrapper">
@@ -107,6 +179,8 @@
                                     <li><a class="dropdown-item py-2" href="{{ route('listas-precio.show', $lista) }}"><i class="bi bi-eye text-info me-2"></i>Ver detalles</a></li>
                                     @can('listas-precio.edit')
                                     <li><a class="dropdown-item py-2" href="{{ route('listas-precio.edit', $lista) }}"><i class="bi bi-pencil text-primary me-2"></i>Editar lista</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ route('listas-precio.impacto', $lista) }}"><i class="bi bi-graph-up text-warning me-2"></i>Impacto de precios</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ route('listas-precio.logs', $lista) }}"><i class="bi bi-clock-history text-secondary me-2"></i>Historial de cambios</a></li>
                                     <li>
                                         <form action="{{ route('listas-precio.duplicar', $lista) }}" method="POST" class="d-inline">
                                             @csrf
@@ -117,7 +191,7 @@
                                     @can('listas-precio.delete')
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form action="{{ route('listas-precio.destroy', $lista) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar esta lista de precios? Los productos asociados volverán a su precio base.')">
+                                        <form action="{{ route('listas-precio.destroy', $lista) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar esta lista de precios? Se mantendrá por 30 días por seguridad.')">
                                             @csrf @method('DELETE')
                                             <button class="dropdown-item py-2 text-danger"><i class="bi bi-trash text-danger me-2"></i>Eliminar</button>
                                         </form>
@@ -130,11 +204,9 @@
                         <div class="mb-auto">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <h4 class="fw-bold text-dark mb-0">{{ $lista->nombre }}</h4>
-                                @if($lista->activa)
-                                    <span class="status-badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle-fill me-1"></i>Activa</span>
-                                @else
-                                    <span class="status-badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle-fill me-1"></i>Inactiva</span>
-                                @endif
+                                <span class="status-badge bg-{{ $statusClass }} bg-opacity-10 text-{{ $statusClass }}">
+                                    <i class="bi {{ $statusIcon }} me-1"></i>{{ $statusLabel }}
+                                </span>
                             </div>
                             <div class="mb-3">
                                 <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 fw-medium tracking-wider text-uppercase small">
@@ -150,7 +222,7 @@
                             <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
                                 <span class="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
                                     <i class="bi bi-box-seam" style="color: #8b5cf6;"></i>
-                                    <span class="fw-bold text-dark">{{ $lista->items_count ?? $lista->items()->count() }}</span> prod.
+                                    <span class="fw-bold text-dark">{{ $lista->items_count }}</span> prod.
                                 </span>
                                 @if($lista->vigencia_desde)
                                     <span class="d-flex align-items-center gap-1" title="Vigencia">

@@ -20,11 +20,11 @@
                     <i class="bi bi-person"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">Nuevo Usuario</h2>
-                    <p class="mb-0 opacity-75">{{ $instance->nombre }} &middot; {{ $instance->businessType?->nombre ?? 'Sin tipo' }}</p>
+                    <h4 class="fw-bold mb-1 text-white">Nuevo Usuario</h4>
+                    <small class="text-white opacity-75"><i class="bi bi-plus-circle me-1"></i>{{ $instance->nombre }} &middot; {{ $instance->businessType?->nombre ?? 'Sin tipo' }}</small>
                 </div>
             </div>
-            <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+            <a href="{{ route('owner.instances.show', $instance) }}" class="btn rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                 <i class="bi bi-arrow-left me-2"></i>Volver
             </a>
         </div>
@@ -35,7 +35,7 @@
             <div class="premium-card">
                 <div class="card-accent amber"></div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('owner.instances.users.store', $instance) }}">
+                    <form method="POST" action="{{ route('owner.instances.users.store', $instance) }}" id="instanceForm">
                         @csrf
 
                         <div class="alert alert-info rounded-4 border-0 bg-info bg-opacity-10 small" role="alert">
@@ -80,18 +80,27 @@
                         </div>
                         @endif
 
-                        <hr>
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4">Cancelar</a>
-                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
-                                <i class="bi bi-check-lg me-2"></i>Crear Usuario
-                            </button>
-                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    <div style="height: 80px;"></div>
 </div>
+</div>
+
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando Usuario</span>
+        </div>
+        <div>
+            <a href="{{ route('owner.instances.show', $instance) }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar
+            </button>
+        </div>
+    </div>
 </div>
 @endsection

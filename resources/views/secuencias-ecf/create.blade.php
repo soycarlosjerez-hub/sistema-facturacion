@@ -3,37 +3,31 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
-body.dark-mode .premium-sticky-bar { border-top-color: #f59e0b; }
-body.dark-mode .premium-sticky-bar .btn-save { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-sticky-bar .btn-save:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
-body.dark-mode .premium-card .form-control:focus,
-body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
-body.dark-mode .premium-card .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
-body.dark-mode .alert-info { background: rgba(59,130,246,.15); color: #93c5fd; }
-</style>
 @endpush
 
 @section('content')
 <div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-list-ol"></i>
+    <div class="premium-header mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-list-ol"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Nueva Secuencia e-CF</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Configure una nueva numeración autorizada por DGII
+                    </small>
+                </div>
             </div>
-            <div>
-                <h3 class="fw-bold mb-1">Nueva Secuencia e-CF</h3>
-                <p class="mb-0 opacity-75">Configure una nueva numeración autorizada por DGII</p>
-            </div>
+            <a href="{{ route('secuencias-ecf.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
         </div>
-        <a href="{{ route('secuencias-ecf.index') }}" class="btn btn-light rounded-pill text-dark fw-semibold btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     @if (session('error'))
@@ -121,15 +115,20 @@ body.dark-mode .alert-info { background: rgba(59,130,246,.15); color: #93c5fd; }
             </div>
         </form>
     </div>
+
+    <div style="height: 80px;"></div>
 </div>
 
-<div id="stickySaveBar" class="premium-sticky-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Creando nueva secuencia e-CF</span>
-        <div class="d-flex gap-2">
-            <a href="{{ route('secuencias-ecf.index') }}" class="btn-cancel rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="secuenciaEcfForm" class="btn-save rounded-pill px-4 shadow-sm">
-                <i class="bi bi-save me-1"></i> Guardar Secuencia
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva secuencia e-CF</span>
+        </div>
+        <div>
+            <a href="{{ route('secuencias-ecf.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="secuenciaEcfForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Secuencia
             </button>
         </div>
     </div>

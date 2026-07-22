@@ -6,48 +6,32 @@
 @include('partials.premium-ui')
 <style>
     .premium-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
-    }
-    .sticky-save-bar {
-        position: fixed;
-        bottom: 0;
-        left: var(--sidebar-width, 280px);
-        right: 0;
-        background: #fff;
-        border-top: 2px solid #f59e0b;
-        padding: 0.75rem 1.5rem;
-        z-index: 1050;
-        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-    }
-    .sticky-save-bar .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
-    }
-    body.dark-mode .sticky-save-bar {
-        background: #0f172a;
-        border-top-color: #f59e0b;
-    }
-    @media (max-width: 991.98px) {
-        .sticky-save-bar { left: 0; }
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 8px 32px rgba(245,158,11,.25);
     }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-            <div class="premium-header">
-                <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+<div class="container-fluid px-4 py-3 premium-page">
+            <div class="premium-header mb-4">
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-                            <i class="bi bi-cash-register fs-2 text-white"></i>
+                        <div class="premium-avatar-circle">
+                            <i class="bi bi-cash-register"></i>
                         </div>
                         <div>
-                            <h2 class="fw-bold mb-0 text-white">Nueva Caja</h2>
-                            <p class="text-white text-opacity-75 mb-0">Registra una nueva caja registradora en el sistema.</p>
+                            <h4 class="fw-bold mb-1 text-white">Nueva Caja</h4>
+                            <small class="text-white opacity-75">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                Registra una nueva caja registradora en el sistema
+                            </small>
                         </div>
                     </div>
-                    <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                    <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                         <i class="bi bi-arrow-left me-1"></i>Volver
                     </a>
                 </div>
@@ -69,45 +53,38 @@
 
             <form action="{{ route('cajas.store') }}" method="POST" id="instanceForm">
                 @csrf
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header bg-white border-bottom border-light p-4">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Información de la Caja</h5>
+                <div class="premium-card">
+                    <div class="card-accent amber"></div>
+                    <div class="premium-card-title">
+                        <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+                        Información de la Caja
                     </div>
                     <div class="card-body p-4 p-md-5">
                         <div class="row g-4">
                             <div class="col-md-7">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">
+                                <label class="form-label fw-semibold">
                                     Nombre <span class="text-danger">*</span>
                                 </label>
-                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-tag-fill text-primary"></i></span>
-                                    <input type="text" name="nombre" class="form-control border-start-0 @error('nombre') is-invalid @enderror" required placeholder="Ej. Caja 1, Caja Express, Mostrador 2" value="{{ old('nombre') }}">
-                                </div>
-                                @error('nombre')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" required placeholder="Ej. Caja 1, Caja Express, Mostrador 2" value="{{ old('nombre') }}">
+                                @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
 
                             <div class="col-md-5">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Código</label>
-                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-upc text-primary"></i></span>
-                                    <input type="text" name="codigo" class="form-control border-start-0 @error('codigo') is-invalid @enderror" placeholder="C01, C02..." value="{{ old('codigo', $nextCode) }}">
-                                </div>
+                                <label class="form-label fw-semibold">Código</label>
+                                <input type="text" name="codigo" class="form-control @error('codigo') is-invalid @enderror" placeholder="C01, C02..." value="{{ old('codigo', $nextCode) }}">
                                 <small class="text-muted">Identificador corto único.</small>
-                                @error('codigo')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                @error('codigo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Ubicación</label>
-                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-geo-alt-fill text-primary"></i></span>
-                                    <input type="text" name="ubicacion" class="form-control border-start-0" placeholder="Ej. Mostrador principal, Segundo piso" value="{{ old('ubicacion') }}">
-                                </div>
+                                <label class="form-label fw-semibold">Ubicación</label>
+                                <input type="text" name="ubicacion" class="form-control" placeholder="Ej. Mostrador principal, Segundo piso" value="{{ old('ubicacion') }}">
                             </div>
 
                             @if(isset($sucursales) && $sucursales->count())
                             <div class="col-12">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Sucursal</label>
-                                <select name="sucursal_id" class="form-select form-select-lg shadow-sm rounded-3">
+                                <label class="form-label fw-semibold">Sucursal</label>
+                                <select name="sucursal_id" class="form-select">
                                     <option value="">Sin asignar</option>
                                     @foreach($sucursales as $s)
                                         <option value="{{ $s->id }}" {{ old('sucursal_id') == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
@@ -117,7 +94,7 @@
                             @endif
 
                             <div class="col-12">
-                                <div class="p-3 rounded-3 d-flex align-items-start gap-3" style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);">
+                                <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2);">
                                     <div class="form-check form-switch fs-4 m-0">
                                         <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo" {{ old('activo', true) ? 'checked' : '' }}>
                                     </div>
@@ -131,17 +108,20 @@
                     </div>
                 </div>
             </form>
+
+    <div style="height: 80px;"></div>
 </div>
 
-<div class="sticky-save-bar">
+<div class="premium-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small d-none d-md-inline">
-            <i class="bi bi-info-circle me-1"></i> Creando nueva caja
-        </span>
-        <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('cajas.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                <i class="bi bi-save me-1"></i>Guardar Caja
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva caja</span>
+        </div>
+        <div>
+            <a href="{{ route('cajas.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Caja
             </button>
         </div>
     </div>

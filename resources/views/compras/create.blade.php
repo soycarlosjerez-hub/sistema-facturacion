@@ -180,6 +180,8 @@
 
         <input type="hidden" name="total" id="total-hidden" value="0">
     </form>
+
+    <div style="height: 80px;"></div>
 </div>
 
 <div class="premium-sticky-bar">

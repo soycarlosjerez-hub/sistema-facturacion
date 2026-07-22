@@ -750,6 +750,15 @@ Route::middleware(['auth', 'permission:listas-precio.delete'])->group(function (
     Route::delete('listas-precio/{listaPrecio}', [ListaPrecioController::class, 'destroy'])->name('listas-precio.destroy');
 });
 
+// Listas de Precios — Logs e Impacto
+Route::middleware(['auth', 'permission:listas-precio.view'])->group(function () {
+    Route::get('listas-precio/{listaPrecio}/logs', [ListaPrecioController::class, 'logs'])->name('listas-precio.logs');
+    Route::get('listas-precio/{listaPrecio}/impacto', [ListaPrecioController::class, 'impacto'])->name('listas-precio.impacto');
+});
+Route::middleware(['auth', 'permission:listas-precio.delete'])->group(function () {
+    Route::post('listas-precio/{listaPrecio}/restore', [ListaPrecioController::class, 'restore'])->name('listas-precio.restore');
+});
+
 // Sucursales
 Route::middleware(['auth', 'permission:sucursales.view'])->group(function () {
     Route::get('sucursales', [SucursalController::class, 'index'])->name('sucursales.index');

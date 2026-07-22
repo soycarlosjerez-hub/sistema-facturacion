@@ -1,69 +1,50 @@
 @extends('layouts.app')
 
 @push('styles')
+@include('partials.premium-ui')
 <style>
-:root {
-    --pos-accent: #0ea5e9;
-    --pos-bg-light: #ffffff;
-    --pos-bg-dark: #0f172a;
-    --pos-card-light: #f1f5f9;
-    --pos-card-dark: #1e293b;
-    --pos-border-light: #e2e8f0;
-    --pos-border-dark: #334155;
-    --pos-text-light: #1e293b;
-    --pos-text-dark: #f1f5f9;
-    --pos-text-muted-light: #64748b;
-    --pos-text-muted-dark: #94a3b8;
-}
-body.dark-mode {
-    --pos-bg: var(--pos-bg-dark);
-    --pos-card: var(--pos-card-dark);
-    --pos-border: var(--pos-border-dark);
-    --pos-text: var(--pos-text-dark);
-    --pos-text-muted: var(--pos-text-muted-dark);
-}
-body:not(.dark-mode) {
-    --pos-bg: var(--pos-bg-light);
-    --pos-card: var(--pos-card-light);
-    --pos-border: var(--pos-border-light);
-    --pos-text: var(--pos-text-light);
-    --pos-text-muted: var(--pos-text-muted-light);
-}
-#productosModal .modal-content { background: var(--pos-bg); color: var(--pos-text); }
-#productosModal .modal-header { background: linear-gradient(135deg, var(--pos-accent), #0284c7); }
-#productosModal .form-control { background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text); }
-#productosModal .form-control::placeholder { color: var(--pos-text-muted); }
-#productosModal .form-control:focus { border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); color: var(--pos-text); }
+#productosModal .modal-content { background: rgba(15,23,42,0.98); color: #f1f5f9; }
+#productosModal .modal-header { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+#productosModal .form-control { background: rgba(30,41,59,0.8); border-color: #334155; color: #f1f5f9; }
+#productosModal .form-control::placeholder { color: #64748b; }
+#productosModal .form-control:focus { border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,0.15); color: #f1f5f9; }
+body:not(.dark-mode) #productosModal .modal-content { background: rgba(255,255,255,0.98); color: #1e293b; }
+body:not(.dark-mode) #productosModal .form-control { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+body:not(.dark-mode) #productosModal .form-control::placeholder { color: #94a3b8; }
+body:not(.dark-mode) #productosModal .form-control:focus { color: #1e293b; }
 
 .tecla {
     flex: 1; height: 52px; border-radius: 10px;
-    border: 1px solid var(--pos-border);
-    background: var(--pos-card); color: var(--pos-text);
+    border: 1px solid #334155;
+    background: rgba(30,41,59,0.8); color: #f1f5f9;
     font-size: 1.15rem; font-weight: 600; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center;
     touch-action: manipulation; user-select: none; -webkit-user-select: none;
     transition: background .08s, transform .08s; padding: 0 4px; min-width: 0;
 }
+body:not(.dark-mode) .tecla { background: #f1f5f9; border-color: #cbd5e1; color: #1e293b; }
 .tecla:active { background: rgba(14,165,233,0.2); transform: scale(0.93); box-shadow: 0 0 0 2px rgba(14,165,233,0.2); }
 .tecla-func { background: rgba(255,255,255,0.06); font-size: 1rem; }
+body:not(.dark-mode) .tecla-func { background: #e2e8f0; }
 .tecla-shift { flex: 1.6; }
-.tecla-shift.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+.tecla-shift.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: #0ea5e9; }
 .tecla-backspace { flex: 1.3; }
 .tecla-space { flex: 4; }
-.tecla-enter { flex: 1.3; background: var(--pos-accent); color: #fff; border-color: var(--pos-accent); }
+.tecla-enter { flex: 1.3; background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
 .tecla-punct { flex: 1; }
 .tecla-func:active { background: rgba(14,165,233,0.2); }
-.tecla-func.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+.tecla-func.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: #0ea5e9; }
 .tecla-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 6px; }
 #teclado-rows { max-width: 100%; }
 #teclado-rows::-webkit-scrollbar { height: 0; }
 
 .modal-prod-card {
-    background: var(--pos-card); border: 1px solid var(--pos-border); border-radius: 14px;
+    background: rgba(30,41,59,0.6); border: 1px solid #334155; border-radius: 14px;
     padding: 12px 10px; cursor: pointer; text-align: center; position: relative;
     transition: transform .15s, box-shadow .15s; height: 100%; display: flex; flex-direction: column; align-items: center;
 }
-.modal-prod-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); border-color: var(--pos-accent); }
+body:not(.dark-mode) .modal-prod-card { background: #f8fafc; border-color: #e2e8f0; }
+.modal-prod-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); border-color: #0ea5e9; }
 .modal-prod-card.out-of-stock { opacity: 0.4; cursor: not-allowed; }
 .modal-prod-card.out-of-stock:hover { transform: none; box-shadow: none; }
 .modal-prod-img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,0.05); margin-bottom: 8px; }
@@ -72,39 +53,79 @@ body:not(.dark-mode) {
     display: flex; align-items: center; justify-content: center;
     font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;
 }
-.modal-prod-name { font-size: .9rem; font-weight: 600; color: var(--pos-text); line-height: 1.2; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
-.modal-prod-price { font-size: 1rem; font-weight: 800; color: var(--pos-accent); font-variant-numeric: tabular-nums; }
+.modal-prod-name { font-size: .9rem; font-weight: 600; color: #f1f5f9; line-height: 1.2; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+body:not(.dark-mode) .modal-prod-name { color: #1e293b; }
+.modal-prod-price { font-size: 1rem; font-weight: 800; color: #0ea5e9; font-variant-numeric: tabular-nums; }
 .modal-prod-stock-badge { font-size: .7rem; padding: 2px 8px; border-radius: 6px; font-weight: 700; position: absolute; top: 8px; right: 8px; }
 .modal-prod-qty { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 .modal-prod-qty button {
-    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--pos-border);
-    background: rgba(255,255,255,0.06); color: var(--pos-text); font-weight: 700; font-size: 1.1rem;
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid #334155;
+    background: rgba(255,255,255,0.06); color: #f1f5f9; font-weight: 700; font-size: 1.1rem;
     display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s;
 }
-.modal-prod-qty button:hover { background: rgba(14,165,233,0.15); border-color: var(--pos-accent); }
-.modal-prod-qty span { font-weight: 800; font-size: 1rem; min-width: 24px; text-align: center; color: var(--pos-text); }
+body:not(.dark-mode) .modal-prod-qty button { border-color: #cbd5e1; color: #1e293b; }
+.modal-prod-qty button:hover { background: rgba(14,165,233,0.15); border-color: #0ea5e9; }
+.modal-prod-qty span { font-weight: 800; font-size: 1rem; min-width: 24px; text-align: center; color: #f1f5f9; }
+body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Nueva Orden</h1>
-        <a href="{{ route('ordenes.index') }}" class="btn btn-secondary">Volver</a>
+<div class="container-fluid px-4 py-3 premium-page">
+
+    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#0ea5e9,#0284c7,#0ea5e9);box-shadow:0 8px 32px rgba(14,165,233,.25);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+                    <i class="bi bi-bag-plus"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Nueva Orden</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Crea una nueva orden de mostrador, delivery o pickup
+                    </small>
+                </div>
+            </div>
+            <a href="{{ route('ordenes.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
     </div>
 
-    <div class="row">
+    @if (session('error'))
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="row g-4">
         <div class="col-md-5">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Datos de la Orden</h5>
+            <div class="premium-card h-100">
+                <div class="card-accent blue"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-info-circle icon-blue"></i>
+                    Datos de la Orden
                 </div>
                 <div class="card-body">
                     <form id="ordenForm" action="{{ route('ordenes.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="items" id="itemsInput" value="[]">
                         <div class="mb-3">
-                            <label class="form-label">Tipo de Orden</label>
+                            <label class="form-label fw-semibold">Tipo de Orden</label>
                             <select name="tipo_orden" class="form-select" required id="tipo_orden">
                                 <option value="mostrador">Mostrador</option>
                                 <option value="delivery">Delivery</option>
@@ -114,11 +135,11 @@ body:not(.dark-mode) {
 
                         <div id="delivery_fields" style="display:none;">
                             <div class="mb-3">
-                                <label class="form-label">Dirección de Entrega</label>
+                                <label class="form-label fw-semibold">Dirección de Entrega</label>
                                 <textarea name="direccion_entrega" class="form-control" rows="2"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Empresa de Delivery</label>
+                                <label class="form-label fw-semibold">Empresa de Delivery</label>
                                 <select name="entrega_empresa_id" class="form-select">
                                     <option value="">Seleccionar</option>
                                     @foreach(\App\Models\DeliveryCompany::where('activo', true)->get() as $emp)
@@ -130,18 +151,18 @@ body:not(.dark-mode) {
 
                         <div id="pickup_fields" style="display:none;">
                             <div class="mb-3">
-                                <label class="form-label">Hora de Retiro</label>
+                                <label class="form-label fw-semibold">Hora de Retiro</label>
                                 <input type="datetime-local" name="hora_retiro" class="form-control">
                             </div>
                         </div>
 
                         <div class="mb-3" id="contacto_fields">
-                            <label class="form-label">Teléfono de Contacto</label>
+                            <label class="form-label fw-semibold">Teléfono de Contacto</label>
                             <input type="text" name="telefono_contacto" class="form-control" maxlength="30">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Cliente</label>
+                            <label class="form-label fw-semibold">Cliente</label>
                             <select name="cliente_id" class="form-select" id="cliente_select">
                                 <option value="">Consumidor Final</option>
                                 @foreach(\App\Models\Cliente::orderBy('nombre')->limit(50)->get() as $c)
@@ -149,52 +170,62 @@ body:not(.dark-mode) {
                                 @endforeach
                             </select>
                         </div>
-
-                        <button type="submit" class="btn btn-primary w-100">
-                            Crear Orden
-                        </button>
                     </form>
                 </div>
             </div>
         </div>
 
         <div class="col-md-7">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between">
-                    <h5>Productos en la Orden</h5>
-                    <span class="badge bg-primary rounded-pill" id="cart_count">0</span>
+            <div class="premium-card h-100">
+                <div class="card-accent blue"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-box-seam icon-blue"></i>
+                    Productos en la Orden
+                    <span class="badge bg-primary bg-opacity-10 text-primary ms-auto rounded-pill" id="cart_count">0</span>
                 </div>
                 <div class="card-body">
                     <div id="cart_empty" class="text-muted text-center py-3">
+                        <i class="bi bi-cart-x fs-2 opacity-50 d-block mb-2"></i>
                         No hay productos seleccionados
                     </div>
                     <div id="cart_container" style="display:none;">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th width="100">Cant</th>
-                                    <th width="90">Precio</th>
-                                    <th width="90">Subtotal</th>
-                                    <th width="40"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="cart_items"></tbody>
-                            <tfoot>
-                                <tr class="table-active">
-                                    <th colspan="3" class="text-end">Total</th>
-                                    <th id="cart_total">RD$ 0.00</th>
-                                    <th></th>
-                                </tr>
-                            </tfoot>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light small text-uppercase text-muted">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center">Cant</th>
+                                        <th class="text-end">Precio</th>
+                                        <th class="text-end">Subtotal</th>
+                                        <th class="text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart_items"></tbody>
+                                <tfoot>
+                                    <tr class="table-active fw-bold">
+                                        <td colspan="3" class="text-end">Total</td>
+                                        <td class="text-end" id="cart_total">RD$ 0.00</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-success w-100 btn-lg mt-2" onclick="abrirModalProductos()">
+                    <button type="button" class="btn btn-primary w-100 btn-lg mt-3 rounded-pill" onclick="abrirModalProductos()">
                         <i class="bi bi-plus-circle me-1"></i> Agregar Productos
                     </button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Sticky Save Bar -->
+    <div class="premium-sticky-bar d-flex justify-content-end align-items-center gap-3">
+        <span class="text-muted small d-none d-md-inline"><i class="bi bi-info-circle me-1"></i>Creando nueva orden</span>
+        <a href="{{ route('ordenes.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
+        <button type="submit" form="ordenForm" class="btn btn-save rounded-pill px-5 fw-bold">
+            <i class="bi bi-check-lg me-2"></i>Crear Orden
+        </button>
     </div>
 </div>
 
@@ -208,26 +239,26 @@ body:not(.dark-mode) {
             </div>
             <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
                 <div class="input-group shadow-sm rounded-3 mb-2">
-                    <span class="input-group-text" style="background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text-muted); min-height:48px;"><i class="bi bi-search fs-5"></i></span>
+                    <span class="input-group-text" style="background: rgba(30,41,59,0.8); border-color: #334155; color: #64748b; min-height:48px;"><i class="bi bi-search fs-5"></i></span>
                     <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()" style="min-height:48px; font-size:1.05rem;">
-                    <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: var(--pos-text-muted); min-width:48px;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg fs-5"></i></button>
+                    <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: #64748b; min-width:48px;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg fs-5"></i></button>
                 </div>
                 <div class="d-flex gap-2 mb-2">
-                    <select id="modal-item-curso" class="form-select form-select-sm rounded-3" style="max-width:120px;background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);">
+                    <select id="modal-item-curso" class="form-select form-select-sm rounded-3" style="max-width:120px;background:rgba(30,41,59,0.8);border-color:#334155;color:#f1f5f9;">
                         <option value="entrada">Entrada</option>
                         <option value="fuerte" selected>Plato Fuerte</option>
                         <option value="postre">Postre</option>
                         <option value="bebida">Bebida</option>
                     </select>
-                    <input type="text" id="modal-item-notas" class="form-control form-control-sm rounded-3" placeholder="Notas" maxlength="200" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);">
+                    <input type="text" id="modal-item-notas" class="form-control form-control-sm rounded-3" placeholder="Notas" maxlength="200" style="background:rgba(30,41,59,0.8);border-color:#334155;color:#f1f5f9;">
                 </div>
                 <div id="modal-productos-grid" class="row g-2 overflow-auto mb-2" style="flex:1; min-height:0;"></div>
-                <div class="border-top pt-2 mt-2" id="teclado-virtual" style="border-color: var(--pos-border) !important;">
+                <div class="border-top pt-2 mt-2" id="teclado-virtual" style="border-color: #334155 !important;">
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small class="fw-semibold" style="font-size:.8rem; color: var(--pos-text-muted);">Teclado</small>
+                        <small class="fw-semibold" style="font-size:.8rem; color: #64748b;">Teclado</small>
                         <div class="btn-group">
-                            <button class="btn btn-outline-secondary rounded-start-pill" style="font-size:.8rem;padding:4px 12px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('us')" id="btn-idioma-us">US</button>
-                            <button class="btn btn-outline-secondary rounded-end-pill" style="font-size:.8rem;padding:4px 12px;border-color: var(--pos-border);color: var(--pos-text-muted);" onclick="tecladoIdioma('es')" id="btn-idioma-es">ES</button>
+                            <button class="btn btn-outline-secondary rounded-start-pill" style="font-size:.8rem;padding:4px 12px;border-color: #334155;color: #64748b;" onclick="tecladoIdioma('us')" id="btn-idioma-us">US</button>
+                            <button class="btn btn-outline-secondary rounded-end-pill" style="font-size:.8rem;padding:4px 12px;border-color: #334155;color: #64748b;" onclick="tecladoIdioma('es')" id="btn-idioma-es">ES</button>
                         </div>
                     </div>
                     <div id="teclado-rows"></div>
@@ -323,7 +354,7 @@ function renderizarProductosModal(filtro) {
         return matchNombre || matchCodigo;
     });
     if (results.length === 0) {
-        container.innerHTML = '<div class="col-12 text-center py-4" style="color:var(--pos-text-muted);"><i class="bi bi-search" style="font-size:2.5rem;opacity:.4;display:block;margin-bottom:8px;"></i>Sin resultados</div>';
+        container.innerHTML = '<div class="col-12 text-center py-4" style="color:#64748b;"><i class="bi bi-search" style="font-size:2.5rem;opacity:.4;display:block;margin-bottom:8px;"></i>Sin resultados</div>';
         return;
     }
     let html = '';
@@ -526,9 +557,9 @@ function renderCart() {
                     <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(${c.producto_id}, 1)">+</button>
                 </div>
             </td>
-            <td>RD$ ${c.precio.toFixed(2)}</td>
-            <td>RD$ ${sub.toFixed(2)}</td>
-            <td><button class="btn btn-sm btn-danger" type="button" onclick="quitarDelCarrito(${c.producto_id})">×</button></td>
+            <td class="text-end">RD$ ${c.precio.toFixed(2)}</td>
+            <td class="text-end fw-semibold">RD$ ${sub.toFixed(2)}</td>
+            <td class="text-center"><button class="btn btn-sm btn-outline-danger rounded-pill" type="button" onclick="quitarDelCarrito(${c.producto_id})"><i class="bi bi-trash"></i></button></td>
         </tr>`;
     }).join('');
 

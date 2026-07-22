@@ -17,22 +17,27 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
 
 @section('content')
 <div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-shield-check"></i>
+    <div class="premium-header mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Nuevo NCF</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Registra una nueva secuencia de comprobante fiscal
+                    </small>
+                </div>
             </div>
-            <div>
-                <h3 class="fw-bold mb-1">Nuevo NCF</h3>
-                <p class="mb-0 opacity-75">Registra una nueva secuencia de comprobante fiscal</p>
-            </div>
+            <a href="{{ route('ncf.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
         </div>
-        <a href="{{ route('ncf.index') }}" class="btn btn-light rounded-pill text-dark fw-semibold">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     @if (session('error'))
@@ -95,14 +100,22 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
             </div>
         </form>
     </div>
+
+    <div style="height: 80px;"></div>
 </div>
 
-<div id="stickySaveBar" class="premium-sticky-bar d-flex justify-content-between align-items-center">
-    <div>
-        <span class="fw-semibold" style="color: #f59e0b;"><i class="bi bi-shield-check me-1"></i> Creando nueva secuencia NCF</span>
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva secuencia NCF</span>
+        </div>
+        <div>
+            <a href="{{ route('ncf.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="ncfForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Secuencia
+            </button>
+        </div>
     </div>
-    <button type="submit" form="ncfForm" class="btn-save rounded-pill px-5 fw-bold shadow-sm">
-        <i class="bi bi-check-circle me-1"></i> Guardar Secuencia
-    </button>
 </div>
 @endsection

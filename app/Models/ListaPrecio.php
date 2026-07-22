@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\TenantScope;
 
 class ListaPrecio extends Model
 {
-    use TenantScope;
+    use TenantScope, SoftDeletes;
 
     protected $table = 'lista_precios';
 
@@ -27,6 +28,11 @@ class ListaPrecio extends Model
         return $this->hasMany(ListaPrecioItem::class);
     }
 
+    public function logs(): HasMany
+    {
+        return $this->hasMany(ListaPrecioLog::class);
+    }
+
     public function scopeActivas($query)
     {
         return $query->where('activa', true);
@@ -37,6 +43,45 @@ class ListaPrecio extends Model
         return $query->where('activa', true)
             ->where(fn($q) => $q->whereNull('vigencia_desde')->orWhere('vigencia_desde', '<=', now()))
             ->where(fn($q) => $q->whereNull('vigencia_hasta')->orWhere('vigencia_hasta', '>=', now()));
+    }
+
+    public function scopePorExpirar($query)
+    {
+        return $query->whereNotNull('vigencia_hasta')
+            ->where('vigencia_hasta', '>=', now()->startOfDay())
+            ->where('vigencia_hasta', '<=', now()->addDays(7)->endOfDay());
+    }
+
+    public function scopeExpiradas($query)
+    {
+        return $query->whereNotNull('vigencia_hasta')
+            ->where('vigencia_hasta', '<', now()->startOfDay());
+    }
+
+    public function scopeNoIniciadas($query)
+    {
+        return $query->whereNotNull('vigencia_desde')
+            ->where('vigencia_desde', '>', now()->endOfDay());
+    }
+
+    public function getStatusAttribute(): array
+    {
+        $today = now()->startOfDay();
+        $sevenDays = now()->addDays(7)->endOfDay();
+
+        if ($this->vigencia_desde && $this->vigencia_desde->gt($today)) {
+            return ['class' => 'info', 'label' => 'No iniciada', 'icon' => 'bi-clock'];
+        }
+
+        if ($this->vigencia_hasta && $this->vigencia_hasta->lt($today)) {
+            return ['class' => 'danger', 'label' => 'Expirada', 'icon' => 'bi-x-circle'];
+        }
+
+        if ($this->vigencia_hasta && $this->vigencia_hasta->le($sevenDays)) {
+            return ['class' => 'warning', 'label' => 'Por expirar', 'icon' => 'bi-exclamation-triangle'];
+        }
+
+        return ['class' => 'success', 'label' => 'Vigente', 'icon' => 'bi-check-circle'];
     }
 
     public function getPrecioProducto(Producto $producto): ?float

@@ -24,25 +24,28 @@
 @section('content')
 <div class="premium-page">
     <div class="container-fluid px-4">
-        <div class="premium-header">
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="premium-avatar-circle">
-                        <i class="bi bi-tag"></i>
+            <div class="premium-header mb-4">
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="premium-avatar-circle">
+                            <i class="bi bi-tag"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-1 text-white">Nueva Lista de Precios</h4>
+                            <small class="text-white opacity-75">
+                                <i class="bi bi-plus-circle me-1"></i>
+                                Define una nueva lista con precios especiales
+                            </small>
+                        </div>
                     </div>
-                    <div>
-                        <h2 class="fw-bold mb-0 text-white">Nueva Lista de Precios</h2>
-                        <p class="text-white text-opacity-75 mb-0">Define una nueva lista con precios especiales.</p>
-                    </div>
+                    <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                        <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
                 </div>
-                <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
-                </a>
             </div>
-        </div>
 
         @if (session('error'))
             <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
@@ -104,15 +107,18 @@
     </div>
 </div>
 
-<div id="stickySaveBar" class="premium-sticky-bar">
-    <div class="d-flex align-items-center justify-content-between">
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-info-circle" style="color: #8b5cf6;"></i>
             <span class="fw-semibold d-none d-sm-inline">Creando nueva lista de precios</span>
         </div>
-        <button type="submit" form="listaPrecioForm" class="btn-save">
-            <i class="bi bi-save me-1"></i>Guardar Lista
-        </button>
+        <div>
+            <a href="{{ route('listas-precio.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="listaPrecioForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Lista
+            </button>
+        </div>
     </div>
 </div>
 @endsection

@@ -64,11 +64,11 @@
 
 <div class="premium-page">
 
-    <div class="premium-header-amber mb-4">
+    <div class="premium-header premium-header-amber mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position:relative; z-index:2;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 position-relative" style="z-index:2;">
             <div class="d-flex align-items-center gap-3">
                 <div class="premium-avatar-circle">
                     <i class="bi bi-people"></i>
@@ -77,11 +77,11 @@
                     <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
                         <i class="bi bi-person-plus-fill me-1"></i>NUEVO USUARIO
                     </span>
-                    <h2 class="fw-bold mb-1">Crear Usuario</h2>
-                    <p class="mb-0 opacity-75">Agrega un nuevo miembro al sistema y asigna su nivel de acceso</p>
+                    <h4 class="fw-bold mb-1 text-white">Crear Usuario</h4>
+                    <small class="text-white opacity-75">Agrega un nuevo miembro al sistema y asigna su nivel de acceso</small>
                 </div>
             </div>
-            <a href="{{ route('usuarios.index') }}" class="btn btn-light rounded-pill px-4 fw-bold" style="position: relative; z-index: 2;">
+            <a href="{{ route('usuarios.index') }}" class="btn rounded-pill px-4 fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);position:relative;z-index:2;">
                 <i class="bi bi-arrow-left me-1"></i>Volver
             </a>
         </div>
@@ -103,7 +103,7 @@
         </div>
     @endif
 
-    <form action="{{ route('usuarios.store') }}" method="POST">
+    <form action="{{ route('usuarios.store') }}" method="POST" id="userForm">
         @csrf
         <div class="row g-4">
             <div class="col-lg-7">
@@ -113,16 +113,7 @@
                     <div class="card-body p-4">
                         @include('usuarios._form_fields')
                     </div>
-                    <div class="card-footer bg-light border-top border-light p-4 text-end">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('usuarios.index') }}" class="btn btn-light rounded-pill px-4">
-                                <i class="bi bi-x-lg me-1"></i>Cancelar
-                            </a>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
-                                <i class="bi bi-check-lg me-1"></i>Crear Usuario
-                            </button>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 
@@ -197,12 +188,12 @@
     <div class="premium-sticky-bar">
         <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-info-circle text-primary"></i>
+                <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
                 <span class="fw-semibold d-none d-sm-inline">Crear Usuario</span>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('usuarios.index') }}" class="btn btn-cancel">Cancelar</a>
-                <button type="submit" form="" class="btn btn-save"><i class="bi bi-save me-2"></i> Guardar</button>
+                <a href="{{ route('usuarios.index') }}" class="btn-cancel">Cancelar</a>
+                <button type="submit" form="userForm" class="btn-save"><i class="bi bi-save me-2"></i> Guardar</button>
             </div>
         </div>
     </div>

@@ -16,17 +16,17 @@
                     <i class="bi bi-building"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">Nuevo Tipo de Negocio</h2>
-                    <p class="mb-0 opacity-75">Crea un nuevo tipo de negocio con sus m&oacute;dulos disponibles</p>
+<h4 class="fw-bold mb-1 text-white">Nuevo Tipo de Negocio</h4>
+                    <small class="text-white opacity-75"><i class="bi bi-plus-circle me-1"></i>Crea un nuevo tipo de negocio con sus m&oacute;dulos disponibles</small>
                 </div>
             </div>
-            <a href="{{ route('owner.business-types.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+            <a href="{{ route('owner.business-types.index') }}" class="btn rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                 <i class="bi bi-arrow-left me-2"></i>Volver
             </a>
         </div>
     </div>
 
-    <form method="POST" action="{{ route('owner.business-types.store') }}">
+    <form method="POST" action="{{ route('owner.business-types.store') }}" id="instanceForm">
         @csrf
         <div class="row g-3">
             <div class="col-lg-5">
@@ -101,20 +101,33 @@
                             @endforeach
 
                         <hr>
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div>
                             <span class="text-muted small">
                                 <span id="selectedCount">0</span> de {{ $allModules->count() }} seleccionados
                             </span>
-                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">
-                                <i class="bi bi-check-lg me-2"></i>Crear Tipo de Negocio
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </form>
+    <div style="height: 80px;"></div>
 </div>
+</div>
+
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando Tipo de Negocio</span>
+        </div>
+        <div>
+            <a href="{{ route('owner.business-types.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar
+            </button>
+        </div>
+    </div>
 </div>
 @endsection
 
