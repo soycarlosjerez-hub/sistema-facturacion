@@ -77,7 +77,7 @@ class ListaPrecio extends Model
             return ['class' => 'danger', 'label' => 'Expirada', 'icon' => 'bi-x-circle'];
         }
 
-        if ($this->vigencia_hasta && $this->vigencia_hasta->le($sevenDays)) {
+        if ($this->vigencia_hasta && $this->vigencia_hasta->lte($sevenDays)) {
             return ['class' => 'warning', 'label' => 'Por expirar', 'icon' => 'bi-exclamation-triangle'];
         }
 
