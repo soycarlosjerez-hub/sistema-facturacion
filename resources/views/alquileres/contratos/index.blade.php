@@ -14,29 +14,29 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+<div class="container-fluid px-4 py-3 ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle"><i class="bi bi-file-earmark-text"></i></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-file-earmark-text"></i></div>
                 <div>
                     <h4 class="fw-bold mb-1 text-white">Contratos</h4>
                     <small class="text-white opacity-75">{{ $contratos->count() }} contratos registrados</small>
                 </div>
             </div>
             <div>
-                <a href="{{ route('alquileres.contratos.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('alquileres.contratos.create') }}" class="ui-btn ui-btn-primary rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo Contrato
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent amber"></div>
+    <div class="ui-card" style="--delay:.15s;">
+        <div class="ui-card-accent amber"></div>
         <div class="card-body p-0">
-            <table id="contratos-table" class="table dt-table nowrap no-footer" style="width:100%">
+            <table id="contratos-table" class="ui-table dt-table nowrap no-footer" style="width:100%">
                 <thead>
                     <tr>
                         <th class="ps-4" style="width:50px;">#</th>
@@ -93,11 +93,11 @@ $(function() {
             { data: null, className: 'text-end pe-4', orderable: false, searchable: false,
                 render: function(d) {
                     return '<div class="d-flex justify-content-end gap-1">' +
-                        '<a href="/alquileres/contratos/' + d.id + '/editar" class="premium-btn-edit" title="Editar"><i class="bi bi-pencil"></i></a>' +
-                        '<form action="/alquileres/contratos/' + d.id + '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar este contrato? Esta acción no se puede deshacer.\');">' +
+                        '<a href="/alquileres/contratos/' + d.id + '/editar" class="ui-action ui-action-edit" title="Editar"><i class="bi bi-pencil"></i></a>' +
+                        '<form action="/alquileres/contratos/' + d.id + '" method="POST" class="d-inline" onsubmit="return UI.confirm.delete(\'¿Eliminar este contrato? Esta acción no se puede deshacer.\');">' +
                         '<input type="hidden" name="_token" value="' + csrfToken + '">' +
                         '<input type="hidden" name="_method" value="DELETE">' +
-                        '<button type="submit" class="premium-btn-delete border-0" title="Eliminar"><i class="bi bi-trash"></i></button></form></div>';
+                        '<button type="submit" class="ui-action ui-action-delete border-0" title="Eliminar"><i class="bi bi-trash"></i></button></form></div>';
                 }
             }
         ],

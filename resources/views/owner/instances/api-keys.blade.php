@@ -6,8 +6,8 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
 
     @if(session('new_api_key'))
     <div class="alert alert-warning alert-dismissible fade show rounded-4 border-0 mb-4 shadow" role="alert">
@@ -17,10 +17,10 @@
             </div>
             <div class="flex-grow-1">
                 <strong class="d-block mb-1">API Key generada exitosamente</strong>
-                <p class="mb-2 small">Esta key solo se muestra <strong>una vez</strong>. Cópiala ahora y guárdala en un lugar seguro.</p>
-                <div class="input-group input-group-sm mb-1">
-                    <input type="text" class="form-control font-monospace bg-white" value="{{ session('new_api_key') }}" readonly id="newApiKeyInput">
-                    <button class="btn btn-dark" type="button" onclick="copyNewKey()">Copiar</button>
+                <p class="mb-2 small">Esta key solo se muestra <strong>una vez</strong>. C&oacute;piala ahora y gu&aacute;rdala en un lugar seguro.</p>
+                <div class="ui-input-group input-group-sm mb-1">
+                    <input type="text" class="ui-input font-monospace bg-white" value="{{ session('new_api_key') }}" readonly id="newApiKeyInput">
+                    <button class="ui-btn ui-btn-solid btn-sm" type="button" onclick="copyNewKey()" style="background:#1e293b;border-color:#1e293b">Copiar</button>
                 </div>
             </div>
         </div>
@@ -37,11 +37,11 @@
     </script>
     @endif
 
-    <div class="premium-header" style="margin-bottom: 2rem;">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-key"></i>
                 </div>
                 <div>
@@ -49,19 +49,19 @@
                     <p class="mb-0 opacity-75">{{ $instance->nombre }} &middot; {{ $instance->slug }}</p>
                 </div>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
-                <button type="button" class="btn btn-warning rounded-pill px-4 shadow-sm fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createKeyModal">
+            <div class="ui-header-actions">
+                <button type="button" class="ui-btn ui-btn-solid" style="background:#f59e0b;border-color:#f59e0b;color:#000" data-bs-toggle="modal" data-bs-target="#createKeyModal">
                     <i class="bi bi-plus-lg me-2"></i>Nueva API Key
                 </button>
-                <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-primary">
                     <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent amber"></div>
+    <div class="ui-card mb-4" style="--delay:.15s">
+        <div class="ui-card-accent" style="background:#f59e0b"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-key text-warning me-2"></i>Claves de API</h5>
             <small class="text-muted">{{ $apiKeys->count() }} clave(s)</small>
@@ -91,7 +91,7 @@
                                 <code class="user-select-all small">{{ $key->mask() }}</code>
                             </td>
                             <td>
-                                <span class="badge bg-{{ $key->is_active ? 'success' : 'secondary' }} rounded-pill text-uppercase" style="font-size:.65rem;">
+                                <span class="ui-badge ui-badge-{{ $key->is_active ? 'success' : 'neutral' }} rounded-pill text-uppercase" style="font-size:.65rem;">
                                     {{ $key->is_active ? 'Activa' : 'Inactiva' }}
                                 </span>
                             </td>
@@ -106,21 +106,21 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-flex gap-1 justify-content-end">
-                                    <form method="POST" action="{{ route('owner.instances.api-keys.regenerate', [$instance, $key]) }}" onsubmit="return confirm('&iquest;Regenerar la clave &quot;{{ $key->name }}&quot;? La clave actual dejar&aacute; de funcionar inmediatamente.')" class="d-inline">
+                                    <form method="POST" action="{{ route('owner.instances.api-keys.regenerate', [$instance, $key]) }}" onsubmit="return UI.confirm.delete('&iquest;Regenerar la clave &quot;{{ $key->name }}&quot;? La clave actual dejar&aacute; de funcionar inmediatamente.')" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill" title="Regenerar">
+                                        <button type="submit" class="ui-action ui-action-edit" title="Regenerar">
                                             <i class="bi bi-arrow-clockwise"></i>
                                         </button>
                                     </form>
                                     <form method="POST" action="{{ route('owner.instances.api-keys.toggle', [$instance, $key]) }}" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-outline-{{ $key->is_active ? 'secondary' : 'success' }} rounded-pill" title="{{ $key->is_active ? 'Desactivar' : 'Activar' }}">
+                                        <button type="submit" class="ui-action ui-action-{{ $key->is_active ? 'view' : 'edit' }}" title="{{ $key->is_active ? 'Desactivar' : 'Activar' }}">
                                             <i class="bi bi-{{ $key->is_active ? 'pause-fill' : 'play-fill' }}"></i>
                                         </button>
                                     </form>
-                                    <form method="POST" action="{{ route('owner.instances.api-keys.destroy', [$instance, $key]) }}" onsubmit="return confirm('&iquest;Eliminar permanentemente la clave &quot;{{ $key->name }}&quot;? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
+                                    <form method="POST" action="{{ route('owner.instances.api-keys.destroy', [$instance, $key]) }}" onsubmit="return UI.confirm.delete('&iquest;Eliminar permanentemente la clave &quot;{{ $key->name }}&quot;? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Eliminar">
+                                        <button type="submit" class="ui-action ui-action-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -135,7 +135,7 @@
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-inbox fs-1"></i>
                 <p class="mt-2 mb-0">No hay claves de API para esta instancia.</p>
-                <button type="button" class="btn btn-warning rounded-pill mt-2 btn-sm fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createKeyModal">
+                <button type="button" class="ui-btn ui-btn-solid btn-sm mt-2" style="background:#f59e0b;border-color:#f59e0b;color:#000" data-bs-toggle="modal" data-bs-target="#createKeyModal">
                     <i class="bi bi-plus-lg me-1"></i>Crear Primera Clave
                 </button>
             </div>
@@ -156,14 +156,14 @@
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Nombre descriptivo <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control rounded-4" placeholder="Ej: integracion-shopify, webhook-externo" required maxlength="255">
+                        <label class="ui-label fw-bold">Nombre descriptivo <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="ui-input rounded-4" placeholder="Ej: integracion-shopify, webhook-externo" required maxlength="255">
                         <div class="form-text">Usa un nombre que identifique para qu&eacute; se usar&aacute; esta clave.</div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning rounded-pill fw-bold text-dark">
+                    <button type="button" class="ui-btn ui-btn-primary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid" style="background:#f59e0b;border-color:#f59e0b;color:#000">
                         <i class="bi bi-plus-lg me-1"></i>Generar Clave
                     </button>
                 </div>

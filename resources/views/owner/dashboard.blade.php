@@ -3,22 +3,16 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-.stat-card-icon {
-    width: 48px; height: 48px; border-radius: .75rem;
-    display: flex; align-items: center; justify-content: center;
-}
-</style>
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
-    <div class="premium-header" style="margin-bottom: 2rem;">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-speedometer2"></i>
                 </div>
                 <div>
@@ -26,63 +20,60 @@
                     <p class="mb-0 opacity-75">Resumen general de todas las instancias de negocio.</p>
                 </div>
             </div>
-            <a href="{{ route('owner.instances.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
-                <i class="bi bi-plus-lg me-2"></i>Nueva Instancia
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('owner.instances.create') }}" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-plus-lg me-2"></i>Nueva Instancia
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-2">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.1s">
                 <div class="card-body p-3 text-center">
-                    <small class="stat-label d-block">Total</small>
-                    <h3 class="stat-value mb-0">{{ $totalInstancias }}</h3>
+                    <small class="ui-stat-label d-block">Total</small>
+                    <h3 class="ui-stat-value mb-0">{{ $totalInstancias }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.15s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-success bg-opacity-10 text-success mx-auto mb-2"><i class="bi bi-check-circle fs-5"></i></div>
-                    <small class="stat-label d-block text-success">Al D&iacute;a</small>
-                    <h3 class="stat-value mb-0 text-success">{{ $instancias->filter(fn($i) => $i->activo && !$i->bloqueado && $i->estaAlDia())->count() }}</h3>
+                    <small class="ui-stat-label d-block text-success">Al D&iacute;a</small>
+                    <h3 class="ui-stat-value mb-0 text-success">{{ $instancias->filter(fn($i) => $i->activo && !$i->bloqueado && $i->estaAlDia())->count() }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.2s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-warning bg-opacity-10 text-warning mx-auto mb-2"><i class="bi bi-exclamation-triangle fs-5"></i></div>
-                    <small class="stat-label d-block text-warning">Atrasadas</small>
-                    <h3 class="stat-value mb-0 text-warning">{{ $instanciasConAtraso->count() }}</h3>
+                    <small class="ui-stat-label d-block text-warning">Atrasadas</small>
+                    <h3 class="ui-stat-value mb-0 text-warning">{{ $instanciasConAtraso->count() }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.25s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-danger bg-opacity-10 text-danger mx-auto mb-2"><i class="bi bi-lock-fill fs-5"></i></div>
-                    <small class="stat-label d-block text-danger">Bloqueadas</small>
-                    <h3 class="stat-value mb-0 text-danger">{{ $bloqueadas }}</h3>
+                    <small class="ui-stat-label d-block text-danger">Bloqueadas</small>
+                    <h3 class="ui-stat-value mb-0 text-danger">{{ $bloqueadas }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.3s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-info bg-opacity-10 text-info mx-auto mb-2"><i class="bi bi-clock fs-5"></i></div>
-                    <small class="stat-label d-block text-info">Por Vencer</small>
-                    <h3 class="stat-value mb-0 text-info">{{ $porVencer }}</h3>
+                    <small class="ui-stat-label d-block text-info">Por Vencer</small>
+                    <h3 class="ui-stat-value mb-0 text-info">{{ $porVencer }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-2">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.35s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-secondary bg-opacity-10 text-secondary mx-auto mb-2"><i class="bi bi-x-circle fs-5"></i></div>
-                    <small class="stat-label d-block text-secondary">Vencidas</small>
-                    <h3 class="stat-value mb-0 text-secondary">{{ $vencidas }}</h3>
+                    <small class="ui-stat-label d-block text-secondary">Vencidas</small>
+                    <h3 class="ui-stat-value mb-0 text-secondary">{{ $vencidas }}</h3>
                 </div>
             </div>
         </div>
@@ -90,8 +81,8 @@
 
     <div class="row g-3 mb-4">
         <div class="col-lg-5">
-            <div class="premium-card h-100">
-                <div class="card-accent purple"></div>
+            <div class="ui-card h-100" style="--delay:.1s">
+                <div class="ui-card-accent" style="background:#8b5cf6"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart text-primary me-2"></i>Distribuci&oacute;n por Tipo</h5>
                 </div>
@@ -101,7 +92,7 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-medium small">{{ $tipo }}</span>
-                            <span class="badge bg-primary rounded-pill">{{ $count }}</span>
+                            <span class="ui-badge ui-badge-primary rounded-pill">{{ $count }}</span>
                         </div>
                         <div class="progress" style="height:6px;">
                             <div class="progress-bar" role="progressbar" style="width:{{ $pct }}%;" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -117,8 +108,8 @@
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="premium-card h-100">
-                <div class="card-accent blue"></div>
+            <div class="ui-card h-100" style="--delay:.15s">
+                <div class="ui-card-accent" style="background:#3b82f6"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Pr&oacute;ximos Vencimientos</h5>
                 </div>
@@ -129,7 +120,7 @@
                             <a href="{{ route('owner.instances.show', $instance) }}" class="fw-bold text-decoration-none small">{{ $instance->nombre }}</a>
                             <small class="text-muted d-block">{{ $instance->businessType?->nombre }}</small>
                         </div>
-                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">{{ $instance->fecha_vencimiento->diffForHumans() }}</span>
+                        <span class="ui-badge ui-badge-warning rounded-pill">{{ $instance->fecha_vencimiento->diffForHumans() }}</span>
                     </div>
                     @empty
                     <div class="text-center py-4 text-muted">
@@ -141,8 +132,8 @@
             </div>
         </div>
         <div class="col-lg-3">
-            <div class="premium-card h-100">
-                <div class="card-accent green"></div>
+            <div class="ui-card h-100" style="--delay:.2s">
+                <div class="ui-card-accent" style="background:#10b981"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-cash-coin text-success me-2"></i>Resumen Financiero</h5>
                 </div>
@@ -158,14 +149,14 @@
                     <hr>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="fw-bold small">Total tipos</span>
-                        <span class="badge bg-primary rounded-pill">{{ $totalTipos }}</span>
+                        <span class="ui-badge ui-badge-primary rounded-pill">{{ $totalTipos }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-2">
                         <span class="fw-bold small">Total usuarios</span>
-                        <span class="badge bg-info rounded-pill">{{ $totalUsuarios }}</span>
+                        <span class="ui-badge ui-badge-info rounded-pill">{{ $totalUsuarios }}</span>
                     </div>
                     <hr>
-                    <a href="{{ route('owner.business-types.index') }}" class="btn btn-outline-primary rounded-pill w-100 btn-sm">
+                    <a href="{{ route('owner.business-types.index') }}" class="ui-btn ui-btn-ghost rounded-pill w-100 btn-sm">
                         <i class="bi bi-gear me-2"></i>Gestionar Tipos
                     </a>
                 </div>
@@ -174,10 +165,10 @@
     </div>
 
     @if($instanciasConAtraso->isNotEmpty())
-    <div class="premium-card mb-4" style="border-left: 4px solid #f59e0b !important;">
+    <div class="ui-card mb-4" style="--delay:.25s;border-left: 4px solid #f59e0b !important;">
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0 text-warning"><i class="bi bi-clock-history me-2"></i>Instancias con Atraso en Pagos</h5>
-            <span class="badge bg-warning rounded-pill">{{ $instanciasConAtraso->count() }}</span>
+            <span class="ui-badge ui-badge-warning rounded-pill">{{ $instanciasConAtraso->count() }}</span>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -188,7 +179,7 @@
                         <th>Costo Mensual</th>
                         <th>Meses Atrasados</th>
                         <th>Deuda Estimada</th>
-                        <th>Último Pago</th>
+                        <th>&Uacute;ltimo Pago</th>
                         <th class="text-end pe-4">Acciones</th>
                     </tr>
                 </thead>
@@ -198,9 +189,9 @@
                         <td class="ps-4 fw-bold">
                             <a href="{{ route('owner.instances.show', $instance) }}" class="text-decoration-none">{{ $instance->nombre }}</a>
                         </td>
-                        <td><span class="badge bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 text-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>
+                        <td><span class="ui-badge ui-badge-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>
                         <td>{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</td>
-                        <td><span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">{{ $instance->mesesAtrasados() }} mes(es)</span></td>
+                        <td><span class="ui-badge ui-badge-danger rounded-pill">{{ $instance->mesesAtrasados() }} mes(es)</span></td>
                         <td class="fw-bold text-danger">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->deudaEstimada(), 2) }}</td>
                         <td>
                             @php $ultimo = $instance->ultimoPago()->first(); @endphp
@@ -211,10 +202,10 @@
                             @endif
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="btn btn-sm btn-success rounded-pill me-1" title="Registrar Pago">
-                                <i class="bi bi-cash-coin"></i> Pago
+                            <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="ui-btn ui-btn-solid btn-sm rounded-pill me-1" title="Registrar Pago" style="background:#10b981;border-color:#10b981;color:#fff;">
+                                <i class="bi bi-cash-coin me-1"></i> Pago
                             </a>
-                            <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-sm btn-outline-info rounded-pill" title="Detalles">
+                            <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-ghost btn-sm rounded-pill" title="Detalles">
                                 <i class="bi bi-eye"></i>
                             </a>
                         </td>
@@ -226,8 +217,8 @@
     </div>
     @endif
 
-    <div class="premium-card">
-        <div class="card-accent purple"></div>
+    <div class="ui-card" style="--delay:.3s">
+        <div class="ui-card-accent" style="background:#8b5cf6"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i>Todas las Instancias</h5>
             <a href="{{ route('owner.instances.index') }}" class="text-decoration-none small fw-bold">Ver todas</a>
@@ -251,23 +242,23 @@
                         <td class="ps-4 fw-bold">
                             <a href="{{ route('owner.instances.show', $instance) }}" class="text-decoration-none">{{ $instance->nombre }}</a>
                         </td>
-                        <td><span class="badge bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 text-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>
+                        <td><span class="ui-badge ui-badge-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>
                         <td class="text-center">
                             @if(!$instance->activo)
-                                <span class="badge bg-secondary rounded-pill">Inactiva</span>
+                                <span class="ui-badge ui-badge-neutral rounded-pill">Inactiva</span>
                             @elseif($instance->bloqueado)
-                                <span class="badge bg-danger rounded-pill">Bloqueada</span>
+                                <span class="ui-badge ui-badge-danger rounded-pill">Bloqueada</span>
                             @elseif($instance->estaAlDia())
-                                <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
+                                <span class="ui-badge ui-badge-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
                             @else
-                                <span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es)</span>
+                                <span class="ui-badge ui-badge-warning rounded-pill"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es)</span>
                             @endif
                         </td>
                         <td class="text-center">
                             @if($instance->bloqueado)
-                                <span class="badge bg-danger rounded-pill"><i class="bi bi-lock-fill me-1"></i>Bloqueado</span>
+                                <span class="ui-badge ui-badge-danger rounded-pill"><i class="bi bi-lock-fill me-1"></i>Bloqueado</span>
                             @else
-                                <span class="badge bg-success rounded-pill"><i class="bi bi-unlock me-1"></i>Normal</span>
+                                <span class="ui-badge ui-badge-success rounded-pill"><i class="bi bi-unlock me-1"></i>Normal</span>
                             @endif
                         </td>
                         <td>
@@ -282,10 +273,10 @@
                         </td>
                         <td>{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-sm btn-outline-info rounded-pill me-1" title="Ver"><i class="bi bi-eye"></i></a>
-                            <a href="{{ route('owner.instances.edit', $instance) }}" class="btn btn-sm btn-outline-primary rounded-pill me-1" title="Editar"><i class="bi bi-pencil"></i></a>
-                            <a href="{{ route('owner.instances.config', $instance) }}" class="btn btn-sm btn-outline-warning rounded-pill me-1" title="Config"><i class="bi bi-gear"></i></a>
-                            <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="btn btn-sm btn-outline-success rounded-pill" title="Pago"><i class="bi bi-cash-coin"></i></a>
+                            <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-ghost btn-sm rounded-pill me-1" title="Ver"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('owner.instances.edit', $instance) }}" class="ui-btn ui-btn-ghost btn-sm rounded-pill me-1" title="Editar"><i class="bi bi-pencil"></i></a>
+                            <a href="{{ route('owner.instances.config', $instance) }}" class="ui-btn ui-btn-ghost btn-sm rounded-pill me-1" title="Config"><i class="bi bi-gear"></i></a>
+                            <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="ui-btn ui-btn-ghost btn-sm rounded-pill" title="Pago"><i class="bi bi-cash-coin"></i></a>
                         </td>
                     </tr>
                     @empty

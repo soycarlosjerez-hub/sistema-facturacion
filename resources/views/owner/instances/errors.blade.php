@@ -23,23 +23,23 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
 <div class="container-fluid px-4 py-3">
 
-    <div class="premium-header" style="margin-bottom: 2rem;">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-x-circle"></i>
                 </div>
                 <div>
                     <h2 class="fw-bold mb-0">Errores de la Instancia</h2>
-                    <p class="text-white text-opacity-75 mb-0">{{ $instance->nombre }} &middot; {{ $instance->businessType?->nombre ?? 'Sin tipo' }}</p>
+                    <p class="mb-0 opacity-75">{{ $instance->nombre }} &middot; {{ $instance->businessType?->nombre ?? 'Sin tipo' }}</p>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+            <div class="ui-header-actions">
+                <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-primary">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
@@ -48,66 +48,46 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.1s">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="bg-secondary bg-opacity-10 text-secondary rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                        <i class="bi bi-list-check fs-4"></i>
-                    </div>
-                    <div>
-                        <small class="stat-label d-block">Total</small>
-                        <h3 class="stat-value mb-0">{{ number_format($stats['total']) }}</h3>
-                    </div>
+                    <small class="ui-stat-label d-block">Total</small>
+                    <h3 class="ui-stat-value mb-0">{{ number_format($stats['total']) }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.15s">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="bg-danger bg-opacity-10 text-danger rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                        <i class="bi bi-bug-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <small class="stat-label d-block">Errores</small>
-                        <h3 class="stat-value mb-0">{{ number_format($stats['errors']) }}</h3>
-                    </div>
+                    <small class="ui-stat-label d-block">Errores</small>
+                    <h3 class="ui-stat-value mb-0">{{ number_format($stats['errors']) }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.2s">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="bg-warning bg-opacity-10 text-warning rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <small class="stat-label d-block">Warnings</small>
-                        <h3 class="stat-value mb-0">{{ number_format($stats['warnings']) }}</h3>
-                    </div>
+                    <small class="ui-stat-label d-block">Warnings</small>
+                    <h3 class="ui-stat-value mb-0">{{ number_format($stats['warnings']) }}</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.25s">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="bg-dark bg-opacity-10 text-dark rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                        <i class="bi bi-x-octagon-fill fs-4"></i>
-                    </div>
-                    <div>
-                        <small class="stat-label d-block">Cr&iacute;ticos</small>
-                        <h3 class="stat-value mb-0">{{ number_format($stats['criticals']) }}</h3>
-                    </div>
+                    <small class="ui-stat-label d-block">Cr&iacute;ticos</small>
+                    <h3 class="ui-stat-value mb-0">{{ number_format($stats['criticals']) }}</h3>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent red"></div>
+    <div class="ui-card mb-4" style="--delay:.2s">
+        <div class="ui-card-accent" style="background:#ef4444"></div>
         <div class="card-body p-3">
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-md-2">
-                    <label class="form-label fw-bold small text-muted">Nivel</label>
-                    <select name="level" class="form-select form-select-sm">
+                    <label class="ui-label small text-muted">Nivel</label>
+                    <select name="level" class="ui-select">
                         <option value="">Todos</option>
                         <option value="error" {{ request('level') == 'error' ? 'selected' : '' }}>Error</option>
                         <option value="warning" {{ request('level') == 'warning' ? 'selected' : '' }}>Warning</option>
@@ -116,8 +96,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-bold small text-muted">Fuente</label>
-                    <select name="source" class="form-select form-select-sm">
+                    <label class="ui-label small text-muted">Fuente</label>
+                    <select name="source" class="ui-select">
                         <option value="">Todas</option>
                         <option value="exception" {{ request('source') == 'exception' ? 'selected' : '' }}>Excepci&oacute;n</option>
                         <option value="log" {{ request('source') == 'log' ? 'selected' : '' }}>Log</option>
@@ -129,27 +109,27 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-bold small text-muted">Desde</label>
-                    <input type="date" name="desde" class="form-control form-control-sm" value="{{ request('desde') }}">
+                    <label class="ui-label small text-muted">Desde</label>
+                    <input type="date" name="desde" class="ui-input" value="{{ request('desde') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-bold small text-muted">Hasta</label>
-                    <input type="date" name="hasta" class="form-control form-control-sm" value="{{ request('hasta') }}">
+                    <label class="ui-label small text-muted">Hasta</label>
+                    <input type="date" name="hasta" class="ui-input" value="{{ request('hasta') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-bold small text-muted">Estado</label>
-                    <select name="resolved" class="form-select form-select-sm">
+                    <label class="ui-label small text-muted">Estado</label>
+                    <select name="resolved" class="ui-select">
                         <option value="">Todos</option>
                         <option value="0" {{ request('resolved') === '0' ? 'selected' : '' }}>Pendientes</option>
                         <option value="1" {{ request('resolved') === '1' ? 'selected' : '' }}>Resueltos</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-bold small text-muted">Buscar</label>
-                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Mensaje del error..." value="{{ request('search') }}">
+                    <label class="ui-label small text-muted">Buscar</label>
+                    <input type="text" name="search" class="ui-input" placeholder="Mensaje del error..." value="{{ request('search') }}">
                 </div>
                 <div class="col-md-1">
-                    <button type="submit" class="btn btn-danger btn-sm rounded-pill w-100 fw-bold">
+                    <button type="submit" class="ui-btn ui-btn-danger btn-sm rounded-pill w-100 fw-bold">
                         <i class="bi bi-search"></i>
                     </button>
                 </div>
@@ -157,16 +137,16 @@
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent red"></div>
+    <div class="ui-card" style="--delay:.25s">
+        <div class="ui-card-accent" style="background:#ef4444"></div>
         <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-bug text-danger me-2"></i>Registro de Errores</h5>
             <div class="d-flex gap-2">
                 <small class="text-muted">{{ $errorLogs->total() }} resultado(s)</small>
                 @if($stats['total'] > 0)
-                <form method="POST" action="{{ route('owner.instances.errors.clear', $instance) }}" onsubmit="return confirm('Eliminar errores con m&aacute;s de 30 d&iacute;as de antig&uuml;edad?')">
+                <form method="POST" action="{{ route('owner.instances.errors.clear', $instance) }}" onsubmit="return UI.confirm.delete('&iquest;Eliminar errores con m&aacute;s de 30 d&iacute;as de antig&uuml;edad?')">
                     @csrf @method('DELETE')
-                    <button type="submit" class="premium-btn-delete">
+                    <button type="submit" class="ui-action ui-action-delete">
                         <i class="bi bi-trash me-1"></i>Limpiar antiguos
                     </button>
                 </form>
@@ -194,7 +174,7 @@
                         <tr class="error-row" data-bs-toggle="modal" data-bs-target="#errorModal{{ $log->id }}">
                             <td><small class="text-muted">{{ $log->created_at->format('d/m/Y H:i:s') }}</small></td>
                             <td>
-                                <span class="badge bg-{{ $log->level_color }} bg-opacity-10 text-{{ $log->level_color }} rounded-pill text-uppercase" style="font-size:.65rem;">
+                                <span class="ui-badge ui-badge-{{ $log->level_color }} rounded-pill text-uppercase" style="font-size:.65rem;">
                                     {{ $log->level }}
                                 </span>
                             </td>
@@ -207,11 +187,11 @@
                             <td><small class="text-muted">{{ $log->ip_address ?? '—' }}</small></td>
                             <td>
                                 @if($log->resolved)
-                                    <span class="badge bg-success rounded-pill resolved-badge">
+                                    <span class="ui-badge ui-badge-success rounded-pill resolved-badge">
                                         <i class="bi bi-check-circle me-1"></i>Resuelto
                                     </span>
                                 @else
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill resolved-badge">
+                                    <span class="ui-badge ui-badge-neutral rounded-pill resolved-badge">
                                         <i class="bi bi-clock me-1"></i>Pendiente
                                     </span>
                                 @endif
@@ -230,9 +210,6 @@
             @endif
             @else
             <div class="text-center py-5">
-                <div class="bg-success bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:72px;height:72px;">
-                    <i class="bi bi-check-circle-fill text-success fs-1"></i>
-                </div>
                 <h5 class="fw-bold text-muted">Sin errores</h5>
                 <p class="text-muted mb-0">No se encontraron errores con los filtros seleccionados.</p>
             </div>
@@ -248,7 +225,7 @@
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0 pb-0">
                 <div>
-                    <span class="badge bg-{{ $log->level_color }} bg-opacity-10 text-{{ $log->level_color }} rounded-pill text-uppercase mb-2" style="font-size:.7rem;">
+                    <span class="ui-badge ui-badge-{{ $log->level_color }} rounded-pill text-uppercase mb-2" style="font-size:.7rem;">
                         <i class="bi {{ $log->source_icon }} me-1"></i>{{ $log->level }} &middot; {{ ucfirst($log->source) }}
                     </span>
                     <h5 class="fw-bold mb-0">{{ $log->title }}</h5>
@@ -279,7 +256,7 @@
                     <div class="col-md-4">
                         <small class="text-muted fw-bold text-uppercase d-block" style="font-size:.6rem;">Estado</small>
                         @if($log->resolved)
-                            <span class="badge bg-success rounded-pill">
+                            <span class="ui-badge ui-badge-success rounded-pill">
                                 <i class="bi bi-check-circle me-1"></i>Resuelto
                                 @if($log->resolvedBy)
                                     por {{ $log->resolvedBy->name }}
@@ -289,7 +266,7 @@
                                 @endif
                             </span>
                         @else
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">
+                            <span class="ui-badge ui-badge-neutral rounded-pill">
                                 <i class="bi bi-clock me-1"></i>Pendiente
                             </span>
                         @endif
@@ -331,12 +308,12 @@
             <div class="modal-footer border-0">
                 <form method="POST" action="{{ route('owner.instances.errors.resolve', [$instance, $log]) }}" class="me-auto">
                     @csrf @method('PATCH')
-                    <button type="submit" class="btn {{ $log->resolved ? 'btn-warning' : 'btn-success' }} rounded-pill resolve-btn">
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill resolve-btn" style="background:{{ $log->resolved ? '#f59e0b' : '#10b981' }};border-color:{{ $log->resolved ? '#f59e0b' : '#10b981' }};color:#fff">
                         <i class="bi {{ $log->resolved ? 'bi-arrow-counterclockwise' : 'bi-check-lg' }} me-1"></i>
                         {{ $log->resolved ? 'Reabrir' : 'Marcar como resuelto' }}
                     </button>
                 </form>
-                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="ui-btn ui-btn-primary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>

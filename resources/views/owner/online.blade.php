@@ -45,27 +45,27 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
 
     {{-- Header --}}
-    <div class="premium-header" style="margin-bottom: 2rem;">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-wifi"></i>
                 </div>
                 <div>
                     <h2 class="fw-bold mb-1">Usuarios Online</h2>
-                    <p class="mb-0 opacity-75">Usuarios activos en los últimos 5 minutos en todas las instancias.</p>
+                    <p class="mb-0 opacity-75">Usuarios activos en los &uacute;ltimos 5 minutos en todas las instancias.</p>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-3">
+            <div class="ui-header-actions">
                 <span class="refresh-badge">
                     <i class="bi bi-arrow-clockwise me-1"></i>Se actualiza con cada visita
                 </span>
-                <a href="{{ route('owner.dashboard') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <a href="{{ route('owner.dashboard') }}" class="ui-btn ui-btn-primary">
                     <i class="bi bi-arrow-left me-2"></i>Dashboard
                 </a>
             </div>
@@ -75,43 +75,34 @@
     {{-- Stats --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.1s">
                 <div class="card-body p-3 text-center">
                     <div class="online-dot mx-auto mb-2"></div>
-                    <small class="stat-label d-block">Online Ahora</small>
-                    <h2 class="stat-value mb-0 text-success">{{ $onlineUsers->count() }}</h2>
+                    <small class="ui-stat-label d-block">Online Ahora</small>
+                    <h2 class="ui-stat-value mb-0 text-success">{{ $onlineUsers->count() }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.15s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-primary bg-opacity-10 text-primary mx-auto mb-2">
-                        <i class="bi bi-buildings fs-5"></i>
-                    </div>
-                    <small class="stat-label d-block">Instancias Activas</small>
-                    <h2 class="stat-value mb-0">{{ $byInstance->count() }}</h2>
+                    <small class="ui-stat-label d-block">Instancias Activas</small>
+                    <h2 class="ui-stat-value mb-0">{{ $byInstance->count() }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.2s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-warning bg-opacity-10 text-warning mx-auto mb-2">
-                        <i class="bi bi-clock fs-5"></i>
-                    </div>
-                    <small class="stat-label d-block">Ventana</small>
-                    <h2 class="stat-value mb-0">5 min</h2>
+                    <small class="ui-stat-label d-block">Ventana</small>
+                    <h2 class="ui-stat-value mb-0">5 min</h2>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat h-100" style="--delay:.25s">
                 <div class="card-body p-3 text-center">
-                    <div class="stat-card-icon bg-info bg-opacity-10 text-info mx-auto mb-2">
-                        <i class="bi bi-person-check fs-5"></i>
-                    </div>
-                    <small class="stat-label d-block">Última actualización</small>
+                    <small class="ui-stat-label d-block">&Uacute;ltima actualizaci&oacute;n</small>
                     <small class="fw-bold">{{ now()->format('H:i:s') }}</small>
                 </div>
             </div>
@@ -119,18 +110,18 @@
     </div>
 
     @if($onlineUsers->isEmpty())
-        <div class="premium-card">
+        <div class="ui-card" style="--delay:.3s">
             <div class="card-body p-5 text-center">
                 <div class="mb-3" style="font-size: 3rem; opacity: .3;">🌙</div>
-                <h5 class="fw-bold text-muted">Ningún usuario online en este momento</h5>
-                <p class="text-muted small mb-0">Los usuarios aparecerán aquí cuando naveguen en el sistema.</p>
+                <h5 class="fw-bold text-muted">Ning&uacute;n usuario online en este momento</h5>
+                <p class="text-muted small mb-0">Los usuarios aparecer&aacute;n aqu&iacute; cuando naveguen en el sistema.</p>
             </div>
         </div>
     @else
         {{-- Por instancia --}}
         @foreach($byInstance as $instanceId => $users)
             @php $inst = $instancias[$instanceId] ?? null; @endphp
-            <div class="premium-card mb-4">
+            <div class="ui-card mb-4" style="--delay:.{{ min(5, $loop->iteration + 3) }}s">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="d-flex align-items-center gap-3">
@@ -143,7 +134,7 @@
                             </div>
                         </div>
                         @if($inst)
-                        <a href="{{ route('owner.instances.online', $inst) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        <a href="{{ route('owner.instances.online', $inst) }}" class="ui-btn ui-btn-ghost btn-sm rounded-pill px-3">
                             <i class="bi bi-eye me-1"></i>Ver instancia
                         </a>
                         @endif
@@ -158,7 +149,7 @@
                                     <div class="fw-semibold text-truncate">{{ $user->name }}</div>
                                     <small class="text-muted text-truncate d-block">{{ $user->email }}</small>
                                     @if($user->instanceRole)
-                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-0 small">
+                                        <span class="ui-badge ui-badge-primary rounded-pill px-2 py-0 small">
                                             {{ $user->instanceRole->nombre }}
                                         </span>
                                     @endif

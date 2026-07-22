@@ -3,28 +3,18 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .form-floating-modern { position: relative; margin-bottom: 1rem; }
-    .form-floating-modern .form-icon { position: absolute; top: 50%; left: 14px; transform: translateY(-50%); color: #94a3b8; z-index: 5; font-size: 1.1rem; pointer-events: none; }
-    .form-floating-modern .form-control { padding-left: 42px; height: 50px; border-radius: 12px; border: 1.5px solid #e2e8f0; transition: all .2s; }
-    .form-floating-modern .form-control:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
-    .form-floating-modern .form-label-float { position: absolute; top: 50%; left: 42px; transform: translateY(-50%); color: #94a3b8; transition: all .2s; pointer-events: none; background: transparent; padding: 0 4px; }
-    .form-floating-modern .form-control:focus + .form-label-float,
-    .form-floating-modern .form-control:not(:placeholder-shown) + .form-label-float { top: -10px; left: 36px; font-size: .75rem; color: #6366f1; background: #fff; }
-    textarea.form-control { height: auto !important; padding-top: 14px !important; }
-    textarea.form-control + .form-label-float { top: 14px !important; }
-    textarea.form-control:focus + .form-label-float,
-    textarea.form-control:not(:placeholder-shown) + .form-label-float { top: -10px !important; }
-</style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4" style="background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+
+    <div class="ui-header mb-4" style="--delay:0s; background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex align-items-center gap-3 position-relative" style="z-index:2;">
-            <div class="premium-avatar-circle"><i class="bi bi-house-add"></i></div>
-            <div><h4 class="fw-bold mb-1 text-white">Nueva Vivienda</h4><small class="text-white opacity-75">Registra una nueva propiedad para alquiler</small></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-house-add"></i></div>
+                <div><h4 class="ui-header-title">Nueva Vivienda</h4><div class="ui-header-meta">Registra una nueva propiedad para alquiler</div></div>
+            </div>
         </div>
     </div>
 
@@ -32,48 +22,54 @@
         @csrf
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Información General</h6>
+                <div class="ui-card" style="--delay:.1s;">
+                    <div class="ui-card-accent purple"></div>
+                    <div class="ui-card-title">
+                        <i class="bi bi-info-circle"></i>
+                        Informaci&oacute;n General
                     </div>
-                    <div class="card-body p-4">
+                    <div class="ui-card-subtitle">Datos b&aacute;sicos de la propiedad</div>
+                    <div class="ui-card-body">
                         <div class="row g-3">
                             <div class="col-md-8">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-house form-icon"></i>
-                                    <input type="text" name="nombre" id="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" placeholder=" " required>
-                                    <label class="form-label-float" for="nombre">Nombre de la vivienda *</label>
-                                    @error('nombre')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                <div class="mb-3">
+                                    <label for="nombre" class="ui-label">Nombre de la vivienda <span class="text-danger">*</span></label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-house"></i></span>
+                                        <input type="text" name="nombre" id="nombre" class="ui-input @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" placeholder="Ej: Apartamento 101" required>
+                                    </div>
+                                    @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-tag form-icon"></i>
-                                    <select name="tipo" id="tipo" class="form-control @error('tipo') is-invalid @enderror" required>
+                                <div class="mb-3">
+                                    <label for="tipo" class="ui-label">Tipo</label>
+                                    <select name="tipo" id="tipo" class="ui-select @error('tipo') is-invalid @enderror" required>
                                         <option value="apartamento" {{ old('tipo')=='apartamento'?'selected':'' }}>Apartamento</option>
                                         <option value="casa" {{ old('tipo')=='casa'?'selected':'' }}>Casa</option>
                                         <option value="local" {{ old('tipo')=='local'?'selected':'' }}>Local</option>
-                                        <option value="habitacion" {{ old('tipo')=='habitacion'?'selected':'' }}>Habitación</option>
+                                        <option value="habitacion" {{ old('tipo')=='habitacion'?'selected':'' }}>Habitaci&oacute;n</option>
                                         <option value="oficina" {{ old('tipo')=='oficina'?'selected':'' }}>Oficina</option>
                                         <option value="otro" {{ old('tipo')=='otro'?'selected':'' }}>Otro</option>
                                     </select>
-                                    <label class="form-label-float" for="tipo">Tipo</label>
+                                    @error('tipo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-geo-alt form-icon"></i>
-                                    <input type="text" name="direccion" id="direccion" class="form-control @error('direccion') is-invalid @enderror" value="{{ old('direccion') }}" placeholder=" ">
-                                    <label class="form-label-float" for="direccion">Dirección</label>
-                                    @error('direccion')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                <div class="mb-3">
+                                    <label for="direccion" class="ui-label">Direcci&oacute;n</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                        <input type="text" name="direccion" id="direccion" class="ui-input @error('direccion') is-invalid @enderror" value="{{ old('direccion') }}" placeholder=" ">
+                                    </div>
+                                    @error('direccion')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-card-text form-icon" style="top:14px;"></i>
-                                    <textarea name="descripcion" id="descripcion" class="form-control @error('descripcion') is-invalid @enderror" placeholder=" " rows="3">{{ old('descripcion') }}</textarea>
-                                    <label class="form-label-float" for="descripcion">Descripción</label>
+                                <div class="mb-3">
+                                    <label for="descripcion" class="ui-label">Descripci&oacute;n</label>
+                                    <textarea name="descripcion" id="descripcion" class="ui-textarea @error('descripcion') is-invalid @enderror" placeholder=" " rows="3">{{ old('descripcion') }}</textarea>
+                                    @error('descripcion')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                         </div>
@@ -82,70 +78,81 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-sliders text-primary me-2"></i>Detalles</h6>
+                <div class="ui-card" style="--delay:.2s;">
+                    <div class="ui-card-accent purple"></div>
+                    <div class="ui-card-title">
+                        <i class="bi bi-sliders"></i>
+                        Detalles
                     </div>
-                    <div class="card-body p-4">
+                    <div class="ui-card-body">
                         <div class="row g-3">
                             <div class="col-6">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-door-open form-icon"></i>
-                                    <input type="number" name="habitaciones" id="habitaciones" class="form-control" value="{{ old('habitaciones', 0) }}" min="0" placeholder=" ">
-                                    <label class="form-label-float" for="habitaciones">Habitaciones</label>
+                                <div class="mb-3">
+                                    <label for="habitaciones" class="ui-label">Habitaciones</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-door-open"></i></span>
+                                        <input type="number" name="habitaciones" id="habitaciones" class="ui-input" value="{{ old('habitaciones', 0) }}" min="0" placeholder=" ">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-droplet form-icon"></i>
-                                    <input type="number" name="banos" id="banos" class="form-control" value="{{ old('banos', 0) }}" min="0" placeholder=" ">
-                                    <label class="form-label-float" for="banos">Baños</label>
+                                <div class="mb-3">
+                                    <label for="banos" class="ui-label">Ba&ntilde;os</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-droplet"></i></span>
+                                        <input type="number" name="banos" id="banos" class="ui-input" value="{{ old('banos', 0) }}" min="0" placeholder=" ">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-rulers form-icon"></i>
-                                    <input type="number" step="0.01" name="area_m2" id="area_m2" class="form-control" value="{{ old('area_m2') }}" placeholder=" ">
-                                    <label class="form-label-float" for="area_m2">Área (m²)</label>
+                                <div class="mb-3">
+                                    <label for="area_m2" class="ui-label">&Aacute;rea (m&sup2;)</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-rulers"></i></span>
+                                        <input type="number" step="0.01" name="area_m2" id="area_m2" class="ui-input" value="{{ old('area_m2') }}" placeholder=" ">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
-                        <h6 class="fw-bold mb-0"><i class="bi bi-cash-coin text-primary me-2"></i>Valores</h6>
+                <div class="ui-card" style="--delay:.3s;">
+                    <div class="ui-card-accent purple"></div>
+                    <div class="ui-card-title">
+                        <i class="bi bi-cash-coin"></i>
+                        Valores
                     </div>
-                    <div class="card-body p-4">
+                    <div class="ui-card-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-currency-dollar form-icon"></i>
-                                    <input type="number" step="0.01" name="monto_alquiler" id="monto_alquiler" class="form-control @error('monto_alquiler') is-invalid @enderror" value="{{ old('monto_alquiler') }}" placeholder=" " required>
-                                    <label class="form-label-float" for="monto_alquiler">Monto Alquiler *</label>
-                                    @error('monto_alquiler')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                                <div class="mb-3">
+                                    <label for="monto_alquiler" class="ui-label">Monto Alquiler <span class="text-danger">*</span></label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-currency-dollar"></i></span>
+                                        <input type="number" step="0.01" name="monto_alquiler" id="monto_alquiler" class="ui-input @error('monto_alquiler') is-invalid @enderror" value="{{ old('monto_alquiler') }}" placeholder=" " required>
+                                    </div>
+                                    @error('monto_alquiler')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-shield-check form-icon"></i>
-                                    <input type="number" step="0.01" name="monto_deposito" id="monto_deposito" class="form-control" value="{{ old('monto_deposito', 0) }}" placeholder=" ">
-                                    <label class="form-label-float" for="monto_deposito">Depósito</label>
+                                <div class="mb-3">
+                                    <label for="monto_deposito" class="ui-label">Dep&oacute;sito</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-shield-check"></i></span>
+                                        <input type="number" step="0.01" name="monto_deposito" id="monto_deposito" class="ui-input" value="{{ old('monto_deposito', 0) }}" placeholder=" ">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-info-circle form-icon"></i>
-                                    <select name="estado" id="estado" class="form-control" required>
+                                <div class="mb-3">
+                                    <label for="estado" class="ui-label">Estado</label>
+                                    <select name="estado" id="estado" class="ui-select" required>
                                         <option value="disponible" {{ old('estado','disponible')=='disponible'?'selected':'' }}>Disponible</option>
                                         <option value="alquilado" {{ old('estado')=='alquilado'?'selected':'' }}>Alquilado</option>
                                         <option value="mantenimiento" {{ old('estado')=='mantenimiento'?'selected':'' }}>Mantenimiento</option>
                                         <option value="inactivo" {{ old('estado')=='inactivo'?'selected':'' }}>Inactivo</option>
                                     </select>
-                                    <label class="form-label-float" for="estado">Estado</label>
                                 </div>
                             </div>
                         </div>
@@ -159,17 +166,11 @@
 </div>
 @endsection
 
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>
-            <span class="fw-semibold d-none d-sm-inline">Creando nueva vivienda</span>
-        </div>
-        <div>
-            <a href="{{ route('alquileres.viviendas.index') }}" class="btn-cancel me-2">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn-save">
-                <i class="bi bi-check-lg me-2"></i>Guardar Vivienda
-            </button>
-        </div>
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <a href="{{ route('alquileres.viviendas.index') }}" class="ui-btn ui-btn-ghost rounded-pill px-4 me-2">Cancelar</a>
+        <button type="submit" form="instanceForm" class="ui-btn ui-btn-solid rounded-pill px-5">
+            <i class="bi bi-check-lg me-2"></i>Guardar Vivienda
+        </button>
     </div>
 </div>

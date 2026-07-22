@@ -19,12 +19,22 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;--delay:0s;">
+    <div class="ui-header mb-4" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex align-items-center gap-3 position-relative" style="z-index:2;">
-            <div class="premium-avatar-circle"><i class="bi bi-pencil-square"></i></div>
-            <div><h4 class="fw-bold mb-1 text-white">{{ $inquilino->nombre }}</h4><small class="text-white opacity-75">Editando inquilino</small></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-pencil-square"></i></div>
+                <div>
+                    <h4 class="ui-header-title">{{ $inquilino->nombre }}</h4>
+                    <div class="ui-header-meta">Editando inquilino</div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <a href="{{ route('alquileres.inquilinos.index') }}" class="ui-btn ui-btn-primary rounded-pill">
+                    <i class="bi bi-eye me-1"></i> Ver Todos
+                </a>
+            </div>
         </div>
     </div>
 
@@ -32,51 +42,65 @@
         @csrf @method('PUT')
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="premium-card">
-                    <div class="card-accent green"></div>
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4"><h6 class="fw-bold mb-0"><i class="bi bi-person-badge text-primary me-2"></i>Datos del Inquilino</h6></div>
-                    <div class="card-body p-4">
+                <div class="ui-card" style="--delay:.1s;">
+                    <div class="ui-card-accent green"></div>
+                    <div class="ui-card-body p-4">
+                        <div class="ui-card-title"><i class="bi bi-person-badge"></i>Datos del Inquilino</div>
+                        <div class="ui-card-subtitle">Complete los campos para actualizar el inquilino</div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-person form-icon"></i>
-                                    <input type="text" name="nombre" id="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre', $inquilino->nombre) }}" placeholder=" " required>
-                                    <label class="form-label-float" for="nombre">Nombre completo *</label>
+                                <div class="mb-3">
+                                    <label for="nombre" class="ui-label">Nombre completo <span class="text-danger">*</span></label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" name="nombre" id="nombre" class="ui-input @error('nombre') is-invalid @enderror" value="{{ old('nombre', $inquilino->nombre) }}" placeholder="" required>
+                                    </div>
+                                    @error('nombre')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-credit-card form-icon"></i>
-                                    <input type="text" name="cedula" id="cedula" class="form-control" value="{{ old('cedula', $inquilino->cedula) }}" placeholder=" ">
-                                    <label class="form-label-float" for="cedula">C�dula</label>
+                                <div class="mb-3">
+                                    <label for="cedula" class="ui-label">Cédula</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-credit-card"></i></span>
+                                        <input type="text" name="cedula" id="cedula" class="ui-input" value="{{ old('cedula', $inquilino->cedula) }}" placeholder="">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-telephone form-icon"></i>
-                                    <input type="text" name="telefono" id="telefono" class="form-control" value="{{ old('telefono', $inquilino->telefono) }}" placeholder=" ">
-                                    <label class="form-label-float" for="telefono">Tel�fono</label>
+                                <div class="mb-3">
+                                    <label for="telefono" class="ui-label">Teléfono</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-telephone"></i></span>
+                                        <input type="text" name="telefono" id="telefono" class="ui-input" value="{{ old('telefono', $inquilino->telefono) }}" placeholder="">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-envelope form-icon"></i>
-                                    <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $inquilino->email) }}" placeholder=" ">
-                                    <label class="form-label-float" for="email">Email</label>
+                                <div class="mb-3">
+                                    <label for="email" class="ui-label">Email</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input type="email" name="email" id="email" class="ui-input" value="{{ old('email', $inquilino->email) }}" placeholder="">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-geo-alt form-icon"></i>
-                                    <input type="text" name="direccion" id="direccion" class="form-control" value="{{ old('direccion', $inquilino->direccion) }}" placeholder=" ">
-                                    <label class="form-label-float" for="direccion">Direcci�n</label>
+                                <div class="mb-3">
+                                    <label for="direccion" class="ui-label">Dirección</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                        <input type="text" name="direccion" id="direccion" class="ui-input" value="{{ old('direccion', $inquilino->direccion) }}" placeholder="">
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="form-floating-modern">
-                                    <i class="bi bi-sticky form-icon" style="top:14px;"></i>
-                                    <textarea name="notas" id="notas" class="form-control" placeholder=" " rows="3">{{ old('notas', $inquilino->notas) }}</textarea>
-                                    <label class="form-label-float" for="notas">Notas</label>
+                                <div class="mb-3">
+                                    <label for="notas" class="ui-label">Notas</label>
+                                    <div class="ui-input-group">
+                                        <span class="ui-input-group-text"><i class="bi bi-sticky"></i></span>
+                                        <textarea name="notas" id="notas" class="ui-textarea" placeholder="" rows="3">{{ old('notas', $inquilino->notas) }}</textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -85,8 +109,8 @@
             </div>
         </div>
         <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background:linear-gradient(135deg,#10b981,#059669);border:0;"><i class="bi bi-save me-1"></i>Guardar Cambios</button>
-            <a href="{{ route('alquileres.inquilinos.index') }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+            <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-5 fw-bold shadow-sm" style="background:linear-gradient(135deg,#10b981,#059669);border:0;"><i class="bi bi-save me-1"></i>Guardar Cambios</button>
+            <a href="{{ route('alquileres.inquilinos.index') }}" class="ui-btn ui-btn-ghost rounded-pill px-4">Cancelar</a>
         </div>
     </form>
 </div>

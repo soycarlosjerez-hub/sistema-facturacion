@@ -6,23 +6,25 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
-    <div class="premium-header" style="margin-bottom: 2rem;">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-building"></i>
                 </div>
                 <div>
-<h4 class="fw-bold mb-1 text-white">Nuevo Tipo de Negocio</h4>
-                    <small class="text-white opacity-75"><i class="bi bi-plus-circle me-1"></i>Crea un nuevo tipo de negocio con sus m&oacute;dulos disponibles</small>
+                    <h4 class="fw-bold mb-1">Nuevo Tipo de Negocio</h4>
+                    <small class="opacity-75"><i class="bi bi-plus-circle me-1"></i>Crea un nuevo tipo de negocio con sus m&oacute;dulos disponibles</small>
                 </div>
             </div>
-            <a href="{{ route('owner.business-types.index') }}" class="btn rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('owner.business-types.index') }}" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -30,36 +32,36 @@
         @csrf
         <div class="row g-3">
             <div class="col-lg-5">
-                <div class="premium-card h-100">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card h-100" style="--delay:.1s">
+                    <div class="ui-card-accent" style="background:#8b5cf6"></div>
                     <div class="card-header bg-transparent border-0 p-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Informaci&oacute;n General</h5>
                     </div>
                     <div class="card-body p-4 pt-0">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Nombre <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre" class="form-control rounded-pill @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required placeholder="Ej: Restaurante">
+                            <label class="ui-label fw-bold">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" class="ui-input rounded-pill @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required placeholder="Ej: Restaurante">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Slug <span class="text-danger">*</span></label>
-                            <input type="text" name="slug" class="form-control rounded-pill @error('slug') is-invalid @enderror" value="{{ old('slug') }}" required placeholder="Ej: restaurante">
+                            <label class="ui-label fw-bold">Slug <span class="text-danger">*</span></label>
+                            <input type="text" name="slug" class="ui-input rounded-pill @error('slug') is-invalid @enderror" value="{{ old('slug') }}" required placeholder="Ej: restaurante">
                             @error('slug') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Descripci&oacute;n</label>
-                            <textarea name="descripcion" class="form-control rounded-4 @error('descripcion') is-invalid @enderror" rows="3" placeholder="Descripci&oacute;n del tipo de negocio">{{ old('descripcion') }}</textarea>
+                            <label class="ui-label fw-bold">Descripci&oacute;n</label>
+                            <textarea name="descripcion" class="ui-input rounded-4 @error('descripcion') is-invalid @enderror" rows="3" placeholder="Descripci&oacute;n del tipo de negocio">{{ old('descripcion') }}</textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Color Bootstrap</label>
-                            <select name="color" class="form-select rounded-pill">
+                            <label class="ui-label fw-bold">Color Bootstrap</label>
+                            <select name="color" class="ui-select rounded-pill">
                                 @foreach(['primary','secondary','success','danger','warning','info','dark'] as $c)
                                     <option value="{{ $c }}" {{ old('color', 'primary') === $c ? 'selected' : '' }}>{{ ucfirst($c) }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Icono (Bootstrap Icons)</label>
-                            <input type="text" name="icon" class="form-control rounded-pill" value="{{ old('icon', 'bi-building') }}" placeholder="bi-building">
+                            <label class="ui-label fw-bold">Icono (Bootstrap Icons)</label>
+                            <input type="text" name="icon" class="ui-input rounded-pill" value="{{ old('icon', 'bi-building') }}" placeholder="bi-building">
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-6">
@@ -69,23 +71,23 @@
                                 </div>
                             </div>
                             <div class="col-6">
-                                <label class="form-label fw-bold small">Orden</label>
-                                <input type="number" name="orden" class="form-control rounded-pill" value="{{ old('orden', 0) }}" min="0">
+                                <label class="ui-label fw-bold">Orden</label>
+                                <input type="number" name="orden" class="ui-input rounded-pill" value="{{ old('orden', 0) }}" min="0">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-7">
-                <div class="premium-card h-100">
-                    <div class="card-accent green"></div>
+                <div class="ui-card h-100" style="--delay:.15s">
+                    <div class="ui-card-accent" style="background:#10b981"></div>
                     <div class="card-header bg-transparent border-0 p-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-puzzle text-success me-2"></i>M&oacute;dulos Disponibles</h5>
                     </div>
                     <div class="card-body p-4 pt-0">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <button type="button" id="selectAll" class="btn btn-sm btn-outline-success rounded-pill"><i class="bi bi-check-all me-1"></i>Seleccionar todos</button>
-                            <button type="button" id="deselectAll" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="bi bi-x me-1"></i>Deseleccionar todos</button>
+                            <button type="button" id="selectAll" class="ui-btn ui-btn-solid btn-sm rounded-pill" style="background:#10b981;border-color:#10b981"><i class="bi bi-check-all me-1"></i>Seleccionar todos</button>
+                            <button type="button" id="deselectAll" class="ui-btn ui-btn-ghost btn-sm rounded-pill"><i class="bi bi-x me-1"></i>Deseleccionar todos</button>
                         </div>
 
                         <div class="row g-2">
