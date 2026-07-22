@@ -458,8 +458,7 @@ $(document).ready(function() {
             url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
         },
         columnDefs: [
-            { orderable: false, targets: [3, 4, 5, 6] },
-            { className: 'text-end', targets: [3, 4, 5, 6] }
+            { orderable: false, className: 'text-end', targets: [3, 4, 5, 6] }
         ],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
