@@ -126,28 +126,21 @@ class ListaPrecioController extends Controller
         DB::transaction(function () use ($request, $listaPrecio, &$count) {
             foreach ($request->precios as $item) {
                 $precioNuevo = (float) $item['precio'];
-                $existing = ListaPrecioItem::where('lista_precio_id', $listaPrecio->id)
-                    ->where('producto_id', $item['producto_id'])
-                    ->first();
-
-                $precioAnterior = $existing ? (float) $existing->precio : 0;
-
-                if ($existing) {
-                    $existing->update([
-                        'precio' => $precioNuevo,
-                        'tenant_id' => Auth::user()->business_instance_id,
-                    ]);
-                } else {
-                    ListaPrecioItem::create([
+                $itemModel = ListaPrecioItem::updateOrCreate(
+                    [
                         'lista_precio_id' => $listaPrecio->id,
                         'producto_id' => $item['producto_id'],
+                    ],
+                    [
                         'precio' => $precioNuevo,
                         'tenant_id' => Auth::user()->business_instance_id,
-                    ]);
-                }
+                    ]
+                );
+
+                $precioAnterior = (float) $itemModel->getOriginal('precio');
 
                 // Log price change if price was updated (not created)
-                if ($existing && abs($precioAnterior - $precioNuevo) > 0.001) {
+                if (!$itemModel->wasRecentlyCreated && abs($precioAnterior - $precioNuevo) > 0.001) {
                     ListaPrecioLog::create([
                         'tenant_id' => Auth::user()->business_instance_id,
                         'lista_precio_id' => $listaPrecio->id,
@@ -202,12 +195,16 @@ class ListaPrecioController extends Controller
         ]);
 
         foreach ($listaPrecio->items as $item) {
-            ListaPrecioItem::create([
-                'lista_precio_id' => $nueva->id,
-                'producto_id' => $item->producto_id,
-                'precio' => $item->precio,
-                'tenant_id' => Auth::user()->business_instance_id,
-            ]);
+            ListaPrecioItem::firstOrCreate(
+                [
+                    'lista_precio_id' => $nueva->id,
+                    'producto_id' => $item->producto_id,
+                ],
+                [
+                    'precio' => $item->precio,
+                    'tenant_id' => Auth::user()->business_instance_id,
+                ]
+            );
         }
 
         return redirect()->route('listas-precio.edit', $nueva)
