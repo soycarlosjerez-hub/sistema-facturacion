@@ -18,22 +18,9 @@ class Formulario1414Controller extends Controller
         $sucursalId = session('sucursal_id');
         $resumen = $this->retentionService->generarResumenRetenciones($mes, $anio, $sucursalId);
 
-        // Obtener proveedores con retenciones
-        $proveedores = \App\Models\Compra::select('proveedor_id')
-            ->whereMonth('fecha', $mes)
-            ->whereYear('fecha', $anio)
-            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
-            ->where(function($q) {
-                $q->where('retencion_itbis', '>', 0)
-                  ->orWhere('retencion_isr', '>', 0);
-            })
-            ->distinct()
-            ->with('proveedor')
-            ->get();
-
         $mesNombre = \Carbon\Carbon::create($anio, $mes, 1)->format('F');
 
-        return view('formularios.14-14.index', compact('resumen', 'proveedores', 'mes', 'anio', 'mesNombre'));
+        return view('formularios.14-14.index', compact('resumen', 'mes', 'anio', 'mesNombre'));
     }
 
     public function exportPdf(Request $request)

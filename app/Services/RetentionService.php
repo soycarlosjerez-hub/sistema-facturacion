@@ -242,17 +242,47 @@ class RetentionService
             ],
         ];
 
-        // Detalles de compras
+        // Detalles de compras — separar ITBIS e ISR correctamente
         foreach ($compras as $compra) {
-            if ($compra->retencion_itbis > 0 || $compra->retencion_isr > 0) {
-                $resumen['itbis_compras']['detalles'][] = [
-                    'compra_id' => $compra->id,
-                    'proveedor' => $compra->proveedor->nombre,
-                    'rnc' => $compra->proveedor->rnc,
+            $detalleBase = [
+                'compra_id' => $compra->id,
+                'proveedor' => $compra->proveedor?->nombre ?? 'N/A',
+                'rnc'       => $compra->proveedor?->rnc ?? 'N/A',
+                'fecha'     => $compra->fecha?->format('Y-m-d') ?? now()->format('Y-m-d'),
+            ];
+
+            if ($compra->retencion_itbis > 0) {
+                $resumen['itbis_compras']['detalles'][] = array_merge($detalleBase, [
                     'itbis_retenido' => $compra->retencion_itbis,
-                    'isr_retenido' => $compra->retencion_isr,
-                    'fecha' => $compra->fecha->format('Y-m-d'),
-                ];
+                    'isr_retenido'   => 0,
+                ]);
+            }
+
+            if ($compra->retencion_isr > 0) {
+                $resumen['isr_compras']['detalles'][] = array_merge($detalleBase, [
+                    'isr_retenido'   => $compra->retencion_isr,
+                    'itbis_retenido' => 0,
+                ]);
+            }
+        }
+
+        // Calcular ITBIS cobrado en ventas (retención de vendedor)
+        foreach ($ventas as $venta) {
+            if ($venta->estado === 'completada') {
+                $retenciones = is_array($venta->retenciones) ? $venta->retenciones : [];
+                $totalItbisVend = (float)($retenciones['itbis_vendedor']['monto'] ?? 0);
+
+                if ($totalItbisVend > 0) {
+                    $resumen['itbis_ventas']['total_retenido'] += $totalItbisVend;
+                    $resumen['itbis_ventas']['cantidad_ventas']++;
+                    $resumen['itbis_ventas']['detalles'][] = [
+                        'venta_id'       => $venta->id,
+                        'cliente'        => $venta->cliente?->nombre ?? 'N/A',
+                        'rnc'            => $venta->cliente?->rnc_cedula ?? 'N/A',
+                        'itbis_retenido' => $totalItbisVend,
+                        'fecha'          => $venta->created_at->format('Y-m-d'),
+                    ];
+                }
             }
         }
 

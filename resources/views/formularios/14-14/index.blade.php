@@ -328,6 +328,7 @@
                     @php
                         // Agrupar datos por proveedor desde los detalles
                         $agrupado = collect();
+                        
                         if (!empty($resumen['itbis_compras']['detalles'])) {
                             foreach ($resumen['itbis_compras']['detalles'] as $d) {
                                 $key = $d['rnc'] ?? 'sin-rnc';
@@ -338,10 +339,17 @@
                                         'itbis'     => 0,
                                         'isr'       => 0,
                                         'cantidad'  => 0,
+                                        '_ids'      => [],
                                     ];
                                 }
                                 $agrupado[$key]['itbis'] += $d['itbis_retenido'] ?? 0;
-                                $agrupado[$key]['cantidad']++;
+                                $cid = $d['compra_id'] ?? null;
+                                if ($cid && !in_array($cid, $agrupado[$key]['_ids'])) {
+                                    $agrupado[$key]['_ids'][] = $cid;
+                                    $agrupado[$key]['cantidad']++;
+                                } elseif (!$cid) {
+                                    $agrupado[$key]['cantidad']++;
+                                }
                             }
                         }
                         if (!empty($resumen['isr_compras']['detalles'])) {
@@ -354,15 +362,24 @@
                                         'itbis'     => 0,
                                         'isr'       => 0,
                                         'cantidad'  => 0,
+                                        '_ids'      => [],
                                     ];
                                 }
                                 $agrupado[$key]['isr'] += $d['isr_retenido'] ?? 0;
-                                if (($d['itbis_retenido'] ?? 0) > 0) {
+                                $cid = $d['compra_id'] ?? null;
+                                if ($cid && !in_array($cid, $agrupado[$key]['_ids'])) {
+                                    $agrupado[$key]['_ids'][] = $cid;
                                     $agrupado[$key]['cantidad']++;
+                                } elseif (!$cid) {
+                                    // Sin compra_id, contar solo si isr > 0 (para no duplicar)
+                                    if (($d['isr_retenido'] ?? 0) > 0) {
+                                        $agrupado[$key]['cantidad']++;
+                                    }
                                 }
                             }
                         }
-                        $agrupado = $agrupado->values();
+                        // Limpiar campo interno _ids antes de renderizar
+                        $agrupado = $agrupado->map(fn($p) => collect($p)->except('_ids')->all())->values();
                     @endphp
 
                     @if($agrupado->isNotEmpty())
