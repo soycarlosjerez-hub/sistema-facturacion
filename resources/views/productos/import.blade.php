@@ -29,31 +29,33 @@ body.dark-mode .mapping-row:hover { background: rgba(255,255,255,.03); }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-upload"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Importar Productos</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">Importar Productos</div>
+                    <div class="ui-header-meta">
                         @if(!isset($step) || $step !== 'map')
                             <i class="bi bi-file-earmark me-1"></i>Sube un archivo CSV o Excel con tus productos
                         @else
                             <i class="bi bi-diagram-3 me-1"></i>Asigna las columnas del archivo a los campos del producto
                         @endif
-                    </small>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('productos.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('productos.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -69,13 +71,13 @@ body.dark-mode .mapping-row:hover { background: rgba(255,255,255,.03); }
 
     @if(!isset($step) || $step !== 'map')
         {{-- STEP 1: Upload --}}
-        <div class="premium-card mb-4" style="animation-delay:.1s;">
-            <div class="card-accent blue"></div>
-            <div class="premium-card-title">
+        <div class="ui-card mb-4" style="--delay:.1s;">
+            <div class="ui-card-accent"></div>
+            <div class="ui-card-title">
                 <i class="bi bi-cloud-arrow-up icon-blue"></i>
                 Subir archivo
             </div>
-            <div class="premium-card-subtitle">Arrastra o selecciona tu archivo CSV/Excel</div>
+            <div class="ui-card-subtitle">Arrastra o selecciona tu archivo CSV/Excel</div>
             <div class="card-body p-4">
                 <form action="{{ route('productos.import.preview') }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -102,8 +104,8 @@ body.dark-mode .mapping-row:hover { background: rgba(255,255,255,.03); }
             </div>
         </div>
 
-        <div class="premium-card mb-4" style="animation-delay:.15s;">
-            <div class="card-accent blue"></div>
+        <div class="ui-card mb-4" style="--delay:.15s;">
+            <div class="ui-card-accent"></div>
             <div class="card-body p-4">
                 <h6 class="fw-bold mb-3"><i class="bi bi-info-circle text-info me-1"></i>Consejos</h6>
                 <ul class="text-muted small mb-0">
@@ -115,9 +117,9 @@ body.dark-mode .mapping-row:hover { background: rgba(255,255,255,.03); }
             </div>
         </div>
 
-        <div class="premium-card" style="animation-delay:.2s;">
-            <div class="card-accent blue"></div>
-            <div class="premium-card-title">
+        <div class="ui-card" style="--delay:.2s;">
+            <div class="ui-card-accent"></div>
+            <div class="ui-card-title">
                 <i class="bi bi-file-text" style="color:#10b981;"></i>
                 Formato de ejemplo
             </div>
@@ -182,16 +184,16 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
             <input type="hidden" name="hash" value="{{ $hash }}">
             <input type="hidden" name="delimiter" value="{{ $delimiter }}">
 
-            <div class="premium-card mb-4" style="animation-delay:.1s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-card mb-4" style="--delay:.1s;">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex justify-content-between align-items-center px-4 pt-4">
-                    <div class="premium-card-title" style="padding:0;">
+                    <div class="ui-card-title" style="padding:0;">
                         <i class="bi bi-diagram-3 icon-blue"></i>
                         Mapeo de Columnas
                     </div>
                     <span class="badge rounded-pill" style="background:rgba(99,102,241,.1);color:#4f46e5;font-weight:600;">{{ count($headers) }} columnas</span>
                 </div>
-                <div class="premium-card-subtitle">Asigna cada columna del archivo al campo correspondiente</div>
+                <div class="ui-card-subtitle">Asigna cada columna del archivo al campo correspondiente</div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
@@ -212,7 +214,7 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
                                         </div>
                                     </td>
                                     <td>
-                                        <select name="mapping[{{ $field }}]" class="form-select form-select-sm" style="max-width:300px;border-radius:.65rem;">
+                                        <select name="mapping[{{ $field }}]" class="ui-select ui-select-sm" style="max-width:300px;border-radius:.65rem;">
                                             <option value="">— No mapear —</option>
                                             @foreach($headers as $header)
                                                 <option value="{{ $header }}" 
@@ -237,8 +239,8 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
                 </div>
             </div>
 
-            <div class="premium-card mb-4" style="animation-delay:.15s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-card mb-4" style="--delay:.15s;">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-4">
                     <div class="d-flex align-items-start gap-3">
                         <i class="bi bi-info-circle text-info mt-1"></i>

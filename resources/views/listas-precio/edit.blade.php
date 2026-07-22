@@ -4,30 +4,13 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 44%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
-    .premium-card .form-check-input:checked {
-        background-color: #8b5cf6;
-        border-color: #8b5cf6;
-    }
     .margin-positive { color: #198754; font-weight: 600; }
     .margin-negative { color: #dc3545; font-weight: 600; }
     .margin-zero { color: #6c757d; font-weight: 600; }
-    .premium-sticky-bar { border-top-color: #8b5cf6 !important; }
-    .premium-sticky-bar .btn-save { background: linear-gradient(135deg, #8b5cf6, #a855f7) !important; box-shadow: 0 4px 14px rgba(139,92,246,.3) !important; }
     .precio-lista:focus { border-color: #8b5cf6 !important; box-shadow: 0 0 0 3px rgba(139,92,246,.15) !important; }
     .producto-no-lista:not(.d-none) td { opacity: 0.5; font-style: italic; }
     .estado-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: .65rem; }
     .estado-badge-sin { background: #f1f5f9; color: #94a3b8; }
-    body.dark-mode .premium-sticky-bar { border-top-color: #a855f7 !important; }
     body.dark-mode .precio-lista:focus { border-color: #a855f7 !important; box-shadow: 0 0 0 3px rgba(139,92,246,.25) !important; }
     body.dark-mode .estado-badge-sin { background: rgba(30,41,59,.8); color: #475569; }
     .precios-table thead th {
@@ -61,35 +44,34 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-tag"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Editar Lista de Precios</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-pencil me-1"></i>
-                        {{ $listaPrecio->nombre }}
-                    </small>
+                    <h4 class="ui-header-title">Editar Lista de Precios</h4>
+                    <div class="ui-header-meta">{{ $listaPrecio->nombre }}</div>
                 </div>
             </div>
-            <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('listas-precio.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-8">
-            <div class="premium-card" style="animation-delay:.1s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex justify-content-between align-items-center p-4 pb-0">
                     <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2" style="color: #8b5cf6;"></i>Productos y Precios</h5>
                 </div>
@@ -109,9 +91,9 @@
                         <tbody>
                             <tr>
                                 <td colspan="7" class="text-center py-3">
-                                    <div class="input-group" style="max-width:400px;margin:0 auto;">
-                                        <input type="text" id="filtroProducto" class="form-control" placeholder="Filtrar productos...">
-                                        <button class="btn btn-outline-primary" id="btnAgregarProducto" type="button"><i class="bi bi-plus-lg"></i> Agregar</button>
+                                    <div class="ui-input-group" style="max-width:400px;margin:0 auto;">
+                                        <input type="text" id="filtroProducto" class="ui-input" placeholder="Filtrar productos...">
+                                        <button class="ui-btn ui-btn-ghost" id="btnAgregarProducto" type="button"><i class="bi bi-plus-lg"></i> Agregar</button>
                                     </div>
                                 </td>
                             </tr>
@@ -156,10 +138,10 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="premium-card mb-3" style="animation-delay:.15s;">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-gear icon-purple"></i>
+            <div class="ui-card mb-3" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-gear me-2"></i>
                     Informaci&oacute;n
                 </div>
                 <div class="card-body">
@@ -179,25 +161,25 @@
                     <form id="listaPrecioForm" action="{{ route('listas-precio.update', $listaPrecio) }}" method="POST">
                         @csrf @method('PUT')
                         <div class="mb-2">
-                            <label class="form-label">Nombre</label>
-                            <input type="text" name="nombre" class="form-control" value="{{ $listaPrecio->nombre }}" required>
+                            <label class="ui-label">Nombre</label>
+                            <input type="text" name="nombre" class="ui-input" value="{{ $listaPrecio->nombre }}" required>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">C&oacute;digo</label>
-                            <input type="text" name="codigo" class="form-control" value="{{ $listaPrecio->codigo }}" required>
+                            <label class="ui-label">C&oacute;digo</label>
+                            <input type="text" name="codigo" class="ui-input" value="{{ $listaPrecio->codigo }}" required>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">Descripci&oacute;n</label>
-                            <textarea name="descripcion" class="form-control" rows="2">{{ $listaPrecio->descripcion }}</textarea>
+                            <label class="ui-label">Descripci&oacute;n</label>
+                            <textarea name="descripcion" class="ui-textarea" rows="2">{{ $listaPrecio->descripcion }}</textarea>
                         </div>
                         <div class="row g-2 mb-2">
                             <div class="col-6">
-                                <label class="form-label">Vigencia desde</label>
-                                <input type="date" name="vigencia_desde" class="form-control" value="{{ $listaPrecio->vigencia_desde?->format('Y-m-d') }}">
+                                <label class="ui-label">Vigencia desde</label>
+                                <input type="date" name="vigencia_desde" class="ui-input" value="{{ $listaPrecio->vigencia_desde?->format('Y-m-d') }}">
                             </div>
                             <div class="col-6">
-                                <label class="form-label">Vigencia hasta</label>
-                                <input type="date" name="vigencia_hasta" class="form-control" value="{{ $listaPrecio->vigencia_hasta?->format('Y-m-d') }}">
+                                <label class="ui-label">Vigencia hasta</label>
+                                <input type="date" name="vigencia_hasta" class="ui-input" value="{{ $listaPrecio->vigencia_hasta?->format('Y-m-d') }}">
                             </div>
                         </div>
                         <div class="form-check form-switch mb-3">
@@ -208,10 +190,10 @@
                 </div>
             </div>
 
-            <div class="premium-card" style="animation-delay:.2s;">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-lightning icon-purple"></i>
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-lightning me-2"></i>
                     Acciones R&aacute;pidas
                 </div>
                 <div class="card-body">
@@ -229,7 +211,7 @@
                     </form>
                     <form action="{{ route('listas-precio.destroy', $listaPrecio) }}" method="POST" class="d-inline">
                         @csrf @method('DELETE')
-                        <button type="button" class="premium-btn-delete w-100 rounded-pill btn-sm" onclick="confirmDelete('{{ route('listas-precio.destroy', $listaPrecio) }}', '{{ addslashes($listaPrecio->nombre) }}')">
+                        <button type="button" class="ui-action ui-action-delete w-100 rounded-pill btn-sm" onclick="UI.confirm.delete('{{ route('listas-precio.destroy', $listaPrecio) }}', '{{ addslashes($listaPrecio->nombre) }}')">
                             <i class="bi bi-trash me-1"></i>Eliminar lista
                         </button>
                     </form>
@@ -240,20 +222,20 @@
 
     <div style="height: 80px;"></div>
 
-    <div id="stickySaveBar" class="premium-sticky-bar">
-        <div class="d-flex align-items-center justify-content-between">
+    <div id="stickySaveBar" class="ui-sticky-bar">
+        <div class="ui-sticky-bar-inner flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-info-circle" style="color: #8b5cf6;"></i>
+                <i class="bi bi-info-circle" style="color: var(--accent);"></i>
                 <span class="fw-semibold d-none d-sm-inline">Editando: {{ $listaPrecio->nombre }}</span>
                 <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill small px-2 border border-warning border-opacity-25" id="cambiosPendientesBadge" style="display:none;">
                     <i class="bi bi-exclamation-circle me-1"></i>Precios sin guardar
                 </span>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button type="button" id="btnGuardarPrecios" class="btn-save">
+                <button type="button" id="btnGuardarPrecios" class="ui-btn ui-btn-solid rounded-pill">
                     <i class="bi bi-coin me-1"></i>Guardar Precios
                 </button>
-                <button type="submit" form="listaPrecioForm" class="btn-save">
+                <button type="submit" form="listaPrecioForm" class="ui-btn ui-btn-solid rounded-pill">
                     <i class="bi bi-save me-1"></i>Guardar Datos
                 </button>
                 <button type="button" class="btn-close ms-2" aria-label="Cerrar" onclick="document.getElementById('stickySaveBar').style.display='none'" style="filter:invert(0.5);"></button>
@@ -334,25 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
 @push('scripts')
 <script>
 function confirmDelete(url, nombre) {
-    Swal.fire({
-        title: '¿Eliminar lista?',
-        text: `Se eliminará: "${nombre}"`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then(result => {
-        if (result.isConfirmed) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = url;
-            form.innerHTML = '@csrf @method("DELETE")';
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
+    UI.confirm.delete(url, nombre);
 }
 </script>
 @endpush

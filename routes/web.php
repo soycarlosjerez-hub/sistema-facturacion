@@ -1001,5 +1001,10 @@ Route::middleware(['auth', 'instance.blocked'])->prefix('setup')->name('setup.')
     Route::get('/wizard/abrir-caja', [\App\Http\Controllers\SetupWizardController::class, 'abrirCaja'])->name('abrir-caja');
 });
 
+// UI System Demo
+Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function () {
+    Route::get('/', fn() => view('ui-demo.index'))->name('index');
+});
+
 require __DIR__ . '/auth.php';
 

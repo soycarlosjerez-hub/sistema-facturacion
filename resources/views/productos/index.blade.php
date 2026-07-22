@@ -6,7 +6,7 @@
 @include('partials.premium-ui')
 <style>
 :root {
-    --dt-primary: #3b82f6;
+    --dt-primary: #6366f1;
     --dt-indigo: #6366f1;
     --dt-violet: #4f46e5;
     --dt-success: #22c55e;
@@ -24,7 +24,7 @@
     --dt-gray-800: #1e293b;
     --dt-gray-900: #0f172a;
     --dt-radius: 0.5rem;
-    --dt-shadow: 0 2px 8px rgba(59,130,246,.25);
+    --dt-shadow: 0 2px 8px rgba(99,102,241,.25);
     --dt-transition: 0.15s;
 }
 
@@ -309,28 +309,25 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
 
-    <div class="premium-header mb-4" style="--module-color: #3b82f6; --module-color-light: #60a5fa;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-box-seam"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Catálogo de Productos</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-grid me-1"></i>
-                        Administración de inventario, precios y existencias
-                    </small>
+                    <h4 class="ui-header-title">Catálogo de Productos</h4>
+                    <div class="ui-header-meta">Administración de inventario, precios y existencias</div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('productos.create')
-                <a href="{{ route('productos.create') }}" class="btn-glass">
+                <a href="{{ route('productos.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo Producto
                 </a>
                 @endcan
@@ -338,20 +335,20 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" action="{{ route('productos.index') }}" id="filtros-form" class="row g-2 align-items-end" role="search" aria-label="Filtros de productos">
                 <div class="col-12 col-sm-6 col-lg-3">
-                    <label class="form-label small fw-bold text-muted" for="busqueda-producto">Buscar</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
-                        <input type="text" name="nombre" id="busqueda-producto" class="form-control" placeholder="Nombre, código o SKU..." value="{{ request('nombre') }}" autocomplete="off">
+                    <label class="ui-label small fw-bold text-muted" for="busqueda-producto">Buscar</label>
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+                        <input type="text" name="nombre" id="busqueda-producto" class="ui-input" placeholder="Nombre, código o SKU..." value="{{ request('nombre') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-6 col-sm-3 col-lg-2">
-                    <label class="form-label small fw-bold text-muted" for="filter-stock">Stock</label>
-                    <select name="stock_status" id="filter-stock" class="form-select">
+                    <label class="ui-label small fw-bold text-muted" for="filter-stock">Stock</label>
+                    <select name="stock_status" id="filter-stock" class="ui-select">
                         <option value="">Todos</option>
                         <option value="critical" {{ request('stock_status') == 'critical' ? 'selected' : '' }}>Crítico (&le; 5)</option>
                         <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Bajo (6-15)</option>
@@ -359,34 +356,34 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
                     </select>
                 </div>
                 <div class="col-6 col-sm-3 col-lg-2">
-                    <label class="form-label small fw-bold text-muted" for="filter-activo">Estado</label>
-                    <select name="activo" id="filter-activo" class="form-select">
+                    <label class="ui-label small fw-bold text-muted" for="filter-activo">Estado</label>
+                    <select name="activo" id="filter-activo" class="ui-select">
                         <option value="">Todos</option>
                         <option value="1" {{ request('activo') === '1' ? 'selected' : '' }}>Activos</option>
                         <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivos</option>
                     </select>
                 </div>
                 <div class="col-6 col-sm-3 col-lg-2">
-                    <label class="form-label small fw-bold text-muted" for="filter-precio-min">Precio Mín.</label>
-                    <input type="number" name="precio_min" id="filter-precio-min" class="form-control" placeholder="RD$ 0.00" value="{{ request('precio_min') }}" step="0.01" min="0">
+                    <label class="ui-label small fw-bold text-muted" for="filter-precio-min">Precio Mín.</label>
+                    <input type="number" name="precio_min" id="filter-precio-min" class="ui-input" placeholder="RD$ 0.00" value="{{ request('precio_min') }}" step="0.01" min="0">
                 </div>
                 <div class="col-6 col-sm-3 col-lg-2">
-                    <label class="form-label small fw-bold text-muted" for="filter-precio-max">Precio Máx.</label>
-                    <input type="number" name="precio_max" id="filter-precio-max" class="form-control" placeholder="RD$ 0.00" value="{{ request('precio_max') }}" step="0.01" min="0">
+                    <label class="ui-label small fw-bold text-muted" for="filter-precio-max">Precio Máx.</label>
+                    <input type="number" name="precio_max" id="filter-precio-max" class="ui-input" placeholder="RD$ 0.00" value="{{ request('precio_max') }}" step="0.01" min="0">
                 </div>
                 <div class="col-12 col-lg-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('productos.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('productos.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-12">
                     <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('productos.import') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('productos.import') }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-upload me-1"></i> Importar CSV
                         </a>
-                        <a href="{{ route('productos.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('productos.exportar', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-excel me-1"></i> Excel
                         </a>
-                        <a href="{{ route('productos.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('productos.pdf', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-pdf me-1"></i> PDF
                         </a>
                     </div>
@@ -395,8 +392,8 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-0">
             <div id="productos-table_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
                 <table id="productos-table" class="table productos-table nowrap no-footer" role="grid" style="width:100%" aria-label="Listado de productos">
@@ -575,13 +572,13 @@ $(function() {
                 searchable: false,
                 render: function(data) {
                     let actions = '<div class="d-flex justify-content-end gap-1">';
-                    actions += '<a href="' + API_BASE + '/' + data.id + '" class="premium-btn-edit" title="Ver" style="background:rgba(59,130,246,.1);color:#3b82f6;border-color:rgba(59,130,246,.2);"><i class="bi bi-eye"></i></a>';
-                    if (canEdit) actions += '<a href="' + API_BASE + '/' + data.id + '/edit" class="premium-btn-edit" title="Editar"><i class="bi bi-pencil"></i></a>';
+                    actions += '<a href="' + API_BASE + '/' + data.id + '" class="ui-action ui-action-edit" title="Ver"><i class="bi bi-eye"></i></a>';
+                    if (canEdit) actions += '<a href="' + API_BASE + '/' + data.id + '/edit" class="ui-action ui-action-edit" title="Editar"><i class="bi bi-pencil"></i></a>';
                     if (canToggle) {
                         const activo = !!data.activo;
-                        actions += '<button type="button" class="premium-btn-edit toggle-activo" title="' + (activo ? 'Desactivar' : 'Activar') + '" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '" data-activo="' + (activo ? '1' : '0') + '" style="background:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.1);color:' + (activo ? '#ef4444' : '#22c55e') + ';border-color:rgba(' + (activo ? '239,68,68' : '34,197,94') + ',.2);"><i class="bi bi-' + (activo ? 'pause-circle' : 'play-circle') + '"></i></button>';
+                        actions += '<button type="button" class="ui-action ui-action-edit toggle-activo" title="' + (activo ? 'Desactivar' : 'Activar') + '" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '" data-activo="' + (activo ? '1' : '0') + '"><i class="bi bi-' + (activo ? 'pause-circle' : 'play-circle') + '"></i></button>';
                     }
-                    if (canDelete) actions += '<button type="button" class="premium-btn-delete border-0 btn-delete-producto" title="Eliminar" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '"><i class="bi bi-trash"></i></button>';
+                    if (canDelete) actions += '<button type="button" class="ui-action ui-action-delete border-0 btn-delete-producto" title="Eliminar" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre) + '"><i class="bi bi-trash"></i></button>';
                     actions += '</div>';
                     return actions;
                 }

@@ -4,20 +4,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
-    .premium-card .form-check-input:checked {
-        background-color: #8b5cf6;
-        border-color: #8b5cf6;
-    }
     .producto-toggle {
         display: flex;
         align-items: center;
@@ -87,26 +73,26 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#ec4899;--accent-rgb:236,72,153;--accent-hover:#db2777;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-tags"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Editar Categoría</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-pencil me-1"></i>{{ $categoria->nombre }}
-                    </small>
+                    <h4 class="ui-header-title">Editar Categoría</h4>
+                    <div class="ui-header-meta">{{ $categoria->nombre }}</div>
                 </div>
             </div>
-            <a href="{{ route('categorias.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('categorias.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -120,8 +106,8 @@
             </div>
         @endif
 
-        <div class="alert alert-info rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #8b5cf6 !important;background:rgba(139,92,246,0.06);">
-            <i class="bi bi-info-circle me-2" style="color:#8b5cf6;"></i>
+        <div class="alert alert-info rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #ec4899 !important;background:rgba(236,72,153,0.06);">
+            <i class="bi bi-info-circle me-2" style="color:#ec4899;"></i>
             <span class="fw-semibold">Estás editando la categoría:</span>
             <strong>{{ $categoria->nombre }}</strong>
         </div>
@@ -132,24 +118,24 @@
 
             <div class="row g-4 mb-4">
                 <div class="col-lg-4">
-                    <div class="premium-card">
-                        <div class="card-accent purple"></div>
+                    <div class="ui-card">
+                        <div class="ui-card-accent"></div>
                         <div class="card-body p-4">
                             <div class="mb-4 pb-3 border-bottom">
-                                <h6 class="fw-bold mb-0" style="color: #8b5cf6;">
+                                <h6 class="fw-bold mb-0 ui-card-title">
                                     <i class="bi bi-info-circle me-2"></i>Información de la Categoría
                                 </h6>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label small fw-semibold">Nombre <span class="text-danger">*</span></label>
-                                <input type="text" name="nombre" class="form-control form-control-lg @error('nombre') is-invalid @enderror" value="{{ old('nombre', $categoria->nombre) }}" required placeholder="Ej. Alimentos, Bebidas, Limpieza">
+                                <label class="ui-label small fw-semibold">Nombre <span class="text-danger">*</span></label>
+                                <input type="text" name="nombre" class="ui-input ui-input-lg @error('nombre') is-invalid @enderror" value="{{ old('nombre', $categoria->nombre) }}" required placeholder="Ej. Alimentos, Bebidas, Limpieza">
                                 @error('nombre')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label small fw-semibold">Descripción</label>
-                                <textarea name="descripcion" class="form-control form-control-lg" rows="3" placeholder="Descripción opcional de la categoría">{{ old('descripcion', $categoria->descripcion) }}</textarea>
+                                <label class="ui-label small fw-semibold">Descripción</label>
+                                <textarea name="descripcion" class="ui-textarea ui-input-lg" rows="3" placeholder="Descripción opcional de la categoría">{{ old('descripcion', $categoria->descripcion) }}</textarea>
                             </div>
 
                             <div class="p-3 bg-light rounded-3">
@@ -164,37 +150,37 @@
                         </div>
                     </div>
 
-                    <div class="premium-card mt-3">
-                        <div class="card-accent purple"></div>
+                    <div class="ui-card mt-3">
+                        <div class="ui-card-accent"></div>
                         <div class="card-body text-center">
-                            <div class="stat-label">Productos Seleccionados</div>
-                            <div class="stat-value" style="color: #8b5cf6;" id="selectedCount">{{ $productos->where('categoria_id', $categoria->id)->count() }}</div>
+                            <div class="ui-stat-label">Productos Seleccionados</div>
+                            <div class="ui-stat-value" style="color: #ec4899;" id="selectedCount">{{ $productos->where('categoria_id', $categoria->id)->count() }}</div>
                             <small class="text-muted">de {{ $productos->count() }} disponibles</small>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-8">
-                    <div class="premium-card">
-                        <div class="card-accent purple"></div>
+                    <div class="ui-card">
+                        <div class="ui-card-accent"></div>
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                                 <div>
-                                    <h5 class="fw-bold mb-0" style="color: #8b5cf6;">
+                                    <h5 class="fw-bold mb-0 ui-card-title">
                                         <i class="bi bi-box-seam me-2"></i>Productos en esta Categoría
                                     </h5>
                                     <small class="text-muted">Selecciona los productos que pertenecerán a esta categoría</small>
                                 </div>
                                 <div class="d-flex gap-2 align-items-center quick-actions">
-                                    <button type="button" class="btn btn-outline-success" onclick="selectAll()">
+                                    <button type="button" class="ui-btn ui-btn-solid btn-sm" onclick="selectAll()" style="background:var(--accent);border-color:var(--accent);">
                                         <i class="bi bi-check-all me-1"></i>Todos
                                     </button>
-                                    <button type="button" class="btn btn-outline-warning" onclick="clearAll()">
+                                    <button type="button" class="ui-btn ui-btn-ghost btn-sm" onclick="clearAll()">
                                         <i class="bi bi-x-lg me-1"></i>Limpiar
                                     </button>
-                                    <div class="input-group" style="max-width: 220px;">
-                                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                                        <input type="text" id="productoFilter" class="form-control border-0 bg-light" placeholder="Buscar producto...">
+                                    <div class="ui-input-group" style="max-width: 220px;">
+                                        <span class="ui-input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                                        <input type="text" id="productoFilter" class="ui-input border-0 bg-light" placeholder="Buscar producto...">
                                     </div>
                                 </div>
                             </div>
@@ -237,18 +223,18 @@
     </div>
 </div>
 
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-between align-items-center">
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
         <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>
+            <i class="bi bi-info-circle" style="color:var(--accent);"></i>
             <span class="fw-semibold d-none d-sm-inline">Editando: {{ $categoria->nombre }}</span>
-            <span class="badge rounded-pill" style="background: rgba(139,92,246,0.15); color: #7c3aed;" id="stickyCount">
+            <span class="badge rounded-pill" style="background: rgba(236,72,153,0.15); color: #db2777;" id="stickyCount">
                 {{ $productos->where('categoria_id', $categoria->id)->count() }} productos
             </span>
         </div>
         <div>
-            <a href="{{ route('categorias.index') }}" class="btn-cancel me-2">Cancelar</a>
-            <button type="submit" form="categoriaForm" class="btn-save">
+            <a href="{{ route('categorias.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="categoriaForm" class="ui-btn ui-btn-solid rounded-pill px-5">
                 <i class="bi bi-check-lg me-2"></i>Actualizar Categoría
             </button>
         </div>

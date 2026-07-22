@@ -29,14 +29,6 @@
 .ventas-table tbody tr:last-child td { border-bottom: none; }
 .ventas-table tbody tr { transition: background .15s; }
 .ventas-table tbody tr:hover { background: rgba(59,130,246,.03); }
-.avatar-circle {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 1.2rem;
-    transition: transform 0.2s;
-}
-tr:hover .avatar-circle { transform: scale(1.1); }
 .status-badge {
     padding: 0.4em 0.8em;
     border-radius: 2rem;
@@ -57,31 +49,29 @@ body.dark-mode .ventas-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-receipt"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Gestión de Ventas</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-receipt me-1"></i>
+                    <h4 class="ui-header-title">Gestión de Ventas</h4>
+                    <div class="ui-header-meta">
                         Administración de ventas, facturación y cuentas por cobrar
                         <span class="mx-2">·</span>
-                        <i class="bi bi-list-ul me-1"></i>
                         {{ $ventas->total() }} registro(s)
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('ventas.create')
-                <a href="{{ route('ventas.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('ventas.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Venta
                 </a>
                 @endcan
@@ -89,37 +79,37 @@ body.dark-mode .ventas-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" class="row g-2 align-items-center" id="filtros-form">
                 <div class="col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="cliente" id="busqueda-cliente" class="form-control" placeholder="Buscar por cliente o NCF..." value="{{ request('cliente') }}" autocomplete="off">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="cliente" id="busqueda-cliente" class="ui-input" placeholder="Buscar por cliente o NCF..." value="{{ request('cliente') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="desde" class="form-control" value="{{ request('desde') }}" placeholder="Desde">
+                    <input type="date" name="desde" class="ui-input" value="{{ request('desde') }}" placeholder="Desde">
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}" placeholder="Hasta">
+                    <input type="date" name="hasta" class="ui-input" value="{{ request('hasta') }}" placeholder="Hasta">
                 </div>
                 <div class="col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('ventas.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('ventas.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-lg-2 text-end"></div>
             </form>
             @can('ventas.export')
             <div class="d-flex gap-2 mt-3 pt-3 border-top">
-                <a href="{{ route('ventas.csv', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                <a href="{{ route('ventas.csv', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                     <i class="bi bi-filetype-csv me-1"></i> CSV
                 </a>
-                <a href="{{ route('ventas.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                <a href="{{ route('ventas.exportar', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                     <i class="bi bi-file-excel me-1"></i> Excel
                 </a>
-                <a href="{{ route('ventas.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                <a href="{{ route('ventas.pdf', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                     <i class="bi bi-file-pdf me-1"></i> PDF
                 </a>
             </div>
@@ -127,8 +117,8 @@ body.dark-mode .ventas-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table ventas-table">
@@ -183,7 +173,7 @@ body.dark-mode .ventas-table tbody td {
                                     <div class="text-muted small"><i class="bi bi-clock me-1"></i>{{ $v->created_at->format('h:i A') }}</div>
                                 </td>
                                 <td>
-                                    <span class="premium-badge {{ $esFiado ? 'active' : '' }}" style="{{ !$esFiado ? 'background:rgba(59,130,246,.1);color:#3b82f6;border-color:rgba(59,130,246,.2);' : '' }}">
+                                    <span class="ui-badge-info">
                                         @if($esFiado)
                                             <i class="bi bi-credit-card me-1"></i>
                                         @else
@@ -213,20 +203,20 @@ body.dark-mode .ventas-table tbody td {
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="d-flex justify-content-end gap-1">
-                                        <a href="{{ route('ventas.show', $v->id) }}" class="premium-btn-edit" title="Ver Detalle">
+                                        <a href="{{ route('ventas.show', $v->id) }}" class="ui-action ui-action-edit" title="Ver Detalle">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="{{ route('pagos.realizar', $v->id) }}" class="premium-btn-edit" title="Cobrar / Abono" style="background:rgba(59,130,246,.1);color:#3b82f6;border-color:rgba(59,130,246,.2);">
+                                        <a href="{{ route('pagos.realizar', $v->id) }}" class="ui-action ui-action-edit" title="Cobrar / Abono">
                                             <i class="bi bi-cash-coin"></i>
                                         </a>
-                                        <a href="{{ route('venta.pdf', $v->id) }}" class="premium-btn-edit" title="Reimprimir" style="background:rgba(100,116,139,.1);color:#64748b;border-color:rgba(100,116,139,.2);">
+                                        <a href="{{ route('venta.pdf', $v->id) }}" class="ui-action ui-action-edit" title="Reimprimir">
                                             <i class="bi bi-printer"></i>
                                         </a>
                                         <form action="{{ route('ventas.destroy', $v->id) }}" method="POST" class="d-inline form-anular" data-venta-id="{{ $v->id }}" data-venta-label="#{{ str_pad($v->id, 5, '0', STR_PAD_LEFT) }}">
                                             @csrf @method('DELETE')
                                             <input type="hidden" name="motivo" class="motivo-input">
                                             <input type="hidden" name="confirmar" value="1">
-                                            <button type="button" class="premium-btn-delete btn-trigger-anular" title="Anular">
+                                            <button type="button" class="ui-action ui-action-delete btn-trigger-anular" title="Anular">
                                                 <i class="bi bi-x-circle"></i>
                                             </button>
                                         </form>

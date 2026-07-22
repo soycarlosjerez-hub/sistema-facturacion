@@ -5,16 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 44%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
     .margin-positive { color: #198754; font-weight: 600; }
     .margin-negative { color: #dc3545; font-weight: 600; }
     .margin-zero { color: #6c757d; font-weight: 600; }
@@ -48,34 +38,33 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-tag"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">{{ $listaPrecio->nombre }}</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-upc-scan me-1"></i>
-                        {{ $listaPrecio->codigo }} &middot; {{ $listaPrecio->items->count() }} productos
-                    </small>
+                    <h4 class="ui-header-title">{{ $listaPrecio->nombre }}</h4>
+                    <div class="ui-header-meta">{{ $listaPrecio->codigo }} &middot; {{ $listaPrecio->items->count() }} productos</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                @can('listas-precio.edit')
-                <a href="{{ route('listas-precio.edit', $listaPrecio) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(245,158,11,.2);border:1.5px solid rgba(245,158,11,.35);color:#fff;">
-                    <i class="bi bi-pencil me-1"></i> Editar
-                </a>
-                @endcan
-                <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-arrow-left me-1"></i> Volver
-                </a>
+            <div class="ui-header-actions">
+                <div class="d-flex gap-2">
+                    @can('listas-precio.edit')
+                    <a href="{{ route('listas-precio.edit', $listaPrecio) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-pencil me-1"></i> Editar
+                    </a>
+                    @endcan
+                    <a href="{{ route('listas-precio.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-arrow-left me-1"></i> Volver
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -89,57 +78,57 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.05s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat p-3" style="--delay:.05s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(139,92,246,0.1);color:#8b5cf6;font-size:1.4rem;">
                         <i class="bi bi-box-seam"></i>
                     </div>
                     <div>
-                        <div class="stat-value" style="color:#8b5cf6;">{{ $itemsList->count() }}</div>
-                        <div class="stat-label">Total Productos</div>
+                        <div class="ui-stat-value" style="color:#8b5cf6;">{{ $itemsList->count() }}</div>
+                        <div class="ui-stat-label">Total Productos</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.1s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat p-3" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(13,202,240,0.1);color:#0dcaf0;font-size:1.4rem;">
                         <i class="bi bi-cash-coin"></i>
                     </div>
                     <div>
-                        <div class="stat-value text-info">RD$ {{ number_format($precioPromedio ?? 0, 0) }}</div>
-                        <div class="stat-label">Precio Promedio</div>
+                        <div class="ui-stat-value text-info">RD$ {{ number_format($precioPromedio ?? 0, 0) }}</div>
+                        <div class="ui-stat-label">Precio Promedio</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.15s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat p-3" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.4rem;">
                         <i class="bi bi-arrow-down-circle"></i>
                     </div>
                     <div>
-                        <div class="stat-value text-success">RD$ {{ number_format($precioMin ?? 0, 0) }}</div>
-                        <div class="stat-label">Precio M&iacute;nimo</div>
+                        <div class="ui-stat-value text-success">RD$ {{ number_format($precioMin ?? 0, 0) }}</div>
+                        <div class="ui-stat-label">Precio M&iacute;nimo</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.2s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat p-3" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(220,53,69,0.1);color:#dc3545;font-size:1.4rem;">
                         <i class="bi bi-arrow-up-circle"></i>
                     </div>
                     <div>
-                        <div class="stat-value text-danger">RD$ {{ number_format($precioMax ?? 0, 0) }}</div>
-                        <div class="stat-label">Precio M&aacute;ximo</div>
+                        <div class="ui-stat-value text-danger">RD$ {{ number_format($precioMax ?? 0, 0) }}</div>
+                        <div class="ui-stat-label">Precio M&aacute;ximo</div>
                     </div>
                 </div>
             </div>
@@ -148,13 +137,13 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-8">
-            <div class="premium-card" style="animation-delay:.1s;">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-box-seam icon-purple"></i>
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-box-seam me-2"></i>
                     Productos en esta lista
                 </div>
-                <div class="premium-card-subtitle">{{ $itemsList->count() }} productos configurados</div>
+                <div class="ui-card-subtitle">{{ $itemsList->count() }} productos configurados</div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 precios-show-table" id="tablaPrecios">
                         <thead class="table-light">
@@ -195,11 +184,14 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
-                                    Esta lista a&uacute;n no tiene productos configurados.
-                                    @can('listas-precio.edit')
-                                    <br><a href="{{ route('listas-precio.edit', $listaPrecio) }}" class="btn btn-sm btn-outline-primary mt-2" style="border-color: #8b5cf6; color: #8b5cf6;">Agregar productos</a>
-                                    @endcan
+                                <td colspan="6">
+                                    <div class="ui-empty-state py-4">
+                                        <i class="bi bi-box-seam ui-empty-state-icon"></i>
+                                        <p class="ui-empty-state-text">Esta lista a&uacute;n no tiene productos configurados.</p>
+                                        @can('listas-precio.edit')
+                                        <a href="{{ route('listas-precio.edit', $listaPrecio) }}" class="ui-btn ui-btn-solid rounded-pill">Agregar productos</a>
+                                        @endcan
+                                    </div>
                                 </td>
                             </tr>
                             @endforelse
@@ -209,51 +201,51 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="premium-card mb-3" style="animation-delay:.15s;">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-gear icon-purple"></i>
+            <div class="ui-card mb-3" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-gear me-2"></i>
                     Informaci&oacute;n
                 </div>
                 <div class="card-body">
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Estado</div>
-                        <div class="premium-detail-value">
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Estado</span>
+                        <span class="ui-detail-value">
                             @if($listaPrecio->activa)
-                                <span class="badge bg-success rounded-pill">Activa</span>
+                                <span class="ui-badge-success rounded-pill">Activa</span>
                             @else
-                                <span class="badge bg-danger rounded-pill">Inactiva</span>
+                                <span class="ui-badge-danger rounded-pill">Inactiva</span>
                             @endif
-                        </div>
+                        </span>
                     </div>
                     @if($listaPrecio->vigencia_desde)
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Vigencia</div>
-                        <div class="premium-detail-value">{{ $listaPrecio->vigencia_desde->format('d/m/Y') }} - {{ $listaPrecio->vigencia_hasta?->format('d/m/Y') ?? 'Indefinida' }}</div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Vigencia</span>
+                        <span class="ui-detail-value">{{ $listaPrecio->vigencia_desde->format('d/m/Y') }} - {{ $listaPrecio->vigencia_hasta?->format('d/m/Y') ?? 'Indefinida' }}</span>
                     </div>
                     @endif
                     @if($listaPrecio->descripcion)
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Descripci&oacute;n</div>
-                        <div class="premium-detail-value">{{ $listaPrecio->descripcion }}</div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Descripci&oacute;n</span>
+                        <span class="ui-detail-value">{{ $listaPrecio->descripcion }}</span>
                     </div>
                     @endif
                 </div>
             </div>
 
-            <div class="premium-card" style="animation-delay:.2s;">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-lightning icon-purple"></i>
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-lightning me-2"></i>
                     Herramientas
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
                         @can('listas-precio.edit')
-                        <a href="{{ route('listas-precio.impacto', $listaPrecio) }}" class="btn btn-outline-warning w-100 rounded-pill btn-sm">
+                        <a href="{{ route('listas-precio.impacto', $listaPrecio) }}" class="ui-btn ui-btn-ghost rounded-pill w-100">
                             <i class="bi bi-graph-up me-1"></i> Impacto de Precios
                         </a>
-                        <a href="{{ route('listas-precio.logs', $listaPrecio) }}" class="btn btn-outline-secondary w-100 rounded-pill btn-sm">
+                        <a href="{{ route('listas-precio.logs', $listaPrecio) }}" class="ui-btn ui-btn-ghost rounded-pill w-100">
                             <i class="bi bi-clock-history me-1"></i> Historial de Cambios
                         </a>
                         @endcan

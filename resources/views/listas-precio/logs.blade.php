@@ -4,16 +4,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 44%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
     .log-timeline {
         position: relative;
         padding-left: 2rem;
@@ -87,45 +77,44 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-clock-history"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Historial de Cambios</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-clock-history me-1"></i>
-                        {{ $listaPrecio->nombre }}
-                    </small>
+                    <h4 class="ui-header-title">Historial de Cambios</h4>
+                    <div class="ui-header-meta">{{ $listaPrecio->nombre }}</div>
                 </div>
             </div>
-            <a href="{{ route('listas-precio.show', $listaPrecio) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('listas-precio.show', $listaPrecio) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-3 mt-3">
         <div class="col-12">
-            <div class="premium-card" style="animation-delay:.1s;">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-clock-history icon-purple"></i>
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-clock-history me-2"></i>
                     Registro de Cambios
                 </div>
-                <div class="premium-card-subtitle">Todos los cambios realizados en esta lista de precios</div>
+                <div class="ui-card-subtitle">Todos los cambios realizados en esta lista de precios</div>
                 <div class="card-body">
                     @if($logs->isEmpty())
-                        <div class="text-center py-5">
-                            <i class="bi bi-clock text-muted opacity-25" style="font-size: 4rem;"></i>
-                            <h5 class="mt-3 text-muted">Sin registros de cambios</h5>
+                        <div class="ui-empty-state py-5">
+                            <i class="bi bi-clock ui-empty-state-icon"></i>
+                            <p class="ui-empty-state-text">Sin registros de cambios</p>
                             <p class="text-muted small">Los cambios de precio e información aparecerán aquí.</p>
                         </div>
                     @else

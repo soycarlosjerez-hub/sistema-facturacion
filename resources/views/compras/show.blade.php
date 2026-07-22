@@ -39,91 +39,90 @@ body.dark-mode .detalles-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-receipt"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Compra {{ $compra->folio }}</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-cart me-1"></i>
-                        Detalle completo de la compra y productos recibidos
-                    </small>
+                    <h4 class="ui-header-title">Compra {{ $compra->folio }}</h4>
+                    <div class="ui-header-meta">Detalle completo de la compra y productos recibidos</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('compras.edit', $compra) }}" class="btn btn-light rounded-pill px-4 fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-pencil-square me-1"></i>Editar
-                </a>
-                @if($compra->puede_generar_ecf)
-                <form action="{{ route('compras.generar-ecf', $compra) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button class="btn btn-warning rounded-pill px-4 fw-bold" onclick="confirmAction({title:'Generar e-CF E41', text:'¿Generar Nota de Compra (E41) para esta compra?', icon:'info', color:'#06b6d4', confirmText:'Generar E41', onSubmit:function(){ this.closest('form').submit(); }})">
-                        <i class="bi bi-shield-check me-1"></i>Generar e-CF E41
-                    </button>
-                </form>
-                @endif
-                <a href="{{ route('compras.index') }}" class="btn btn-outline-light rounded-pill px-4">
-                    <i class="bi bi-arrow-left me-1"></i>Volver
-                </a>
+            <div class="ui-header-actions">
+                <div class="d-flex gap-2">
+                    <a href="{{ route('compras.edit', $compra) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-pencil-square me-1"></i>Editar
+                    </a>
+                    @if($compra->puede_generar_ecf)
+                    <form action="{{ route('compras.generar-ecf', $compra) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" style="background:#06b6d4;border-color:#06b6d4;" onclick="UI.confirm.action({title:'Generar e-CF E41', text:'¿Generar Nota de Compra (E41) para esta compra?', icon:'info', color:'#06b6d4', confirmText:'Generar E41', onSubmit:function(){ this.closest('form').submit(); }})">
+                            <i class="bi bi-shield-check me-1"></i>Generar e-CF E41
+                        </button>
+                    </form>
+                    @endif
+                    <a href="{{ route('compras.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.05s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-stat" style="--delay:.05s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3">
-                    <div class="stat-label mb-1"><i class="bi bi-truck me-1"></i>Proveedor</div>
-                    <div class="stat-value" style="color:#3b82f6;font-size:1rem;">{{ $compra->proveedor->nombre ?? 'N/A' }}</div>
+                    <div class="ui-stat-label mb-1"><i class="bi bi-truck me-1"></i>Proveedor</div>
+                    <div class="ui-stat-value" style="font-size:1rem;">{{ $compra->proveedor->nombre ?? 'N/A' }}</div>
                     <small class="text-muted">RNC: {{ $compra->proveedor->rnc_cedula ?? '—' }}</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.1s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-stat" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3">
-                    <div class="stat-label mb-1"><i class="bi bi-calendar3 me-1"></i>Fecha</div>
-                    <div class="stat-value" style="color:#3b82f6;font-size:1rem;">{{ $compra->fecha ? $compra->fecha->format('d/m/Y') : $compra->created_at->format('d/m/Y') }}</div>
+                    <div class="ui-stat-label mb-1"><i class="bi bi-calendar3 me-1"></i>Fecha</div>
+                    <div class="ui-stat-value" style="font-size:1rem;">{{ $compra->fecha ? $compra->fecha->format('d/m/Y') : $compra->created_at->format('d/m/Y') }}</div>
                     <small class="text-muted">{{ $compra->created_at->format('h:i A') }}</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.15s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-stat" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3">
-                    <div class="stat-label mb-1"><i class="bi bi-tag me-1"></i>Tipo</div>
-                    <div class="stat-value" style="color:#3b82f6;font-size:1rem;">{{ $compra->tipoCompra->nombre ?? 'N/A' }}</div>
+                    <div class="ui-stat-label mb-1"><i class="bi bi-tag me-1"></i>Tipo</div>
+                    <div class="ui-stat-value" style="font-size:1rem;">{{ $compra->tipoCompra->nombre ?? 'N/A' }}</div>
                     <small class="text-muted">Registrado por {{ $compra->user->name ?? '—' }}</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.2s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-stat" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3 text-center">
-                    <div class="stat-label mb-1"><i class="bi bi-cash-stack me-1"></i>Total</div>
-                    <div class="stat-value" style="color:#3b82f6;">RD$ {{ number_format($compra->total, 2) }}</div>
+                    <div class="ui-stat-label mb-1"><i class="bi bi-cash-stack me-1"></i>Total</div>
+                    <div class="ui-stat-value">RD$ {{ number_format($compra->total, 2) }}</div>
                     <small class="text-muted">Incluye ITBIS</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.25s;">
-        <div class="card-accent blue"></div>
-        <div class="premium-card-title">
-            <i class="bi bi-list-check icon-blue"></i>
+    <div class="ui-card mb-4" style="--delay:.25s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
+            <i class="bi bi-list-check me-2"></i>
             Productos recibidos
         </div>
         <div class="card-body p-0">
@@ -196,10 +195,10 @@ body.dark-mode .detalles-table tbody td {
     </div>
 
     @if($compra->observaciones)
-    <div class="premium-card" style="animation-delay:.3s;">
-        <div class="card-accent blue"></div>
-        <div class="premium-card-title">
-            <i class="bi bi-chat-left-text icon-blue"></i>
+    <div class="ui-card" style="--delay:.3s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
+            <i class="bi bi-chat-left-text me-2"></i>
             Observaciones
         </div>
         <div class="card-body">

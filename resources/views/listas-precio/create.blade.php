@@ -3,50 +3,30 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
-    .premium-card .form-check-input:checked {
-        background-color: #8b5cf6;
-        border-color: #8b5cf6;
-    }
-    .premium-sticky-bar { border-top-color: #8b5cf6 !important; }
-    .premium-sticky-bar .btn-save { background: linear-gradient(135deg, #8b5cf6, #a855f7) !important; box-shadow: 0 4px 14px rgba(139,92,246,.3) !important; }
-    body.dark-mode .premium-sticky-bar { border-top-color: #a855f7 !important; }
-</style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-tag"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Nueva Lista de Precios</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-plus-circle me-1"></i>
-                        Define una nueva lista con precios especiales
-                    </small>
+                    <h4 class="ui-header-title">Nueva Lista de Precios</h4>
+                    <div class="ui-header-meta">Define una nueva lista con precios especiales</div>
                 </div>
             </div>
-            <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('listas-precio.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -66,36 +46,36 @@
         </div>
     @endif
 
-    <div class="premium-card" style="animation-delay:.1s;">
-        <div class="card-accent purple"></div>
-        <div class="premium-card-title">
-            <i class="bi bi-info-circle icon-purple"></i>
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
+            <i class="bi bi-info-circle me-2"></i>
             Información de la Lista
         </div>
-        <div class="premium-card-subtitle">Completa los datos de la nueva lista de precios</div>
+        <div class="ui-card-subtitle">Completa los datos de la nueva lista de precios</div>
         <form id="listaPrecioForm" action="{{ route('listas-precio.store') }}" method="POST">
             @csrf
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">C&oacute;digo <span class="text-danger">*</span></label>
-                        <input type="text" name="codigo" class="form-control" value="{{ old('codigo') }}" required maxlength="20" placeholder="MAYORISTA">
+                        <label class="ui-label">C&oacute;digo <span class="text-danger">*</span></label>
+                        <input type="text" name="codigo" class="ui-input" value="{{ old('codigo') }}" required maxlength="20" placeholder="MAYORISTA">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="form-control" value="{{ old('nombre') }}" required maxlength="255" placeholder="Precio Mayorista">
+                        <label class="ui-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" class="ui-input" value="{{ old('nombre') }}" required maxlength="255" placeholder="Precio Mayorista">
                     </div>
                     <div class="col-12">
-                        <label class="form-label">Descripci&oacute;n</label>
-                        <textarea name="descripcion" class="form-control" rows="2" placeholder="Opcional: descripci&oacute;n de la lista">{{ old('descripcion') }}</textarea>
+                        <label class="ui-label">Descripci&oacute;n</label>
+                        <textarea name="descripcion" class="ui-textarea" rows="2" placeholder="Opcional: descripci&oacute;n de la lista">{{ old('descripcion') }}</textarea>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Vigencia desde</label>
-                        <input type="date" name="vigencia_desde" class="form-control" value="{{ old('vigencia_desde') }}">
+                        <label class="ui-label">Vigencia desde</label>
+                        <input type="date" name="vigencia_desde" class="ui-input" value="{{ old('vigencia_desde') }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Vigencia hasta</label>
-                        <input type="date" name="vigencia_hasta" class="form-control" value="{{ old('vigencia_hasta') }}">
+                        <label class="ui-label">Vigencia hasta</label>
+                        <input type="date" name="vigencia_hasta" class="ui-input" value="{{ old('vigencia_hasta') }}">
                     </div>
                     <div class="col-12">
                         <div class="form-check form-switch">
@@ -110,10 +90,10 @@
 
     <div style="height: 80px;"></div>
 
-    <div class="premium-sticky-bar">
-        <div class="d-flex justify-content-end align-items-center">
-            <a href="{{ route('listas-precio.index') }}" class="btn-cancel me-2">Cancelar</a>
-            <button type="submit" form="listaPrecioForm" class="btn-save">
+    <div class="ui-sticky-bar">
+        <div class="ui-sticky-bar-inner">
+            <a href="{{ route('listas-precio.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="listaPrecioForm" class="ui-btn ui-btn-solid rounded-pill px-5">
                 <i class="bi bi-check-lg me-2"></i>Guardar Lista
             </button>
         </div>

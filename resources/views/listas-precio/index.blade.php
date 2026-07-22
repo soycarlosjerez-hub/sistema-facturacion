@@ -5,16 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 44%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
     .price-card {
         background: rgba(255,255,255,0.9);
         backdrop-filter: blur(10px);
@@ -110,7 +100,7 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
     @php
         $porExpirar = $listas->filter(fn($l) => isset($l->status) && $l->status['class'] === 'warning');
@@ -144,29 +134,27 @@
     </div>
     @endif
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-tag"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Listas de Precios</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-tags me-1"></i>
+                    <h4 class="ui-header-title">Listas de Precios</h4>
+                    <div class="ui-header-meta">
                         Gestiona diferentes tarifas para tus canales o clientes especiales
                         <span class="mx-2">·</span>
-                        <i class="bi bi-list-ul me-1"></i>
                         {{ $listas->count() }} lista(s)
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('listas-precio.create')
-                <a href="{{ route('listas-precio.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('listas-precio.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-2"></i> Nueva Lista
                 </a>
                 @endcan
@@ -176,64 +164,64 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card" style="animation-delay:.05s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat" style="--delay:.05s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(139,92,246,0.1);color:#8b5cf6;font-size:1.4rem;">
                             <i class="bi bi-tags"></i>
                         </div>
                         <div>
-                            <div class="stat-value" style="color:#8b5cf6;">{{ $listas->count() }}</div>
-                            <div class="stat-label">Total Listas</div>
+                            <div class="ui-stat-value" style="color:#8b5cf6;">{{ $listas->count() }}</div>
+                            <div class="ui-stat-label">Total Listas</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card" style="animation-delay:.1s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.4rem;">
                             <i class="bi bi-check-circle"></i>
                         </div>
                         <div>
-                            <div class="stat-value text-success">{{ $vigentes }}</div>
-                            <div class="stat-label">Vigentes</div>
+                            <div class="ui-stat-value text-success">{{ $vigentes }}</div>
+                            <div class="ui-stat-label">Vigentes</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card" style="animation-delay:.15s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,193,7,0.1);color:#ffc107;font-size:1.4rem;">
                             <i class="bi bi-exclamation-triangle"></i>
                         </div>
                         <div>
-                            <div class="stat-value text-warning">{{ $porExpirar->count() }}</div>
-                            <div class="stat-label">Por Expirar</div>
+                            <div class="ui-stat-value text-warning">{{ $porExpirar->count() }}</div>
+                            <div class="ui-stat-label">Por Expirar</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card" style="animation-delay:.2s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(220,53,69,0.1);color:#dc3545;font-size:1.4rem;">
                             <i class="bi bi-x-octagon"></i>
                         </div>
                         <div>
-                            <div class="stat-value text-danger">{{ $expiradas->count() }}</div>
-                            <div class="stat-label">Expiradas</div>
+                            <div class="ui-stat-value text-danger">{{ $expiradas->count() }}</div>
+                            <div class="ui-stat-label">Expiradas</div>
                         </div>
                     </div>
                 </div>
@@ -266,13 +254,13 @@
                                 <i class="bi bi-eye"></i>
                             </a>
                             @can('listas-precio.edit')
-                            <a href="{{ route('listas-precio.edit', $lista) }}" class="premium-btn-edit" title="Editar">
+                            <a href="{{ route('listas-precio.edit', $lista) }}" class="ui-action ui-action-edit" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @endcan
                             @can('listas-precio.delete')
-                            <button type="button" class="premium-btn-delete" 
-                                    onclick="confirmDelete('{{ route('listas-precio.destroy', $lista) }}', '{{ addslashes($lista->nombre) }}')"
+                            <button type="button" class="ui-action ui-action-delete" 
+                                    onclick="UI.confirm.delete('{{ route('listas-precio.destroy', $lista) }}', '{{ addslashes($lista->nombre) }}')"
                                     title="Eliminar">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -339,19 +327,15 @@
         </div>
         @empty
         <div class="col-12">
-            <div class="premium-card" style="min-height:400px;animation-delay:.1s;">
-                <div class="card-body d-flex flex-column align-items-center justify-content-center py-5">
-                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-4" style="width:100px;height:100px;">
-                        <i class="bi bi-tag text-muted opacity-50" style="font-size:3rem;"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-2">No hay listas de precios</h4>
-                    <p class="text-muted mb-4 text-center" style="max-width:450px;">Las listas de precios te permiten tener tarifas especiales para clientes mayoristas, promociones temporales o diferentes sucursales.</p>
-                    @can('listas-precio.create')
-                    <a href="{{ route('listas-precio.create') }}" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold">
-                        <i class="bi bi-plus-lg me-2"></i> Crear Primera Lista
-                    </a>
-                    @endcan
-                </div>
+            <div class="ui-empty-state">
+                <i class="bi bi-tag"></i>
+                <h4>No hay listas de precios</h4>
+                <p>Las listas de precios te permiten tener tarifas especiales para clientes mayoristas, promociones temporales o diferentes sucursales.</p>
+                @can('listas-precio.create')
+                <a href="{{ route('listas-precio.create') }}" class="ui-btn ui-btn-solid rounded-pill px-5">
+                    <i class="bi bi-plus-lg me-2"></i> Crear Primera Lista
+                </a>
+                @endcan
             </div>
         </div>
         @endforelse

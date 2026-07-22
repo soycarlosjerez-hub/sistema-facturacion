@@ -5,10 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
-    }
     .avatar-circle {
         width: 44px; height: 44px;
         border-radius: 50%;
@@ -292,23 +288,28 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
     <!-- Premium Header -->
-    <div class="premium-header">
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-                    <i class="bi bi-cash-register fs-2 text-white"></i>
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-cash-register"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Cajas y Turnos</h2>
-                    <p class="text-white text-opacity-75 mb-0">Administra múltiples cajas registradoras. Cada cajero abre su propia caja al iniciar el turno.</p>
+                    <h4 class="ui-header-title">Cajas y Turnos</h4>
+                    <div class="ui-header-meta">Administra múltiples cajas registradoras. Cada cajero abre su propia caja al iniciar el turno.</div>
                 </div>
             </div>
-            <a href="{{ route('cajas.create') }}" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-sm text-amber-800">
-                <i class="bi bi-plus-circle me-2"></i>Nueva Caja
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('cajas.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-circle me-2"></i>Nueva Caja
+                </a>
+            </div>
         </div>
     </div>
 

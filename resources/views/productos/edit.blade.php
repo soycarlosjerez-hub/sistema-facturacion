@@ -3,34 +3,34 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-/* Productos form-specific styles */
-</style>
+
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-pencil-square"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Editar Producto</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">Editar Producto</div>
+                    <div class="ui-header-meta">
                         <i class="bi bi-pencil me-1"></i>
                         Actualiza la información del producto en el inventario
-                    </small>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('productos.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('productos.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -56,8 +56,8 @@
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.1s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.1s;">
+        <div class="ui-card-accent"></div>
         <form id="productForm" action="{{ route('productos.update', $producto) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -68,15 +68,15 @@
     <div style="height: 80px;"></div>
 </div>
 
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-between align-items-center">
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-info-circle" style="color:#4f46e5;"></i>
             <span class="fw-semibold d-none d-sm-inline">Editando: {{ $producto->nombre }}</span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('productos.index') }}" class="btn-cancel">Cancelar</a>
-            <button type="submit" form="productForm" class="btn-save">
+            <a href="{{ route('productos.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="productForm" class="ui-btn ui-btn-solid rounded-pill">
                 <i class="bi bi-cloud-arrow-up me-1"></i>Guardar Cambios
             </button>
         </div>

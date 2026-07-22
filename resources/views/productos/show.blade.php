@@ -4,37 +4,35 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-/* Productos show-specific styles */
-</style>
+
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-box-seam"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">{{ $producto->nombre }}</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">{{ $producto->nombre }}</div>
+                    <div class="ui-header-meta">
                         <i class="bi bi-upc-scan me-1"></i>{{ $producto->codigo_barras ?? 'Sin código' }}
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="ui-header-actions">
                 @can('productos.edit')
-                <a href="{{ route('productos.edit', $producto) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('productos.edit', $producto) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-pencil-square me-1"></i>Editar
                 </a>
                 @endcan
-                <a href="{{ route('productos.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('productos.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
@@ -43,8 +41,8 @@
 
     <div class="row g-4 mb-4">
         <div class="col-lg-4">
-            <div class="premium-card" style="animation-delay:.1s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-card" style="--delay:.1s;">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-4 text-center">
                     <img src="{{ $producto->imagen_url }}" class="rounded-3 shadow-sm img-fluid mb-3" style="max-height:280px;object-fit:cover;background:#f1f5f9;" alt="{{ $producto->tiene_imagen ? $producto->nombre : 'Sin imagen disponible' }}">
                     <h4 class="fw-bold mb-1">{{ $producto->nombre }}</h4>
@@ -69,13 +67,13 @@
         </div>
 
         <div class="col-lg-8">
-            <div class="premium-card mb-4" style="animation-delay:.15s;">
-                <div class="card-accent blue"></div>
-                <div class="premium-card-title">
+            <div class="ui-card mb-4" style="--delay:.15s;">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
                     <i class="bi bi-info-circle icon-blue"></i>
                     Información General
                 </div>
-                <div class="premium-card-subtitle">Datos completos del producto</div>
+                <div class="ui-card-subtitle">Datos completos del producto</div>
                 <div class="card-body">
                     <div class="row g-4">
                         <div class="col-md-6">
@@ -142,10 +140,10 @@
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <div class="premium-card h-100" style="animation-delay:.2s;">
-                        <div class="card-accent green"></div>
+                    <div class="ui-card h-100" style="--delay:.2s;">
+                        <div class="ui-card-accent"></div>
                         <div class="card-body p-4 text-center">
-                            <div class="premium-user-avatar avatar-green mx-auto mb-3">
+                            <div class="ui-user-avatar avatar-green mx-auto mb-3">
                                 <i class="bi bi-cart-check fs-3" style="color:#10b981;"></i>
                             </div>
                             <h6 class="fw-bold text-muted text-uppercase small mb-2">Compras</h6>
@@ -155,10 +153,10 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="premium-card h-100" style="animation-delay:.25s;">
-                        <div class="card-accent purple"></div>
+                    <div class="ui-card h-100" style="--delay:.25s;">
+                        <div class="ui-card-accent"></div>
                         <div class="card-body p-4 text-center">
-                            <div class="premium-user-avatar avatar-blue mx-auto mb-3">
+                            <div class="ui-user-avatar avatar-blue mx-auto mb-3">
                                 <i class="bi bi-receipt fs-3" style="color:#8b5cf6;"></i>
                             </div>
                             <h6 class="fw-bold text-muted text-uppercase small mb-2">Ventas</h6>

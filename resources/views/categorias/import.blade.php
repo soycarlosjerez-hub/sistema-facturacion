@@ -26,27 +26,29 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#ec4899;--accent-rgb:236,72,153;--accent-hover:#db2777;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-upload"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Importar Categorías</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">Importar Categorías</div>
+                    <div class="ui-header-meta">
                         <i class="bi bi-file-earmark me-1"></i>Sube un archivo CSV o Excel con tus categorías
-                    </small>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('categorias.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('categorias.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -60,13 +62,13 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
         </div>
     @endif
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent purple"></div>
-        <div class="premium-card-title">
+    <div class="ui-card mb-4" style="--delay:.1s;">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
             <i class="bi bi-cloud-arrow-up icon-purple"></i>
             Subir archivo
         </div>
-        <div class="premium-card-subtitle">Arrastra o selecciona tu archivo CSV o Excel</div>
+        <div class="ui-card-subtitle">Arrastra o selecciona tu archivo CSV o Excel</div>
         <div class="card-body p-4">
             <form action="{{ route('categorias.importar.procesar') }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -93,9 +95,9 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.2s;">
-        <div class="card-accent purple"></div>
-        <div class="premium-card-title">
+    <div class="ui-card" style="--delay:.2s;">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
             <i class="bi bi-file-text" style="color:#10b981;"></i>
             Formato esperado
         </div>

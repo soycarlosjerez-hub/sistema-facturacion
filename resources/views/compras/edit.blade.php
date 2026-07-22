@@ -9,28 +9,27 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-pencil-square"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Editar Compra</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-cart me-1"></i>
-                        Compra <strong>{{ $compra->folio }}</strong> · {{ $compra->proveedor->nombre ?? '—' }}
-                    </small>
+                    <h4 class="ui-header-title">Editar Compra</h4>
+                    <div class="ui-header-meta">Compra <strong>{{ $compra->folio }}</strong> · {{ $compra->proveedor->nombre ?? '—' }}</div>
                 </div>
             </div>
-            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('compras.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -53,12 +52,12 @@
         @csrf
         @method('PUT')
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="ui-card mb-4">
             <div class="card-body p-4">
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Proveedor <span class="text-danger">*</span></label>
-                        <select name="proveedor_id" class="form-select form-select-lg" required>
+                        <label class="ui-label small fw-semibold">Proveedor <span class="text-danger">*</span></label>
+                        <select name="proveedor_id" class="ui-select ui-select-lg" required>
                             <option value="">Seleccionar proveedor</option>
                             @foreach($proveedores as $proveedor)
                                 <option value="{{ $proveedor->id }}" {{ $compra->proveedor_id == $proveedor->id ? 'selected' : '' }}>{{ $proveedor->nombre }}</option>
@@ -66,8 +65,8 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Tipo de Compra <span class="text-danger">*</span></label>
-                        <select name="tipo_compra_id" class="form-select form-select-lg" required>
+                        <label class="ui-label small fw-semibold">Tipo de Compra <span class="text-danger">*</span></label>
+                        <select name="tipo_compra_id" class="ui-select ui-select-lg" required>
                             <option value="">Seleccionar tipo</option>
                             @foreach($tiposCompra as $tipo)
                                 <option value="{{ $tipo->id }}" {{ $compra->tipo_compra_id == $tipo->id ? 'selected' : '' }}>{{ $tipo->nombre }}</option>
@@ -75,8 +74,8 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
-                        <select name="almacen_id" class="form-select form-select-lg" required>
+                        <label class="ui-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
+                        <select name="almacen_id" class="ui-select ui-select-lg" required>
                             <option value="">Seleccionar almacén</option>
                             @foreach($almacenes as $almacen)
                                 <option value="{{ $almacen->id }}" {{ ($compra->almacen_id ?? old('almacen_id')) == $almacen->id ? 'selected' : '' }}>{{ $almacen->nombre }}</option>
@@ -84,17 +83,17 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Fecha</label>
-                        <input type="date" name="fecha" class="form-control form-control-lg" value="{{ old('fecha', $compra->fecha ? $compra->fecha->format('Y-m-d') : date('Y-m-d')) }}">
+                        <label class="ui-label small fw-semibold">Fecha</label>
+                        <input type="date" name="fecha" class="ui-input ui-input-lg" value="{{ old('fecha', $compra->fecha ? $compra->fecha->format('Y-m-d') : date('Y-m-d')) }}">
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>Detalle de la Compra</h5>
-                <button type="button" class="btn btn-success rounded-pill px-3" id="btnAgregarFila">
+        <div class="ui-card mb-4">
+            <div class="d-flex justify-content-between align-items-center p-4 pb-0">
+                <h5 class="fw-bold mb-0 ui-card-title"><i class="bi bi-list-check me-2"></i>Detalle de la Compra</h5>
+                <button type="button" class="ui-btn ui-btn-solid rounded-pill px-3 btn-sm" id="btnAgregarFila" style="background:var(--accent);border-color:var(--accent);">
                     <i class="bi bi-plus-lg me-1"></i>Agregar fila
                 </button>
             </div>
@@ -115,15 +114,15 @@
                         @foreach($detalles as $detalle)
                             <tr data-detalle-id="{{ $detalle->id }}">
                                 <td>
-                                    <input type="text" name="productos[{{ $loop->index }}][nombre]" class="form-control nombre" list="productList" value="{{ $detalle->producto->nombre ?? '' }}" required>
+                                    <input type="text" name="productos[{{ $loop->index }}][nombre]" class="ui-input nombre" list="productList" value="{{ $detalle->producto->nombre ?? '' }}" required>
                                     <input type="hidden" name="productos[{{ $loop->index }}][producto_id]" class="producto-id" value="{{ $detalle->producto_id }}">
                                 </td>
                                 <td>
-                                    <input type="text" name="productos[{{ $loop->index }}][codigo_barras]" class="form-control codigo-barras" value="{{ $detalle->producto->codigo_barras ?? '' }}" placeholder="Escanear o escribir" autocomplete="off">
+                                    <input type="text" name="productos[{{ $loop->index }}][codigo_barras]" class="ui-input codigo-barras" value="{{ $detalle->producto->codigo_barras ?? '' }}" placeholder="Escanear o escribir" autocomplete="off">
                                 </td>
-                                <td><input type="number" min="0.01" step="0.01" name="productos[{{ $loop->index }}][cantidad]" class="form-control cantidad" value="{{ $detalle->cantidad }}" required></td>
-                                <td><input type="number" min="0" step="0.01" name="productos[{{ $loop->index }}][precio]" class="form-control precio" value="{{ $detalle->precio_unitario }}" required></td>
-                                <td><input type="number" min="0" max="100" step="0.01" name="productos[{{ $loop->index }}][itbis_porcentaje]" class="form-control itbis" value="{{ $detalle->itbis_porcentaje ?? 18 }}" required></td>
+                                <td><input type="number" min="0.01" step="0.01" name="productos[{{ $loop->index }}][cantidad]" class="ui-input cantidad" value="{{ $detalle->cantidad }}" required></td>
+                                <td><input type="number" min="0" step="0.01" name="productos[{{ $loop->index }}][precio]" class="ui-input precio" value="{{ $detalle->precio_unitario }}" required></td>
+                                <td><input type="number" min="0" max="100" step="0.01" name="productos[{{ $loop->index }}][itbis_porcentaje]" class="ui-input itbis" value="{{ $detalle->itbis_porcentaje ?? 18 }}" required></td>
                                 <td class="subtotal fw-bold text-end">RD$ {{ number_format($detalle->subtotal, 2) }}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btnEliminarFila" title="Quitar de la compra">
@@ -164,9 +163,9 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="ui-card mb-4">
             <div class="card-body p-4">
-                <h5 class="fw-bold mb-3"><i class="bi bi-percent text-warning me-2"></i>Retenciones</h5>
+                <h5 class="fw-bold mb-3 ui-card-title"><i class="bi bi-percent me-2"></i>Retenciones</h5>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-check form-switch">
@@ -188,10 +187,10 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="ui-card mb-4">
             <div class="card-body p-4">
-                <label class="form-label small fw-semibold">Observaciones</label>
-                <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas sobre la compra (opcional)">{{ old('observaciones', $compra->observaciones) }}</textarea>
+                <label class="ui-label small fw-semibold">Observaciones</label>
+                <textarea name="observaciones" class="ui-textarea" rows="2" placeholder="Notas sobre la compra (opcional)">{{ old('observaciones', $compra->observaciones) }}</textarea>
             </div>
         </div>
 
@@ -199,15 +198,14 @@
     </form>
 </div>
 
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-end align-items-center">
-        <a href="{{ route('compras.index') }}" class="btn-cancel me-2">Cancelar</a>
-        <button type="submit" form="compraForm" class="btn-save">
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <a href="{{ route('compras.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+        <button type="submit" form="compraForm" class="ui-btn ui-btn-solid rounded-pill px-5">
             <i class="bi bi-check-lg me-2"></i>Actualizar Compra
         </button>
     </div>
 </div>
-        </div>
     </div>
 </div>
 
@@ -220,15 +218,15 @@
 <template id="fila-template">
     <tr>
         <td>
-            <input type="text" class="form-control nombre" list="productList" placeholder="Nombre del producto" required>
+            <input type="text" class="ui-input nombre" list="productList" placeholder="Nombre del producto" required>
             <input type="hidden" class="producto-id" value="">
         </td>
         <td>
-            <input type="text" class="form-control codigo-barras" placeholder="Escanear o escribir" autocomplete="off">
+            <input type="text" class="ui-input codigo-barras" placeholder="Escanear o escribir" autocomplete="off">
         </td>
-        <td><input type="number" min="0.01" step="0.01" class="form-control cantidad" value="1" required></td>
-        <td><input type="number" min="0" step="0.01" class="form-control precio" value="0.00" required></td>
-        <td><input type="number" min="0" max="100" step="0.01" class="form-control itbis" value="18" required></td>
+        <td><input type="number" min="0.01" step="0.01" class="ui-input cantidad" value="1" required></td>
+        <td><input type="number" min="0" step="0.01" class="ui-input precio" value="0.00" required></td>
+        <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="18" required></td>
         <td class="subtotal fw-bold text-end">RD$ 0.00</td>
         <td class="text-center">
             <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btnEliminarFila">

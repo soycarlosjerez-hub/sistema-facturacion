@@ -24,27 +24,27 @@ body.dark-mode .credito-stat-card {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#a855f7,#6366f1);box-shadow:0 8px 32px rgba(99,102,241,.25);">
+    <div class="ui-header mb-4" style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#a855f7,#6366f1);box-shadow:0 8px 32px rgba(99,102,241,.25);">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
                     <i class="bi bi-credit-card-2-front"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Resumen de Créditos</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">Resumen de Créditos</div>
+                    <div class="ui-header-meta">
                         <i class="bi bi-graph-up-arrow me-1"></i>
                         Panorama general de exposición crediticia
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('clientes.cuentas') }}" class="btn btn-light rounded-pill px-3 fw-bold small" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);">
+            <div class="ui-header-actions">
+                <a href="{{ route('clientes.cuentas') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-cash-coin me-1"></i>Cuentas por Cobrar
                 </a>
                 <a href="{{ route('clientes.index') }}" class="btn btn-outline-light rounded-pill px-3 small">
@@ -99,9 +99,9 @@ body.dark-mode .credito-stat-card {
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent purple"></div>
-        <div class="premium-card-title">
+    <div class="ui-card" style="--delay:.15s;">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
             <i class="bi bi-exclamation-triangle icon-purple"></i>
             Clientes que Exceden su Límite de Crédito
             <span class="badge bg-danger ms-auto rounded-pill">{{ $clientesEnExceso->count() }}</span>

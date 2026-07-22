@@ -5,30 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.clientes-table {
-    --bs-table-bg: transparent;
-    --bs-table-hover-bg: rgba(16,185,129,.04);
-    margin: 0;
-}
-.clientes-table thead th {
-    background: rgba(241,245,249,.8);
-    color: #64748b;
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    font-weight: 700;
-    padding: .85rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-.clientes-table tbody td {
-    padding: .85rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-    font-size: .9rem;
-}
-.clientes-table tbody tr:last-child td { border-bottom: none; }
-.clientes-table tbody tr { transition: background .15s; }
-.clientes-table tbody tr:hover { background: rgba(16,185,129,.03); }
 .avatar-circle {
     width: 44px; height: 44px;
     border-radius: 50%;
@@ -44,44 +20,35 @@ tr:hover .avatar-circle { transform: scale(1.1); }
     font-size: 0.75rem;
     letter-spacing: 0.5px;
 }
-body.dark-mode .clientes-table thead th {
-    background: rgba(15,23,42,.5);
-    color: #94a3b8;
-    border-color: #1e293b;
-}
-body.dark-mode .clientes-table tbody td {
-    border-bottom-color: #1e293b;
-    color: #cbd5e1;
-}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-people"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Directorio de Clientes</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Directorio de Clientes</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-person me-1"></i>
                         Administra tus clientes, contactos y estado de cuentas
-                        <span class="mx-2">·</span>
+                        <span class="divider">·</span>
                         <i class="bi bi-list-ul me-1"></i>
-                        {{ $clientes->total() }} registro(s)
-                    </small>
+                        <span>{{ $clientes->total() }} registro(s)</span>
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('clientes.create')
-                <a href="{{ route('clientes.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('clientes.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo Cliente
                 </a>
                 @endcan
@@ -89,25 +56,25 @@ body.dark-mode .clientes-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent green"></div>
-        <div class="card-body p-3">
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body">
             <form method="GET" id="search-form" class="row g-2 align-items-center">
                 <div class="col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="nombre" id="busqueda-cliente" class="form-control" placeholder="Nombre, RNC/Cédula, teléfono o email..." value="{{ request('nombre') }}" autocomplete="off">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="nombre" id="busqueda-cliente" class="ui-input" placeholder="Nombre, RNC/Cédula, teléfono o email..." value="{{ request('nombre') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-2">
-                    <select name="activo" class="form-select" id="filtro-activo">
+                    <select name="activo" class="ui-select" id="filtro-activo">
                         <option value="">Todos</option>
                         <option value="1" {{ request('activo') === '1' ? 'selected' : '' }}>Activos</option>
                         <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivos</option>
                     </select>
                 </div>
                 <div class="col-lg-2">
-                    <select name="segmento" class="form-select">
+                    <select name="segmento" class="ui-select">
                         <option value="">Todos los segmentos</option>
                         <option value="micro" {{ request('segmento')=='micro' ? 'selected' : '' }}>Micro</option>
                         <option value="pequeno" {{ request('segmento')=='pequeno' ? 'selected' : '' }}>Pequeño</option>
@@ -117,15 +84,15 @@ body.dark-mode .clientes-table tbody td {
                     </select>
                 </div>
                 <div class="col-lg-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('clientes.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('clientes.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-lg-3 text-end">
-                    <a href="{{ route('clientes.creditos.resumen') }}" class="btn btn-outline-light rounded-pill me-2" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);">
+                    <a href="{{ route('clientes.creditos.resumen') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                         <i class="bi bi-credit-card me-1"></i> Créditos
                     </a>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary rounded-pill dropdown-toggle" data-bs-toggle="dropdown">
+                    <div class="dropdown d-inline-block">
+                        <button class="ui-btn ui-btn-ghost ui-btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="bi bi-download me-1"></i> Exportar
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
@@ -138,11 +105,11 @@ body.dark-mode .clientes-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent green"></div>
-        <div class="card-body p-0">
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
             <div class="table-responsive">
-                <table class="table clientes-table">
+                <table class="ui-table">
                     <thead>
                         <tr>
                             <th class="ps-4">Cliente</th>
@@ -172,13 +139,13 @@ body.dark-mode .clientes-table tbody td {
                                             {{ $firstLetter }}
                                         </div>
                                         <div class="text-truncate">
-                                            <div class="fw-bold text-dark fs-6 text-truncate" title="{{ $c->nombre }}">{{ $c->nombre }}</div>
+                                            <div class="fw-bold fs-6 text-truncate" title="{{ $c->nombre }}">{{ $c->nombre }}</div>
                                             <div class="text-muted small text-truncate"><i class="bi bi-geo-alt me-1"></i>{{ $c->ciudad ?? $c->direccion ?? 'Sin dirección' }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="fw-medium text-dark"><i class="bi bi-telephone text-muted me-2"></i>{{ $c->telefono ?? '—' }}</div>
+                                    <div class="fw-medium"><i class="bi bi-telephone text-muted me-2"></i>{{ $c->telefono ?? '—' }}</div>
                                     <div class="text-muted small mt-1"><i class="bi bi-envelope text-muted me-2"></i>{{ $c->email ?? '—' }}</div>
                                     <div class="text-muted small mt-1"><i class="bi bi-person-lines-fill text-muted me-2"></i>{{ $c->persona_contacto ?? '—' }}</div>
                                 </td>
@@ -242,15 +209,16 @@ body.dark-mode .clientes-table tbody td {
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">
-                                    <a href="{{ route('clientes.show', $c) }}" class="premium-btn-edit" title="Ver">
+                                    <a href="{{ route('clientes.show', $c) }}" class="ui-action ui-action-view" title="Ver">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{{ route('clientes.edit', $c) }}" class="premium-btn-edit" title="Editar">
+                                    <a href="{{ route('clientes.edit', $c) }}" class="ui-action ui-action-edit" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('clientes.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?')">
+                                    <form action="{{ route('clientes.destroy', $c) }}" method="POST" class="d-inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="premium-btn-delete" title="Eliminar">
+                                        <button type="button" class="ui-action ui-action-delete" title="Eliminar"
+                                                onclick="UI.confirm.delete('{{ route('clientes.destroy', $c) }}', '{{ addslashes($c->nombre) }}')">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -258,12 +226,14 @@ body.dark-mode .clientes-table tbody td {
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-5 text-muted">
-                                    <i class="bi bi-people fs-1" style="color:#cbd5e1;"></i>
-                                    <p class="mt-2 mb-0 fw-semibold">No hay clientes registrados</p>
-                                    @can('clientes.create')
-                                    <a href="{{ route('clientes.create') }}" class="btn btn-primary rounded-pill mt-2">Registrar primer cliente</a>
-                                    @endcan
+                                <td colspan="10">
+                                    <div class="ui-empty-state">
+                                        <i class="bi bi-people"></i>
+                                        <p>No hay clientes registrados</p>
+                                        @can('clientes.create')
+                                        <a href="{{ route('clientes.create') }}" class="ui-btn ui-btn-solid ui-btn-sm mt-2 rounded-pill">Registrar primer cliente</a>
+                                        @endcan
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
@@ -317,7 +287,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 400);
     });
 
-    // Toggle activo inline
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.toggle-activo');
         if (!btn) return;

@@ -3,7 +3,7 @@ name: premium-ui
 description: Use when the user says "Aplica el UI premium al módulo de [nombre]" or similar. Applies the premium glassmorphism UI pattern with animated gradient headers, floating bubbles, frosted glass cards, and accent color strips to any Laravel Blade module views. Trigger keywords: "ui premium", "premium ui", "aplica premium", "interfaz premium", "diseño premium".
 ---
 
-# Premium UI - Skill de Implementación
+# UI System v2 — Skill de Implementación
 
 ## Trigger
 
@@ -13,7 +13,7 @@ Cuando el usuario diga **cualquiera** de estas frases:
 - "Diseña [nombre] con el UI premium"
 - "Haz que [nombre] se vea como el profile"
 
-**Acción**: Implementar el patrón UI premium en TODAS las vistas del módulo indicado.
+**Acción**: Implementar el sistema UI v2 en TODAS las vistas del módulo indicado.
 
 ---
 
@@ -25,14 +25,11 @@ resources/views/partials/premium-ui.blade.php
 
 ## Cómo Incluirlo
 
-En CADA vista que se modifique, agregar dentro de `@push('styles')`:
+En CADA vista, agregar dentro de `@push('styles')`:
 
 ```blade
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    /* Estilos ESPECÍFICOS del módulo (tablas, stats, badges) */
-</style>
 @endpush
 ```
 
@@ -40,80 +37,196 @@ En CADA vista que se modifique, agregar dentro de `@push('styles')`:
 
 ---
 
-## Referencia Completa de Clases
+## Sistema de Variables CSS
 
-### Layout & Animación
+Cada módulo define su **acento** en el wrapper principal `.ui-page`:
+
+```html
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
+```
+
+| Variable | Ejemplo (Gastos) | Descripción |
+|---|---|---|
+| `--accent` | `#10b981` | Color principal del módulo |
+| `--accent-rgb` | `16, 185, 129` | RGB para rgba() en sombras |
+| `--accent-hover` | `#059669` | Variante hover más oscura |
+
+### Colores por Módulo
+
+| Módulo | Color | --accent | --accent-rgb | --accent-hover |
+|---|---|---|---|---|
+| Gastos | Verde | `#10b981` | `16,185,129` | `#059669` |
+| Clientes | Verde | `#10b981` | `16,185,129` | `#059669` |
+| Ventas | Azul | `#3b82f6` | `59,130,246` | `#2563eb` |
+| Productos | Índigo | `#6366f1` | `99,102,241` | `#4f46e5` |
+| Compras | Ámbar | `#f59e0b` | `245,158,11` | `#d97706` |
+| Categorías | Rosa | `#ec4899` | `236,72,153` | `#db2777` |
+| Cajas | Púrpura | `#8b5cf6` | `139,92,246` | `#7c3aed` |
+| Listas Precio | Púrpura | `#8b5cf6` | `139,92,246` | `#7c3aed` |
+| Alquileres | Ámbar | `#f59e0b` | `245,158,11` | `#d97706` |
+| Cotizaciones | Índigo | `#6366f1` | `99,102,241` | `#4f46e5` |
+
+---
+
+## Referencia Completa de Clases `.ui-*`
+
+### Layout
+
 | Clase | Descripción |
 |---|---|
-| `.premium-page` | Wrapper de página con animación slide-up |
-| `.premium-header` | Header con gradiente animado + burbujas flotantes |
-| `.premium-avatar-circle` | Avatar circular dentro del header (64px) |
+| `.ui-page` | Wrapper principal con padding estandarizado y animación slide-up |
+| `.ui-header` | Header con gradiente animado + 3 burbujas flotantes |
+| `.ui-header-body` | Flex container dentro del header (left + actions) |
+| `.ui-header-left` | Lado izquierdo (avatar + título + meta) |
+| `.ui-header-title` | Título del header |
+| `.ui-header-meta` | Subtítulo del header |
+| `.ui-header-actions` | Lado derecho (botones) |
+| `.ui-avatar-circle` | Avatar circular dentro del header (56px) |
 
 ### Cards
+
 | Clase | Descripción |
 |---|---|
-| `.premium-card` | Card glassmorphism (fondo frosted glass) |
-| `.premium-card-title` | Título con icono dentro de card |
-| `.premium-card-subtitle` | Subtítulo debajo del título |
-| `.premium-stat-card` | Card de estadísticas |
-| `.premium-user-avatar` | Avatar de usuario (agregar `.avatar-amber`, `.avatar-green` o `.avatar-blue`) |
+| `.ui-card` | Card glassmorphism con hover suave |
+| `.ui-card-accent` | Franja de color superior (usa `--accent`) |
+| `.ui-card-body` | Padding interior estandarizado |
+| `.ui-card-title` | Título con icono (usa `--accent` para el icono) |
+| `.ui-card-subtitle` | Subtítulo gris |
 
-### Franjas de Color (Accent Strips)
-| Clase | Colores |
-|---|---|
-| `.card-accent.green` | Verde → Cyan (#10b981 → #06b6d4) |
-| `.card-accent.amber` | Ámbar → Naranja (#f59e0b → #f97316) |
-| `.card-accent.red` | Rojo → Naranja (#ef4444 → #f97316) |
-| `.card-accent.blue` | Azul → Índigo (#3b82f6 → #6366f1) |
-| `.card-accent.purple` | Púrpura → Rosa (#8b5cf6 → #a855f7) |
+### Stat Cards
 
-### Badges y Botones de Acción
 | Clase | Descripción |
 |---|---|
-| `.premium-badge` | Badge de filtro (agregar `.active` para estado activo) |
-| `.premium-btn-edit` | Botón de editar (color ámbar) |
-| `.premium-btn-delete` | Botón de eliminar (color rojo) |
+| `.ui-stat` | Card de estadísticas |
+| `.ui-stat-body` | Contenedor del contenido |
+| `.ui-stat-value` | Valor numérico grande (usa `--accent`) |
+| `.ui-stat-label` | Label en mayúsculas |
+| `.ui-stat-sub` | Texto secundario |
+
+### Botones
+
+| Clase | Descripción |
+|---|---|
+| `.ui-btn` | Botón base |
+| `.ui-btn-primary` | Glass transparente (para headers, fondo blanco) |
+| `.ui-btn-solid` | Relleno con gradiente del acento |
+| `.ui-btn-danger` | Relleno rojo |
+| `.ui-btn-ghost` | Outline gris claro |
+| `.ui-btn-link` | Link sin bordes |
+| `.ui-btn-sm` | Tamaño pequeño |
+| `.ui-btn-lg` | Tamaño grande |
+| `.ui-btn-pill` | Border-radius pill |
+
+### Acciones (botones de icono cuadrado)
+
+| Clase | Descripción |
+|---|---|
+| `.ui-action` | Base (34x34px, border-radius .5rem) |
+| `.ui-action-view` | Azul — Ver detalle |
+| `.ui-action-edit` | Ámbar — Editar |
+| `.ui-action-delete` | Rojo — Eliminar |
+| `.ui-action-print` | Gris — Imprimir/Exportar |
 
 ### Formularios
+
 | Clase | Descripción |
 |---|---|
-| `.premium-sticky-bar` | Barra fija inferior para formularios |
-| `.premium-sticky-bar .btn-save` | Botón guardar (gradiente verde) |
-| `.premium-sticky-bar .btn-cancel` | Botón cancelar |
+| `.ui-label` | Label del campo |
+| `.ui-input` | Input de texto/number/date |
+| `.ui-select` | Select desplegable |
+| `.ui-textarea` | Textarea |
+| `.ui-input-group` | Contenedor de grupo input+addon |
+| `.ui-input-group-text` | Texto/icono del addon |
+
+### Tablas
+
+| Clase | Descripción |
+|---|---|
+| `.ui-table` | Tabla con thead uppercase + hover row |
+
+### Badges
+
+| Clase | Descripción |
+|---|---|
+| `.ui-badge-success` | Verde — Activo, Pagado, Completado |
+| `.ui-badge-warning` | Ámbar — Pendiente, Por Pagar |
+| `.ui-badge-danger` | Rojo — Inactivo, Cancelado, Vencido |
+| `.ui-badge-info` | Azul — Información, Comprobante |
+| `.ui-badge-neutral` | Gris — Neutral, Sin estado |
+| `.ui-badge-primary` | Color del acento del módulo |
 
 ### Vistas de Detalle
+
 | Clase | Descripción |
 |---|---|
-| `.premium-detail-row` | Fila contenedora |
-| `.premium-detail-label` | Label (ancho 180px) |
-| `.premium-detail-value` | Valor |
+| `.ui-detail-row` | Fila flex (label + value) |
+| `.ui-detail-label` | Label gris (180px) |
+| `.ui-detail-value` | Valor oscuro |
+
+### Sticky Bar
+
+| Clase | Descripción |
+|---|---|
+| `.ui-sticky-bar` | Barra fija inferior (usa `--accent` para border-top) |
+| `.ui-sticky-bar-inner` | Flex container justify-end |
+
+### Otros
+
+| Clase | Descripción |
+|---|---|
+| `.ui-user-avatar` | Avatar circular grande (72px) |
+| `.ui-user-avatar-sm` | Avatar pequeño (48px) |
+| `.ui-user-avatar-lg` | Avatar grande (96px) |
+| `.ui-user-avatar-amber` | Variante ámbar |
+| `.ui-user-avatar-green` | Variante verde (usa `--accent`) |
+| `.ui-user-avatar-blue` | Variante azul |
+| `.ui-empty-state` | Estado vacío centrado con icono |
+
+### Animación
+
+| Atributo | Uso |
+|---|---|
+| `style="--delay: 0.1s"` | Reemplaza `animation-delay: 0.1s` |
 
 ---
 
 ## Templates HTML Listos para Copiar
 
+### Template: Page Wrapper
+
+```blade
+<div class="ui-page" style="--accent:COLOR;--accent-rgb:R,G,B;--accent-hover:HOVER;">
+```
+
 ### Template: Header
 
 ```html
-<div class="premium-header mb-4">
+<div class="ui-header mb-4" style="--delay:0s">
     <div class="bubble"></div>
     <div class="bubble"></div>
     <div class="bubble"></div>
-    <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
+    <div class="ui-header-body">
+        <div class="ui-header-left">
+            <div class="ui-avatar-circle">
                 <i class="bi bi-[ICON]"></i>
             </div>
             <div>
-                <h4 class="fw-bold mb-1 text-white">[TITULO]</h4>
-                <small class="text-white opacity-75">
+                <h4 class="ui-header-title">[TITULO]</h4>
+                <div class="ui-header-meta">
                     <i class="bi bi-[ICON] me-1"></i>[SUBTITULO]
-                </small>
+                    <span class="divider">·</span>
+                    <i class="bi bi-list-ul me-1"></i>
+                    <span>{{ $data->total() }} registro(s)</span>
+                </div>
             </div>
         </div>
-        <a href="[URL_INDEX]" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-            <i class="bi bi-arrow-left me-2"></i>Volver
-        </a>
+        <div class="ui-header-actions">
+            @can('[permiso].create')
+            <a href="{{ route('[mod].create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo [Elemento]
+            </a>
+            @endcan
+        </div>
     </div>
 </div>
 ```
@@ -121,26 +234,26 @@ En CADA vista que se modifique, agregar dentro de `@push('styles')`:
 ### Template: Card
 
 ```html
-<div class="premium-card" style="animation-delay:.1s;">
-    <div class="card-accent [green|amber|red|blue|purple]"></div>
-    <div class="premium-card-title">
-        <i class="bi bi-[ICON] icon-[green|amber|red|blue|purple]"></i>[TITULO]
+<div class="ui-card" style="--delay:.1s">
+    <div class="ui-card-accent"></div>
+    <div class="ui-card-title">
+        <i class="bi bi-[ICON]"></i>[TITULO]
     </div>
-    <div class="premium-card-subtitle">[SUBTITULO]</div>
-    <div class="card-body">
+    <div class="ui-card-subtitle">[SUBTITULO]</div>
+    <div class="ui-card-body">
         <!-- contenido -->
     </div>
 </div>
 ```
 
-### Template: Sticky Bar (Formularios)
+### Template: Sticky Bar
 
 ```html
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-end align-items-center">
-        <a href="[URL_CANCEL]" class="btn-cancel me-2">Cancelar</a>
-        <button type="submit" form="[FORM_ID]" class="btn-save">
-            <i class="bi bi-check-lg me-2"></i>[GUARDAR|ACTUALIZAR]
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <a href="{{ route('[mod].index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+        <button type="submit" form="[FORM_ID]" class="ui-btn ui-btn-solid rounded-pill px-5">
+            <i class="bi bi-check-lg me-2"></i>[Guardar|Actualizar]
         </button>
     </div>
 </div>
@@ -149,47 +262,75 @@ En CADA vista que se modifique, agregar dentro de `@push('styles')`:
 ### Template: Stat Card
 
 ```html
-<div class="premium-stat-card" style="animation-delay:.05s;">
-    <div class="card-accent [COLOR]"></div>
-    <div class="card-body p-3 text-center">
-        <div class="stat-label mb-1">[LABEL]</div>
-        <div class="stat-value" style="color:[COLOR_HEX];">[VALOR]</div>
-        <small class="text-muted">[DETALLE]</small>
+<div class="ui-stat" style="--delay:.05s">
+    <div class="ui-card-accent"></div>
+    <div class="ui-stat-body text-center">
+        <div class="ui-stat-label">[LABEL]</div>
+        <div class="ui-stat-value">[VALOR]</div>
+        <div class="ui-stat-sub">[DETALLE]</div>
     </div>
 </div>
-```
-
-### Template: Badge de Filtro
-
-```html
-<a href="[URL]" class="premium-badge [active]">[TEXTO]</a>
 ```
 
 ### Template: Botones de Acción
 
 ```html
-<a href="[URL_EDIT]" class="premium-btn-edit" title="Editar">
+<a href="{{ route('[mod].edit', $item) }}" class="ui-action ui-action-edit" title="Editar">
     <i class="bi bi-pencil"></i>
 </a>
-<button type="button" class="premium-btn-delete" onclick="..." title="Eliminar">
+<button type="button" class="ui-action ui-action-delete"
+        onclick="UI.confirm.delete('{{ route('[mod].destroy', $item) }}', '{{ addslashes($item->nombre) }}')"
+        title="Eliminar">
     <i class="bi bi-trash"></i>
 </button>
 ```
 
-### Template: Fila de Detalle (Show)
+### Template: Detail Rows
 
 ```html
-<div class="premium-detail-row">
-    <div class="premium-detail-label">[LABEL]</div>
-    <div class="premium-detail-value">[VALOR]</div>
+<div class="ui-detail-row">
+    <span class="ui-detail-label">[LABEL]</span>
+    <span class="ui-detail-value">[VALOR]</span>
 </div>
 ```
 
-### Template: Avatar de Usuario (Show)
+### Template: Badge
 
 ```html
-<div class="premium-user-avatar [avatar-amber|avatar-green|avatar-blue] mx-auto mb-3">
-    <i class="bi bi-person-circle fs-2" style="color:[COLOR_HEX];"></i>
+<span class="ui-badge ui-badge-[success|warning|danger|info|neutral|primary]">
+    <i class="bi bi-[ICON] me-1"></i>[TEXTO]
+</span>
+```
+
+### Template: Empty State
+
+```html
+<div class="ui-empty-state">
+    <i class="bi bi-[ICON]"></i>
+    <p>No hay registros</p>
+    @can('[mod].create')
+    <a href="{{ route('[mod].create') }}" class="ui-btn ui-btn-solid ui-btn-sm mt-2 rounded-pill">
+        <i class="bi bi-plus-lg"></i> Crear primero
+    </a>
+    @endcan
+</div>
+```
+
+### Template: Form Fields
+
+```html
+<label class="ui-label">[LABEL] <span class="text-danger">*</span></label>
+<input type="text" name="[name]" class="ui-input @error('[name]') is-invalid @enderror" value="{{ old('[name]') }}">
+
+<select name="[name]" class="ui-select @error('[name]') is-invalid @enderror">
+    <option value="">Seleccionar...</option>
+</select>
+
+<textarea name="[name]" rows="3" class="ui-textarea @error('[name]') is-invalid @enderror"></textarea>
+
+<div class="ui-input-group">
+    <span class="ui-input-group-text">RD$</span>
+    <input type="number" class="ui-input" name="[name]">
 </div>
 ```
 
@@ -199,215 +340,86 @@ En CADA vista que se modifique, agregar dentro de `@push('styles')`:
 
 ### 1. `index.blade.php`
 
-1. Reemplazar `@push('styles') <style>...</style> @endpush` por:
-   ```blade
-   @push('styles')
-   @include('partials.premium-ui')
-   <style>
-       /* Estilos de tabla específicos del módulo */
-   </style>
-   @endpush
-   ```
+1. Incluir partial en `@push('styles')`
+2. Envolver en `<div class="ui-page" style="--accent:...">`
+3. Header con template de Header, icono del módulo, contador de registros
+4. Filtros en `ui-card` con `ui-input-group` y `ui-btn-solid`/`ui-btn-ghost`
+5. Tabla en `ui-card` con `ui-table` + `ui-action-*` + `UI.confirm.delete()`
+6. Paginación después de la card
+7. Empty state con `ui-empty-state`
 
-2. Envolver contenido en `<div class="container-fluid px-4 py-3 premium-page">`
+### 2. `create.blade.php` / `edit.blade.php`
 
-3. Reemplazar header por template de Header con:
-   - Icono representativo del módulo
-   - Título del módulo
-   - Subtítulo descriptivo
-   - Botón "Nuevo [elemento]" con estilo transparente
+1. Incluir partial
+2. Wrapper `ui-page`
+3. Header con título + botón Volver
+4. Formulario en `ui-card` con `ui-card-accent`
+5. Campos con `ui-label` + `ui-input`/`ui-select`/`ui-textarea`
+6. Sticky bar con Cancelar + Guardar/Actualizar
 
-4. Reemplazar cards de stats por `premium-stat-card` con `card-accent [color]`
+### 3. `show.blade.php`
 
-5. Reemplazar card de filtros por `premium-card` con `card-accent [color]`
-
-6. Reemplazar tabla existente:
-   - Agregar clase de tabla específica (ej: `.productos-table`, `.gastos-table`)
-   - Estilos de thead: `background: rgba(241,245,249,.8); color: #64748b; font-size: .7rem; text-transform: uppercase;`
-   - Estilos de tbody td: `padding: .85rem 1rem; border-bottom: 1px solid #f1f5f9;`
-   - Hover: `background: rgba([COLOR_RGB],.03);`
-
-7. Reemplazar botones de acción por `premium-btn-edit` / `premium-btn-delete`
-
-8. Agregar dark mode para tabla:
-   ```css
-   body.dark-mode .[module]-table thead th {
-       background: rgba(15,23,42,.5);
-       color: #94a3b8;
-       border-color: #1e293b;
-   }
-   body.dark-mode .[module]-table tbody td {
-       border-bottom-color: #1e293b;
-       color: #cbd5e1;
-   }
-   ```
-
-### 2. `create.blade.php`
-
-1. Incluir partial + estilo específico (si hay)
-
-2. Envolver en `premium-page`
-
-3. Header con:
-   - Avatar: icono de creación (ej: `bi-plus-circle`, `bi-wallet2`, `bi-box-seam`)
-   - Título: "Nuevo [Elemento]"
-   - Subtítulo: "Registra un nuevo [elemento] en el sistema"
-   - Botón "Volver"
-
-4. Errores después del header
-
-5. Formulario dentro de `premium-card` con `card-accent [color]`:
-   ```html
-   <div class="premium-card" style="animation-delay:.1s;">
-       <div class="card-accent [COLOR]"></div>
-       <form id="[formId]" ...>
-           @csrf
-           <!-- contenido del form -->
-       </form>
-   </div>
-   ```
-
-6. Agregar `<div style="height: 80px;"></div>` antes del sticky bar
-
-7. Sticky bar al final:
-   ```html
-   <div class="premium-sticky-bar">
-       <div class="d-flex justify-content-end align-items-center">
-           <a href="[URL_CANCEL]" class="btn-cancel me-2">Cancelar</a>
-           <button type="submit" form="[formId]" class="btn-save">
-               <i class="bi bi-check-lg me-2"></i>Guardar [Elemento]
-           </button>
-       </div>
-   </div>
-   ```
-
-### 3. `edit.blade.php`
-
-Mismo patrón que create, con diferencias:
-
-1. Header: Avatar con `bi-pencil-square`, título "Editar [Elemento]"
-2. Info banner antes del formulario:
-   ```html
-   <div class="alert rounded-4 shadow-sm border-0 mb-4" style="background:rgba([COLOR_RGB],.05);border-left:4px solid [COLOR_HEX] !important;">
-       <div class="d-flex align-items-center">
-           <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;color:[COLOR_HEX];background:rgba([COLOR_RGB],.1);">
-               <i class="bi bi-info-circle fs-5"></i>
-           </div>
-           <div>
-               <span class="text-muted">Estás editando el/la [elemento]:</span>
-               <strong class="d-block" style="font-size:1.1rem;color:#1e293b;">[NOMBRE]</strong>
-           </div>
-       </div>
-   </div>
-   ```
-3. Formulario con `@method('PUT')`
-4. Sticky bar: "Guardar Cambios"
-
-### 4. `show.blade.php`
-
-1. Header con:
-   - Avatar: icono de vista (ej: `bi-eye`, `bi-box-seam`)
-   - Título: nombre del elemento
-   - Subtítulo: código o identificador
-   - Botones: Editar + Volver
-
-2. Layout de 2 columnas (col-lg-4 + col-lg-8):
-   - **Columna izquierda**: Card con imagen + badges de estado
-   - **Columna derecha**: Card con información general + cards de estadísticas
-
-3. Información general en `premium-card` con `premium-detail-row`:
-   ```html
-   <div class="premium-detail-row">
-       <div class="premium-detail-label">[Label]</div>
-       <div class="premium-detail-value">[Valor]</div>
-   </div>
-   ```
-
-4. Cards de estadísticas con `premium-card` + `premium-user-avatar`
-
-### 5. `import.blade.php` (si existe)
-
-1. Header con icono `bi-upload`
-2. Upload zone en `premium-card`
-3. Tips en `premium-card`
-4. Mapping table en `premium-card`
-5. Botones: "Subir otro archivo" + "Importar"
-
----
-
-## Sistema de Colores Accent
-
-Elegir UN color principal para el módulo y usarlo consistentemente:
-
-| Módulo | Color Recomendado | Hex |
-|---|---|---|
-| Gastos | green | #10b981 |
-| Productos | blue | #4f46e5 / #3b82f6 |
-| Clientes | green | #10b981 |
-| Compras | amber | #f59e0b |
-| Ventas | purple | #8b5cf6 |
-| Proveedores | blue | #3b82f6 |
-| Categorías | amber | #f59e0b |
-| Usuarios | blue | #3b82f6 |
-| Configuración | purple | #8b5cf6 |
-
-Para usar el color en el HTML:
-- `card-accent [color]` → para la franja
-- `icon-[color]` → para el icono del título
-- `style="color:[hex];"` → para valores específicos
+1. Incluir partial
+2. Wrapper `ui-page`
+3. Header con nombre del elemento + Editar + Volver
+4. Layout 2 columnas con `ui-stat` cards + `ui-card` con `ui-detail-row`
+5. User card con `ui-user-avatar`
 
 ---
 
 ## Reglas de Dark Mode
 
-Los estilos de dark mode van SIEMPRE en el bloque `<style>` específico del módulo (después del `@include`), NUNCA en el partial.
+El dark mode está completamente centralizado en `premium-ui.blade.php`. No agregar estilos dark mode en las vistas.
 
-```css
-/* Dark mode - específico del módulo */
-body.dark-mode .premium-card,
-body.dark-mode .premium-stat-card {
-    background: rgba(15,23,42,.8);
-    border-color: rgba(255,255,255,.08);
-}
-body.dark-mode .premium-card-title { color: #f1f5f9; }
-body.dark-mode .premium-card-subtitle { color: #94a3b8; }
+---
+
+## JavaScript Global
+
+```javascript
+// Confirmación de eliminación
+UI.confirm.delete(url, label)
+
+// Confirmación genérica
+UI.confirm.action({ title, text, icon, color, confirmText, url/form })
+
+// Toasts
+UI.toast.success('mensaje')
+UI.toast.error('mensaje')
+UI.toast.warning('mensaje')
+UI.toast.info('mensaje')
 ```
 
 ---
 
-## Módulos Ya Aplicados (Referencia)
+## Módulos Migrados (Referencia)
 
-### Gastos (`resources/views/gastos/`)
-- Accent: green
-- Index: stats + filtros + tabla + paginación
-- Create/Edit: formulario + sticky bar
-- Show: detalle rows + user card
-
-### Productos (`resources/views/productos/`)
-- Accent: blue
-- Index: tabla compleja con imágenes + acciones
-- Create/Edit: formulario incluido via `@include('productos.form')` + sticky bar
-- Show: 2 columnas (imagen + info) + stats cards
-- Import: drop zone + mapping table
-
-### Profile (`resources/views/profile/`)
-- Accent: green/amber/red
-- 3 cards: perfil (green), contraseña (amber), eliminar cuenta (red)
-- Modal de confirmación para eliminar
+| Módulo | Vistas | Acento | Estado |
+|---|---|---|---|
+| Gastos | index, create, edit, show | Verde #10b981 | ✅ |
+| Clientes | index, create, edit, show, creditos, cuentas | Verde #10b981 | ✅ |
+| Categorías | index, create, edit, show, import | Rosa #ec4899 | ✅ |
+| Compras | index, create, edit, show | Ámbar #f59e0b | ✅ |
+| Ventas | index, show | Azul #3b82f6 | ✅ |
+| Productos | index, create, edit, show, import | Índigo #6366f1 | ✅ |
+| Cajas | index, create, edit, show, cierre | Púrpura #8b5cf6 | ✅ |
+| Listas Precio | index, create, edit, show, impacto, logs | Púrpura #8b5cf6 | ✅ |
 
 ---
 
 ## Checklist de Implementación
 
-Antes de entregar, verificar:
-
-- [ ] `@include('partials.premium-ui')` está en cada vista
-- [ ] No hay CSS duplicado del partial
-- [ ] Header tiene 3 bubbles
-- [ ] Header tiene `premium-avatar-circle`
-- [ ] Cards usan `premium-card` + `card-accent [color]`
-- [ ] Formularios tienen `premium-sticky-bar`
-- [ ] Tablas tienen estilos específicos
-- [ ] Dark mode funciona
-- [ ] Animaciones stagger funcionan (`animation-delay`)
-- [ ] Todos los botones de acción usan `premium-btn-edit` / `premium-btn-delete`
+- [ ] `@include('partials.premium-ui')` en `@push('styles')`
+- [ ] `<style>` blocks vacíos eliminados
+- [ ] Wrapper `.ui-page` con `--accent`, `--accent-rgb`, `--accent-hover`
+- [ ] Header con 3 bubbles + `ui-avatar-circle` + `ui-header-title` + `ui-header-meta`
+- [ ] Cards usan `.ui-card` + `.ui-card-accent`
+- [ ] Stat cards usan `.ui-stat` + `.ui-stat-value`
+- [ ] Botones usan `.ui-btn-*`
+- [ ] Acciones usan `.ui-action-*`
+- [ ] Formularios: `.ui-label`, `.ui-input`, `.ui-select`, `.ui-textarea`
+- [ ] Sticky bar con `.ui-sticky-bar` + `.ui-sticky-bar-inner`
+- [ ] Tablas usan `.ui-table`
+- [ ] Badges usan `.ui-badge-*`
+- [ ] `UI.confirm.delete()` reemplaza `confirm()` nativo
+- [ ] Dark mode funciona sin overrides
+- [ ] `--delay` reemplaza `animation-delay:`

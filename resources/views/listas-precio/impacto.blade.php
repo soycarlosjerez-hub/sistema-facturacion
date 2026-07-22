@@ -4,107 +4,96 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-        background-size: 300% 300%;
-        box-shadow: 0 8px 32px rgba(139,92,246,.25);
-    }
-    .premium-header::before {
-        background:
-            radial-gradient(circle at 30% 44%, rgba(255,255,255,.12) 0%, transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-    }
     .difference-positive { color: #198754; }
     .difference-negative { color: #dc3545; }
     .difference-neutral { color: #6c757d; }
-    body.dark-mode .premium-detail-row { border-bottom-color: #1e293b; }
+    body.dark-mode .ui-detail-row { border-bottom-color: #1e293b; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background: rgba(139,92,246,0.2);">
-                    <i class="bi bi-graph-up" style="color: #fff;"></i>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-graph-up"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Impacto de Precios</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-graph-up me-1"></i>
-                        {{ $listaPrecio->nombre }}
-                    </small>
+                    <h4 class="ui-header-title">Impacto de Precios</h4>
+                    <div class="ui-header-meta">{{ $listaPrecio->nombre }}</div>
                 </div>
             </div>
-            <a href="{{ route('listas-precio.show', $listaPrecio) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('listas-precio.show', $listaPrecio) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-4 mt-3">
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.05s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat p-3" style="--delay:.05s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(13,202,240,0.1);color:#0dcaf0;font-size:1.4rem;">
                         <i class="bi bi-box-seam"></i>
                     </div>
                     <div>
-                        <div class="stat-value text-info">{{ $totalProductos }}</div>
-                        <div class="stat-label">Productos</div>
+                        <div class="ui-stat-value text-info">{{ $totalProductos }}</div>
+                        <div class="ui-stat-label">Productos</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.1s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat p-3" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(108,117,125,0.1);color:#6c757d;font-size:1.4rem;">
                         <i class="bi bi-receipt"></i>
                     </div>
                     <div>
-                        <div class="stat-value text-secondary">RD$ {{ number_format($sumaPreciosBase, 2) }}</div>
-                        <div class="stat-label">Costo Total</div>
+                        <div class="ui-stat-value text-secondary">RD$ {{ number_format($sumaPreciosBase, 2) }}</div>
+                        <div class="ui-stat-label">Costo Total</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.15s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-stat p-3" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(13,110,253,0.1);color:#0d6efd;font-size:1.4rem;">
                         <i class="bi bi-tag"></i>
                     </div>
                     <div>
-                        <div class="stat-value" style="color:#0d6efd;">RD$ {{ number_format($sumaPreciosLista, 2) }}</div>
-                        <div class="stat-label">Precio Lista</div>
+                        <div class="ui-stat-value" style="color:#0d6efd;">RD$ {{ number_format($sumaPreciosLista, 2) }}</div>
+                        <div class="ui-stat-label">Precio Lista</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.2s;">
-                <div class="card-accent {{ $diferencia >= 0 ? 'green' : 'red' }}"></div>
+            <div class="ui-stat p-3" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:{{ $diferencia >= 0 ? 'rgba(25,135,84,0.1)' : 'rgba(220,53,69,0.1)' }};color:{{ $diferencia >= 0 ? '#198754' : '#dc3545' }};font-size:1.4rem;">
                         <i class="bi bi-{{ $diferencia >= 0 ? 'arrow-down-right' : 'arrow-up-right' }}"></i>
                     </div>
                     <div>
-                        <div class="stat-value difference-{{ $diferencia > 0 ? 'positive' : ($diferencia < 0 ? 'negative' : 'neutral') }}">
+                        <div class="ui-stat-value difference-{{ $diferencia > 0 ? 'positive' : ($diferencia < 0 ? 'negative' : 'neutral') }}">
                             RD$ {{ number_format(abs($diferencia), 2) }}
                         </div>
-                        <div class="stat-label">{{ $diferencia >= 0 ? 'Ahorro Cliente' : 'Pérdida Empresa' }}</div>
+                        <div class="ui-stat-label">{{ $diferencia >= 0 ? 'Ahorro Cliente' : 'Pérdida Empresa' }}</div>
                     </div>
                 </div>
             </div>
@@ -113,42 +102,42 @@
 
     <div class="row g-4 mt-2">
         <div class="col-md-6">
-            <div class="premium-card h-100" style="animation-delay:.1s;">
-                <div class="card-accent amber"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-pie-chart icon-amber"></i>
+            <div class="ui-card h-100" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-pie-chart me-2"></i>
                     Resumen Financiero
                 </div>
                 <div class="card-body">
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Suma precios base (costo)</div>
-                        <div class="premium-detail-value fw-semibold text-secondary">RD$ {{ number_format($sumaPreciosBase, 2) }}</div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Suma precios base (costo)</span>
+                        <span class="ui-detail-value fw-semibold text-secondary">RD$ {{ number_format($sumaPreciosBase, 2) }}</span>
                     </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Suma precios lista</div>
-                        <div class="premium-detail-value fw-semibold" style="color: #0d6efd;">RD$ {{ number_format($sumaPreciosLista, 2) }}</div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Suma precios lista</span>
+                        <span class="ui-detail-value fw-semibold" style="color: #0d6efd;">RD$ {{ number_format($sumaPreciosLista, 2) }}</span>
                     </div>
-                    <div class="premium-detail-row" style="border-top: 2px solid rgba(0,0,0,0.08); padding-top: 1rem; margin-top: 0.5rem;">
-                        <div class="premium-detail-label fw-bold">Diferencia</div>
-                        <div class="premium-detail-value difference-{{ $diferencia > 0 ? 'positive' : ($diferencia < 0 ? 'negative' : 'neutral') }}">
+                    <div class="ui-detail-row" style="border-top: 2px solid rgba(0,0,0,0.08); padding-top: 1rem; margin-top: 0.5rem;">
+                        <span class="ui-detail-label fw-bold">Diferencia</span>
+                        <span class="ui-detail-value difference-{{ $diferencia > 0 ? 'positive' : ($diferencia < 0 ? 'negative' : 'neutral') }}">
                             {{ $diferencia > 0 ? '-' : '+' }}RD$ {{ number_format(abs($diferencia), 2) }}
-                        </div>
+                        </span>
                     </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label fw-bold">Descuento Promedio</div>
-                        <div class="premium-detail-value difference-{{ $porcentajeDescuento > 0 ? 'positive' : ($porcentajeDescuento < 0 ? 'negative' : 'neutral') }}">
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label fw-bold">Descuento Promedio</span>
+                        <span class="ui-detail-value difference-{{ $porcentajeDescuento > 0 ? 'positive' : ($porcentajeDescuento < 0 ? 'negative' : 'neutral') }}">
                             {{ $porcentajeDescuento > 0 ? '-' : '+' }}{{ number_format(abs($porcentajeDescuento), 1) }}%
-                        </div>
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6">
-            <div class="premium-card h-100" style="animation-delay:.15s;">
-                <div class="card-accent {{ $diferencia >= 0 ? 'green' : 'blue' }}"></div>
-                <div class="premium-card-title">
-                    <i class="bi {{ $diferencia >= 0 ? 'bi-check-circle' : 'bi-info-circle' }} icon-{{ $diferencia >= 0 ? 'green' : 'blue' }}"></i>
+            <div class="ui-card h-100" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi {{ $diferencia >= 0 ? 'bi-check-circle' : 'bi-info-circle' }} me-2"></i>
                     Análisis
                 </div>
                 <div class="card-body">
@@ -184,7 +173,7 @@
                     @endif
 
                     <div class="mt-3">
-                        <a href="{{ route('listas-precio.edit', $listaPrecio) }}" class="btn btn-outline-primary w-100 rounded-pill btn-sm">
+                        <a href="{{ route('listas-precio.edit', $listaPrecio) }}" class="ui-btn ui-btn-ghost rounded-pill w-100">
                             <i class="bi bi-pencil me-1"></i>Editar Precios
                         </a>
                     </div>
@@ -195,13 +184,13 @@
 
     <div class="row g-4 mt-2">
         <div class="col-12">
-            <div class="premium-card" style="animation-delay:.2s;">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-table icon-purple"></i>
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-table me-2"></i>
                     Desglose por Producto
                 </div>
-                <div class="premium-card-subtitle">Detalle del impacto por cada producto en la lista</div>
+                <div class="ui-card-subtitle">Detalle del impacto por cada producto en la lista</div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
@@ -241,8 +230,11 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">
-                                        No hay productos en esta lista.
+                                    <td colspan="6">
+                                        <div class="ui-empty-state py-4">
+                                            <i class="bi bi-box-seam ui-empty-state-icon"></i>
+                                            <p class="ui-empty-state-text">No hay productos en esta lista.</p>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforelse

@@ -749,74 +749,89 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
 
         document.addEventListener('DOMContentLoaded', function () {});
 
-        /**
-         * Global confirmation dialog helper using SweetAlert2
-         * Usage: confirmAction({ title, text, icon, color, confirmText, cancelText, form, url, onSubmit, callback })
-         */
-        function confirmAction(options) {
-            var opts = Object.assign({}, {
-                title: '\u00bfEst\u00e1 seguro?',
-                text: '',
-                icon: 'warning',
-                color: '#dc2626',
-                confirmText: 'S\u00ed, continuar',
-                cancelText: 'Cancelar',
-                form: null,
-                url: null,
-                onSubmit: null,
-                callback: null
-            }, options);
-            
-            if (typeof Swal === 'undefined') {
-                return confirm(opts.text || opts.title);
-            }
-            
-            Swal.fire({
-                title: opts.title,
-                text: opts.text,
-                icon: opts.icon,
-                showCancelButton: true,
-                confirmButtonColor: opts.color,
-                cancelButtonColor: '#64748b',
-                confirmButtonText: opts.confirmText,
-                cancelButtonText: opts.cancelText,
-                reverseButtons: true,
-                allowOutsideClick: function() { return !Swal.isLoading(); }
-            }).then(function(result) {
-                if (result.isConfirmed) {
-                    if (opts.callback) opts.callback();
-                    else if (opts.onSubmit) opts.onSubmit();
-                    else if (opts.form) opts.form.submit();
-                    else if (opts.url) window.location.href = opts.url;
+        /* ============================================================
+           UI SYSTEM — Utilidades globales unificadas
+           ============================================================ */
+        window.UI = {
+            confirm: {
+                delete: function(url, label) {
+                    UI._fire({
+                        title: '\u00bfEliminar registro?',
+                        text: label ? 'Se eliminar\u00e1: "' + label + '"' : null,
+                        icon: 'error',
+                        color: '#dc2626',
+                        confirmText: 'S\u00ed, eliminar',
+                        url: url
+                    });
+                },
+                submit: function(formSelector, opts) {
+                    UI._fire(Object.assign({}, opts || {}, {
+                        form: document.querySelector(formSelector)
+                    }));
+                },
+                action: function(opts) {
+                    UI._fire(opts);
                 }
-            });
-        }
+            },
+            toast: {
+                success: function(msg) { UI._toast('success', msg); },
+                error: function(msg) { UI._toast('danger', msg); },
+                warning: function(msg) { UI._toast('warning', msg); },
+                info: function(msg) { UI._toast('info', msg); }
+            },
+            _fire: function(opts) {
+                var o = Object.assign({
+                    title: '\u00bfEst\u00e1 seguro?',
+                    text: '',
+                    icon: 'warning',
+                    color: '#dc2626',
+                    confirmText: 'S\u00ed, continuar',
+                    cancelText: 'Cancelar',
+                    form: null,
+                    url: null,
+                    onSubmit: null,
+                    callback: null
+                }, opts);
+                if (typeof Swal === 'undefined') {
+                    return confirm(o.text || o.title);
+                }
+                Swal.fire({
+                    title: o.title,
+                    text: o.text,
+                    icon: o.icon,
+                    showCancelButton: true,
+                    confirmButtonColor: o.color,
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: o.confirmText,
+                    cancelButtonText: o.cancelText,
+                    reverseButtons: true,
+                    allowOutsideClick: function() { return !Swal.isLoading(); }
+                }).then(function(r) {
+                    if (r.isConfirmed) {
+                        if (o.callback) o.callback();
+                        else if (o.onSubmit) o.onSubmit();
+                        else if (o.form) o.form.submit();
+                        else if (o.url) window.location.href = o.url;
+                    }
+                });
+            },
+            _toast: function(type, msg) {
+                if (typeof Swal === 'undefined') return;
+                var map = {
+                    success: { icon: 'success', title: 'Listo', timer: 2000 },
+                    danger: { icon: 'error', title: 'Error', timer: 3000 },
+                    warning: { icon: 'warning', title: 'Aviso', timer: 3000 },
+                    info: { icon: 'info', title: 'Informaci\u00f3n', timer: 2500 }
+                };
+                var cfg = map[type] || map.info;
+                Swal.fire({ icon: cfg.icon, title: cfg.title, text: msg, timer: cfg.timer, showConfirmButton: false });
+            }
+        };
 
-        /**
-         * Shortcut for delete confirmations
-         * Usage: confirmDelete(url, id)
-         */
-        function confirmDelete(url, id) {
-            return confirmAction({
-                title: '\u00bfEliminar registro?',
-                text: 'Esta acci\u00f3n no se puede deshacer.',
-                icon: 'error',
-                color: '#dc2626',
-                url: url + '/' + (id || ''),
-                confirmText: 'S\u00ed, eliminar'
-            });
-        }
-
-        /**
-         * Submit a form via confirmation dialog
-         * Usage: confirmSubmit('#myForm', { title: '...', text: '...' })
-         */
-        function confirmSubmit(formSelector, options) {
-            return confirmAction(Object.assign({}, options, {
-                form: document.querySelector(formSelector)
-            }));
-        }
-    </script>
+        /* Backward compatibility — delegates to UI.confirm */
+        function confirmAction(opts) { return UI._fire(opts); }
+        function confirmDelete(url, label) { UI.confirm.delete(url, label); }
+        function confirmSubmit(formSelector, opts) { UI.confirm.submit(formSelector, opts); }
     <script src="{{ asset('js/a11y.js') }}"></script>
     <script>
     (function() {

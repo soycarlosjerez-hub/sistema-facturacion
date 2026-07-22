@@ -14,38 +14,40 @@ body.dark-mode .caja-detail-card .text-muted { color: #94a3b8; }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-safe"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">
+                    <h4 class="ui-header-title">
                         {{ $caja->nombre }}
                         @if($caja->activo)
-                            <span class="premium-badge active" style="font-size:.6rem;"><i class="bi bi-check-circle me-1"></i>Activa</span>
+                            <span class="ui-badge-success" style="font-size:.6rem;"><i class="bi bi-check-circle me-1"></i>Activa</span>
                         @else
-                            <span class="premium-badge" style="font-size:.6rem;"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
+                            <span class="ui-badge-danger" style="font-size:.6rem;"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
                         @endif
                     </h4>
-                    <small class="text-white opacity-75">{{ $caja->codigo ?? 'Sin código' }} &middot; {{ $caja->sucursal->nombre ?? 'Sin sucursal' }}</small>
+                    <div class="ui-header-meta">{{ $caja->codigo ?? 'Sin código' }} &middot; {{ $caja->sucursal->nombre ?? 'Sin sucursal' }}</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                @can('cajas.edit')
-                <a href="{{ route('cajas.edit', $caja) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-pencil me-2"></i>Editar
-                </a>
-                @endcan
-                <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
-                </a>
+            <div class="ui-header-actions">
+                <div class="d-flex gap-2">
+                    @can('cajas.edit')
+                    <a href="{{ route('cajas.edit', $caja) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-pencil me-2"></i>Editar
+                    </a>
+                    @endcan
+                    <a href="{{ route('cajas.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
             </div>
         </div>
     </div>

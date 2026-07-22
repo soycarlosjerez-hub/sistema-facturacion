@@ -4,32 +4,33 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .premium-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
-    }
-</style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-            <div class="premium-header">
-                <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-                            <i class="bi bi-safe fs-2 text-white"></i>
-                        </div>
-                        <div>
-                            <h2 class="fw-bold mb-0 text-white">Cierre de Caja</h2>
-                            <p class="text-white text-opacity-75 mb-0">{{ $caja->nombre }} - Turno iniciado {{ $sesion->fecha_apertura->format('d/m/Y h:i A') }}</p>
-                        </div>
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-safe fs-2"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Cierre de Caja</h4>
+                    <div class="ui-header-meta">
+                        {{ $caja->nombre }} - Turno iniciado {{ $sesion->fecha_apertura->format('d/m/Y h:i A') }}
                     </div>
-                    <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                        <i class="bi bi-arrow-left me-1"></i>Volver
-                    </a>
                 </div>
             </div>
+            <div class="ui-header-actions">
+                <a href="{{ route('cajas.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
 
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4">

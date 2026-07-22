@@ -6,29 +6,10 @@
 @include('partials.datatable-ui')
 <style>
 :root {
-    --dt-accent: #8b5cf6;
-    --dt-accent-gradient: linear-gradient(135deg, #8b5cf6, #a855f7);
-    --dt-accent-rgb: 139,92,246;
+    --dt-accent: #ec4899;
+    --dt-accent-gradient: linear-gradient(135deg, #ec4899, #f472b6);
+    --dt-accent-rgb: 236,72,153;
 }
-.premium-header {
-    background: linear-gradient(135deg, #8b5cf6, #a855f7, #7c3aed, #8b5cf6);
-    background-size: 300% 300%;
-    box-shadow: 0 8px 32px rgba(139,92,246,.25);
-}
-.premium-header::before {
-    background:
-        radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
-        radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-}
-.avatar-circle {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 1.2rem;
-    transition: transform 0.2s;
-    flex-shrink: 0;
-}
-tr:hover .avatar-circle { transform: scale(1.1); }
 .status-badge {
     padding: 0.4em 0.8em;
     border-radius: 2rem;
@@ -39,32 +20,29 @@ tr:hover .avatar-circle { transform: scale(1.1); }
     transition: all .2s;
 }
 .status-badge:hover { filter: brightness(1.1); }
-body.dark-mode .avatar-circle { color: #f1f5f9 !important; }
 body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#ec4899;--accent-rgb:236,72,153;--accent-hover:#db2777;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-tags"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Gestión de Categorías</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-info-circle me-1"></i>Clasifica y organiza tus productos e inventario
-                    </small>
+                    <h4 class="ui-header-title">Gestión de Categorías</h4>
+                    <div class="ui-header-meta">Clasifica y organiza tus productos e inventario</div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('productos.create')
-                <a href="{{ route('categorias.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('categorias.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
                 </a>
                 @endcan
@@ -72,38 +50,38 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent purple"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" action="{{ route('categorias.index') }}" id="filtros-form" class="row g-2 align-items-end">
                 <div class="col-lg-4">
-                    <label class="form-label small fw-bold text-muted">Buscar</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="nombre" id="busqueda-categoria" class="form-control" placeholder="Nombre de categoría..." value="{{ request('nombre') }}" autocomplete="off">
+                    <label class="ui-label small fw-bold text-muted">Buscar</label>
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="nombre" id="busqueda-categoria" class="ui-input" placeholder="Nombre de categoría..." value="{{ request('nombre') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-3">
-                    <label class="form-label small fw-bold text-muted">Estado</label>
-                    <select name="activo" id="filter-activo" class="form-select">
+                    <label class="ui-label small fw-bold text-muted">Estado</label>
+                    <select name="activo" id="filter-activo" class="ui-select">
                         <option value="">Todos</option>
                         <option value="1" {{ request('activo') === '1' ? 'selected' : '' }}>Activas</option>
                         <option value="0" {{ request('activo') === '0' ? 'selected' : '' }}>Inactivas</option>
                     </select>
                 </div>
                 <div class="col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('categorias.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('categorias.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-lg-3 text-end">
                     <div class="d-flex gap-2 justify-content-end">
-                        <a href="{{ route('categorias.importar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('categorias.importar') }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-upload me-1"></i> Importar CSV
                         </a>
-                        <a href="{{ route('categorias.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('categorias.exportar', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-excel me-1"></i> Excel
                         </a>
-                        <a href="{{ route('categorias.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('categorias.pdf', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-pdf me-1"></i> PDF
                         </a>
                     </div>
@@ -112,8 +90,8 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent purple"></div>
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-0">
             <table id="categorias-table" class="table dt-table nowrap no-footer" style="width:100%">
                 <thead>
@@ -389,13 +367,13 @@ $(function() {
     function renderAcciones(id, opts) {
         let html = '<div class="d-flex justify-content-end gap-1">';
         if (opts.show) {
-            html += '<a href="' + opts.show + '" class="premium-btn-edit" title="Ver" style="background:rgba(59,130,246,.1);color:#3b82f6;border-color:rgba(59,130,246,.2);">' +
+            html += '<a href="' + opts.show + '" class="ui-action ui-action-edit" title="Ver">' +
                 '<i class="bi bi-eye"></i></a>';
         }
-        html += '<a href="' + opts.edit + '" class="premium-btn-edit" title="Editar">' +
+        html += '<a href="' + opts.edit + '" class="ui-action ui-action-edit" title="Editar">' +
             '<i class="bi bi-pencil"></i></a>';
         if (opts.delete) {
-            html += '<button type="button" class="premium-btn-delete border-0 btn-delete-categoria" data-id="' + id + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar">' +
+            html += '<button type="button" class="ui-action ui-action-delete border-0 btn-delete-categoria" data-id="' + id + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar">' +
                 '<i class="bi bi-trash"></i></button>';
         }
         html += '</div>';

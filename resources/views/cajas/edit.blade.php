@@ -5,10 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    .premium-header {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
-    }
     .sticky-save-bar {
         position: fixed;
         bottom: 0;
@@ -35,23 +31,29 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4">
-            <div class="premium-header">
-                <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="bg-white bg-opacity-20 rounded-2 p-2 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-                            <i class="bi bi-pencil-square fs-2 text-white"></i>
-                        </div>
-                        <div>
-                            <h2 class="fw-bold mb-0 text-white">Editar Caja</h2>
-                            <p class="text-white text-opacity-75 mb-0">Modifica los datos de <strong class="text-white">{{ $caja->nombre }}</strong>.</p>
-                        </div>
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
+    <div class="container-fluid px-4">
+        <div class="ui-header mb-4" style="--delay:0s">
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="ui-header-body">
+                <div class="ui-header-left">
+                    <div class="ui-avatar-circle">
+                        <i class="bi bi-pencil-square"></i>
                     </div>
-                    <a href="{{ route('cajas.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+                    <div>
+                        <h4 class="ui-header-title">Editar Caja</h4>
+                        <div class="ui-header-meta">Modifica los datos de <strong>{{ $caja->nombre }}</strong>.</div>
+                    </div>
+                </div>
+                <div class="ui-header-actions">
+                    <a href="{{ route('cajas.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                         <i class="bi bi-arrow-left me-1"></i>Volver
                     </a>
                 </div>
             </div>
+        </div>
 
             @if ($errors->any())
                 <div class="alert alert-danger rounded-4 shadow-sm mb-4" style="border-left: 4px solid #dc3545 !important;">
@@ -79,37 +81,37 @@
                     <div class="card-body p-4 p-md-5">
                         <div class="row g-4">
                             <div class="col-md-7">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">
+                                <label class="ui-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">
                                     Nombre <span class="text-danger">*</span>
                                 </label>
-                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-tag-fill text-warning"></i></span>
-                                    <input type="text" name="nombre" class="form-control border-start-0 @error('nombre') is-invalid @enderror" required value="{{ old('nombre', $caja->nombre) }}">
+                                <div class="ui-input-group ui-input-group-lg shadow-sm rounded-3 overflow-hidden">
+                                    <span class="ui-input-group-text bg-white border-end-0"><i class="bi bi-tag-fill text-warning"></i></span>
+                                    <input type="text" name="nombre" class="ui-input border-start-0 @error('nombre') is-invalid @enderror" required value="{{ old('nombre', $caja->nombre) }}">
                                 </div>
                                 @error('nombre')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
 
                             <div class="col-md-5">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Código</label>
-                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-upc text-warning"></i></span>
-                                    <input type="text" name="codigo" class="form-control border-start-0 @error('codigo') is-invalid @enderror" value="{{ old('codigo', $caja->codigo) }}">
+                                <label class="ui-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Código</label>
+                                <div class="ui-input-group ui-input-group-lg shadow-sm rounded-3 overflow-hidden">
+                                    <span class="ui-input-group-text bg-white border-end-0"><i class="bi bi-upc text-warning"></i></span>
+                                    <input type="text" name="codigo" class="ui-input border-start-0 @error('codigo') is-invalid @enderror" value="{{ old('codigo', $caja->codigo) }}">
                                 </div>
                                 @error('codigo')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Ubicación</label>
-                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-geo-alt-fill text-warning"></i></span>
-                                    <input type="text" name="ubicacion" class="form-control border-start-0" value="{{ old('ubicacion', $caja->ubicacion) }}">
+                                <label class="ui-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Ubicación</label>
+                                <div class="ui-input-group ui-input-group-lg shadow-sm rounded-3 overflow-hidden">
+                                    <span class="ui-input-group-text bg-white border-end-0"><i class="bi bi-geo-alt-fill text-warning"></i></span>
+                                    <input type="text" name="ubicacion" class="ui-input border-start-0" value="{{ old('ubicacion', $caja->ubicacion) }}">
                                 </div>
                             </div>
 
                             @if(isset($sucursales) && $sucursales->count())
                             <div class="col-12">
-                                <label class="form-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Sucursal</label>
-                                <select name="sucursal_id" class="form-select form-select-lg shadow-sm rounded-3">
+                                <label class="ui-label fw-bold text-muted small text-uppercase" style="letter-spacing: 1px;">Sucursal</label>
+                                <select name="sucursal_id" class="ui-select ui-select-lg shadow-sm rounded-3">
                                     <option value="">Sin asignar</option>
                                     @foreach($sucursales as $s)
                                         <option value="{{ $s->id }}" {{ old('sucursal_id', $caja->sucursal_id) == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>

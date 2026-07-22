@@ -44,7 +44,7 @@ body.dark-mode .pagos-table tbody td {
     color: #cbd5e1;
 }
 @media print {
-    .breadcrumb, .btn, .nav-section-title, .nav, header, .premium-header { display: none !important; }
+    .breadcrumb, .btn, .nav-section-title, .nav, header, .ui-header { display: none !important; }
     .invoice-card { box-shadow: none !important; border: 1px solid #eee !important; }
     .container-fluid { padding: 0 !important; }
 }
@@ -52,37 +52,38 @@ body.dark-mode .pagos-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-receipt"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Comprobante de Venta</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-receipt me-1"></i>
+                    <h4 class="ui-header-title">Comprobante de Venta</h4>
+                    <div class="ui-header-meta">
                         Factura #{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}
                         <span class="mx-2">·</span>
                         {{ $venta->created_at->format('d/m/Y h:i A') }}
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('ventas.pdf', $venta->id) }}" class="btn btn-light rounded-pill px-3 shadow-sm" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-file-pdf me-1"></i>PDF
-                </a>
-                <button onclick="window.print()" class="btn btn-light rounded-pill px-3 shadow-sm" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-printer me-1"></i>Imprimir
-                </button>
-                <a href="{{ route('ventas.index') }}" class="btn btn-outline-light rounded-pill px-4">
-                    <i class="bi bi-arrow-left me-1"></i>Volver
-                </a>
+            <div class="ui-header-actions">
+                <div class="d-flex gap-2">
+                    <a href="{{ route('ventas.pdf', $venta->id) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-file-pdf me-1"></i>PDF
+                    </a>
+                    <button onclick="window.print()" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-printer me-1"></i>Imprimir
+                    </button>
+                    <a href="{{ route('ventas.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -120,11 +121,11 @@ body.dark-mode .pagos-table tbody td {
 
                     <div class="text-center mb-4">
                         @if($venta->estado == 'completada')
-                            <span class="premium-badge" style="background:rgba(16,185,129,.1);color:#059669;"><i class="bi bi-check-circle-fill me-1"></i>PAGADA COMPLETAMENTE</span>
+                            <span class="ui-badge-success"><i class="bi bi-check-circle-fill me-1"></i>PAGADA COMPLETAMENTE</span>
                         @elseif($venta->estado == 'cuenta_abierta')
-                            <span class="premium-badge" style="background:rgba(59,130,246,.1);color:#3b82f6;"><i class="bi bi-door-open-fill me-1"></i>CUENTA ABIERTA</span>
+                            <span class="ui-badge-info"><i class="bi bi-door-open-fill me-1"></i>CUENTA ABIERTA</span>
                         @else
-                            <span class="premium-badge" style="background:rgba(245,158,11,.1);color:#d97706;"><i class="bi bi-exclamation-circle-fill me-1"></i>FIAO PENDIENTE</span>
+                            <span class="ui-badge-warning"><i class="bi bi-exclamation-circle-fill me-1"></i>FIAO PENDIENTE</span>
                         @endif
                     </div>
 
@@ -199,10 +200,10 @@ body.dark-mode .pagos-table tbody td {
         </div>
 
         <div class="col-lg-8">
-            <div class="premium-card mb-4" style="animation-delay:.1s;">
-                <div class="card-accent blue"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-cash-coin icon-blue"></i>
+            <div class="ui-card mb-4" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-cash-coin me-2"></i>
                     Seguimiento de Pagos
                 </div>
                 <div class="card-body p-0">
@@ -222,7 +223,7 @@ body.dark-mode .pagos-table tbody td {
                                     <td class="ps-4 small">{{ \Carbon\Carbon::parse($p->fecha_pago)->format('d/m/Y h:i A') }}</td>
                                     <td><span class="fw-bold text-success">RD${{ number_format($p->monto, 2) }}</span></td>
                                     <td class="small text-muted">{{ $p->nota ?? 'Pago registrado' }}</td>
-                                    <td class="text-end pe-4"><small class="premium-badge">ID-{{ $p->id }}</small></td>
+                                    <td class="text-end pe-4"><small class="ui-badge-neutral">ID-{{ $p->id }}</small></td>
                                 </tr>
                                 @empty
                                 <tr>
@@ -247,10 +248,10 @@ body.dark-mode .pagos-table tbody td {
                 </div>
             </div>
 
-            <div class="premium-card" style="animation-delay:.15s;">
-                <div class="card-accent blue"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-archive icon-blue"></i>
+            <div class="ui-card" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-archive me-2"></i>
                     Movimientos de Inventario (Kardex)
                 </div>
                 <div class="card-body p-0">
@@ -275,7 +276,7 @@ body.dark-mode .pagos-table tbody td {
                                 <tr class="small">
                                     <td class="ps-4">{{ $det->producto->nombre }}</td>
                                     <td>{{ $det->almacen->nombre ?? 'N/A' }}</td>
-                                    <td><span class="premium-badge" style="background:rgba(239,68,68,.1);color:#dc2626;">Salida</span></td>
+                                    <td><span class="ui-badge-danger">Salida</span></td>
                                     <td class="text-center fw-bold">{{ $det->cantidad }}</td>
                                     <td class="text-muted">{{ $venta->usuario->name }}</td>
                                 </tr>

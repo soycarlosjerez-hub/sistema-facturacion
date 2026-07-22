@@ -9,28 +9,27 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-cart-plus"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Registrar Compra</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-cart me-1"></i>
-                        Registra una entrada de inventario desde un proveedor
-                    </small>
+                    <h4 class="ui-header-title">Registrar Compra</h4>
+                    <div class="ui-header-meta">Registra una entrada de inventario desde un proveedor</div>
                 </div>
             </div>
-            <a href="{{ route('compras.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('compras.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -53,17 +52,17 @@
     <form action="{{ route('compras.store') }}" method="POST" id="compraForm">
         @csrf
 
-        <div class="premium-card mb-4" style="animation-delay:.1s;">
-            <div class="card-accent blue"></div>
-            <div class="premium-card-title">
-                <i class="bi bi-cart icon-blue"></i>
+        <div class="ui-card mb-4" style="--delay:.1s">
+            <div class="ui-card-accent"></div>
+            <div class="ui-card-title">
+                <i class="bi bi-cart me-2"></i>
                 Datos de la Compra
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Proveedor <span class="text-danger">*</span></label>
-                        <select name="proveedor_id" class="form-select form-select-lg" required>
+                        <label class="ui-label small fw-semibold">Proveedor <span class="text-danger">*</span></label>
+                        <select name="proveedor_id" class="ui-select ui-select-lg" required>
                             <option value="">Seleccionar proveedor</option>
                             @foreach($proveedores as $proveedor)
                                 <option value="{{ $proveedor->id }}" {{ old('proveedor_id') == $proveedor->id ? 'selected' : '' }}>{{ $proveedor->nombre }}</option>
@@ -71,8 +70,8 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Tipo de Compra <span class="text-danger">*</span></label>
-                        <select name="tipo_compra_id" class="form-select form-select-lg" required>
+                        <label class="ui-label small fw-semibold">Tipo de Compra <span class="text-danger">*</span></label>
+                        <select name="tipo_compra_id" class="ui-select ui-select-lg" required>
                             <option value="">Seleccionar tipo</option>
                             @foreach($tiposCompra as $tipo)
                                 <option value="{{ $tipo->id }}" {{ old('tipo_compra_id') == $tipo->id ? 'selected' : '' }}>{{ $tipo->nombre }}</option>
@@ -80,8 +79,8 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
-                        <select name="almacen_id" class="form-select form-select-lg" required>
+                        <label class="ui-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
+                        <select name="almacen_id" class="ui-select ui-select-lg" required>
                             <option value="">Seleccionar almacén</option>
                             @foreach($almacenes as $almacen)
                                 <option value="{{ $almacen->id }}" {{ old('almacen_id') == $almacen->id ? 'selected' : '' }}>{{ $almacen->nombre }}</option>
@@ -89,17 +88,17 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Fecha</label>
-                        <input type="date" name="fecha" class="form-control form-control-lg" value="{{ old('fecha', date('Y-m-d')) }}">
+                        <label class="ui-label small fw-semibold">Fecha</label>
+                        <input type="date" name="fecha" class="ui-input ui-input-lg" value="{{ old('fecha', date('Y-m-d')) }}">
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="premium-card mb-4" style="animation-delay:.15s;">
-            <div class="card-accent blue"></div>
-            <div class="premium-card-title">
-                <i class="bi bi-list-check icon-blue"></i>
+        <div class="ui-card mb-4" style="--delay:.15s">
+            <div class="ui-card-accent"></div>
+            <div class="ui-card-title">
+                <i class="bi bi-list-check me-2"></i>
                 Detalle de la Compra
             </div>
             <div class="table-responsive">
@@ -147,9 +146,9 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4" id="retencionesCard">
+        <div class="ui-card mb-4" id="retencionesCard">
             <div class="card-body p-4">
-                <h5 class="fw-bold mb-3"><i class="bi bi-percent text-warning me-2"></i>Retenciones</h5>
+                <h5 class="fw-bold mb-3 ui-card-title"><i class="bi bi-percent me-2"></i>Retenciones</h5>
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-check form-switch">
@@ -171,10 +170,10 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="ui-card mb-4 overflow-hidden">
             <div class="card-body p-4">
-                <label class="form-label small fw-semibold">Observaciones</label>
-                <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas sobre la compra (opcional)">{{ old('observaciones') }}</textarea>
+                <label class="ui-label small fw-semibold">Observaciones</label>
+                <textarea name="observaciones" class="ui-textarea" rows="2" placeholder="Notas sobre la compra (opcional)">{{ old('observaciones') }}</textarea>
             </div>
         </div>
 
@@ -184,10 +183,10 @@
     <div style="height: 80px;"></div>
 </div>
 
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-end align-items-center">
-        <a href="{{ route('compras.index') }}" class="btn-cancel me-2">Cancelar</a>
-        <button type="submit" form="compraForm" class="btn-save">
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <a href="{{ route('compras.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+        <button type="submit" form="compraForm" class="ui-btn ui-btn-solid rounded-pill px-5">
             <i class="bi bi-check-lg me-2"></i>Guardar Compra
         </button>
     </div>
@@ -202,18 +201,18 @@
 <template id="fila-template">
     <tr>
         <td>
-            <input type="text" class="form-control nombre" list="productList" placeholder="Nombre del producto" required>
+            <input type="text" class="ui-input nombre" list="productList" placeholder="Nombre del producto" required>
             <input type="hidden" class="producto-id" value="">
             <small class="text-muted nuevo-producto-msg d-none text-warning">
                 <i class="bi bi-info-circle"></i> Se crear&aacute; un nuevo producto. Asigna precio de venta y c&oacute;digo de barras.
             </small>
         </td>
         <td>
-            <input type="text" class="form-control codigo-barras" placeholder="Escanear o escribir" autocomplete="off">
+            <input type="text" class="ui-input codigo-barras" placeholder="Escanear o escribir" autocomplete="off">
         </td>
-        <td><input type="number" min="0.01" step="0.01" class="form-control cantidad" value="1" required></td>
-        <td><input type="number" min="0" step="0.01" class="form-control precio" value="0.00" required></td>
-        <td><input type="number" min="0" max="100" step="0.01" class="form-control itbis" value="18" required></td>
+        <td><input type="number" min="0.01" step="0.01" class="ui-input cantidad" value="1" required></td>
+        <td><input type="number" min="0" step="0.01" class="ui-input precio" value="0.00" required></td>
+        <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="18" required></td>
         <td class="subtotal fw-bold text-end">RD$ 0.00</td>
         <td class="text-center">
                 <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btnEliminarFila" title="Eliminar fila">

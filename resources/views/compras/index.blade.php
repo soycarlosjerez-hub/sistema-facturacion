@@ -7,7 +7,7 @@
 <style>
 .compras-table {
     --bs-table-bg: transparent;
-    --bs-table-hover-bg: rgba(59,130,246,.04);
+    --bs-table-hover-bg: rgba(245,158,11,.04);
     margin: 0;
 }
 .compras-table thead th {
@@ -28,15 +28,7 @@
 }
 .compras-table tbody tr:last-child td { border-bottom: none; }
 .compras-table tbody tr { transition: background .15s; }
-.compras-table tbody tr:hover { background: rgba(59,130,246,.03); }
-.avatar-circle {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 1.2rem;
-    transition: transform 0.2s;
-}
-tr:hover .avatar-circle { transform: scale(1.1); }
+.compras-table tbody tr:hover { background: rgba(245,158,11,.03); }
 .status-badge {
     padding: 0.4em 0.8em;
     border-radius: 2rem;
@@ -57,31 +49,29 @@ body.dark-mode .compras-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-cart-check"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Gestión de Compras</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-cart me-1"></i>
+                    <h4 class="ui-header-title">Gestión de Compras</h4>
+                    <div class="ui-header-meta">
                         Administra tus compras, proveedores y retenciones
                         <span class="mx-2">·</span>
-                        <i class="bi bi-list-ul me-1"></i>
                         {{ $compras->total() }} registro(s)
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('compras.create')
-                <a href="{{ route('compras.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('compras.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Registrar Compra
                 </a>
                 @endcan
@@ -89,31 +79,31 @@ body.dark-mode .compras-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" id="filtros-form" action="{{ route('compras.index') }}" class="row g-2 align-items-center">
                 <div class="col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="proveedor" id="busqueda-proveedor" class="form-control" placeholder="Proveedor o RNC..." value="{{ request('proveedor') }}" autocomplete="off">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="proveedor" id="busqueda-proveedor" class="ui-input" placeholder="Proveedor o RNC..." value="{{ request('proveedor') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="desde" class="form-control" value="{{ request('desde') }}">
+                    <input type="date" name="desde" class="ui-input" value="{{ request('desde') }}">
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}">
+                    <input type="date" name="hasta" class="ui-input" value="{{ request('hasta') }}">
                 </div>
                 <div class="col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('compras.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('compras.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-lg-2 d-flex gap-2">
-                    <a href="{{ route('compras.exportar', request()->all()) }}" class="btn btn-outline-secondary flex-grow-1">
+                    <a href="{{ route('compras.exportar', request()->all()) }}" class="ui-btn ui-btn-ghost flex-grow-1">
                         <i class="bi bi-file-excel me-1"></i> Excel
                     </a>
-                    <a href="{{ route('compras.pdf', request()->all()) }}" class="btn btn-outline-secondary flex-grow-1">
+                    <a href="{{ route('compras.pdf', request()->all()) }}" class="ui-btn ui-btn-ghost flex-grow-1">
                         <i class="bi bi-file-pdf me-1"></i> PDF
                     </a>
                 </div>
@@ -121,8 +111,8 @@ body.dark-mode .compras-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table compras-table">
@@ -142,9 +132,9 @@ body.dark-mode .compras-table tbody td {
                                 <td class="ps-4">
                                     <div class="d-flex flex-column">
                                         <span class="fw-bold text-dark fs-6">{{ $c->folio }}</span>
-                                        <span class="premium-badge" style="background:rgba(100,116,139,.1);color:#475569;font-size:.7rem;">
-                                            {{ $c->tipoCompra?->nombre ?? 'N/A' }}
-                                        </span>
+                            <span class="ui-badge-neutral" style="font-size:.7rem;">
+                                {{ $c->tipoCompra?->nombre ?? 'N/A' }}
+                            </span>
                                     </div>
                                 </td>
                                 <td>
@@ -170,12 +160,12 @@ body.dark-mode .compras-table tbody td {
                                 <td>
                                     <div class="d-flex flex-column gap-1">
                                         @if($c->almacen)
-                                            <span class="premium-badge" style="background:rgba(59,130,246,.1);color:#3b82f6;">
+                                            <span class="ui-badge-info">
                                                 <i class="bi bi-building me-1"></i>{{ $c->almacen->nombre }}
                                             </span>
                                         @endif
                                         @if($c->aplica_retencion_isr || $c->aplica_retencion_itbis)
-                                            <span class="premium-badge" style="background:rgba(245,158,11,.1);color:#d97706;">
+                                            <span class="ui-badge-warning">
                                                 <i class="bi bi-shield-exclamation me-1"></i>Retenciones
                                             </span>
                                         @endif
@@ -186,18 +176,18 @@ body.dark-mode .compras-table tbody td {
                                     <div class="fw-bold text-primary fs-5">RD$ {{ number_format($c->total, 2) }}</div>
                                 </td>
                                 <td class="text-end pe-4">
-                                    <button class="premium-btn-edit" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $c->id }}" title="Ver productos">
+                                    <button class="ui-action ui-action-edit" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $c->id }}" title="Ver productos">
                                         <i class="bi bi-chevron-down"></i>
                                     </button>
-                                    <a href="{{ route('compras.show', $c) }}" class="premium-btn-edit" title="Ver">
+                                    <a href="{{ route('compras.show', $c) }}" class="ui-action ui-action-edit" title="Ver">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a href="{{ route('compras.edit', $c) }}" class="premium-btn-edit" title="Editar">
+                                    <a href="{{ route('compras.edit', $c) }}" class="ui-action ui-action-edit" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('compras.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la compra {{ $c->folio }}? Se revertirá el stock.')">
+                                    <form action="{{ route('compras.destroy', $c) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Eliminar la compra {{ $c->folio }}? Se revertirá el stock.')">
                                         @csrf @method('DELETE')
-                                        <button class="premium-btn-delete" title="Eliminar">
+                                        <button class="ui-action ui-action-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -240,7 +230,7 @@ body.dark-mode .compras-table tbody td {
                                     <i class="bi bi-cart-x fs-1" style="color:#cbd5e1;"></i>
                                     <p class="mt-2 mb-0 fw-semibold">No hay compras registradas</p>
                                     @can('compras.create')
-                                    <a href="{{ route('compras.create') }}" class="btn btn-primary rounded-pill mt-2">Registrar primera compra</a>
+                                    <a href="{{ route('compras.create') }}" class="ui-btn ui-btn-solid rounded-pill mt-2">Registrar primera compra</a>
                                     @endcan
                                 </td>
                             </tr>
