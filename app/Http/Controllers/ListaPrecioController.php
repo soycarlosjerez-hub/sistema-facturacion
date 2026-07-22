@@ -123,37 +123,58 @@ class ListaPrecioController extends Controller
         ]);
 
         $count = 0;
-        DB::transaction(function () use ($request, $listaPrecio, &$count) {
+        $tenantId = Auth::user()->business_instance_id;
+        $userId = Auth::id();
+
+        DB::transaction(function () use ($request, $listaPrecio, &$count, $tenantId, $userId) {
+            $productIds = collect($request->precios)->pluck('producto_id');
+            $existingItems = ListaPrecioItem::where('lista_precio_id', $listaPrecio->id)
+                ->whereIn('producto_id', $productIds)
+                ->get()
+                ->keyBy('producto_id');
+
+            $upsertData = [];
+            $logs = [];
+
             foreach ($request->precios as $item) {
+                $productoId = $item['producto_id'];
                 $precioNuevo = (float) $item['precio'];
-                $itemModel = ListaPrecioItem::updateOrCreate(
-                    [
-                        'lista_precio_id' => $listaPrecio->id,
-                        'producto_id' => $item['producto_id'],
-                    ],
-                    [
-                        'precio' => $precioNuevo,
-                        'tenant_id' => Auth::user()->business_instance_id,
-                    ]
-                );
+                $existing = $existingItems->get($productoId);
+                $precioAnterior = $existing ? (float) $existing->precio : 0;
 
-                $precioAnterior = (float) $itemModel->getOriginal('precio');
+                $upsertData[] = [
+                    'lista_precio_id' => $listaPrecio->id,
+                    'producto_id' => $productoId,
+                    'precio' => $precioNuevo,
+                    'tenant_id' => $tenantId,
+                ];
 
-                // Log price change if price was updated (not created)
-                if (!$itemModel->wasRecentlyCreated && abs($precioAnterior - $precioNuevo) > 0.001) {
-                    ListaPrecioLog::create([
-                        'tenant_id' => Auth::user()->business_instance_id,
+                if ($existing && abs($precioAnterior - $precioNuevo) > 0.001) {
+                    $logs[] = [
+                        'tenant_id' => $tenantId,
                         'lista_precio_id' => $listaPrecio->id,
-                        'producto_id' => $item['producto_id'],
+                        'producto_id' => $productoId,
                         'precio_anterior' => $precioAnterior,
                         'precio_nuevo' => $precioNuevo,
-                        'usuario_id' => Auth::id(),
+                        'usuario_id' => $userId,
                         'cambio_en' => 'precio',
                         'observacion' => 'Precio actualizado vía edición masiva',
-                    ]);
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
                 }
 
                 $count++;
+            }
+
+            ListaPrecioItem::upsert(
+                $upsertData,
+                ['lista_precio_id', 'producto_id'],
+                ['precio', 'tenant_id']
+            );
+
+            if (!empty($logs)) {
+                ListaPrecioLog::insert($logs);
             }
         });
 
