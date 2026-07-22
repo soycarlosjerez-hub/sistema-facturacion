@@ -129,6 +129,63 @@
         </div>
         @endif
 
+        @php $vigentes = $listas->count() - $porExpirar->count() - $expiradas->count(); @endphp
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(139,92,246,0.1);color:#8b5cf6;font-size:1.4rem;">
+                            <i class="bi bi-tags"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" style="color:#8b5cf6;">{{ $listas->count() }}</div>
+                            <div class="stat-label">Total Listas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.4rem;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-success">{{ $vigentes }}</div>
+                            <div class="stat-label">Vigentes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,193,7,0.1);color:#ffc107;font-size:1.4rem;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-warning">{{ $porExpirar->count() }}</div>
+                            <div class="stat-label">Por Expirar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(220,53,69,0.1);color:#dc3545;font-size:1.4rem;">
+                            <i class="bi bi-x-octagon"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-danger">{{ $expiradas->count() }}</div>
+                            <div class="stat-label">Expiradas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="premium-header d-flex justify-content-between align-items-center">
             <div class="bubble"></div>
             <div class="bubble"></div>
@@ -227,9 +284,9 @@
                                 @if($lista->vigencia_desde)
                                     <span class="d-flex align-items-center gap-1" title="Vigencia">
                                         <i class="bi bi-calendar3"></i>
-                                        {{ $lista->vigencia_desde->format('d/m/y') }}
+                                        {{ $lista->vigencia_desde->format('d/m/Y') }}
                                         @if($lista->vigencia_hasta)
-                                            - {{ $lista->vigencia_hasta->format('d/m/y') }}
+                                            - {{ $lista->vigencia_hasta->format('d/m/Y') }}
                                         @endif
                                     </span>
                                 @endif

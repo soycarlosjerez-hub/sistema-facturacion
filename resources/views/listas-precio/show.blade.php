@@ -82,6 +82,68 @@
             </div>
         </div>
 
+        @php
+            $itemsList = $listaPrecio->items;
+            $precioPromedio = $itemsList->avg('precio');
+            $precioMin = $itemsList->min('precio');
+            $precioMax = $itemsList->max('precio');
+        @endphp
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(139,92,246,0.1);color:#8b5cf6;font-size:1.4rem;">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" style="color:#8b5cf6;">{{ $itemsList->count() }}</div>
+                            <div class="stat-label">Total Productos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(13,202,240,0.1);color:#0dcaf0;font-size:1.4rem;">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-info">RD$ {{ number_format($precioPromedio ?? 0, 0) }}</div>
+                            <div class="stat-label">Precio Promedio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.4rem;">
+                            <i class="bi bi-arrow-down-circle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-success">RD$ {{ number_format($precioMin ?? 0, 0) }}</div>
+                            <div class="stat-label">Precio M&iacute;nimo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="premium-stat-card p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(220,53,69,0.1);color:#dc3545;font-size:1.4rem;">
+                            <i class="bi bi-arrow-up-circle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-danger">RD$ {{ number_format($precioMax ?? 0, 0) }}</div>
+                            <div class="stat-label">Precio M&aacute;ximo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-3 mb-4">
             <div class="col-md-8">
                 <div class="premium-card">
@@ -102,7 +164,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php $itemsList = $listaPrecio->items; @endphp
                                 @forelse($itemsList as $item)
                                 @php
                                     $producto = $item->producto;

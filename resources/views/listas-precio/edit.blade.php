@@ -21,6 +21,15 @@
     .margin-positive { color: #198754; font-weight: 600; }
     .margin-negative { color: #dc3545; font-weight: 600; }
     .margin-zero { color: #6c757d; font-weight: 600; }
+    .premium-sticky-bar { border-top-color: #8b5cf6 !important; }
+    .premium-sticky-bar .btn-save { background: linear-gradient(135deg, #8b5cf6, #a855f7) !important; box-shadow: 0 4px 14px rgba(139,92,246,.3) !important; }
+    .precio-lista:focus { border-color: #8b5cf6 !important; box-shadow: 0 0 0 3px rgba(139,92,246,.15) !important; }
+    .producto-no-lista:not(.d-none) td { opacity: 0.5; font-style: italic; }
+    .estado-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: .65rem; }
+    .estado-badge-sin { background: #f1f5f9; color: #94a3b8; }
+    body.dark-mode .premium-sticky-bar { border-top-color: #a855f7 !important; }
+    body.dark-mode .precio-lista:focus { border-color: #a855f7 !important; box-shadow: 0 0 0 3px rgba(139,92,246,.25) !important; }
+    body.dark-mode .estado-badge-sin { background: rgba(30,41,59,.8); color: #475569; }
 </style>
 @endpush
 
@@ -37,7 +46,7 @@
                         <i class="bi bi-tag"></i>
                     </div>
                     <div>
-                        <h2 class="fw-bold mb-0 text-white">Editar Lista de Precios</h2>
+                        <h4 class="fw-bold mb-0 text-white">Editar Lista de Precios</h4>
                         <p class="text-white text-opacity-75 mb-0">{{ $listaPrecio->nombre }}</p>
                     </div>
                 </div>
@@ -53,9 +62,6 @@
                     <div class="card-accent purple"></div>
                     <div class="d-flex justify-content-between align-items-center p-4 pb-0">
                         <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2" style="color: #8b5cf6;"></i>Productos y Precios</h5>
-                        <button class="btn btn-success rounded-pill px-3" id="btnGuardarPrecios">
-                            <i class="bi bi-save me-1"></i>Guardar Cambios
-                        </button>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0" id="tablaPrecios">
@@ -66,12 +72,13 @@
                                     <th class="text-end">Costo</th>
                                     <th class="text-end">Margen %</th>
                                     <th class="text-end">Precio Actual</th>
-                                    <th class="text-end pe-4">Precio Lista</th>
+                                    <th class="text-end">Precio Lista</th>
+                                    <th class="text-center pe-4" style="width:50px;"><i class="bi bi-circle-fill" style="font-size:.4rem;color:#94a3b8;"></i></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="6" class="text-center py-3">
+                                    <td colspan="7" class="text-center py-3">
                                         <div class="input-group mb-3" style="max-width:400px;margin:0 auto;">
                                             <input type="text" id="filtroProducto" class="form-control" placeholder="Filtrar productos...">
                                             <button class="btn btn-outline-primary" id="btnAgregarProducto" type="button"><i class="bi bi-plus-lg"></i> Agregar</button>
@@ -101,12 +108,15 @@
                                         @endif
                                     </td>
                                     <td class="text-end text-muted">RD$ {{ number_format($p->precio, 2) }}</td>
-                                    <td class="text-end pe-4">
+                                    <td class="text-end">
                                         <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end precio-lista"
                                                style="width:130px;display:inline-block;"
                                                value="{{ $item ? number_format($item->precio, 2, '.', '') : '' }}"
                                                placeholder="0.00"
                                                data-producto-id="{{ $p->id }}">
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <span class="estado-badge estado-badge-sin"><i class="bi bi-dash-lg"></i></span>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -192,24 +202,33 @@
             </div>
         </div>
     </div>
+
+    <div id="stickySaveBar" class="premium-sticky-bar">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle" style="color: #8b5cf6;"></i>
+                <span class="fw-semibold d-none d-sm-inline">Editando: {{ $listaPrecio->nombre }}</span>
+                <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill small px-2 border border-warning border-opacity-25" id="cambiosPendientesBadge" style="display:none;">
+                    <i class="bi bi-exclamation-circle me-1"></i>Precios sin guardar
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" id="btnGuardarPrecios" class="btn-save">
+                    <i class="bi bi-coin me-1"></i>Guardar Precios
+                </button>
+                <button type="submit" form="listaPrecioForm" class="btn-save">
+                    <i class="bi bi-save me-1"></i>Guardar Datos
+                </button>
+                <button type="button" class="btn-close ms-2" aria-label="Cerrar" onclick="document.getElementById('stickySaveBar').style.display='none'" style="filter:invert(0.5);"></button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <form id="formActualizarPrecios" action="{{ route('listas-precio.actualizar-precios', $listaPrecio) }}" method="POST">
     @csrf
     <div id="preciosContainer"></div>
 </form>
-
-<div id="stickySaveBar" class="premium-sticky-bar">
-    <div class="d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle" style="color: #8b5cf6;"></i>
-            <span class="fw-semibold d-none d-sm-inline">Editando: {{ $listaPrecio->nombre }}</span>
-        </div>
-        <button type="submit" form="listaPrecioForm" class="btn-save">
-            <i class="bi bi-save me-1"></i>Actualizar Lista
-        </button>
-    </div>
-</div>
 
 @push('scripts')
 <script>

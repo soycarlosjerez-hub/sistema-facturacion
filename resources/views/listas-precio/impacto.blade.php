@@ -129,7 +129,7 @@
         <div class="row g-4 mt-2">
             <div class="col-md-6">
                 <div class="premium-card h-100">
-                    <div class="card-accent yellow"></div>
+                    <div class="card-accent amber"></div>
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-4">
                             <i class="bi bi-pie-chart me-2" style="color: #f59e0b;"></i>Resumen Financiero
