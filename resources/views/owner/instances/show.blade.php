@@ -37,11 +37,11 @@
     </script>
     @endif
 
-    <div class="premium-header" style="margin-bottom: 2rem;">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-building"></i>
                 </div>
                 <div>
@@ -60,18 +60,18 @@
                     <p class="mb-0 opacity-75">{{ $instance->businessType?->nombre ?? 'Sin tipo' }} &middot; {{ $instance->slug }}</p>
                 </div>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
-                <a href="{{ route('owner.instances.edit', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
-                    <i class="bi bi-pencil me-2"></i>Editar
+            <div class="ui-header-actions">
+                <a href="{{ route('owner.instances.edit', $instance) }}" class="ui-btn ui-btn-edit">
+                    <i class="bi bi-pencil me-1"></i>Editar
                 </a>
-                <a href="{{ route('owner.instances.config', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
-                    <i class="bi bi-gear me-2"></i>Configuraci&oacute;n
+                <a href="{{ route('owner.instances.config', $instance) }}" class="ui-btn ui-btn-view">
+                    <i class="bi bi-gear me-1"></i>Configuraci&oacute;n
                 </a>
-                <a href="{{ route('owner.instances.api-keys', $instance) }}" class="btn btn-warning rounded-pill px-4 shadow-sm fw-bold text-dark">
-                    <i class="bi bi-key me-2"></i>API Keys
+                <a href="{{ route('owner.instances.api-keys', $instance) }}" class="ui-btn ui-btn-solid" style="background:#f59e0b;border-color:#f59e0b;color:#000">
+                    <i class="bi bi-key me-1"></i>API Keys
                 </a>
-                <a href="{{ route('owner.instances.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
+                <a href="{{ route('owner.instances.index') }}" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
         </div>
@@ -79,60 +79,60 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-4">
+            <div class="ui-stat h-100" style="--delay:.1s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-people text-primary fs-5"></i>
                         </div>
                         <div>
-                            <small class="stat-label d-block">Usuarios</small>
-                            <h3 class="stat-value mb-0">{{ $instance->users->count() }}</h3>
+                            <small class="ui-stat-label d-block">Usuarios</small>
+                            <h3 class="ui-stat-value mb-0">{{ $instance->users->count() }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-4">
+            <div class="ui-stat h-100" style="--delay:.15s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-tag fs-5 text-{{ $instance->businessType?->color ?? 'secondary' }}"></i>
                         </div>
                         <div>
-                            <small class="stat-label d-block">Tipo</small>
-                            <h3 class="stat-value mb-0" style="font-size:.9rem;">{{ $instance->businessType?->nombre ?? '—' }}</h3>
+                            <small class="ui-stat-label d-block">Tipo</small>
+                            <h3 class="ui-stat-value mb-0" style="font-size:.9rem;">{{ $instance->businessType?->nombre ?? '—' }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-4">
+            <div class="ui-stat h-100" style="--delay:.2s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-currency-dollar text-success fs-5"></i>
                         </div>
                         <div>
-                            <small class="stat-label d-block">Costo Mensual</small>
-                            <h3 class="stat-value mb-0" style="font-size:.9rem;">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</h3>
+                            <small class="ui-stat-label d-block">Costo Mensual</small>
+                            <h3 class="ui-stat-value mb-0" style="font-size:.9rem;">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-4">
+            <div class="ui-stat h-100" style="--delay:.25s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-calendar text-warning fs-5"></i>
                         </div>
                         <div>
-                            <small class="stat-label d-block">Vencimiento</small>
-                            <h3 class="stat-value mb-0" style="font-size:.85rem;">{{ $instance->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha' }}</h3>
+                            <small class="ui-stat-label d-block">Vencimiento</small>
+                            <h3 class="ui-stat-value mb-0" style="font-size:.85rem;">{{ $instance->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha' }}</h3>
                         </div>
                     </div>
                 </div>
@@ -142,8 +142,8 @@
 
     <div class="row g-3 mb-4">
         <div class="col-lg-6">
-            <div class="premium-card h-100">
-                <div class="card-accent blue"></div>
+            <div class="ui-card h-100" style="--delay:.3s">
+                <div class="ui-card-accent" style="background:#3b82f6"></div>
                 <div class="card-header bg-transparent border-0 p-4">
                     <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Informaci&oacute;n General</h5>
                 </div>
@@ -172,8 +172,8 @@
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="premium-card h-100">
-                <div class="card-accent red"></div>
+            <div class="ui-card h-100" style="--delay:.35s">
+                <div class="ui-card-accent" style="background:#ef4444"></div>
                 <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold mb-0"><i class="bi bi-shield-lock text-danger me-2"></i>Bloqueo de Instancia</h5>
                     @if($instance->bloqueado)
@@ -195,11 +195,11 @@
                         <input type="hidden" name="bloqueado" value="{{ $instance->bloqueado ? '0' : '1' }}">
                         @if(!$instance->bloqueado)
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">Motivo del Bloqueo <span class="text-danger">*</span></label>
-                            <textarea name="motivo_bloqueo" class="form-control rounded-4" rows="2" placeholder="Ej: Mora en pago de mensualidad..." required></textarea>
+                            <label class="ui-label fw-bold small">Motivo del Bloqueo <span class="text-danger">*</span></label>
+                            <textarea name="motivo_bloqueo" class="ui-input rounded-4" rows="2" placeholder="Ej: Mora en pago de mensualidad..." required></textarea>
                         </div>
                         @endif
-                        <button type="submit" class="btn btn-{{ $instance->bloqueado ? 'success' : 'danger' }} rounded-pill w-100 fw-bold">
+                        <button type="submit" class="ui-btn ui-btn-{{ $instance->bloqueado ? 'solid' : 'danger' }} rounded-pill w-100 fw-bold">
                             <i class="bi bi-{{ $instance->bloqueado ? 'unlock' : 'lock-fill' }} me-2"></i>
                             {{ $instance->bloqueado ? 'Desbloquear Instancia' : 'Bloquear Instancia' }}
                         </button>
@@ -209,13 +209,13 @@
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent green"></div>
+    <div class="ui-card mb-4" style="--delay:.4s">
+        <div class="ui-card-accent" style="background:#10b981"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-cash-coin text-success me-2"></i>Historial de Pagos</h5>
             <div class="d-flex gap-2">
-                <a href="{{ route('owner.instances.pagos', $instance) }}" class="btn btn-sm btn-outline-info rounded-pill">Ver historial completo</a>
-                <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="btn btn-sm btn-success rounded-pill fw-bold">
+                <a href="{{ route('owner.instances.pagos', $instance) }}" class="ui-btn ui-btn-view btn-sm">Ver historial completo</a>
+                <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="ui-btn ui-btn-solid btn-sm" style="background:#10b981;border-color:#10b981">
                     <i class="bi bi-plus-lg me-1"></i>Registrar Pago
                 </a>
             </div>
@@ -278,7 +278,7 @@
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-inbox fs-1"></i>
                 <p class="mt-2 mb-0">No hay pagos registrados para esta instancia.</p>
-                <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="btn btn-success rounded-pill mt-2 btn-sm fw-bold">
+                <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="ui-btn ui-btn-solid mt-2 btn-sm" style="background:#10b981;border-color:#10b981">
                     <i class="bi bi-plus-lg me-1"></i>Registrar Primer Pago
                 </a>
             </div>
@@ -286,8 +286,8 @@
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent red"></div>
+    <div class="ui-card mb-4" style="--delay:.45s">
+        <div class="ui-card-accent" style="background:#ef4444"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0">
                 <i class="bi bi-exclamation-triangle text-danger me-2"></i>Errores Recientes
@@ -295,7 +295,7 @@
                     <span class="badge bg-danger rounded-pill ms-2" style="font-size:.65rem;">{{ $errorCount }} en 7 d&iacute;as</span>
                 @endif
             </h5>
-            <a href="{{ route('owner.instances.errors', $instance) }}" class="btn btn-sm btn-outline-danger rounded-pill fw-bold">
+            <a href="{{ route('owner.instances.errors', $instance) }}" class="ui-btn ui-btn-danger btn-sm">
                 <i class="bi bi-arrow-right me-1"></i>Ver Todos
             </a>
         </div>
@@ -337,11 +337,11 @@
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent purple"></div>
+    <div class="ui-card mb-4" style="--delay:.5s">
+        <div class="ui-card-accent" style="background:#8b5cf6"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-person-badge text-info me-2"></i>Roles de Instancia</h5>
-            <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-sm btn-info rounded-pill fw-bold text-white">
+            <a href="{{ route('owner.instances.roles', $instance) }}" class="ui-btn ui-btn-solid btn-sm" style="background:#06b6d4;border-color:#06b6d4">
                 <i class="bi bi-gear me-1"></i>Gestionar Roles
             </a>
         </div>
@@ -360,7 +360,7 @@
                         <small class="text-muted d-block">{{ $role->users_count }} usuario(s) &middot; {{ $role->visibleModules()->count() }} módulo(s)</small>
                     </div>
                 </div>
-                <a href="{{ route('owner.instances.roles.edit', [$instance, $role]) }}" class="premium-btn-edit" title="Editar módulos">
+                <a href="{{ route('owner.instances.roles.edit', [$instance, $role]) }}" class="ui-action ui-action-edit" title="Editar módulos">
                     <i class="bi bi-pencil"></i>
                 </a>
             </div>
@@ -368,7 +368,7 @@
             <div class="text-center py-3 text-muted">
                 <i class="bi bi-inbox fs-1"></i>
                 <p class="mt-2 mb-0">No hay roles definidos para esta instancia.</p>
-                <a href="{{ route('owner.instances.roles.create', $instance) }}" class="btn btn-info rounded-pill mt-2 btn-sm fw-bold text-white">
+                <a href="{{ route('owner.instances.roles.create', $instance) }}" class="ui-btn ui-btn-solid mt-2 btn-sm" style="background:#06b6d4;border-color:#06b6d4">
                     <i class="bi bi-plus-lg me-1"></i>Crear Primer Rol
                 </a>
             </div>
@@ -376,16 +376,16 @@
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.55s">
+        <div class="ui-card-accent" style="background:#3b82f6"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Usuarios Asignados</h5>
             <div class="d-flex gap-2 align-items-center">
                 <small class="text-muted">{{ $instance->users->count() }} usuario(s)</small>
-                <a href="{{ route('owner.instances.online', $instance) }}" class="btn btn-sm btn-outline-primary rounded-pill fw-bold">
+                <a href="{{ route('owner.instances.online', $instance) }}" class="ui-btn ui-btn-view btn-sm">
                     <i class="bi bi-wifi me-1"></i>Online
                 </a>
-                <a href="{{ route('owner.instances.users.create', $instance) }}" class="btn btn-sm btn-success rounded-pill fw-bold">
+                <a href="{{ route('owner.instances.users.create', $instance) }}" class="ui-btn ui-btn-solid btn-sm" style="background:#10b981;border-color:#10b981">
                     <i class="bi bi-plus-lg me-1"></i>Nuevo Usuario
                 </a>
             </div>
@@ -406,12 +406,12 @@
                     @foreach($user->roles as $role)
                         <span class="badge bg-info bg-opacity-10 text-info rounded-pill me-1">{{ $role->name }}</span>
                     @endforeach
-                    <a href="{{ route('owner.instances.users.edit', [$instance, $user]) }}" class="premium-btn-edit ms-2" title="Editar">
+                    <a href="{{ route('owner.instances.users.edit', [$instance, $user]) }}" class="ui-action ui-action-edit ms-2" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </a>
                     <form method="POST" action="{{ route('owner.instances.users.destroy', [$instance, $user]) }}" onsubmit="return confirm('&iquest;Eliminar a {{ $user->name }} de {{ $instance->nombre }}? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
                         @csrf @method('DELETE')
-                        <button type="submit" class="premium-btn-delete" title="Eliminar">
+                        <button type="submit" class="ui-action ui-action-delete" title="Eliminar">
                             <i class="bi bi-trash"></i>
                         </button>
                     </form>
@@ -421,7 +421,7 @@
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-inbox fs-1"></i>
                 <p class="mt-2 mb-0">No hay usuarios asignados a esta instancia.</p>
-                <a href="{{ route('owner.instances.users.create', $instance) }}" class="btn btn-success rounded-pill mt-2 btn-sm fw-bold">
+                <a href="{{ route('owner.instances.users.create', $instance) }}" class="ui-btn ui-btn-solid mt-2 btn-sm" style="background:#10b981;border-color:#10b981">
                     <i class="bi bi-plus-lg me-1"></i>Crear Primer Usuario
                 </a>
             </div>
@@ -429,11 +429,11 @@
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent amber"></div>
+    <div class="ui-card mb-4" style="--delay:.6s">
+        <div class="ui-card-accent" style="background:#f59e0b"></div>
         <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-key text-warning me-2"></i>Tokens de API</h5>
-            <button type="button" class="btn btn-sm btn-warning rounded-pill fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createTokenModal">
+            <button type="button" class="ui-btn ui-btn-solid btn-sm" data-bs-toggle="modal" data-bs-target="#createTokenModal" style="background:#f59e0b;border-color:#f59e0b;color:#000">
                 <i class="bi bi-plus-lg me-1"></i>Nuevo Token
             </button>
         </div>
