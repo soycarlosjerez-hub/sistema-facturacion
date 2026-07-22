@@ -374,7 +374,7 @@
 @endphp
 <div class="container-fluid px-4 premium-page">
 
-    {{-- ═══ HEADER PREMIUM ═══ }}
+    {{-- ═══ HEADER PREMIUM ═══ --}}
     <div class="premium-header form-1414 d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -408,7 +408,7 @@
         </div>
     </div>
 
-    {{-- ═══ FILTROS ═══ }}
+    {{-- ═══ FILTROS ═══ --}}
     <div class="filter-card-1414 mb-4">
         <div class="card-accent red"></div>
         <div class="p-4">
@@ -453,7 +453,7 @@
         </div>
     </div>
 
-    {{-- ═══ TARJETAS DE RESUMEN ═══ }}
+    {{-- ═══ TARJETAS DE RESUMEN ═══ --}}
     <div class="row g-4 mb-4">
         {{-- ITBIS Retenido en Compras --}}
         <div class="col-sm-6 col-xl-3" style="animation-delay:.05s;">
@@ -544,7 +544,7 @@
         </div>
     </div>
 
-    {{-- ═══ TABLA DE PROVEEDORES ═══ }}
+    {{-- ═══ TABLA DE PROVEEDORES ═══ --}}
     <div class="table-container-1414 mb-5">
         <div class="p-4 pb-2">
             <div class="d-flex align-items-center justify-content-between">
