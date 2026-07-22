@@ -151,6 +151,63 @@
 @endpush
 
 @section('content')
+@php
+    $agrupado = collect();
+
+    if (!empty($resumen['itbis_compras']['detalles'])) {
+        foreach ($resumen['itbis_compras']['detalles'] as $d) {
+            $key = $d['rnc'] ?? 'sin-rnc';
+            if (!$agrupado->has($key)) {
+                $agrupado[$key] = [
+                    'rnc'       => $d['rnc'] ?? 'N/A',
+                    'nombre'    => $d['proveedor'] ?? 'N/A',
+                    'itbis'     => 0,
+                    'isr'       => 0,
+                    'cantidad'  => 0,
+                    '_ids'      => [],
+                ];
+            }
+            $agrupado[$key]['itbis'] += $d['itbis_retenido'] ?? 0;
+            $cid = $d['compra_id'] ?? null;
+            if ($cid) {
+                if (!in_array($cid, $agrupado[$key]['_ids'])) {
+                    $agrupado[$key]['_ids'][] = $cid;
+                    $agrupado[$key]['cantidad']++;
+                }
+            } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
+                $agrupado[$key]['_ids'][] = 'sin-id';
+                $agrupado[$key]['cantidad']++;
+            }
+        }
+    }
+    if (!empty($resumen['isr_compras']['detalles'])) {
+        foreach ($resumen['isr_compras']['detalles'] as $d) {
+            $key = $d['rnc'] ?? 'sin-rnc';
+            if (!$agrupado->has($key)) {
+                $agrupado[$key] = [
+                    'rnc'       => $d['rnc'] ?? 'N/A',
+                    'nombre'    => $d['proveedor'] ?? 'N/A',
+                    'itbis'     => 0,
+                    'isr'       => 0,
+                    'cantidad'  => 0,
+                    '_ids'      => [],
+                ];
+            }
+            $agrupado[$key]['isr'] += $d['isr_retenido'] ?? 0;
+            $cid = $d['compra_id'] ?? null;
+            if ($cid) {
+                if (!in_array($cid, $agrupado[$key]['_ids'])) {
+                    $agrupado[$key]['_ids'][] = $cid;
+                    $agrupado[$key]['cantidad']++;
+                }
+            } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
+                $agrupado[$key]['_ids'][] = 'sin-id';
+                $agrupado[$key]['cantidad']++;
+            }
+        }
+    }
+    $agrupado = $agrupado->map(fn($p) => collect($p)->except('_ids')->all())->values();
+@endphp
 <div class="container-fluid px-4 premium-page">
 
     {{-- ═══ HEADER PREMIUM ═══ }}
@@ -302,72 +359,6 @@
         </div>
     </div>
 
-  
-    <div class="premium-card overflow-hidden" style="animation-delay:.25s;">
-        <div class="premium-card-title">
-            <i class="icon-red bi bi-people"></i>
-            Detalle de Retenciones por Proveedor
-        </div>
-        <div class="premium-card-subtitle">
-            Compras del período {{ $mesNombre }} {{ $anio }} con retenciones aplicadas
-        </div>
-        @php
-            $agrupado = collect();
-
-            if (!empty($resumen['itbis_compras']['detalles'])) {
-                foreach ($resumen['itbis_compras']['detalles'] as $d) {
-                    $key = $d['rnc'] ?? 'sin-rnc';
-                    if (!$agrupado->has($key)) {
-                        $agrupado[$key] = [
-                            'rnc'       => $d['rnc'] ?? 'N/A',
-                            'nombre'    => $d['proveedor'] ?? 'N/A',
-                            'itbis'     => 0,
-                            'isr'       => 0,
-                            'cantidad'  => 0,
-                            '_ids'      => [],
-                        ];
-                    }
-                    $agrupado[$key]['itbis'] += $d['itbis_retenido'] ?? 0;
-                    $cid = $d['compra_id'] ?? null;
-                    if ($cid) {
-                        if (!in_array($cid, $agrupado[$key]['_ids'])) {
-                            $agrupado[$key]['_ids'][] = $cid;
-                            $agrupado[$key]['cantidad']++;
-                        }
-                    } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
-                        $agrupado[$key]['_ids'][] = 'sin-id';
-                        $agrupado[$key]['cantidad']++;
-                    }
-                }
-            }
-            if (!empty($resumen['isr_compras']['detalles'])) {
-                foreach ($resumen['isr_compras']['detalles'] as $d) {
-                    $key = $d['rnc'] ?? 'sin-rnc';
-                    if (!$agrupado->has($key)) {
-                        $agrupado[$key] = [
-                            'rnc'       => $d['rnc'] ?? 'N/A',
-                            'nombre'    => $d['proveedor'] ?? 'N/A',
-                            'itbis'     => 0,
-                            'isr'       => 0,
-                            'cantidad'  => 0,
-                            '_ids'      => [],
-                        ];
-                    }
-                    $agrupado[$key]['isr'] += $d['isr_retenido'] ?? 0;
-                    $cid = $d['compra_id'] ?? null;
-                    if ($cid) {
-                        if (!in_array($cid, $agrupado[$key]['_ids'])) {
-                            $agrupado[$key]['_ids'][] = $cid;
-                            $agrupado[$key]['cantidad']++;
-                        }
-                    } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
-                        $agrupado[$key]['_ids'][] = 'sin-id';
-                        $agrupado[$key]['cantidad']++;
-                    }
-                }
-            }
-            $agrupado = $agrupado->map(fn($p) => collect($p)->except('_ids')->all())->values();
-        @endphp
         <div class="table-responsive px-3 pb-3">
             <table id="proveedoresTable" class="table align-middle mb-0">
                 <thead>
@@ -382,60 +373,28 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @foreach($agrupado as $idx => $prov)
+                    <tr>
+                        <td class="ps-4">{{ $idx + 1 }}</td>
+                        <td><span class="font-monospace small">{{ $prov['rnc'] }}</span></td>
+                        <td><span class="fw-semibold small">{{ $prov['nombre'] }}</span></td>
+                        <td class="text-end"><span class="badge rounded-pill bg-info bg-opacity-10 text-info fw-semibold">{{ $prov['cantidad'] }}</span></td>
+                        <td class="text-end text-purple fw-semibold">RD$ {{ number_format($prov['itbis'], 2) }}</td>
+                        <td class="text-end text-danger fw-semibold">RD$ {{ number_format($prov['isr'], 2) }}</td>
+                        <td class="text-end pe-4 fw-bold">RD$ {{ number_format($prov['itbis'] + $prov['isr'], 2) }}</td>
+                    </tr>
+                    @endforeach
                     @if($agrupado->isNotEmpty())
-                        @foreach($agrupado as $idx => $prov)
-                        <tr>
-                            <td class="ps-4">{{ $idx + 1 }}</td>
-                            <td><span class="font-monospace small">{{ $prov['rnc'] }}</span></td>
-                            <td>
-                                <span class="fw-semibold small">{{ $prov['nombre'] }}</span>
-                            </td>
-                            <td class="text-end">
-                                <span class="badge rounded-pill bg-info bg-opacity-10 text-info fw-semibold">
-                                    {{ $prov['cantidad'] }}
-                                </span>
-                            </td>
-                            <td class="text-end text-purple fw-semibold">
-                                RD$ {{ number_format($prov['itbis'], 2) }}
-                            </td>
-                            <td class="text-end text-danger fw-semibold">
-                                RD$ {{ number_format($prov['isr'], 2) }}
-                            </td>
-                            <td class="text-end pe-4 fw-bold">
-                                RD$ {{ number_format($prov['itbis'] + $prov['isr'], 2) }}
-                            </td>
-                        </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td colspan="7">
-                                <div class="empty-state-1414 py-5">
-                                    <i class="bi bi-inbox d-block"></i>
-                                    <p class="mt-2 mb-0">No hay retenciones registradas para el período seleccionado.</p>
-                                    <small>Seleccione otro mes o año, o registre compras con retenciones.</small>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr class="table-light fw-bold totales-row">
+                        <td class="ps-4 py-3 text-end text-uppercase small">Totales</td>
+                        <td class="py-3"></td>
+                        <td class="py-3"></td>
+                        <td class="text-end py-3">{{ $agrupado->sum('cantidad') }}</td>
+                        <td class="text-end py-3 text-purple">RD$ {{ number_format($agrupado->sum('itbis'), 2) }}</td>
+                        <td class="text-end py-3 text-danger">RD$ {{ number_format($agrupado->sum('isr'), 2) }}</td>
+                        <td class="text-end pe-4 py-3">RD$ {{ number_format($agrupado->sum(fn($p) => $p['itbis'] + $p['isr']), 2) }}</td>
+                    </tr>
                     @endif
-                @if($agrupado->isNotEmpty())
-                <tr class="table-light fw-bold totales-row">
-                    <td class="ps-4 py-3 text-end text-uppercase small">Totales</td>
-                    <td class="py-3"></td>
-                    <td class="py-3"></td>
-                    <td class="text-end py-3">
-                        {{ $agrupado->sum('cantidad') }}
-                    </td>
-                    <td class="text-end py-3 text-purple">
-                        RD$ {{ number_format($agrupado->sum('itbis'), 2) }}
-                    </td>
-                    <td class="text-end py-3 text-danger">
-                        RD$ {{ number_format($agrupado->sum('isr'), 2) }}
-                    </td>
-                    <td class="text-end pe-4 py-3">
-                        RD$ {{ number_format($agrupado->sum(fn($p) => $p['itbis'] + $p['isr']), 2) }}
-                    </td>
-                </tr>
-                @endif
                 </tbody>
             </table>
         </div>
