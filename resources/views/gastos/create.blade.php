@@ -170,13 +170,11 @@
         </div>
     </form>
 
-    <div style="height: 80px;"></div>
-</div>
-
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-end align-items-center">
-        <a href="{{ route('gastos.index') }}" class="btn-cancel me-2">Cancelar</a>
-        <button type="submit" form="gastoForm" class="btn-save">
+    <!-- Sticky Save Bar -->
+    <div class="premium-sticky-bar d-flex justify-content-end align-items-center gap-3">
+        <span class="text-muted small d-none d-md-inline"><i class="bi bi-info-circle me-1"></i>Registrando nuevo gasto</span>
+        <a href="{{ route('gastos.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
+        <button type="submit" form="gastoForm" class="btn btn-save rounded-pill px-5 fw-bold">
             <i class="bi bi-check-lg me-2"></i>Guardar Gasto
         </button>
     </div>

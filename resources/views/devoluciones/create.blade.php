@@ -50,7 +50,7 @@ body.dark-mode .devoluciones-create-table tbody td {
         </div>
     @endif
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#ef4444,#f97316,#ef4444);box-shadow:0 8px 32px rgba(239,68,68,.25);">
+    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#ef4444,#f97316,#ef4444);box-shadow:0 8px 32px rgba(239,68,68,.25);animation:premiumGradientShift 6s ease infinite;background-size:300% 300%;">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
