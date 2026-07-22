@@ -293,11 +293,7 @@
                     </div>
                 </div>
                 <div class="stat-value text-warning">
-                    RD$ {{ number_format(
-                        ($resumen['itbis_compras']['total_retenido'] ?? 0)
-                        + ($resumen['isr_compras']['total_retenido'] ?? 0),
-                        2
-                    ) }}
+                    RD$ {{ number_format(($resumen['itbis_compras']['total_retenido'] ?? 0) + ($resumen['isr_compras']['total_retenido'] ?? 0), 2) }}
                 </div>
                 <div class="stat-sub">
                     ITBIS + ISR combinados
