@@ -131,16 +131,6 @@ class Sidebar
             'is_route' => 'profile.edit',
         ];
 
-        if ($user->instanceRole && ($user->instanceRole->name === 'admin' || !$user->businessInstance?->setup_completed)) {
-            $items[] = [
-                'route' => 'setup.wizard',
-                'icon'  => 'bi-magic',
-                'label' => 'Configuración Inicial',
-                'is_route' => 'setup.*',
-                'exact_route' => 'setup.wizard',
-            ];
-        }
-
         // Inventario
         if (
             ($mod('inventario') && $can('productos.view')) ||
@@ -535,6 +525,18 @@ class Sidebar
             ($hasConf('configuracion-general') && $can('configuracion.view'))
         ) {
             $items[] = ['section' => 'Configuración'];
+
+            // Setup Wizard - solo para admins o instancias sin setup completo
+            if ($user->instanceRole && ($user->instanceRole->name === 'admin' || !$user->businessInstance?->setup_completed)) {
+                $items[] = [
+                    'route' => 'setup.wizard',
+                    'icon'  => 'bi-magic',
+                    'label' => 'Configuración Inicial',
+                    'is_route' => 'setup.*',
+                    'exact_route' => 'setup.wizard',
+                ];
+            }
+
             if ($hasConf('ncf') && $can('ncf.view')) {
                 $items[] = ['route' => 'ncf.index', 'icon' => 'bi-receipt-cutoff', 'label' => 'Comprobantes (NCF)', 'is_route' => 'ncf.*', 'exact_route' => 'ncf.index'];
             }
