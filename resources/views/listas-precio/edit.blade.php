@@ -34,174 +34,184 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-    <div class="container-fluid px-4">
-        <div class="premium-header">
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="premium-avatar-circle">
-                        <i class="bi bi-tag"></i>
-                    </div>
-                    <div>
-                        <h4 class="fw-bold mb-0 text-white">Editar Lista de Precios</h4>
-                        <p class="text-white text-opacity-75 mb-0">{{ $listaPrecio->nombre }}</p>
-                    </div>
+<div class="container-fluid px-4 py-3 premium-page">
+
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-tag"></i>
                 </div>
-                <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
-                </a>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Editar Lista de Precios</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-pencil me-1"></i>
+                        {{ $listaPrecio->nombre }}
+                    </small>
+                </div>
+            </div>
+            <a href="{{ route('listas-precio.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="premium-card" style="animation-delay:.1s;">
+                <div class="card-accent purple"></div>
+                <div class="d-flex justify-content-between align-items-center p-4 pb-0">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2" style="color: #8b5cf6;"></i>Productos y Precios</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="tablaPrecios">
+                        <thead class="table-light">
+                            <tr class="text-muted text-uppercase small">
+                                <th class="ps-4">C&oacute;digo</th>
+                                <th>Producto</th>
+                                <th class="text-end">Costo</th>
+                                <th class="text-end">Margen %</th>
+                                <th class="text-end">Precio Actual</th>
+                                <th class="text-end">Precio Lista</th>
+                                <th class="text-center pe-4" style="width:50px;"><i class="bi bi-circle-fill" style="font-size:.4rem;color:#94a3b8;"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" class="text-center py-3">
+                                    <div class="input-group" style="max-width:400px;margin:0 auto;">
+                                        <input type="text" id="filtroProducto" class="form-control" placeholder="Filtrar productos...">
+                                        <button class="btn btn-outline-primary" id="btnAgregarProducto" type="button"><i class="bi bi-plus-lg"></i> Agregar</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @foreach($productos as $p)
+                            @php
+                                $item = $listaPrecio->items->firstWhere('producto_id', $p->id);
+                                $costo = (float) ($p->precio_compra ?? 0);
+                                $precioLista = $item ? (float) $item->precio : 0;
+                                $margen = $costo > 0 && $precioLista > 0
+                                    ? ((($precioLista - $costo) / $costo) * 100)
+                                    : 0;
+                                $marginClass = $margen > 0 ? 'margin-positive' : ($margen < 0 ? 'margin-negative' : 'margin-zero');
+                                $marginSign = $margen > 0 ? '+' : '';
+                            @endphp
+                            <tr data-producto-id="{{ $p->id }}" class="{{ $item ? '' : 'd-none producto-no-lista' }}">
+                                <td class="ps-4"><span class="badge bg-light text-muted rounded-pill">{{ $p->codigo_barras ?? '&mdash;' }}</span></td>
+                                <td class="fw-bold small">{{ $p->nombre }}</td>
+                                <td class="text-end text-muted">RD$ {{ number_format($costo, 2) }}</td>
+                                <td class="text-end {{ $marginClass }}">
+                                    @if($costo > 0 && $precioLista > 0)
+                                        {{ $marginSign }}{{ number_format($margen, 1) }}%
+                                    @else
+                                        &mdash;
+                                    @endif
+                                </td>
+                                <td class="text-end text-muted">RD$ {{ number_format($p->precio, 2) }}</td>
+                                <td class="text-end">
+                                    <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end precio-lista"
+                                           style="width:130px;display:inline-block;"
+                                           value="{{ $item ? number_format($item->precio, 2, '.', '') : '' }}"
+                                           placeholder="0.00"
+                                           data-producto-id="{{ $p->id }}">
+                                </td>
+                                <td class="text-center pe-4">
+                                    <span class="estado-badge estado-badge-sin"><i class="bi bi-dash-lg"></i></span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-
-        <div class="row g-3 mb-4">
-            <div class="col-md-8">
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
-                    <div class="d-flex justify-content-between align-items-center p-4 pb-0">
-                        <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2" style="color: #8b5cf6;"></i>Productos y Precios</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" id="tablaPrecios">
-                            <thead class="table-light">
-                                <tr class="text-muted text-uppercase small">
-                                    <th class="ps-4">C&oacute;digo</th>
-                                    <th>Producto</th>
-                                    <th class="text-end">Costo</th>
-                                    <th class="text-end">Margen %</th>
-                                    <th class="text-end">Precio Actual</th>
-                                    <th class="text-end">Precio Lista</th>
-                                    <th class="text-center pe-4" style="width:50px;"><i class="bi bi-circle-fill" style="font-size:.4rem;color:#94a3b8;"></i></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="7" class="text-center py-3">
-                                        <div class="input-group mb-3" style="max-width:400px;margin:0 auto;">
-                                            <input type="text" id="filtroProducto" class="form-control" placeholder="Filtrar productos...">
-                                            <button class="btn btn-outline-primary" id="btnAgregarProducto" type="button"><i class="bi bi-plus-lg"></i> Agregar</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @foreach($productos as $p)
-                                @php
-                                    $item = $listaPrecio->items->firstWhere('producto_id', $p->id);
-                                    $costo = (float) ($p->precio_compra ?? 0);
-                                    $precioLista = $item ? (float) $item->precio : 0;
-                                    $margen = $costo > 0 && $precioLista > 0
-                                        ? ((($precioLista - $costo) / $costo) * 100)
-                                        : 0;
-                                    $marginClass = $margen > 0 ? 'margin-positive' : ($margen < 0 ? 'margin-negative' : 'margin-zero');
-                                    $marginSign = $margen > 0 ? '+' : '';
-                                @endphp
-                                <tr data-producto-id="{{ $p->id }}" class="{{ $item ? '' : 'd-none producto-no-lista' }}">
-                                    <td class="ps-4"><span class="badge bg-light text-muted rounded-pill">{{ $p->codigo_barras ?? '&mdash;' }}</span></td>
-                                    <td class="fw-bold small">{{ $p->nombre }}</td>
-                                    <td class="text-end text-muted">RD$ {{ number_format($costo, 2) }}</td>
-                                    <td class="text-end {{ $marginClass }}">
-                                        @if($costo > 0 && $precioLista > 0)
-                                            {{ $marginSign }}{{ number_format($margen, 1) }}%
-                                        @else
-                                            &mdash;
-                                        @endif
-                                    </td>
-                                    <td class="text-end text-muted">RD$ {{ number_format($p->precio, 2) }}</td>
-                                    <td class="text-end">
-                                        <input type="number" step="0.01" min="0" class="form-control form-control-sm text-end precio-lista"
-                                               style="width:130px;display:inline-block;"
-                                               value="{{ $item ? number_format($item->precio, 2, '.', '') : '' }}"
-                                               placeholder="0.00"
-                                               data-producto-id="{{ $p->id }}">
-                                    </td>
-                                    <td class="text-center pe-4">
-                                        <span class="estado-badge estado-badge-sin"><i class="bi bi-dash-lg"></i></span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+        <div class="col-md-4">
+            <div class="premium-card mb-3" style="animation-delay:.15s;">
+                <div class="card-accent purple"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-gear icon-purple"></i>
+                    Informaci&oacute;n
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="premium-card mb-3">
-                    <div class="card-accent purple"></div>
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-gear me-2" style="color: #8b5cf6;"></i>Informaci&oacute;n</h6>
-                        <div class="small">
-                            <div class="mb-2"><span class="text-muted">Estado:</span>
-                                @if($listaPrecio->activa)
-                                    <span class="badge bg-success rounded-pill">Activa</span>
-                                @else
-                                    <span class="badge bg-danger rounded-pill">Inactiva</span>
-                                @endif
-                            </div>
-                            @if($listaPrecio->vigencia_desde)
-                            <div class="mb-2"><span class="text-muted">Vigencia:</span> {{ $listaPrecio->vigencia_desde->format('d/m/Y') }} - {{ $listaPrecio->vigencia_hasta?->format('d/m/Y') ?? 'Indefinida' }}</div>
+                <div class="card-body">
+                    <div class="small">
+                        <div class="mb-2"><span class="text-muted">Estado:</span>
+                            @if($listaPrecio->activa)
+                                <span class="badge bg-success rounded-pill">Activa</span>
+                            @else
+                                <span class="badge bg-danger rounded-pill">Inactiva</span>
                             @endif
                         </div>
-                        <hr>
-                        <form id="listaPrecioForm" action="{{ route('listas-precio.update', $listaPrecio) }}" method="POST">
-                            @csrf @method('PUT')
-                            <div class="mb-2">
-                                <label class="form-label small fw-semibold">Nombre</label>
-                                <input type="text" name="nombre" class="form-control form-control-sm" value="{{ $listaPrecio->nombre }}" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label small fw-semibold">C&oacute;digo</label>
-                                <input type="text" name="codigo" class="form-control form-control-sm" value="{{ $listaPrecio->codigo }}" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label small fw-semibold">Descripci&oacute;n</label>
-                                <textarea name="descripcion" class="form-control form-control-sm" rows="2">{{ $listaPrecio->descripcion }}</textarea>
-                            </div>
-                            <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                    <label class="form-label small fw-semibold">Vigencia desde</label>
-                                    <input type="date" name="vigencia_desde" class="form-control form-control-sm" value="{{ $listaPrecio->vigencia_desde?->format('Y-m-d') }}">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small fw-semibold">Vigencia hasta</label>
-                                    <input type="date" name="vigencia_hasta" class="form-control form-control-sm" value="{{ $listaPrecio->vigencia_hasta?->format('Y-m-d') }}">
-                                </div>
-                            </div>
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" role="switch" id="activa" name="activa" value="1" {{ $listaPrecio->activa ? 'checked' : '' }}>
-                                <label class="form-check-label small fw-semibold" for="activa">Activa</label>
-                            </div>
-                        </form>
+                        @if($listaPrecio->vigencia_desde)
+                        <div class="mb-2"><span class="text-muted">Vigencia:</span> {{ $listaPrecio->vigencia_desde->format('d/m/Y') }} - {{ $listaPrecio->vigencia_hasta?->format('d/m/Y') ?? 'Indefinida' }}</div>
+                        @endif
                     </div>
+                    <hr>
+                    <form id="listaPrecioForm" action="{{ route('listas-precio.update', $listaPrecio) }}" method="POST">
+                        @csrf @method('PUT')
+                        <div class="mb-2">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" value="{{ $listaPrecio->nombre }}" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">C&oacute;digo</label>
+                            <input type="text" name="codigo" class="form-control" value="{{ $listaPrecio->codigo }}" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Descripci&oacute;n</label>
+                            <textarea name="descripcion" class="form-control" rows="2">{{ $listaPrecio->descripcion }}</textarea>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label">Vigencia desde</label>
+                                <input type="date" name="vigencia_desde" class="form-control" value="{{ $listaPrecio->vigencia_desde?->format('Y-m-d') }}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Vigencia hasta</label>
+                                <input type="date" name="vigencia_hasta" class="form-control" value="{{ $listaPrecio->vigencia_hasta?->format('Y-m-d') }}">
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="activa" name="activa" value="1" {{ $listaPrecio->activa ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold" for="activa">Activa</label>
+                        </div>
+                    </form>
                 </div>
+            </div>
 
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2" style="color: #8b5cf6;"></i>Acciones R&aacute;pidas</h6>
-                        <a href="{{ route('listas-precio.impacto', $listaPrecio) }}" class="btn btn-outline-warning w-100 rounded-pill btn-sm mb-2">
-                            <i class="bi bi-graph-up me-1"></i>Impacto de Precios
-                        </a>
-                        <a href="{{ route('listas-precio.logs', $listaPrecio) }}" class="btn btn-outline-secondary w-100 rounded-pill btn-sm mb-2">
-                            <i class="bi bi-clock-history me-1"></i>Historial de Cambios
-                        </a>
-                        <form action="{{ route('listas-precio.duplicar', $listaPrecio) }}" method="POST" class="mb-2">
-                            @csrf
-                            <button class="btn btn-outline-info w-100 rounded-pill btn-sm">
-                                <i class="bi bi-copy me-1"></i>Duplicar lista
-                            </button>
-                        </form>
-                        <form action="{{ route('listas-precio.destroy', $listaPrecio) }}" method="POST" onsubmit="return confirm('¿Eliminar esta lista?')">
-                            @csrf @method('DELETE')
-                            <button class="premium-btn-delete w-100 rounded-pill btn-sm">
-                                <i class="bi bi-trash me-1"></i>Eliminar lista
-                            </button>
-                        </form>
-                    </div>
+            <div class="premium-card" style="animation-delay:.2s;">
+                <div class="card-accent purple"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-lightning icon-purple"></i>
+                    Acciones R&aacute;pidas
+                </div>
+                <div class="card-body">
+                    <a href="{{ route('listas-precio.impacto', $listaPrecio) }}" class="btn btn-outline-warning w-100 rounded-pill btn-sm mb-2">
+                        <i class="bi bi-graph-up me-1"></i>Impacto de Precios
+                    </a>
+                    <a href="{{ route('listas-precio.logs', $listaPrecio) }}" class="btn btn-outline-secondary w-100 rounded-pill btn-sm mb-2">
+                        <i class="bi bi-clock-history me-1"></i>Historial de Cambios
+                    </a>
+                    <form action="{{ route('listas-precio.duplicar', $listaPrecio) }}" method="POST" class="mb-2">
+                        @csrf
+                        <button class="btn btn-outline-info w-100 rounded-pill btn-sm">
+                            <i class="bi bi-copy me-1"></i>Duplicar lista
+                        </button>
+                    </form>
+                    <form action="{{ route('listas-precio.destroy', $listaPrecio) }}" method="POST" onsubmit="return confirm('¿Eliminar esta lista?')">
+                        @csrf @method('DELETE')
+                        <button class="premium-btn-delete w-100 rounded-pill btn-sm">
+                            <i class="bi bi-trash me-1"></i>Eliminar lista
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <div style="height: 80px;"></div>
 
     <div id="stickySaveBar" class="premium-sticky-bar">
         <div class="d-flex align-items-center justify-content-between">

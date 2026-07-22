@@ -71,100 +71,119 @@
         font-size: 0.85rem;
     }
     .arrow-icon { color: #8b5cf6; margin: 0 0.5rem; }
+    body.dark-mode .log-entry {
+        background: rgba(15,23,42,0.8);
+        border-color: rgba(139,92,246,0.15);
+    }
+    body.dark-mode .log-entry:hover {
+        border-color: rgba(139,92,246,0.3);
+    }
+    body.dark-mode .log-entry::before {
+        border-color: #0f172a;
+    }
+    body.dark-mode .price-change span:first-child { color: #64748b !important; }
+    body.dark-mode .log-entry .small.text-dark { color: #e2e8f0 !important; }
 </style>
 @endpush
 
 @section('content')
-<div class="premium-page">
-    <div class="container-fluid px-4">
-        <div class="premium-header">
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="bubble"></div>
-            <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="premium-avatar-circle">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
-                    <div>
-                        <h2 class="fw-bold mb-0 text-white">Historial de Cambios</h2>
-                        <p class="text-white text-opacity-75 mb-0">{{ $listaPrecio->nombre }}</p>
-                    </div>
+<div class="container-fluid px-4 py-3 premium-page">
+
+    <div class="premium-header mb-4">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-clock-history"></i>
                 </div>
-                <a href="{{ route('listas-precio.show', $listaPrecio) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
-                </a>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Historial de Cambios</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-clock-history me-1"></i>
+                        {{ $listaPrecio->nombre }}
+                    </small>
+                </div>
             </div>
+            <a href="{{ route('listas-precio.show', $listaPrecio) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
         </div>
+    </div>
 
-        <div class="row g-3 mt-3">
-            <div class="col-12">
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
-                    <div class="card-body p-4">
-                        @if($logs->isEmpty())
-                            <div class="text-center py-5">
-                                <i class="bi bi-clock text-muted opacity-25" style="font-size: 4rem;"></i>
-                                <h5 class="mt-3 text-muted">Sin registros de cambios</h5>
-                                <p class="text-muted small">Los cambios de precio e información aparecerán aquí.</p>
-                            </div>
-                        @else
-                            <div class="log-timeline">
-                                @foreach($logs as $log)
-                                <div class="log-entry">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                                            <span class="change-badge change-{{ str_replace(',', '-', $log->cambio_en ?? 'precio') }}">
-                                                {{ str_replace(',', ', ', $log->cambio_en) }}
-                                            </span>
-                                            @if($log->producto)
-                                            <span class="small fw-semibold text-dark">
-                                                <i class="bi bi-box-seam me-1"></i>{{ $log->producto->nombre }}
-                                            </span>
-                                            @endif
-                                        </div>
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar3 me-1"></i>
-                                            {{ $log->created_at->format('d/m/Y H:i') }}
-                                        </small>
-                                    </div>
-
-                                    @if($log->precio_anterior !== null && $log->precio_nuevo !== null)
-                                    <div class="price-change mt-2">
-                                        <span class="text-muted text-decoration-line-through">
-                                            RD$ {{ number_format($log->precio_anterior, 2) }}
+    <div class="row g-3 mt-3">
+        <div class="col-12">
+            <div class="premium-card" style="animation-delay:.1s;">
+                <div class="card-accent purple"></div>
+                <div class="premium-card-title">
+                    <i class="bi bi-clock-history icon-purple"></i>
+                    Registro de Cambios
+                </div>
+                <div class="premium-card-subtitle">Todos los cambios realizados en esta lista de precios</div>
+                <div class="card-body">
+                    @if($logs->isEmpty())
+                        <div class="text-center py-5">
+                            <i class="bi bi-clock text-muted opacity-25" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3 text-muted">Sin registros de cambios</h5>
+                            <p class="text-muted small">Los cambios de precio e información aparecerán aquí.</p>
+                        </div>
+                    @else
+                        <div class="log-timeline">
+                            @foreach($logs as $log)
+                            <div class="log-entry">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="change-badge change-{{ str_replace(',', '-', $log->cambio_en ?? 'precio') }}">
+                                            {{ str_replace(',', ', ', $log->cambio_en) }}
                                         </span>
-                                        <i class="bi bi-arrow-right arrow-icon"></i>
-                                        <span class="text-success fw-bold">
-                                            RD$ {{ number_format($log->precio_nuevo, 2) }}
+                                        @if($log->producto)
+                                        <span class="small fw-semibold text-dark">
+                                            <i class="bi bi-box-seam me-1"></i>{{ $log->producto->nombre }}
                                         </span>
+                                        @endif
                                     </div>
-                                    @elseif($log->precio_nuevo === null)
-                                    <div class="small text-danger mt-2">
-                                        <i class="bi bi-trash me-1"></i>Producto removido de la lista
-                                    </div>
-                                    @endif
-
-                                    @if($log->observacion)
-                                    <div class="small text-muted mt-2">
-                                        <i class="bi bi-chat-dots me-1"></i>{{ $log->observacion }}
-                                    </div>
-                                    @endif
-
-                                    @if($log->usuario)
-                                    <div class="small text-muted mt-1">
-                                        <i class="bi bi-person me-1"></i>Por: {{ $log->usuario->name ?? 'N/A' }}
-                                    </div>
-                                    @endif
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        {{ $log->created_at->format('d/m/Y H:i') }}
+                                    </small>
                                 </div>
-                                @endforeach
-                            </div>
 
-                            <div class="mt-4">
-                                {{ $logs->links() }}
+                                @if($log->precio_anterior !== null && $log->precio_nuevo !== null)
+                                <div class="price-change mt-2">
+                                    <span class="text-muted text-decoration-line-through">
+                                        RD$ {{ number_format($log->precio_anterior, 2) }}
+                                    </span>
+                                    <i class="bi bi-arrow-right arrow-icon"></i>
+                                    <span class="text-success fw-bold">
+                                        RD$ {{ number_format($log->precio_nuevo, 2) }}
+                                    </span>
+                                </div>
+                                @elseif($log->precio_nuevo === null)
+                                <div class="small text-danger mt-2">
+                                    <i class="bi bi-trash me-1"></i>Producto removido de la lista
+                                </div>
+                                @endif
+
+                                @if($log->observacion)
+                                <div class="small text-muted mt-2">
+                                    <i class="bi bi-chat-dots me-1"></i>{{ $log->observacion }}
+                                </div>
+                                @endif
+
+                                @if($log->usuario)
+                                <div class="small text-muted mt-1">
+                                    <i class="bi bi-person me-1"></i>Por: {{ $log->usuario->name ?? 'N/A' }}
+                                </div>
+                                @endif
                             </div>
-                        @endif
-                    </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-center">
+                            {{ $logs->links() }}
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
