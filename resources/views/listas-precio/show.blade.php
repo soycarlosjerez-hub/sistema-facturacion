@@ -18,6 +18,32 @@
     .margin-positive { color: #198754; font-weight: 600; }
     .margin-negative { color: #dc3545; font-weight: 600; }
     .margin-zero { color: #6c757d; font-weight: 600; }
+    .precios-show-table thead th {
+        background: rgba(241,245,249,.8);
+        color: #64748b;
+        font-size: .7rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        font-weight: 700;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .precios-show-table tbody td {
+        padding: .85rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        font-size: .9rem;
+    }
+    .precios-show-table tbody tr:last-child td { border-bottom: none; }
+    body.dark-mode .precios-show-table thead th {
+        background: rgba(15,23,42,.5);
+        color: #94a3b8;
+        border-color: #1e293b;
+    }
+    body.dark-mode .precios-show-table tbody td {
+        border-bottom-color: #1e293b;
+        color: #cbd5e1;
+    }
 </style>
 @endpush
 
@@ -130,7 +156,7 @@
                 </div>
                 <div class="premium-card-subtitle">{{ $itemsList->count() }} productos configurados</div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="tablaPrecios">
+                    <table class="table table-hover align-middle mb-0 precios-show-table" id="tablaPrecios">
                         <thead class="table-light">
                             <tr class="text-muted text-uppercase small">
                                 <th class="ps-4">C&oacute;digo</th>

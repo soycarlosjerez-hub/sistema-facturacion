@@ -111,17 +111,11 @@
     <div style="height: 80px;"></div>
 
     <div class="premium-sticky-bar">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-info-circle" style="color: #8b5cf6;"></i>
-                <span class="fw-semibold d-none d-sm-inline">Creando nueva lista de precios</span>
-            </div>
-            <div>
-                <a href="{{ route('listas-precio.index') }}" class="btn-cancel me-2">Cancelar</a>
-                <button type="submit" form="listaPrecioForm" class="btn-save">
-                    <i class="bi bi-check-lg me-2"></i>Guardar Lista
-                </button>
-            </div>
+        <div class="d-flex justify-content-end align-items-center">
+            <a href="{{ route('listas-precio.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="listaPrecioForm" class="btn-save">
+                <i class="bi bi-check-lg me-2"></i>Guardar Lista
+            </button>
         </div>
     </div>
 </div>

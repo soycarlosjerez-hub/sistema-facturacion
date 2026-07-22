@@ -30,6 +30,33 @@
     body.dark-mode .premium-sticky-bar { border-top-color: #a855f7 !important; }
     body.dark-mode .precio-lista:focus { border-color: #a855f7 !important; box-shadow: 0 0 0 3px rgba(139,92,246,.25) !important; }
     body.dark-mode .estado-badge-sin { background: rgba(30,41,59,.8); color: #475569; }
+    .precios-table thead th {
+        background: rgba(241,245,249,.8);
+        color: #64748b;
+        font-size: .7rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        font-weight: 700;
+        padding: .85rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .precios-table tbody td {
+        padding: .85rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        font-size: .9rem;
+    }
+    .precios-table tbody tr:last-child td { border-bottom: none; }
+    .precios-table tbody tr { transition: background .15s; }
+    body.dark-mode .precios-table thead th {
+        background: rgba(15,23,42,.5);
+        color: #94a3b8;
+        border-color: #1e293b;
+    }
+    body.dark-mode .precios-table tbody td {
+        border-bottom-color: #1e293b;
+        color: #cbd5e1;
+    }
 </style>
 @endpush
 
@@ -67,7 +94,7 @@
                     <h5 class="fw-bold mb-0"><i class="bi bi-box-seam me-2" style="color: #8b5cf6;"></i>Productos y Precios</h5>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="tablaPrecios">
+                    <table class="table table-hover align-middle mb-0 precios-table" id="tablaPrecios">
                         <thead class="table-light">
                             <tr class="text-muted text-uppercase small">
                                 <th class="ps-4">C&oacute;digo</th>
@@ -200,9 +227,9 @@
                             <i class="bi bi-copy me-1"></i>Duplicar lista
                         </button>
                     </form>
-                    <form action="{{ route('listas-precio.destroy', $listaPrecio) }}" method="POST" onsubmit="return confirm('¿Eliminar esta lista?')">
+                    <form action="{{ route('listas-precio.destroy', $listaPrecio) }}" method="POST" class="d-inline">
                         @csrf @method('DELETE')
-                        <button class="premium-btn-delete w-100 rounded-pill btn-sm">
+                        <button type="button" class="premium-btn-delete w-100 rounded-pill btn-sm" onclick="confirmDelete('{{ route('listas-precio.destroy', $listaPrecio) }}', '{{ addslashes($listaPrecio->nombre) }}')">
                             <i class="bi bi-trash me-1"></i>Eliminar lista
                         </button>
                     </form>
@@ -302,6 +329,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+</script>
+@endpush
+@push('scripts')
+<script>
+function confirmDelete(url, nombre) {
+    Swal.fire({
+        title: '¿Eliminar lista?',
+        text: `Se eliminará: "${nombre}"`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            form.innerHTML = '@csrf @method("DELETE")';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
 </script>
 @endpush
 @endsection
