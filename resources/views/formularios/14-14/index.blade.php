@@ -153,7 +153,7 @@
 @section('content')
 <div class="container-fluid px-4 premium-page">
 
-    {{-- ═══ HEADER PREMIUM ═══ ==}}
+    {{-- ═══ HEADER PREMIUM ═══ }}
     <div class="premium-header form-1414 d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -187,7 +187,7 @@
         </div>
     </div>
 
-    {{-- ═══ FILTROS ═══ ==}}
+    {{-- ═══ FILTROS ═══ }}
     <div class="premium-card filter-card-1414 mb-4">
         <div class="card-accent red"></div>
         <div class="px-4 py-3">
@@ -219,7 +219,7 @@
         </div>
     </div>
 
-    {{-- ═══ TARJETAS DE RESUMEN ═══ ==}}
+    {{-- ═══ TARJETAS DE RESUMEN ═══ }}
     <div class="row g-4 mb-4">
         {{-- ITBIS Retenido en Compras --}}
         <div class="col-sm-6 col-xl-3" style="animation-delay:.05s;">
@@ -306,7 +306,7 @@
         </div>
     </div>
 
-    {{-- ═══ TABLA DETALLE POR PROVEEDOR ═══ ==}}
+    {{-- ═══ TABLA DETALLE POR PROVEEDOR ═══ }}
     <div class="premium-card overflow-hidden" style="animation-delay:.25s;">
         <div class="premium-card-title">
             <i class="icon-red bi bi-people"></i>
