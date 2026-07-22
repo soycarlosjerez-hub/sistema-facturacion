@@ -25,67 +25,68 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
-    <div class="premium-header" style="margin-bottom: 2rem; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
+
+    @if(session('error'))
+    <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4">{{ session('error') }}</div>
+    @endif
+
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-shield"></i>
                 </div>
                 <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                            <i class="bi bi-pencil-square me-1"></i>EDITANDO
-                        </span>
-                    </div>
+                    <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                        <i class="bi bi-pencil-square me-1"></i>EDITANDO
+                    </span>
                     <h2 class="fw-bold mb-0">{{ $role->name }}</h2>
-                    <p class="mb-0 opacity-90 small">{{ count($selectedMods) }} módulos asignados</p>
+                    <p class="mb-0 opacity-75">{{ count($selectedMods) }} módulos asignados</p>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-light rounded-pill px-3 text-dark">
-                    <i class="bi bi-arrow-left me-1"></i>Volver
+            <div class="ui-header-actions">
+                <a href="{{ route('owner.instances.roles', $instance) }}" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
             </div>
         </div>
     </div>
-
-    @if(session('error'))
-        <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4">{{ session('error') }}</div>
-    @endif
 
     <form action="{{ route('owner.instances.roles.update', [$instance, $role]) }}" method="POST" id="roleForm">
         @csrf @method('PUT')
 
         <div class="row g-4">
             <div class="col-lg-4">
-                <div class="premium-card mb-3">
-                    <div class="card-accent purple"></div>
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+                <div class="ui-card mb-3" style="--delay:.15s">
+                    <div class="ui-card-accent" style="background:#8b5cf6"></div>
+                    <div class="card-header bg-transparent border-0 p-4 pb-0">
                         <h5 class="fw-bold mb-0"><i class="bi bi-tag text-primary me-2"></i>Nombre del Rol</h5>
                     </div>
                     <div class="card-body p-4">
-                        <div class="form-floating-modern">
-                            <i class="bi bi-shield form-icon"></i>
-                            <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
-                                   value="{{ old('name', $role->name) }}" placeholder=" " required>
-                            <label class="form-label-float" for="name">Nombre del rol</label>
+                        <div class="mb-3">
+                            <label class="ui-label fw-bold" for="name">Nombre del rol</label>
+                            <div class="position-relative">
+                                <i class="bi bi-shield position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                                <input type="text" name="name" id="name" class="ui-input ps-5 @error('name') is-invalid @enderror"
+                                       value="{{ old('name', $role->name) }}" placeholder="Nombre del rol" required>
+                            </div>
                             @error('name')<div class="text-danger small mt-1 ms-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
                         </div>
                         @if($role->users()->count() > 0)
-                            <div class="alert alert-warning rounded-3 mt-3 mb-0 d-flex align-items-center gap-2 small">
-                                <i class="bi bi-info-circle"></i>
-                                <span>{{ $role->users()->count() }} usuario(s) usan este rol.</span>
-                            </div>
+                        <div class="alert alert-warning rounded-3 mt-3 mb-0 d-flex align-items-center gap-2 small">
+                            <i class="bi bi-info-circle"></i>
+                            <span>{{ $role->users()->count() }} usuario(s) usan este rol.</span>
+                        </div>
                         @endif
                     </div>
                 </div>
 
-                <div class="premium-card">
-                    <div class="card-accent green"></div>
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+                <div class="ui-card" style="--delay:.2s">
+                    <div class="ui-card-accent" style="background:#22c55e"></div>
+                    <div class="card-header bg-transparent border-0 p-4 pb-0">
                         <h6 class="fw-bold mb-0"><i class="bi bi-stars text-primary me-2"></i>Acciones Rápidas</h6>
                     </div>
                     <div class="card-body p-3">
@@ -112,7 +113,7 @@
                     </div>
                 </div>
 
-                <div class="premium-card mt-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(79,70,229,0.05));">
+                <div class="ui-card mt-3" style="--delay:.25s; background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(79,70,229,0.05));">
                     <div class="card-body p-3 text-center">
                         <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Módulos Seleccionados</div>
                         <div class="fs-1 fw-bold" id="modCount" style="color: #4f46e5;">{{ count($selectedMods) }}</div>
@@ -122,16 +123,16 @@
             </div>
 
             <div class="col-lg-8">
-                <div class="premium-card">
-                    <div class="card-accent blue"></div>
-                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="ui-card" style="--delay:.3s">
+                    <div class="ui-card-accent" style="background:#3b82f6"></div>
+                    <div class="card-header bg-transparent border-0 p-4 pb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h5 class="fw-bold mb-0"><i class="bi bi-grid text-primary me-2"></i>Módulos</h5>
                             <small class="text-muted">Selecciona los módulos que los usuarios con este rol podrán ver</small>
                         </div>
                         <div class="input-group" style="max-width: 280px;">
                             <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                            <input type="text" id="modFilter" class="form-control border-0 bg-light" placeholder="Buscar módulo...">
+                            <input type="text" id="modFilter" class="ui-select border-0 bg-light" placeholder="Buscar módulo...">
                         </div>
                     </div>
                     <div class="card-body p-4">
@@ -177,7 +178,7 @@
     @if($role->users()->count() == 0)
     <form action="{{ route('owner.instances.roles.destroy', [$instance, $role]) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
         @csrf @method('DELETE')
-        <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+        <button type="submit" class="ui-btn ui-btn-danger rounded-pill px-4">
             <i class="bi bi-trash me-1"></i>Eliminar Rol
         </button>
     </form>
@@ -187,20 +188,20 @@
     </div>
     @endif
 </div>
+</div>
 
-<div id="stickySaveBar" class="premium-sticky-bar">
-    <div class="d-flex align-items-center justify-content-between">
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
         <div class="d-flex align-items-center gap-2" id="saveBarLeft">
-            <i class="bi bi-info-circle text-primary"></i>
+            <i class="bi bi-info-circle" style="color:var(--accent,#8b5cf6)"></i>
             <span class="fw-semibold d-none d-sm-inline">Editando Rol: {{ $role->name }}</span>
         </div>
         <div class="d-flex gap-2">
-            <button type="submit" form="roleForm" class="btn btn-save rounded-pill px-4 fw-bold shadow-sm">
+            <button type="submit" form="roleForm" class="ui-btn ui-btn-solid rounded-pill px-4 fw-bold shadow-sm">
                 <i class="bi bi-save me-1"></i>Guardar Cambios
             </button>
         </div>
     </div>
-</div>
 </div>
 
 <script>

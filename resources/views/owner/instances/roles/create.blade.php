@@ -25,35 +25,34 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
-    <div class="premium-header" style="margin-bottom: 2rem; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
+
+    <div class="ui-header mb-4" style="--delay:.1s;background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%)">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-shield"></i>
                 </div>
                 <div>
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size: 0.7rem; letter-spacing: 0.5px;">
-                            <i class="bi bi-plus-circle me-1"></i>NUEVO
-                        </span>
-                    </div>
-                    <h2 class="fw-bold mb-0">Nuevo Rol</h2>
+                    <h2 class="fw-bold mb-1">Nuevo Rol</h2>
                     <p class="mb-0 opacity-75 small">{{ $instance->nombre }}</p>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('owner.instances.roles', $instance) }}" class="btn btn-light rounded-pill px-3 text-dark">
-                    <i class="bi bi-arrow-left me-1"></i>Volver
+            <div class="ui-header-actions">
+                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size:.7rem;letter-spacing:.5px;">
+                    <i class="bi bi-plus-circle me-1"></i>NUEVO
+                </span>
+                <a href="{{ route('owner.instances.roles', $instance) }}" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
             </div>
         </div>
     </div>
 
     @if(session('error'))
-        <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4">{{ session('error') }}</div>
+    <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4">{{ session('error') }}</div>
     @endif
 
     <form action="{{ route('owner.instances.roles.store', $instance) }}" method="POST" id="roleForm">
@@ -61,15 +60,15 @@
 
         <div class="row g-4">
             <div class="col-lg-4">
-                <div class="premium-card mb-3">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card mb-3" style="--delay:.15s">
+                    <div class="ui-card-accent" style="background:#8b5cf6"></div>
                     <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
                         <h5 class="fw-bold mb-0"><i class="bi bi-tag text-primary me-2"></i>Nombre del Rol</h5>
                     </div>
                     <div class="card-body p-4">
                         <div class="form-floating-modern">
                             <i class="bi bi-shield form-icon"></i>
-                            <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
+                            <input type="text" name="name" id="name" class="ui-input @error('name') is-invalid @enderror"
                                    value="{{ old('name') }}" placeholder=" " required>
                             <label class="form-label-float" for="name">Nombre del rol</label>
                             @error('name')<div class="text-danger small mt-1 ms-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
@@ -77,8 +76,8 @@
                     </div>
                 </div>
 
-                <div class="premium-card">
-                    <div class="card-accent green"></div>
+                <div class="ui-card" style="--delay:.2s">
+                    <div class="ui-card-accent" style="background:#10b981"></div>
                     <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
                         <h6 class="fw-bold mb-0"><i class="bi bi-stars text-primary me-2"></i>Acciones Rápidas</h6>
                     </div>
@@ -89,7 +88,7 @@
                                     <i class="bi bi-check-all fs-5"></i>
                                     <div>
                                         <div class="fw-bold">Todos los módulos</div>
-                                        <small class="text-muted" style="font-size: 0.7rem;">Acceso completo</small>
+                                        <small class="text-muted" style="font-size:.7rem;">Acceso completo</small>
                                     </div>
                                 </div>
                             </button>
@@ -98,7 +97,7 @@
                                     <i class="bi bi-x-lg fs-5"></i>
                                     <div>
                                         <div class="fw-bold">Limpiar selección</div>
-                                        <small class="text-muted" style="font-size: 0.7rem;">Empezar desde cero</small>
+                                        <small class="text-muted" style="font-size:.7rem;">Empezar desde cero</small>
                                     </div>
                                 </div>
                             </button>
@@ -106,31 +105,31 @@
                     </div>
                 </div>
 
-                <div class="premium-card mt-3" style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(79,70,229,0.05));">
+                <div class="ui-card mt-3" style="--delay:.25s;background:linear-gradient(135deg,rgba(99,102,241,.05),rgba(79,70,229,.05))">
                     <div class="card-body p-3 text-center">
-                        <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">Módulos Seleccionados</div>
-                        <div class="fs-1 fw-bold" id="modCount" style="color: #4f46e5;">0</div>
+                        <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size:.7rem;letter-spacing:.5px;">Módulos Seleccionados</div>
+                        <div class="fs-1 fw-bold" id="modCount" style="color:#4f46e5;">0</div>
                         <small class="text-muted">de {{ $totalModulos }} disponibles</small>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-8">
-                <div class="premium-card">
-                    <div class="card-accent blue"></div>
+                <div class="ui-card" style="--delay:.3s">
+                    <div class="ui-card-accent" style="background:#3b82f6"></div>
                     <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h5 class="fw-bold mb-0"><i class="bi bi-grid text-primary me-2"></i>Módulos</h5>
                             <small class="text-muted">Selecciona los módulos que los usuarios con este rol podrán ver</small>
                         </div>
-                        <div class="input-group" style="max-width: 280px;">
+                        <div class="input-group" style="max-width:280px">
                             <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                            <input type="text" id="modFilter" class="form-control border-0 bg-light" placeholder="Buscar módulo...">
+                            <input type="text" id="modFilter" class="ui-input border-0 bg-light ps-0" placeholder="Buscar módulo...">
                         </div>
                     </div>
                     <div class="card-body p-4">
                         @foreach($modulos as $categoria => $modulosCategoria)
-                            <div class="perm-module-card mb-3 mod-filterable" data-text="{{ strtolower($categoria) }}" style="--accent-color: {{ $categoriaColores[$categoria] ?? '#38bdf8' }};">
+                            <div class="perm-module-card mb-3 mod-filterable" data-text="{{ strtolower($categoria) }}" style="--accent-color:{{ $categoriaColores[$categoria] ?? '#38bdf8' }};">
                                 <div class="module-header">
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="module-icon">
@@ -154,7 +153,7 @@
                                                        {{ $checked ? 'checked' : '' }}>
                                                 <i class="bi {{ $checked ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted' }}"></i>
                                                 <span class="perm-name">{{ $modulo->label }}</span>
-                                                <small class="text-muted" style="font-size: 0.65rem;">{{ $modulo->key }}</small>
+                                                <small class="text-muted" style="font-size:.65rem;">{{ $modulo->key }}</small>
                                             </label>
                                         </div>
                                     @endforeach
@@ -169,14 +168,14 @@
     </form>
 </div>
 
-<div id="stickySaveBar" class="premium-sticky-bar">
-    <div class="d-flex align-items-center justify-content-between">
+<div id="stickySaveBar" class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
         <div class="d-flex align-items-center gap-2" id="saveBarLeft">
             <i class="bi bi-info-circle text-primary"></i>
             <span class="fw-semibold d-none d-sm-inline">Nuevo Rol de Instancia</span>
         </div>
         <div class="d-flex gap-2">
-            <button type="submit" form="roleForm" class="btn btn-save rounded-pill px-4 fw-bold shadow-sm">
+            <button type="submit" form="roleForm" class="ui-btn ui-btn-solid ui-btn-pill px-4 fw-bold">
                 <i class="bi bi-check-lg me-1"></i>Crear Rol
             </button>
         </div>

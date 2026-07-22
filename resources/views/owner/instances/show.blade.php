@@ -6,8 +6,8 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
 
     @if(session('new_token'))
     <div class="alert alert-warning alert-dismissible fade show rounded-4 border-0 mb-4 shadow" role="alert">
@@ -19,8 +19,8 @@
                 <strong class="d-block mb-1">Token creado exitosamente</strong>
                 <p class="mb-2 small">Este token solo se muestra <strong>una vez</strong>. Cópialo ahora y guárdalo en un lugar seguro.</p>
                 <div class="input-group input-group-sm mb-1">
-                    <input type="text" class="form-control font-monospace bg-white" value="{{ session('new_token') }}" readonly id="newTokenInput">
-                    <button class="btn btn-dark" type="button" onclick="copyNewToken()">Copiar</button>
+                    <input type="text" class="ui-input font-monospace bg-white" value="{{ session('new_token') }}" readonly id="newTokenInput">
+                    <button class="ui-btn ui-btn-solid btn-sm" type="button" onclick="copyNewToken()" style="background:#1e293b;border-color:#1e293b">Copiar</button>
                 </div>
             </div>
         </div>
