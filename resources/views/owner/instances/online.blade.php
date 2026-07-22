@@ -34,24 +34,26 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
 
-    <div class="premium-header" style="margin-bottom: 2rem;">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle"><i class="bi bi-wifi"></i></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-wifi"></i>
+                </div>
                 <div>
                     <h2 class="fw-bold mb-1">Usuarios Online</h2>
-                    <p class="mb-0 opacity-75">{{ $instance->nombre }} &mdash; últimos 5 minutos</p>
+                    <p class="mb-0 opacity-75">{{ $instance->nombre }} &middot; últimos 5 minutos</p>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+            <div class="ui-header-actions">
+                <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-ghost rounded-pill">
                     <i class="bi bi-arrow-left me-2"></i>Instancia
                 </a>
-                <a href="{{ route('owner.online.index') }}" class="btn btn-outline-primary rounded-pill px-4">
+                <a href="{{ route('owner.online.index') }}" class="ui-btn ui-btn-ghost rounded-pill">
                     <i class="bi bi-globe me-2"></i>Ver global
                 </a>
             </div>
@@ -61,52 +63,53 @@
     {{-- Stats --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3 text-center">
+            <div class="ui-stat" style="--delay:.15s">
+                <div class="ui-stat-body text-center">
                     <div class="online-dot mx-auto mb-2"></div>
-                    <small class="stat-label d-block">Online Ahora</small>
-                    <h2 class="stat-value mb-0 text-success">{{ $onlineUsers->count() }}</h2>
+                    <small class="ui-stat-label d-block">Online Ahora</small>
+                    <h2 class="ui-stat-value mb-0 text-success">{{ $onlineUsers->count() }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3 text-center">
+            <div class="ui-stat" style="--delay:.2s">
+                <div class="ui-stat-body text-center">
                     <div class="stat-card-icon bg-primary bg-opacity-10 text-primary mx-auto mb-2">
                         <i class="bi bi-people fs-5"></i>
                     </div>
-                    <small class="stat-label d-block">Total Usuarios</small>
-                    <h2 class="stat-value mb-0">{{ $totalUsers }}</h2>
+                    <small class="ui-stat-label d-block">Total Usuarios</small>
+                    <h2 class="ui-stat-value mb-0">{{ $totalUsers }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3 text-center">
+            <div class="ui-stat" style="--delay:.25s">
+                <div class="ui-stat-body text-center">
                     <div class="stat-card-icon bg-success bg-opacity-10 text-success mx-auto mb-2">
                         <i class="bi bi-percent fs-5"></i>
                     </div>
-                    <small class="stat-label d-block">% Activos</small>
-                    <h2 class="stat-value mb-0">
+                    <small class="ui-stat-label d-block">% Activos</small>
+                    <h2 class="ui-stat-value mb-0">
                         {{ $totalUsers > 0 ? round(($onlineUsers->count() / $totalUsers) * 100) : 0 }}%
                     </h2>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3 text-center">
+            <div class="ui-stat" style="--delay:.3s">
+                <div class="ui-stat-body text-center">
                     <div class="stat-card-icon bg-warning bg-opacity-10 text-warning mx-auto mb-2">
                         <i class="bi bi-clock fs-5"></i>
                     </div>
-                    <small class="stat-label d-block">Actualizado</small>
+                    <small class="ui-stat-label d-block">Actualizado</small>
                     <small class="fw-bold">{{ now()->format('H:i:s') }}</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card">
+    <div class="ui-card" style="--delay:.35s">
+        <div class="ui-card-accent" style="background:linear-gradient(90deg,#8b5cf6,rgba(255,255,255,.3))"></div>
         <div class="card-body p-4">
             @if($onlineUsers->isEmpty())
                 <div class="py-5 text-center">

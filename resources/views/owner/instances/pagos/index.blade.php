@@ -6,13 +6,14 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
-<div class="container-fluid px-4">
-    <div class="premium-header" style="margin-bottom: 2rem; background: linear-gradient(135deg, #059669, #10b981, #06b6d4, #059669);">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669">
+<div class="container-fluid px-4 py-3">
+
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-cash-coin"></i>
                 </div>
                 <div>
@@ -20,19 +21,19 @@
                     <p class="mb-0 opacity-75">{{ $instance->nombre }}</p>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+            <div class="ui-header-actions">
+                <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="ui-btn ui-btn-solid" style="background:#10b981;border-color:#10b981">
                     <i class="bi bi-plus-lg me-2"></i>Registrar Pago
                 </a>
-                <a href="{{ route('owner.instances.show', $instance) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-dark">
+                <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-primary">
                     <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent green"></div>
+    <div class="ui-card mb-4" style="--delay:.15s">
+        <div class="ui-card-accent" style="background:#10b981"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
