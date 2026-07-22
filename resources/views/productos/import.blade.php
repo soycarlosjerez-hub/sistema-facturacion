@@ -79,7 +79,7 @@ body.dark-mode .mapping-row:hover { background: rgba(255,255,255,.03); }
             <div class="card-body p-4">
                 <form action="{{ route('productos.import.preview') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" role="button" tabindex="0" aria-label="Seleccionar archivo para importar" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
                         <div id="dropContent">
                             <i class="bi bi-file-earmark-spreadsheet" style="font-size:3rem;color:#4f46e5;"></i>
                             <h6 class="fw-bold mt-3 mb-1">Arrastra el archivo aquí o haz clic para seleccionar</h6>
@@ -259,11 +259,28 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
                 <a href="{{ route('productos.import') }}" class="btn btn-light rounded-pill px-4 fw-bold">
                     <i class="bi bi-arrow-left me-1"></i> Subir otro archivo
                 </a>
-                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow fw-bold">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow fw-bold" id="importProcessBtn">
                     <i class="bi bi-cloud-upload me-2"></i>Importar Productos
                 </button>
             </div>
         </form>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const importForm = document.querySelector('form[action*="import/process"]');
+        if (importForm) {
+            importForm.addEventListener('submit', function() {
+                const btn = this.querySelector('#importProcessBtn');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importando...';
+                }
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

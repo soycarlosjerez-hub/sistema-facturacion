@@ -22,7 +22,7 @@ class StoreProductoRequest extends FormRequest
             'precio_compra'   => 'nullable|numeric|min:0',
             'unidad_medida'   => 'nullable|string|max:50',
             'itbis_porcentaje' => 'nullable|numeric|min:0|max:100',
-            'stock'           => 'nullable|integer|min:0',
+            'stock'           => 'required|integer|min:0',
             'stock_minimo'    => 'nullable|integer|min:0',
             'activo'          => 'boolean',
             'imagen'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',

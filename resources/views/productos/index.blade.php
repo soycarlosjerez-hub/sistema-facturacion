@@ -311,7 +311,7 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
 @section('content')
 <div class="container-fluid px-4 py-3 premium-page">
 
-    <div class="premium-header mb-4">
+    <div class="premium-header mb-4" style="--module-color: #3b82f6; --module-color-light: #60a5fa;">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -354,7 +354,7 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
                     <select name="stock_status" id="filter-stock" class="form-select">
                         <option value="">Todos</option>
                         <option value="critical" {{ request('stock_status') == 'critical' ? 'selected' : '' }}>Crítico (&le; 5)</option>
-                        <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Bajo (6 &ndash; 15)</option>
+                        <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Bajo (6-15)</option>
                         <option value="ok" {{ request('stock_status') == 'ok' ? 'selected' : '' }}>Normal (&gt; 15)</option>
                     </select>
                 </div>
@@ -402,14 +402,14 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
                 <table id="productos-table" class="table productos-table nowrap no-footer" role="grid" style="width:100%" aria-label="Listado de productos">
                     <thead>
                         <tr>
-                            <th class="ps-4" style="width:50px;">#</th>
-                            <th>Producto</th>
-                            <th>Categoría</th>
-                            <th class="text-end">Venta &amp; Costos</th>
-                            <th class="text-center">Rentabilidad</th>
-                            <th class="text-center">Inventario</th>
-                            <th class="text-center">Estado</th>
-                            <th class="text-end pe-4">Acciones</th>
+                    <th class="ps-4" style="width:50px;" data-label="id">#</th>
+                    <th data-label="producto">Producto</th>
+                    <th data-label="categoria">Categoría</th>
+                    <th class="text-end" data-label="precios">Venta &amp; Costos</th>
+                    <th class="text-center" data-label="rentabilidad">Rentabilidad</th>
+                    <th class="text-center" data-label="inventario">Inventario</th>
+                    <th class="text-center" data-label="estado">Estado</th>
+                    <th class="text-end pe-4" data-label="acciones">Acciones</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -637,11 +637,11 @@ $(function() {
 
         table.search(nombre).draw();
 
-        $.fn.dataTable.ext.search.push(function(settings, data) {
-            const stock = parseInt(data[5]) || 0;
-            const precioStr = data[3].replace(/[^0-9.]/g, '');
-            const precio = parseFloat(precioStr) || 0;
-            const isActivo = (data[6] || '').indexOf('Activo') !== -1;
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            const rowData = productos[dataIndex];
+            const stock = parseInt(rowData.stock) || 0;
+            const precio = parseFloat(rowData.precio) || 0;
+            const isActivo = !!rowData.activo;
 
             if (stockStatus === 'critical' && stock > 5) return false;
             if (stockStatus === 'low' && (stock < 6 || stock > 15)) return false;

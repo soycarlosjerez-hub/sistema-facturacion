@@ -176,6 +176,7 @@ class ProductoController extends Controller
 
     public function show(Producto $producto)
     {
+        $producto->loadCount(['detallesCompras', 'ventaDetalles']);
         $producto->load(['detallesCompras.compra.proveedor', 'ventaDetalles.venta.cliente']);
         return view('productos.show', compact('producto'));
     }

@@ -103,7 +103,7 @@ class ProductoService
         $data['imagen'] = $this->saveImage($imagen);
     }
 
-        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? 18.00;
+        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? config('system.default_itbis', 18.00);
 
         return Producto::create($data);
     }
@@ -117,7 +117,7 @@ class ProductoService
             $data['imagen'] = $this->saveImage($imagen);
         }
 
-        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? 18.00;
+        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? config('system.default_itbis', 18.00);
         $producto->update($data);
 
         return $producto;

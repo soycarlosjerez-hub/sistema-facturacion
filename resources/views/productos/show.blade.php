@@ -46,7 +46,7 @@
             <div class="premium-card" style="animation-delay:.1s;">
                 <div class="card-accent blue"></div>
                 <div class="card-body p-4 text-center">
-                    <img src="{{ $producto->imagen_url }}" class="rounded-3 shadow-sm img-fluid mb-3" style="max-height:280px;object-fit:cover;background:#f1f5f9;" alt="{{ $producto->nombre }}">
+                    <img src="{{ $producto->imagen_url }}" class="rounded-3 shadow-sm img-fluid mb-3" style="max-height:280px;object-fit:cover;background:#f1f5f9;" alt="{{ $producto->tiene_imagen ? $producto->nombre : 'Sin imagen disponible' }}">
                     <h4 class="fw-bold mb-1">{{ $producto->nombre }}</h4>
                     <p class="text-muted small mb-2">
                         <i class="bi bi-upc-scan"></i> {{ $producto->codigo_barras ?? 'Sin código' }}

@@ -34,7 +34,7 @@
 
         <div class="col-md-6">
             <div class="mb-3">
-                <label class="form-label small fw-semibold">Categoría</label>
+                <label class="form-label small fw-semibold">Categoría <span class="text-muted">(opcional)</span></label>
                 <select name="categoria_id" class="form-select form-select-lg">
                     <option value="">Sin categoría</option>
                     @if(isset($categorias))
@@ -86,7 +86,7 @@
             <div class="mb-3">
                 <label class="form-label small fw-semibold">ITBIS</label>
                 <div class="input-group input-group-lg">
-                    <input type="number" name="itbis_porcentaje" value="{{ old('itbis_porcentaje', $producto->itbis_porcentaje ?? '18.00') }}" class="form-control @error('itbis_porcentaje') is-invalid @enderror" step="0.01" min="0" max="100" placeholder="18">
+                    <input type="number" name="itbis_porcentaje" value="{{ old('itbis_porcentaje', $producto->itbis_porcentaje ?? config('system.default_itbis', '18.00')) }}" class="form-control @error('itbis_porcentaje') is-invalid @enderror" step="0.01" min="0" max="100" placeholder="18">
                     <span class="input-group-text bg-light fw-bold">%</span>
                 </div>
                 @error('itbis_porcentaje')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
@@ -145,7 +145,7 @@
         <div class="col-md-12">
             <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(5,150,105,.05);">
                 <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" {{ old('activo', $producto->activo ?? true) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
+                    <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" {{ old('activo', !isset($producto->exists) || !$producto->exists ? true : $producto->activo) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
                     <label class="form-check-label fw-semibold ms-2" for="chk-activo">
                         Producto Activo
                     </label>
@@ -155,3 +155,33 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.getElementById('btnGenerarBarcode')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('codigo_barras');
+        if (!input) return;
+        if (input.value && !confirm('¿Reemplazar el código de barras actual?')) {
+            return;
+        }
+        let codigo = '200';
+        for (let i = 0; i < 9; i++) { codigo += Math.floor(Math.random() * 10); }
+        let suma = 0;
+        for (let i = 0; i < 12; i++) {
+            const digito = parseInt(codigo.charAt(i));
+            suma += (i % 2 === 0) ? digito : digito * 3;
+        }
+        const checkDigit = (10 - (suma % 10)) % 10;
+        codigo += checkDigit;
+        input.value = codigo;
+    });
+
+    document.querySelector('input[name="imagen"]')?.addEventListener('change', function() {
+        if (this.files[0] && this.files[0].size > 10 * 1024 * 1024) {
+            alert('La imagen no debe superar 10MB.');
+            this.value = '';
+        }
+    });
+</script>
+@endpush

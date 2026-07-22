@@ -74,29 +74,12 @@
             <i class="bi bi-info-circle" style="color:#4f46e5;"></i>
             <span class="fw-semibold d-none d-sm-inline">Editando: {{ $producto->nombre }}</span>
         </div>
-        <button type="submit" form="productForm" class="btn-save">
-            <i class="bi bi-cloud-arrow-up me-1"></i>Guardar Cambios
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('productos.index') }}" class="btn-cancel">Cancelar</a>
+            <button type="submit" form="productForm" class="btn-save">
+                <i class="bi bi-cloud-arrow-up me-1"></i>Guardar Cambios
+            </button>
+        </div>
     </div>
 </div>
-
-<script>
-    document.getElementById('btnGenerarBarcode')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (document.getElementById('codigo_barras').value && !confirm('¿Reemplazar el código de barras actual?')) {
-            return;
-        }
-        const input = document.getElementById('codigo_barras');
-        let codigo = '200';
-        for (let i = 0; i < 9; i++) { codigo += Math.floor(Math.random() * 10); }
-        let suma = 0;
-        for (let i = 0; i < 12; i++) {
-            const digito = parseInt(codigo.charAt(i));
-            suma += (i % 2 === 0) ? digito : digito * 3;
-        }
-        const checkDigit = (10 - (suma % 10)) % 10;
-        codigo += checkDigit;
-        input.value = codigo;
-    });
-</script>
 @endsection

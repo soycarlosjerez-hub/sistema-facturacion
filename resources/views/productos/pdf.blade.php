@@ -22,7 +22,12 @@
 <body>
     <div class="header">
         <h1>Reporte de Productos</h1>
-        @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+        @php
+            $empresa = [];
+            if (class_exists(\App\Models\SystemSetting::class)) {
+                $empresa = \App\Models\SystemSetting::allCached();
+            }
+        @endphp
         <p>{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }} — Generado el {{ date('d/m/Y H:i A') }}</p>
         <p>Total de productos: <strong>{{ $productos->count() }}</strong></p>
     </div>
