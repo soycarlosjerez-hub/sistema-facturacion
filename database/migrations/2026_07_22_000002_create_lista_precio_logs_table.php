@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('lista_precio_logs')) {
+            return;
+        }
         Schema::create('lista_precio_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained('business_instances', 'id')->nullOnDelete();
