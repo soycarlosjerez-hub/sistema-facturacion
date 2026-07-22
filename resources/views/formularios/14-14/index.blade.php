@@ -420,23 +420,23 @@
                 </tbody>
 
                 @if($agrupado->isNotEmpty())
-                <tfoot>
-                    <tr>
-                        <td colspan="3" class="ps-4 py-3 text-end text-uppercase small">Totales</td>
-                        <td class="text-end py-3">
-                            {{ $agrupado->sum('cantidad') }}
-                        </td>
-                        <td class="text-end py-3 text-purple">
-                            RD$ {{ number_format($agrupado->sum('itbis'), 2) }}
-                        </td>
-                        <td class="text-end py-3 text-danger">
-                            RD$ {{ number_format($agrupado->sum('isr'), 2) }}
-                        </td>
-                        <td class="text-end pe-4 py-3">
-                            RD$ {{ number_format($agrupado->sum(fn($p) => $p['itbis'] + $p['isr']), 2) }}
-                        </td>
-                    </tr>
-                </tfoot>
+                <tr class="table-light fw-bold">
+                    <th class="ps-4 py-3 text-end text-uppercase small">Totales</th>
+                    <th class="py-3"></th>
+                    <th class="py-3"></th>
+                    <td class="text-end py-3">
+                        {{ $agrupado->sum('cantidad') }}
+                    </td>
+                    <td class="text-end py-3 text-purple">
+                        RD$ {{ number_format($agrupado->sum('itbis'), 2) }}
+                    </td>
+                    <td class="text-end py-3 text-danger">
+                        RD$ {{ number_format($agrupado->sum('isr'), 2) }}
+                    </td>
+                    <td class="text-end pe-4 py-3">
+                        RD$ {{ number_format($agrupado->sum(fn($p) => $p['itbis'] + $p['isr']), 2) }}
+                    </td>
+                </tr>
                 @endif
             </table>
         </div>
