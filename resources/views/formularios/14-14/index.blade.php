@@ -111,6 +111,7 @@
     }
     #proveedoresTable tbody tr { transition: background .15s; }
     #proveedoresTable tbody tr:hover { background: rgba(220,38,38,.04); }
+    #proveedoresTable tfoot th,
     #proveedoresTable tfoot td {
         padding: 14px 12px;
         border-top: 2px solid #e2e8f0;
@@ -129,6 +130,7 @@
     body.dark-mode #proveedoresTable tbody tr:hover {
         background: rgba(220,38,38,.08);
     }
+    body.dark-mode #proveedoresTable tfoot th,
     body.dark-mode #proveedoresTable tfoot td {
         background: rgba(15,23,42,.6);
         border-top-color: #334155;
@@ -318,7 +320,7 @@
                         <th class="ps-4 py-3">#</th>
                         <th>RNC/Cédula</th>
                         <th>Proveedor</th>
-                        <th class="text-end">Compras</th>
+                        <th class="text-end"># Compras</th>
                         <th class="text-end">ITBIS Retenido</th>
                         <th class="text-end">ISR Retenido</th>
                         <th class="text-end pe-4">Total Retenido</th>
@@ -344,10 +346,13 @@
                                 }
                                 $agrupado[$key]['itbis'] += $d['itbis_retenido'] ?? 0;
                                 $cid = $d['compra_id'] ?? null;
-                                if ($cid && !in_array($cid, $agrupado[$key]['_ids'])) {
-                                    $agrupado[$key]['_ids'][] = $cid;
-                                    $agrupado[$key]['cantidad']++;
-                                } elseif (!$cid) {
+                                if ($cid) {
+                                    if (!in_array($cid, $agrupado[$key]['_ids'])) {
+                                        $agrupado[$key]['_ids'][] = $cid;
+                                        $agrupado[$key]['cantidad']++;
+                                    }
+                                } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
+                                    $agrupado[$key]['_ids'][] = 'sin-id';
                                     $agrupado[$key]['cantidad']++;
                                 }
                             }
@@ -367,14 +372,14 @@
                                 }
                                 $agrupado[$key]['isr'] += $d['isr_retenido'] ?? 0;
                                 $cid = $d['compra_id'] ?? null;
-                                if ($cid && !in_array($cid, $agrupado[$key]['_ids'])) {
-                                    $agrupado[$key]['_ids'][] = $cid;
-                                    $agrupado[$key]['cantidad']++;
-                                } elseif (!$cid) {
-                                    // Sin compra_id, contar solo si isr > 0 (para no duplicar)
-                                    if (($d['isr_retenido'] ?? 0) > 0) {
+                                if ($cid) {
+                                    if (!in_array($cid, $agrupado[$key]['_ids'])) {
+                                        $agrupado[$key]['_ids'][] = $cid;
                                         $agrupado[$key]['cantidad']++;
                                     }
+                                } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
+                                    $agrupado[$key]['_ids'][] = 'sin-id';
+                                    $agrupado[$key]['cantidad']++;
                                 }
                             }
                         }
