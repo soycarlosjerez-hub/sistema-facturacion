@@ -111,8 +111,7 @@
     }
     #proveedoresTable tbody tr { transition: background .15s; }
     #proveedoresTable tbody tr:hover { background: rgba(220,38,38,.04); }
-    #proveedoresTable tfoot th,
-    #proveedoresTable tfoot td {
+    #proveedoresTable .totales-row td {
         padding: 14px 12px;
         border-top: 2px solid #e2e8f0;
         background: #f8fafc;
@@ -130,8 +129,7 @@
     body.dark-mode #proveedoresTable tbody tr:hover {
         background: rgba(220,38,38,.08);
     }
-    body.dark-mode #proveedoresTable tfoot th,
-    body.dark-mode #proveedoresTable tfoot td {
+    body.dark-mode #proveedoresTable .totales-row td {
         background: rgba(15,23,42,.6);
         border-top-color: #334155;
         color: #f1f5f9;
@@ -313,6 +311,63 @@
         <div class="premium-card-subtitle">
             Compras del período {{ $mesNombre }} {{ $anio }} con retenciones aplicadas
         </div>
+        @php
+            $agrupado = collect();
+
+            if (!empty($resumen['itbis_compras']['detalles'])) {
+                foreach ($resumen['itbis_compras']['detalles'] as $d) {
+                    $key = $d['rnc'] ?? 'sin-rnc';
+                    if (!$agrupado->has($key)) {
+                        $agrupado[$key] = [
+                            'rnc'       => $d['rnc'] ?? 'N/A',
+                            'nombre'    => $d['proveedor'] ?? 'N/A',
+                            'itbis'     => 0,
+                            'isr'       => 0,
+                            'cantidad'  => 0,
+                            '_ids'      => [],
+                        ];
+                    }
+                    $agrupado[$key]['itbis'] += $d['itbis_retenido'] ?? 0;
+                    $cid = $d['compra_id'] ?? null;
+                    if ($cid) {
+                        if (!in_array($cid, $agrupado[$key]['_ids'])) {
+                            $agrupado[$key]['_ids'][] = $cid;
+                            $agrupado[$key]['cantidad']++;
+                        }
+                    } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
+                        $agrupado[$key]['_ids'][] = 'sin-id';
+                        $agrupado[$key]['cantidad']++;
+                    }
+                }
+            }
+            if (!empty($resumen['isr_compras']['detalles'])) {
+                foreach ($resumen['isr_compras']['detalles'] as $d) {
+                    $key = $d['rnc'] ?? 'sin-rnc';
+                    if (!$agrupado->has($key)) {
+                        $agrupado[$key] = [
+                            'rnc'       => $d['rnc'] ?? 'N/A',
+                            'nombre'    => $d['proveedor'] ?? 'N/A',
+                            'itbis'     => 0,
+                            'isr'       => 0,
+                            'cantidad'  => 0,
+                            '_ids'      => [],
+                        ];
+                    }
+                    $agrupado[$key]['isr'] += $d['isr_retenido'] ?? 0;
+                    $cid = $d['compra_id'] ?? null;
+                    if ($cid) {
+                        if (!in_array($cid, $agrupado[$key]['_ids'])) {
+                            $agrupado[$key]['_ids'][] = $cid;
+                            $agrupado[$key]['cantidad']++;
+                        }
+                    } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
+                        $agrupado[$key]['_ids'][] = 'sin-id';
+                        $agrupado[$key]['cantidad']++;
+                    }
+                }
+            }
+            $agrupado = $agrupado->map(fn($p) => collect($p)->except('_ids')->all())->values();
+        @endphp
         <div class="table-responsive px-3 pb-3">
             <table id="proveedoresTable" class="table align-middle mb-0">
                 <thead>
@@ -327,66 +382,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php
-                        // Agrupar datos por proveedor desde los detalles
-                        $agrupado = collect();
-                        
-                        if (!empty($resumen['itbis_compras']['detalles'])) {
-                            foreach ($resumen['itbis_compras']['detalles'] as $d) {
-                                $key = $d['rnc'] ?? 'sin-rnc';
-                                if (!$agrupado->has($key)) {
-                                    $agrupado[$key] = [
-                                        'rnc'       => $d['rnc'] ?? 'N/A',
-                                        'nombre'    => $d['proveedor'] ?? 'N/A',
-                                        'itbis'     => 0,
-                                        'isr'       => 0,
-                                        'cantidad'  => 0,
-                                        '_ids'      => [],
-                                    ];
-                                }
-                                $agrupado[$key]['itbis'] += $d['itbis_retenido'] ?? 0;
-                                $cid = $d['compra_id'] ?? null;
-                                if ($cid) {
-                                    if (!in_array($cid, $agrupado[$key]['_ids'])) {
-                                        $agrupado[$key]['_ids'][] = $cid;
-                                        $agrupado[$key]['cantidad']++;
-                                    }
-                                } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
-                                    $agrupado[$key]['_ids'][] = 'sin-id';
-                                    $agrupado[$key]['cantidad']++;
-                                }
-                            }
-                        }
-                        if (!empty($resumen['isr_compras']['detalles'])) {
-                            foreach ($resumen['isr_compras']['detalles'] as $d) {
-                                $key = $d['rnc'] ?? 'sin-rnc';
-                                if (!$agrupado->has($key)) {
-                                    $agrupado[$key] = [
-                                        'rnc'       => $d['rnc'] ?? 'N/A',
-                                        'nombre'    => $d['proveedor'] ?? 'N/A',
-                                        'itbis'     => 0,
-                                        'isr'       => 0,
-                                        'cantidad'  => 0,
-                                        '_ids'      => [],
-                                    ];
-                                }
-                                $agrupado[$key]['isr'] += $d['isr_retenido'] ?? 0;
-                                $cid = $d['compra_id'] ?? null;
-                                if ($cid) {
-                                    if (!in_array($cid, $agrupado[$key]['_ids'])) {
-                                        $agrupado[$key]['_ids'][] = $cid;
-                                        $agrupado[$key]['cantidad']++;
-                                    }
-                                } elseif (!in_array('sin-id', $agrupado[$key]['_ids'])) {
-                                    $agrupado[$key]['_ids'][] = 'sin-id';
-                                    $agrupado[$key]['cantidad']++;
-                                }
-                            }
-                        }
-                        // Limpiar campo interno _ids antes de renderizar
-                        $agrupado = $agrupado->map(fn($p) => collect($p)->except('_ids')->all())->values();
-                    @endphp
-
                     @if($agrupado->isNotEmpty())
                         @foreach($agrupado as $idx => $prov)
                         <tr>
@@ -422,28 +417,26 @@
                             </td>
                         </tr>
                     @endif
-                </tbody>
                 @if($agrupado->isNotEmpty())
-                <tfoot>
-                    <tr class="table-light fw-bold">
-                        <th class="ps-4 py-3 text-end text-uppercase small">Totales</th>
-                        <th class="py-3"></th>
-                        <th class="py-3"></th>
-                        <td class="text-end py-3">
-                            {{ $agrupado->sum('cantidad') }}
-                        </td>
-                        <td class="text-end py-3 text-purple">
-                            RD$ {{ number_format($agrupado->sum('itbis'), 2) }}
-                        </td>
-                        <td class="text-end py-3 text-danger">
-                            RD$ {{ number_format($agrupado->sum('isr'), 2) }}
-                        </td>
-                        <td class="text-end pe-4 py-3">
-                            RD$ {{ number_format($agrupado->sum(fn($p) => $p['itbis'] + $p['isr']), 2) }}
-                        </td>
-                    </tr>
-                </tfoot>
+                <tr class="table-light fw-bold totales-row">
+                    <td class="ps-4 py-3 text-end text-uppercase small">Totales</td>
+                    <td class="py-3"></td>
+                    <td class="py-3"></td>
+                    <td class="text-end py-3">
+                        {{ $agrupado->sum('cantidad') }}
+                    </td>
+                    <td class="text-end py-3 text-purple">
+                        RD$ {{ number_format($agrupado->sum('itbis'), 2) }}
+                    </td>
+                    <td class="text-end py-3 text-danger">
+                        RD$ {{ number_format($agrupado->sum('isr'), 2) }}
+                    </td>
+                    <td class="text-end pe-4 py-3">
+                        RD$ {{ number_format($agrupado->sum(fn($p) => $p['itbis'] + $p['isr']), 2) }}
+                    </td>
+                </tr>
                 @endif
+                </tbody>
             </table>
         </div>
     </div>
