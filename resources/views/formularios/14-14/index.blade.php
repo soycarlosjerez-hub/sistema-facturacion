@@ -482,8 +482,14 @@ $(document).ready(function() {
             decimal: ",",
             thousands: "."
         },
-        columnDefs: [
-            { orderable: false, className: 'text-end', targets: [3, 4, 5, 6] }
+        columns: [
+            { className: 'ps-4' },
+            { },
+            { },
+            { className: 'text-end', orderable: false },
+            { className: 'text-end', orderable: false },
+            { className: 'text-end', orderable: false },
+            { className: 'text-end pe-4', orderable: false }
         ],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
