@@ -31,7 +31,9 @@ class Formulario1414Controller extends Controller
             ->with('proveedor')
             ->get();
 
-        return view('formularios.14-14.index', compact('resumen', 'proveedores', 'mes', 'anio'));
+        $mesNombre = \Carbon\Carbon::create($anio, $mes, 1)->format('F');
+
+        return view('formularios.14-14.index', compact('resumen', 'proveedores', 'mes', 'anio', 'mesNombre'));
     }
 
     public function exportPdf(Request $request)
