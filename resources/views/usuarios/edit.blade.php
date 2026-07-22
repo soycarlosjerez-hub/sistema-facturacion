@@ -73,7 +73,7 @@
 @include('usuarios._rol_config')
 @include('usuarios._styles')
 
-<div class="premium-page">
+<div class="ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb">
 
     <div class="premium-header-amber mb-4">
         <div class="bubble"></div>
@@ -92,7 +92,7 @@
                     <p class="mb-0 opacity-75">{{ $usuario->email }}</p>
                 </div>
             </div>
-            <a href="{{ route('usuarios.index') }}" class="btn btn-light rounded-pill fw-bold">
+            <a href="{{ route('usuarios.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                 <i class="bi bi-arrow-left me-1"></i>Volver
             </a>
         </div>
@@ -121,8 +121,8 @@
 
         <div class="row g-4 align-items-start">
             <div class="col-lg-8">
-                <div class="premium-card h-100">
-                    <div class="card-accent amber"></div>
+                <div class="ui-card h-100" style="--delay:.1s">
+                    <div class="ui-card-accent"></div>
                     <div class="premium-card-title"><i class="bi bi-person-vcard icon-amber"></i> Información Usuario</div>
                     <div class="card-body p-4">
                         @include('usuarios._form_fields')
@@ -147,8 +147,8 @@
                         </div>
                         @error('role')<div class="text-danger small mt-2"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
                         <div id="businessTypeSection" class="mt-4" style="display:none;">
-                            <label class="form-label fw-bold">Tipo de Negocio</label>
-                            <select name="business_type_id" id="business_type_id" class="form-select">
+                            <label class="ui-label">Tipo de Negocio</label>
+                            <select name="business_type_id" id="business_type_id" class="ui-select">
                                 <option value="">Seleccione</option>
                                 @foreach($businessTypes as $type)
                                     <option value="{{ $type->id }}" {{ old('business_type_id',$usuario->business_type_id)==$type->id?'selected':'' }}>{{ $type->nombre }}</option>
@@ -162,8 +162,8 @@
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="premium-card sticky-top" style="top: 100px; z-index: 100;">
-                    <div class="card-accent amber"></div>
+                <div class="ui-card sticky-top" style="--delay:.2s; top: 100px; z-index: 100;">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body text-center">
                         <div class="user-avatar mx-auto mb-3" style="background:{{ $cfg['gradient'] ?? 'linear-gradient(135deg,#64748b,#475569)' }}; width:72px; height:72px; border-radius:50; font-size:2rem;">
                             {{ strtoupper(substr($usuario->name,0,1)) }}
@@ -189,8 +189,8 @@
                 <span class="fw-semibold d-none d-sm-inline">Editar Usuario</span>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('usuarios.index') }}" class="btn btn-cancel">Cancelar</a>
-                <button type="submit" form="editUserForm" class="btn btn-save"><i class="bi bi-save me-2"></i> Guardar</button>
+                <a href="{{ route('usuarios.index') }}" class="btn-cancel">Cancelar</a>
+                <button type="submit" form="editUserForm" class="btn-save"><i class="bi bi-save me-2"></i> Guardar</button>
             </div>
         </div>
     </div>

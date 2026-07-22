@@ -4,54 +4,27 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.premium-header {
-    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #06b6d4 100%) !important;
-    background-size: 300% 300% !important;
-    animation: premiumGradientShift 6s ease infinite !important;
-    box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
-}
-.premium-header .btn-outline-secondary {
-    color: #fff !important;
-    border-color: rgba(255,255,255,.6) !important;
-    background: rgba(255,255,255,.1) !important;
-}
-.premium-header .btn-outline-secondary:hover {
-    background: rgba(255,255,255,.25) !important;
-    border-color: #fff !important;
-}
-body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
-body.dark-mode .premium-card-title { color: #f1f5f9; }
-body.dark-mode .premium-card-subtitle { color: #94a3b8; }
-.filter-card > .card-accent {
+.filter-card > .ui-card-accent {
     height: 5px;
     border-radius: 1.2rem 1.2rem 0 0;
 }
-.filter-card .form-control:focus,
-.filter-card .form-select:focus {
-    border-color: #4f46e5 !important;
-    box-shadow: 0 0 0 3px rgba(79,70,229,.15) !important;
+.filter-card .ui-input:focus {
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.15) !important;
 }
-.filter-card .btn-primary {
-    background: linear-gradient(135deg, #4f46e5, #3b82f6) !important;
+.filter-card .ui-btn-solid {
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
     border: none !important;
 }
-.filter-card .btn-primary:hover {
-    background: linear-gradient(135deg, #4338ca, #2563eb) !important;
-    box-shadow: 0 6px 20px rgba(79,70,229,.4) !important;
+.filter-card .ui-btn-solid:hover {
+    background: linear-gradient(135deg, #6d28d9, #7c3aed) !important;
+    box-shadow: 0 6px 20px rgba(139,92,246,.4) !important;
 }
 @media (max-width: 575.98px) {
-    .filter-card .form-control,
-    .filter-card .form-select {
+    .filter-card .ui-input {
         min-width: 100%;
     }
 }
-.premium-stat-card { background: rgba(255,255,255,.85); border-radius: 1.2rem; box-shadow: 0 4px 24px rgba(0,0,0,.04); transition: transform .2s, box-shadow .2s; position: relative; overflow: hidden; }
-.premium-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.08); }
-.premium-stat-card .stat-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .5px; color: #64748b; font-weight: 700; margin-bottom: 4px; }
-.premium-stat-card .stat-value { font-size: 1.5rem; font-weight: 800; }
-body.dark-mode .premium-stat-card { background: rgba(15,23,42,.7); border: 1px solid rgba(255,255,255,.06); }
-body.dark-mode .premium-stat-card .stat-label { color: #94a3b8; }
-body.dark-mode .premium-stat-card .stat-value { color: #f1f5f9; }
 #utilidadesTable thead th {
     border-bottom: 2px solid #e2e8f0;
     font-size: .7rem;
@@ -68,7 +41,7 @@ body.dark-mode .premium-stat-card .stat-value { color: #f1f5f9; }
     font-size: .88rem;
 }
 #utilidadesTable tbody tr { transition: background .15s; }
-#utilidadesTable tbody tr:hover { background: rgba(59,130,246,.04); }
+#utilidadesTable tbody tr:hover { background: rgba(139,92,246,.04); }
 #utilidadesTable tfoot td {
     padding: 14px 12px;
     border-top: 2px solid #e2e8f0;
@@ -83,7 +56,7 @@ body.dark-mode #utilidadesTable tbody td {
     border-bottom-color: #1e293b;
     color: #cbd5e1;
 }
-body.dark-mode #utilidadesTable tbody tr:hover { background: rgba(59,130,246,.08); }
+body.dark-mode #utilidadesTable tbody tr:hover { background: rgba(139,92,246,.08); }
 body.dark-mode #utilidadesTable tfoot td {
     background: rgba(15,23,42,.6);
     border-top-color: #334155;
@@ -93,54 +66,56 @@ body.dark-mode #utilidadesTable tfoot td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+<div class="container-fluid px-4 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
+    <div class="ui-header d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative w-100" style="z-index:2;">
-            <div>
-                <h2 class="fw-bold mb-1"><i class="bi bi-bar-chart-line text-white me-2"></i>Utilidades / Rentabilidad</h2>
-                <p class="mb-0" style="color:rgba(255,255,255,.8);">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $detalles->count() }} línea(s)</p>
-            </div>
-            <div class="d-flex gap-2 align-items-center">
-                <a href="{{ route('reportes.utilidades.csv', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn btn-success rounded-pill"><i class="bi bi-download me-1"></i> CSV</a>
-                <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
-                <div class="premium-avatar-circle ms-2">
+        <div class="ui-header-body w-100">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-bar-chart-line"></i>
                 </div>
+                <div>
+                    <h2 class="ui-header-title">Utilidades / Rentabilidad</h2>
+                    <div class="ui-header-meta">Período: {{ $desde }} al {{ $hasta }} &middot; {{ $detalles->count() }} línea(s)</div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <a href="{{ route('reportes.utilidades.csv', ['desde' => $desde, 'hasta' => $hasta]) }}" class="ui-btn ui-btn-solid rounded-pill"><i class="bi bi-download me-1"></i> CSV</a>
+                <a href="{{ route('reportes.index') }}" class="ui-btn ui-btn-ghost rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
             </div>
         </div>
     </div>
 
-    <div class="premium-card filter-card mb-4">
-        <div class="card-accent blue"></div>
+    <div class="ui-card filter-card mb-4">
+        <div class="ui-card-accent"></div>
         <div class="px-4 py-3">
             <form method="GET" class="row gx-3 gy-3 align-items-end">
                 <div class="col-auto">
-                    <label class="form-label small fw-semibold mb-1"><i class="bi bi-calendar3 text-primary me-1"></i>Desde</label>
-                    <input type="date" name="desde" class="form-control" value="{{ $desde }}">
+                    <label class="ui-label small fw-semibold mb-1"><i class="bi bi-calendar3 text-primary me-1"></i>Desde</label>
+                    <input type="date" name="desde" class="ui-input" value="{{ $desde }}">
                 </div>
                 <div class="col-auto">
-                    <label class="form-label small fw-semibold mb-1"><i class="bi bi-calendar3 text-primary me-1"></i>Hasta</label>
-                    <input type="date" name="hasta" class="form-control" value="{{ $hasta }}">
+                    <label class="ui-label small fw-semibold mb-1"><i class="bi bi-calendar3 text-primary me-1"></i>Hasta</label>
+                    <input type="date" name="hasta" class="ui-input" value="{{ $hasta }}">
                 </div>
                 <div class="col-auto">
-                    <label class="form-label small fw-semibold mb-1 d-sm-block d-none">&nbsp;</label>
-                    <button class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <label class="ui-label small fw-semibold mb-1 d-sm-block d-none">&nbsp;</label>
+                    <button class="ui-btn ui-btn-solid rounded-pill px-4 shadow-sm"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                 </div>
             </form>
         </div>
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-md-3"><div class="premium-stat-card text-center p-3"><div class="stat-label">Ventas</div><div class="stat-value">RD$ {{ number_format($totalVentas, 2) }}</div></div></div>
-        <div class="col-md-3"><div class="premium-stat-card text-center p-3"><div class="stat-label">Costo</div><div class="stat-value text-warning">RD$ {{ number_format($totalCosto, 2) }}</div></div></div>
-        <div class="col-md-3"><div class="premium-stat-card text-center p-3"><div class="stat-label">Utilidad Bruta</div><div class="stat-value {{ $utilidadBruta >= 0 ? 'text-success' : 'text-danger' }}">RD$ {{ number_format($utilidadBruta, 2) }}</div></div></div>
-        <div class="col-md-3"><div class="premium-stat-card text-center p-3"><div class="stat-label">Margen</div><div class="stat-value text-info">{{ number_format($margen, 1) }}%</div></div></div>
+        <div class="col-md-3"><div class="ui-stat text-center p-3"><div class="ui-stat-label">Ventas</div><div class="ui-stat-value">RD$ {{ number_format($totalVentas, 2) }}</div></div></div>
+        <div class="col-md-3"><div class="ui-stat text-center p-3"><div class="ui-stat-label">Costo</div><div class="ui-stat-value text-warning">RD$ {{ number_format($totalCosto, 2) }}</div></div></div>
+        <div class="col-md-3"><div class="ui-stat text-center p-3"><div class="ui-stat-label">Utilidad Bruta</div><div class="ui-stat-value {{ $utilidadBruta >= 0 ? 'text-success' : 'text-danger' }}">RD$ {{ number_format($utilidadBruta, 2) }}</div></div></div>
+        <div class="col-md-3"><div class="ui-stat text-center p-3"><div class="ui-stat-label">Margen</div><div class="ui-stat-value text-info">{{ number_format($margen, 1) }}%</div></div></div>
     </div>
 
-    <div class="premium-card overflow-hidden">
+    <div class="ui-card overflow-hidden">
         <div class="table-responsive px-3 py-3">
             <table id="utilidadesTable" class="table align-middle mb-0">
                 <thead>

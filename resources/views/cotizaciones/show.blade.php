@@ -5,50 +5,49 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.premium-header {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4);
-}
+body.dark-mode .modal-content { background: #1e293b; color: #e2e8f0; }
+body.dark-mode .modal-header { border-color: #334155; }
+body.dark-mode .modal-footer { border-color: #334155; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid premium-page">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
     <!-- Header -->
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-start">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-receipt-cutoff"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">{{ $cotizacion->numero }}</h2>
-                    <p class="mb-0 opacity-75">
+                    <h2 class="ui-header-title">{{ $cotizacion->numero }}</h2>
+                    <div class="ui-header-meta">
                         Creada {{ $cotizacion->created_at->diffForHumans() }}
                         @if($cotizacion->user)
                             por <strong>{{ $cotizacion->user->name }}</strong>
                         @endif
-                    </p>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('cotizaciones.index') }}" class="btn btn-light rounded-pill">
+            <div class="ui-header-actions">
+                <a href="{{ route('cotizaciones.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i> Volver
                 </a>
-                <a href="{{ route('cotizaciones.pdf', $cotizacion) }}" class="btn btn-light rounded-pill" target="_blank">
+                <a href="{{ route('cotizaciones.pdf', $cotizacion) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" target="_blank">
                     <i class="bi bi-file-pdf me-1"></i> PDF
                 </a>
                 @if($cotizacion->puede_convertirse && auth()->user()->can('cotizaciones.convertir'))
-                    <button type="button" class="btn btn-success rounded-pill" onclick="confirmarConvertir()">
+                    <button type="button" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill" onclick="confirmarConvertir()">
                         <i class="bi bi-arrow-right-circle me-1"></i> Convertir a Venta
                     </button>
                 @endif
                 @can('cotizaciones.edit')
                     @if(!in_array($cotizacion->estado, ['convertida', 'anulada']))
-                    <a href="{{ route('cotizaciones.edit', $cotizacion) }}" class="btn btn-warning rounded-pill">
+                    <a href="{{ route('cotizaciones.edit', $cotizacion) }}" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill" style="--accent:#f59e0b;--accent-hover:#d97706;">
                         <i class="bi bi-pencil me-1"></i> Editar
                     </a>
                     @endif
@@ -61,9 +60,9 @@
         <!-- Columna principal -->
         <div class="col-lg-8">
             <!-- Estado y datos -->
-            <div class="premium-card mb-3">
-                <div class="card-accent purple"></div>
-                <div class="card-body">
+            <div class="ui-card mb-3" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <small class="text-muted d-block">Estado</small>
@@ -108,15 +107,15 @@
             </div>
 
             <!-- Items -->
-            <div class="premium-card mb-3">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-box-seam icon-purple"></i>
+            <div class="ui-card mb-3" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-box-seam"></i>
                     Items de la Cotización
                 </div>
                 <div class="table-responsive">
-                    <table class="table align-middle mb-0">
-                        <thead class="table-light">
+                    <table class="ui-table align-middle mb-0">
+                        <thead>
                             <tr>
                                 <th>Producto</th>
                                 <th class="text-center">Cantidad</th>
@@ -150,9 +149,9 @@
             <div class="row g-3">
                 @if($cotizacion->notas)
                 <div class="col-md-6">
-                    <div class="premium-card h-100">
-                        <div class="card-accent purple"></div>
-                        <div class="card-body">
+                    <div class="ui-card h-100" style="--delay:.2s">
+                        <div class="ui-card-accent"></div>
+                        <div class="ui-card-body">
                             <h6 class="fw-bold">
                                 <i class="bi bi-sticky me-1"></i> Notas
                             </h6>
@@ -163,9 +162,9 @@
                 @endif
                 @if($cotizacion->condiciones)
                 <div class="col-md-6">
-                    <div class="premium-card h-100">
-                        <div class="card-accent purple"></div>
-                        <div class="card-body">
+                    <div class="ui-card h-100" style="--delay:.2s">
+                        <div class="ui-card-accent"></div>
+                        <div class="ui-card-body">
                             <h6 class="fw-bold">
                                 <i class="bi bi-file-text me-1"></i> Términos y Condiciones
                             </h6>
@@ -181,19 +180,19 @@
         <!-- Columna derecha: resumen y acciones -->
         <div class="col-lg-4">
             @if($cotizacion->cliente && $cotizacion->cliente->email && !in_array($cotizacion->estado, ['convertida', 'anulada']))
-            <div class="premium-card mb-3">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-envelope icon-purple"></i>
+            <div class="ui-card mb-3" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-envelope"></i>
                     Enviar por Email
                 </div>
-                <div class="card-body">
+                <div class="ui-card-body">
                     <p class="text-muted small mb-3">
                         <i class="bi bi-info-circle me-1"></i>
                         Enviar esta cotización al cliente con un PDF adjunto
                     </p>
                     <button type="button" 
-                            class="btn btn-primary w-100 mb-2" 
+                            class="ui-btn ui-btn-solid w-100 mb-2" 
                             data-bs-toggle="modal" 
                             data-bs-target="#modalEnviarEmail"
                             aria-label="Abrir formulario para enviar cotización por email">
@@ -223,13 +222,13 @@
             </div>
             @endif
 
-            <div class="premium-card mb-3">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-calculator icon-purple"></i>
+            <div class="ui-card mb-3" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-calculator"></i>
                     Totales
                 </div>
-                <div class="card-body">
+                <div class="ui-card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Subtotal:</span>
                         <span class="fw-semibold">RD${{ number_format($cotizacion->subtotal, 2) }}</span>
@@ -254,13 +253,13 @@
 
             <!-- Cambiar estado -->
             @if(!in_array($cotizacion->estado, ['convertida', 'anulada']))
-            <div class="premium-card">
-                <div class="card-accent purple"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-arrow-left-right icon-purple"></i>
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-arrow-left-right"></i>
                     Cambiar Estado
                 </div>
-                <div class="card-body">
+                <div class="ui-card-body">
                     <form method="POST" action="{{ route('cotizaciones.cambiarEstado', $cotizacion) }}">
                         @csrf
                         <div class="d-grid gap-2">

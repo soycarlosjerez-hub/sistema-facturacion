@@ -39,31 +39,31 @@ body.dark-mode .devoluciones-show-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#ef4444,#f97316,#ef4444);box-shadow:0 8px 32px rgba(239,68,68,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-arrow-return-left"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Devolución {{ $devolucion->codigo }}</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Devolución {{ $devolucion->codigo }}</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-arrow-return-left me-1"></i>
-                        Detalle completo de la devolución
-                    </small>
+                        <span>Detalle completo de la devolución</span>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('devoluciones.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+            <div class="ui-header-actions">
+                <a href="{{ route('devoluciones.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i> Volver
                 </a>
                 @can('devoluciones.create')
-                <a href="{{ route('devoluciones.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('devoluciones.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva
                 </a>
                 @endcan
@@ -80,50 +80,50 @@ body.dark-mode .devoluciones-show-table tbody td {
 
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="premium-stat-card h-100" style="animation-delay:.1s;">
-                <div class="card-accent red"></div>
-                <div class="card-body p-4">
-                    <div class="stat-label mb-1">Código</div>
-                    <div class="stat-value text-dark">{{ $devolucion->codigo }}</div>
+            <div class="ui-stat h-100" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <div class="ui-stat-label mb-1">Código</div>
+                    <div class="ui-stat-value text-dark">{{ $devolucion->codigo }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card h-100" style="animation-delay:.15s;">
-                <div class="card-accent red"></div>
-                <div class="card-body p-4">
-                    <div class="stat-label mb-1">Cliente</div>
-                    <div class="stat-value text-dark" style="font-size:1.1rem;">{{ $devolucion->cliente?->nombre ?? 'N/A' }}</div>
-                    <small class="text-muted">{{ $devolucion->cliente?->rnc_cedula ?? '' }}</small>
+            <div class="ui-stat h-100" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <div class="ui-stat-label mb-1">Cliente</div>
+                    <div class="ui-stat-value" style="font-size:1.1rem;color:#1e293b;">{{ $devolucion->cliente?->nombre ?? 'N/A' }}</div>
+                    <div class="ui-stat-sub">{{ $devolucion->cliente?->rnc_cedula ?? '' }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card h-100" style="animation-delay:.2s;">
-                <div class="card-accent red"></div>
-                <div class="card-body p-4">
-                    <div class="stat-label mb-1">Fecha / Tipo</div>
-                    <div class="stat-value text-dark" style="font-size:1.1rem;">{{ $devolucion->fecha?->format('d/m/Y') }}</div>
-                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill mt-1">{{ ucfirst($devolucion->tipo) }}</span>
+            <div class="ui-stat h-100" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <div class="ui-stat-label mb-1">Fecha / Tipo</div>
+                    <div class="ui-stat-value" style="font-size:1.1rem;color:#1e293b;">{{ $devolucion->fecha?->format('d/m/Y') }}</div>
+                    <span class="ui-badge ui-badge-info rounded-pill mt-1">{{ ucfirst($devolucion->tipo) }}</span>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card h-100" style="animation-delay:.25s;">
-                <div class="card-accent red"></div>
-                <div class="card-body p-4">
-                    <div class="stat-label mb-1">Total Devuelto</div>
-                    <div class="stat-value text-primary">RD$ {{ number_format($devolucion->total, 2) }}</div>
-                    <small class="text-muted">Incluye ITBIS</small>
+            <div class="ui-stat h-100" style="--delay:.25s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <div class="ui-stat-label mb-1">Total Devuelto</div>
+                    <div class="ui-stat-value">RD$ {{ number_format($devolucion->total, 2) }}</div>
+                    <div class="ui-stat-sub">Incluye ITBIS</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.3s;">
-        <div class="card-accent red"></div>
-        <div class="premium-card-title">
-            <i class="bi bi-box-seam icon-red"></i>
+    <div class="ui-card mb-4" style="--delay:.3s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
+            <i class="bi bi-box-seam"></i>
             Productos Devueltos
             @php
                 $estadoInfo = match($devolucion->estado) {
@@ -134,12 +134,12 @@ body.dark-mode .devoluciones-show-table tbody td {
                 };
             @endphp
         </div>
-        <div class="premium-card-subtitle">
-            <span class="badge bg-{{ $estadoInfo[0] }} bg-opacity-10 text-{{ $estadoInfo[0] }} rounded-pill px-3">
+        <div class="ui-card-subtitle">
+            <span class="ui-badge ui-badge-{{ $estadoInfo[0] }} rounded-pill px-3">
                 <i class="bi bi-{{ $estadoInfo[1] }} me-1"></i>{{ $estadoInfo[2] }}
             </span>
         </div>
-        <div class="card-body p-0">
+        <div class="ui-card-body p-0">
             <div class="table-responsive">
                 <table class="table devoluciones-show-table">
                     <thead>
@@ -181,13 +181,13 @@ body.dark-mode .devoluciones-show-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.35s;">
-        <div class="card-accent red"></div>
-        <div class="premium-card-title">
-            <i class="bi bi-chat-left-text icon-red"></i>
+    <div class="ui-card mb-4" style="--delay:.35s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
+            <i class="bi bi-chat-left-text"></i>
             Motivo
         </div>
-        <div class="card-body p-4">
+        <div class="ui-card-body">
             <p class="mb-0 text-muted">{{ $devolucion->motivo }}</p>
             @if($devolucion->venta)
             <hr>
@@ -201,18 +201,18 @@ body.dark-mode .devoluciones-show-table tbody td {
     </div>
 
     @if($devolucion->notaCredito)
-    <div class="premium-card mb-4" style="animation-delay:.4s;">
-        <div class="card-accent green"></div>
-        <div class="premium-card-title">
-            <i class="bi bi-check-circle-fill icon-green"></i>
+    <div class="ui-card mb-4" style="--delay:.4s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
+            <i class="bi bi-check-circle-fill"></i>
             Nota de Crédito Electrónica Generada
         </div>
-        <div class="card-body p-4">
+        <div class="ui-card-body">
             <div class="d-flex align-items-center">
                 <div>
                     <a href="{{ route('ecf.show', $devolucion->notaCredito) }}" class="text-decoration-none">
                         {{ $devolucion->notaCredito->encf }}
-                        <span class="badge bg-{{ $devolucion->notaCredito->estado_info['color'] }} ms-2">{{ $devolucion->notaCredito->estado_info['label'] }}</span>
+                        <span class="ui-badge ui-badge-{{ $devolucion->notaCredito->estado_info['color'] }} ms-2">{{ $devolucion->notaCredito->estado_info['label'] }}</span>
                     </a>
                 </div>
             </div>
@@ -224,7 +224,7 @@ body.dark-mode .devoluciones-show-table tbody td {
         @if($devolucion->estado === 'borrador')
             <form action="{{ route('devoluciones.confirmar', $devolucion) }}" method="POST" class="d-inline">
                 @csrf
-                <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="confirmAction({title:'Confirmar Devolución', text:'¿Confirmar devolución? El stock será reintegrado al inventario.', icon:'info', color:'#3b82f6', confirmText:'Confirmar', onSubmit:function(){ this.closest('form').submit(); }})">
+                <button class="ui-btn ui-btn-solid rounded-pill px-4" onclick="confirmAction({title:'Confirmar Devolución', text:'¿Confirmar devolución? El stock será reintegrado al inventario.', icon:'info', color:'#3b82f6', confirmText:'Confirmar', onSubmit:function(){ this.closest('form').submit(); }})">
                     <i class="bi bi-check-lg me-2"></i>Confirmar y Reintegrar Stock
                 </button>
             </form>
@@ -232,7 +232,7 @@ body.dark-mode .devoluciones-show-table tbody td {
         @if($devolucion->estado === 'completada' && $devolucion->tiene_ecf && !$devolucion->nota_credito_id)
             <form action="{{ route('devoluciones.generar-nc', $devolucion) }}" method="POST" class="d-inline">
                 @csrf
-                <button class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+                <button class="ui-btn ui-btn-ghost rounded-pill px-4">
                     <i class="bi bi-file-earmark-minus me-2"></i>Generar Nota de Crédito E34
                 </button>
             </form>

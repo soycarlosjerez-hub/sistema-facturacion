@@ -62,15 +62,15 @@
 @include('usuarios._rol_config')
 @include('usuarios._styles')
 
-<div class="premium-page">
+<div class="ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb">
 
-    <div class="premium-header premium-header-amber mb-4">
+    <div class="premium-header-amber mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 position-relative" style="z-index:2;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position:relative; z-index:2;">
             <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-people"></i>
                 </div>
                 <div>
@@ -81,7 +81,7 @@
                     <small class="text-white opacity-75">Agrega un nuevo miembro al sistema y asigna su nivel de acceso</small>
                 </div>
             </div>
-            <a href="{{ route('usuarios.index') }}" class="btn rounded-pill px-4 fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);position:relative;z-index:2;">
+            <a href="{{ route('usuarios.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                 <i class="bi bi-arrow-left me-1"></i>Volver
             </a>
         </div>
@@ -107,8 +107,8 @@
         @csrf
         <div class="row g-4">
             <div class="col-lg-7">
-                <div class="premium-card h-100">
-                    <div class="card-accent amber"></div>
+                <div class="ui-card h-100" style="--delay:.1s">
+                    <div class="ui-card-accent"></div>
                     <div class="premium-card-title"><i class="bi bi-person-vcard icon-amber"></i> Información del Usuario</div>
                     <div class="card-body p-4">
                         @include('usuarios._form_fields')
@@ -118,8 +118,8 @@
             </div>
 
             <div class="col-lg-5">
-                <div class="premium-card h-100">
-                    <div class="card-accent amber"></div>
+                <div class="ui-card h-100" style="--delay:.2s">
+                    <div class="ui-card-accent"></div>
                     <div class="premium-card-title"><i class="bi bi-shield-fill-check icon-amber"></i> Asignar Rol</div>
                     <div class="premium-card-subtitle">Selecciona el nivel de acceso del usuario</div>
                     <div class="card-body p-4">
@@ -150,8 +150,8 @@
                     </div>
                 </div>
 
-                <div class="premium-card mt-3" id="permPreviewCard">
-                    <div class="card-accent amber"></div>
+                <div class="ui-card mt-3" id="permPreviewCard" style="--delay:.3s">
+                    <div class="ui-card-accent"></div>
                     <div class="premium-card-title"><i class="bi bi-key icon-amber"></i> Vista previa de permisos</div>
                     <div class="premium-card-subtitle">Estos son los accesos que tendrá el usuario</div>
                     <div class="card-body p-4">

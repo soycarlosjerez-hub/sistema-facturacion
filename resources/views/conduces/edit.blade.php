@@ -5,7 +5,7 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-body.dark-mode .sticky-save-bar {
+body.dark-mode .ui-sticky-bar {
     background: #0f172a;
     border-top-color: #fbbf24;
 }
@@ -13,27 +13,29 @@ body.dark-mode .sticky-save-bar {
 @endpush
 
 @section('content')
-<div class="container-fluid premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-truck"></i>
                 </div>
                 <div>
-                    <h4 class="mb-1 fw-bold">Editar Conduce</h4>
-                    <p class="mb-0 opacity-75">
+                    <h4 class="ui-header-title">Editar Conduce</h4>
+                    <div class="ui-header-meta">
                         {{ $conduce->numero }} · Estado:
                         <span class="badge bg-{{ $conduce->estado_color }}">{{ $conduce->estado_label }}</span>
-                    </p>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('conduces.show', $conduce) }}" class="btn btn-outline-secondary rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('conduces.show', $conduce) }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -43,14 +45,14 @@ body.dark-mode .sticky-save-bar {
         @include('conduces._form', ['conduce' => $conduce, 'clientes' => $clientes, 'productos' => $productos])
     </form>
 
-    <div class="sticky-save-bar">
+    <div class="ui-sticky-bar">
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted small d-none d-md-inline">
                 <i class="bi bi-info-circle me-1"></i> Editando conduce: {{ $conduce->numero }}
             </span>
             <div class="d-flex gap-2 ms-auto">
-                <a href="{{ route('conduces.show', $conduce) }}" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
-                <button type="submit" form="instanceForm" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none;">
+                <a href="{{ route('conduces.show', $conduce) }}" class="ui-btn ui-btn-ghost rounded-pill px-4">Cancelar</a>
+                <button type="submit" form="instanceForm" class="ui-btn ui-btn-solid rounded-pill px-5 fw-bold shadow-sm">
                     <i class="bi bi-save me-2"></i>Guardar Cambios
                 </button>
             </div>

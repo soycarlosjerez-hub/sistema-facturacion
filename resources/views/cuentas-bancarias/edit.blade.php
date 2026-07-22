@@ -7,28 +7,30 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#059669,#10b981,#34d399,#059669);box-shadow:0 8px 32px rgba(5,150,105,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-pencil-square"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Editar Cuenta Bancaria</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Editar Cuenta Bancaria</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-bank me-1"></i>
                         {{ $cuentasBancarium->nombre }}
-                    </small>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('cuentas-bancarias.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('cuentas-bancarias.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -36,28 +38,28 @@
         @csrf
         @method('PUT')
 
-        <div class="premium-card" style="animation-delay:.1s;">
-            <div class="card-accent green"></div>
-            <div class="premium-card-title">
-                <i class="bi bi-info-circle icon-blue"></i>
+        <div class="ui-card" style="--delay:.1s">
+            <div class="ui-card-accent"></div>
+            <div class="ui-card-title">
+                <i class="bi bi-info-circle"></i>
                 Datos de la Cuenta
             </div>
-            <div class="premium-card-subtitle">Actualiza la información de la cuenta bancaria</div>
-            <div class="card-body">
+            <div class="ui-card-subtitle">Actualiza la información de la cuenta bancaria</div>
+            <div class="ui-card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Nombre de la cuenta <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre', $cuentasBancarium->nombre) }}" required placeholder="Ej. Cuenta Corriente BHD">
+                        <label class="ui-label">Nombre de la cuenta <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" class="ui-input @error('nombre') is-invalid @enderror" value="{{ old('nombre', $cuentasBancarium->nombre) }}" required placeholder="Ej. Cuenta Corriente BHD">
                         @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Banco</label>
-                        <input type="text" name="banco" class="form-control @error('banco') is-invalid @enderror" value="{{ old('banco', $cuentasBancarium->banco) }}" placeholder="Ej. Banco Popular, BHD, Scotiabank">
+                        <label class="ui-label">Banco</label>
+                        <input type="text" name="banco" class="ui-input @error('banco') is-invalid @enderror" value="{{ old('banco', $cuentasBancarium->banco) }}" placeholder="Ej. Banco Popular, BHD, Scotiabank">
                         @error('banco') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Tipo de Cuenta</label>
-                        <select name="tipo_cuenta" class="form-select @error('tipo_cuenta') is-invalid @enderror">
+                        <label class="ui-label">Tipo de Cuenta</label>
+                        <select name="tipo_cuenta" class="ui-select @error('tipo_cuenta') is-invalid @enderror">
                             <option value="">Seleccionar</option>
                             <option value="ahorros" {{ old('tipo_cuenta', $cuentasBancarium->tipo_cuenta) === 'ahorros' ? 'selected' : '' }}>Ahorros</option>
                             <option value="corriente" {{ old('tipo_cuenta', $cuentasBancarium->tipo_cuenta) === 'corriente' ? 'selected' : '' }}>Corriente</option>
@@ -65,13 +67,13 @@
                         @error('tipo_cuenta') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Número de Cuenta</label>
-                        <input type="text" name="numero_cuenta" class="form-control @error('numero_cuenta') is-invalid @enderror" value="{{ old('numero_cuenta', $cuentasBancarium->numero_cuenta) }}" placeholder="000-000000-0">
+                        <label class="ui-label">Número de Cuenta</label>
+                        <input type="text" name="numero_cuenta" class="ui-input @error('numero_cuenta') is-invalid @enderror" value="{{ old('numero_cuenta', $cuentasBancarium->numero_cuenta) }}" placeholder="000-000000-0">
                         @error('numero_cuenta') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Moneda</label>
-                        <select name="moneda" class="form-select @error('moneda') is-invalid @enderror">
+                        <label class="ui-label">Moneda</label>
+                        <select name="moneda" class="ui-select @error('moneda') is-invalid @enderror">
                             <option value="RD" {{ old('moneda', $cuentasBancarium->moneda) === 'RD' ? 'selected' : '' }}>RD (Peso Dominicano)</option>
                             <option value="USD" {{ old('moneda', $cuentasBancarium->moneda) === 'USD' ? 'selected' : '' }}>USD (Dólar)</option>
                             <option value="EUR" {{ old('moneda', $cuentasBancarium->moneda) === 'EUR' ? 'selected' : '' }}>EUR (Euro)</option>
@@ -79,20 +81,20 @@
                         @error('moneda') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Titular de la Cuenta</label>
-                        <input type="text" name="titular" class="form-control @error('titular') is-invalid @enderror" value="{{ old('titular', $cuentasBancarium->titular) }}" placeholder="Nombre del titular">
+                        <label class="ui-label">Titular de la Cuenta</label>
+                        <input type="text" name="titular" class="ui-input @error('titular') is-invalid @enderror" value="{{ old('titular', $cuentasBancarium->titular) }}" placeholder="Nombre del titular">
                         @error('titular') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Cédula / RUC del Titular</label>
-                        <input type="text" name="cedula_ruc" class="form-control @error('cedula_ruc') is-invalid @enderror" value="{{ old('cedula_ruc', $cuentasBancarium->cedula_ruc) }}" placeholder="000-0000000-0">
+                        <label class="ui-label">Cédula / RUC del Titular</label>
+                        <input type="text" name="cedula_ruc" class="ui-input @error('cedula_ruc') is-invalid @enderror" value="{{ old('cedula_ruc', $cuentasBancarium->cedula_ruc) }}" placeholder="000-0000000-0">
                         @error('cedula_ruc') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Saldo Inicial</label>
-                        <div class="input-group">
-                            <span class="input-group-text">$</span>
-                            <input type="number" step="0.01" min="0" name="saldo_inicial" class="form-control @error('saldo_inicial') is-invalid @enderror" value="{{ old('saldo_inicial', $cuentasBancarium->saldo_inicial) }}">
+                        <label class="ui-label">Saldo Inicial</label>
+                        <div class="ui-input-group">
+                            <span class="ui-input-group-text">$</span>
+                            <input type="number" step="0.01" min="0" name="saldo_inicial" class="ui-input @error('saldo_inicial') is-invalid @enderror" value="{{ old('saldo_inicial', $cuentasBancarium->saldo_inicial) }}">
                             @error('saldo_inicial') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
@@ -110,10 +112,10 @@
     <div style="height: 80px;"></div>
 </div>
 
-<div class="premium-sticky-bar">
+<div class="ui-sticky-bar">
     <div class="d-flex justify-content-end align-items-center">
-        <a href="{{ route('cuentas-bancarias.index') }}" class="btn-cancel me-2">Cancelar</a>
-        <button type="submit" form="cuentaForm" class="btn-save">
+        <a href="{{ route('cuentas-bancarias.index') }}" class="ui-btn ui-btn-ghost me-2">Cancelar</a>
+        <button type="submit" form="cuentaForm" class="ui-btn ui-btn-solid">
             <i class="bi bi-check-lg me-2"></i>Guardar Cambios
         </button>
     </div>

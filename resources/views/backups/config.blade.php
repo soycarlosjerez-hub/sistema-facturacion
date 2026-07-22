@@ -7,91 +7,92 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-database"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Configuración de Backups</h4>
-                    <small class="text-white opacity-75">Información del sistema de respaldo</small>
+                    <h4 class="ui-header-title">Configuración de Backups</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-gear me-1"></i>
+                        <span>Información del sistema de respaldo</span>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('backups.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('backups.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-6">
-            <div class="premium-card h-100" style="animation-delay:.1s;">
-                <div class="card-accent red"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-database icon-red"></i>
-                    Información del Sistema
-                </div>
-                <div class="card-body pt-0">
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Directorio de backups</div>
-                        <div class="premium-detail-value"><code class="small">{{ $backupDir }}</code></div>
-                    </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Ruta mysqldump</div>
-                        <div class="premium-detail-value"><code class="small">{{ $mysqldumpPath }}</code></div>
-                    </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Base de datos</div>
-                        <div class="premium-detail-value"><code>{{ config('database.connections.mysql.database') }}</code></div>
-                    </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Total backups</div>
-                        <div class="premium-detail-value fw-semibold">{{ $backupCount }}</div>
-                    </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Espacio total usado</div>
-                        <div class="premium-detail-value fw-semibold">
-                            @php
-                                $bytes = $totalSize;
-                                $units = ['B','KB','MB','GB'];
-                                $i = 0;
-                                while($bytes>=1024 && $i<3) { $bytes/=1024; $i++; }
-                            @endphp
-                            {{ round($bytes, 2) }} {{ $units[$i] }}
+            <div class="ui-card h-100" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-database me-2" style="color:#f59e0b;"></i> Información del Sistema</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Directorio de backups</small>
+                            <span><code class="small">{{ $backupDir }}</code></span>
                         </div>
-                    </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Último backup</div>
-                        <div class="premium-detail-value">
-                            @if($lastBackup)
-                                <span>{{ $lastBackup->created_at->format('d/m/Y h:i A') }}</span>
-                                <br><small class="text-muted">{{ $lastBackup->filename }}</small>
-                            @else
-                                <span class="text-muted">Nunca</span>
-                            @endif
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Ruta mysqldump</small>
+                            <span><code class="small">{{ $mysqldumpPath }}</code></span>
                         </div>
-                    </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Retención automática</div>
-                        <div class="premium-detail-value">30 días</div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Base de datos</small>
+                            <span><code>{{ config('database.connections.mysql.database') }}</code></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Total backups</small>
+                            <span class="fw-semibold">{{ $backupCount }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Espacio total usado</small>
+                            <span class="fw-semibold">
+                                @php
+                                    $bytes = $totalSize;
+                                    $units = ['B','KB','MB','GB'];
+                                    $i = 0;
+                                    while($bytes>=1024 && $i<3) { $bytes/=1024; $i++; }
+                                @endphp
+                                {{ round($bytes, 2) }} {{ $units[$i] }}
+                            </span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Último backup</small>
+                            <span>
+                                @if($lastBackup)
+                                    {{ $lastBackup->created_at->format('d/m/Y h:i A') }}
+                                    <br><small class="text-muted">{{ $lastBackup->filename }}</small>
+                                @else
+                                    <span class="text-muted">Nunca</span>
+                                @endif
+                            </span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Retención automática</small>
+                            <span>30 días</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-6">
-            <div class="premium-card mb-4" style="animation-delay:.15s;">
-                <div class="card-accent red"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-clock icon-red"></i>
-                    Backup Automático (Cron)
-                </div>
-                <div class="card-body pt-0">
+            <div class="ui-card mb-4" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-clock me-2" style="color:#f59e0b;"></i> Backup Automático (Cron)</h5>
                     <p class="text-muted small">Para activar backups automáticos diarios, agrega esta tarea al cron del servidor:</p>
                     <div class="bg-dark text-white rounded-3 p-3 mb-3">
                         <code class="small" style="color:#a5f3fc;">
@@ -105,13 +106,10 @@
                 </div>
             </div>
 
-            <div class="premium-card" style="animation-delay:.2s;">
-                <div class="card-accent red"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-question-circle icon-red"></i>
-                    Comandos Artisan
-                </div>
-                <div class="card-body pt-0">
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-question-circle me-2" style="color:#f59e0b;"></i> Comandos Artisan</h5>
                     <div class="mb-3">
                         <label class="small fw-semibold text-muted d-block mb-1">Backup manual:</label>
                         <code class="small">php artisan backup:run --type=manual</code>

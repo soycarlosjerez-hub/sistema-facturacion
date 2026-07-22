@@ -5,34 +5,39 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    body.dark-mode .premium-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+    body.dark-mode .ui-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-file-earmark-text"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold mb-1">Plantillas de Impresión</h3>
-                    <p class="mb-0 opacity-75">Personaliza el encabezado, pie y opciones de cada tipo de documento</p>
+                    <h4 class="ui-header-title">Plantillas de Impresión</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-file-earmark-text me-1"></i>
+                        <span>Personaliza el encabezado, pie y opciones de cada tipo de documento</span>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('impresoras.index') }}" class="btn btn-light rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i> Impresoras
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('impresoras.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Impresoras
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-3 mb-3">
         <div class="col-md-3">
             <form method="GET" class="d-inline">
-                <select name="modulo" class="form-select border-0 bg-light rounded-pill" onchange="this.form.submit()">
+                <select name="modulo" class="ui-select ui-select-sm rounded-pill" onchange="this.form.submit()">
                     <option value="">Todos los módulos</option>
                     @foreach($modulos as $k => $v)
                         <option value="{{ $k }}" {{ request('modulo')==$k ? 'selected' : '' }}>{{ $v }}</option>
@@ -45,18 +50,20 @@
     <div class="row g-3">
         @forelse($plantillas as $p)
         <div class="col-md-6 col-lg-4">
-            <div class="premium-card h-100">
-                <div class="card-accent blue"></div>
-                <div class="card-body p-4">
+            <div class="ui-card h-100" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
                             <h6 class="fw-bold mb-1">{{ $p->nombre }}</h6>
-                            <span class="badge bg-light text-dark rounded-pill me-1">{{ $modulos[$p->modulo] ?? $p->modulo }}</span>
-                            <span class="badge bg-info-subtle text-info rounded-pill">{{ strtoupper($p->tipo_formato) }}</span>
+                            <span class="ui-badge ui-badge-neutral rounded-pill me-1">{{ $modulos[$p->modulo] ?? $p->modulo }}</span>
+                            <span class="ui-badge ui-badge-info rounded-pill">{{ strtoupper($p->tipo_formato) }}</span>
                         </div>
-                        <span class="badge rounded-pill bg-{{ $p->activo ? 'success' : 'secondary' }}-subtle text-{{ $p->activo ? 'success' : 'secondary' }}">
-                            {{ $p->activo ? 'Activa' : 'Inactiva' }}
-                        </span>
+                        @if($p->activo)
+                            <span class="ui-badge ui-badge-success rounded-pill">Activa</span>
+                        @else
+                            <span class="ui-badge ui-badge-neutral rounded-pill">Inactiva</span>
+                        @endif
                     </div>
 
                     <hr class="my-2">
@@ -64,8 +71,8 @@
                     <form method="POST" action="{{ route('impresoras.plantilla-update', $p) }}">
                         @csrf
                         <div class="mb-2">
-                            <label class="form-label small fw-semibold">Nombre</label>
-                            <input name="nombre" class="form-control form-control-sm border-0 bg-light" value="{{ $p->nombre }}">
+                            <label class="ui-label small fw-semibold">Nombre</label>
+                            <input name="nombre" class="ui-input ui-input-sm" value="{{ $p->nombre }}">
                         </div>
 
                         <div class="mb-2">
@@ -92,15 +99,15 @@
                         </div>
 
                         <div class="mb-2">
-                            <label class="form-label small fw-semibold">Encabezado personalizado</label>
-                            <textarea name="encabezado_personalizado" class="form-control form-control-sm border-0 bg-light" rows="2">{{ $p->encabezado_personalizado }}</textarea>
+                            <label class="ui-label small fw-semibold">Encabezado personalizado</label>
+                            <textarea name="encabezado_personalizado" class="ui-input ui-input-sm" rows="2">{{ $p->encabezado_personalizado }}</textarea>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label small fw-semibold">Pie personalizado</label>
-                            <textarea name="pie_personalizado" class="form-control form-control-sm border-0 bg-light" rows="2">{{ $p->pie_personalizado }}</textarea>
+                            <label class="ui-label small fw-semibold">Pie personalizado</label>
+                            <textarea name="pie_personalizado" class="ui-input ui-input-sm" rows="2">{{ $p->pie_personalizado }}</textarea>
                         </div>
 
-                        <button class="btn btn-primary btn-sm rounded-pill w-100 mt-2">
+                        <button class="ui-btn ui-btn-solid ui-btn-sm rounded-pill w-100 mt-2">
                             <i class="bi bi-check-lg me-1"></i>Guardar cambios
                         </button>
                     </form>
@@ -109,9 +116,9 @@
         </div>
         @empty
         <div class="col-12">
-            <div class="premium-card">
-                <div class="card-accent blue"></div>
-                <div class="card-body text-center py-5 text-muted">
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body text-center py-5 text-muted">
                     <i class="bi bi-file-earmark fs-1 d-block mb-2"></i>
                     No hay plantillas para este módulo
                 </div>

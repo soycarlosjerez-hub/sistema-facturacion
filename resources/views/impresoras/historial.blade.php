@@ -5,34 +5,39 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-    body.dark-mode .premium-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+    body.dark-mode .ui-header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-clock-history"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold mb-1">Historial de Impresión</h3>
-                    <p class="mb-0 opacity-75">Registro de todos los documentos impresos</p>
+                    <h4 class="ui-header-title">Historial de Impresión</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-clock-history me-1"></i>
+                        <span>Registro de todos los documentos impresos</span>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('impresoras.index') }}" class="btn btn-light rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i> Impresoras
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('impresoras.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Impresoras
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="ui-table table-hover align-middle mb-0">
                 <thead>
                     <tr class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;">
                         <th class="ps-4 py-3">Fecha</th>
@@ -55,17 +60,17 @@
                             <br><small class="text-muted">#{{ $h->imprimible_id }}</small>
                             @endif
                         </td>
-                        <td><span class="badge bg-light text-dark rounded-pill">{{ ucfirst($h->tipo_documento) }}</span></td>
+                        <td><span class="ui-badge ui-badge-neutral rounded-pill">{{ ucfirst($h->tipo_documento) }}</span></td>
                         <td class="small">{{ $h->impresora?->nombre ?? '<sin impresora>' }}</td>
                         <td class="small">{{ $h->usuario?->name ?? 'N/A' }}</td>
                         <td class="text-center">{{ $h->copias }}</td>
                         <td class="text-center">
                             @if($h->exitoso)
-                                <span class="badge rounded-pill bg-success-subtle text-success">
+                                <span class="ui-badge ui-badge-success rounded-pill">
                                     <i class="bi bi-check-circle me-1"></i>Éxito
                                 </span>
                             @else
-                                <span class="badge rounded-pill bg-danger-subtle text-danger" title="{{ $h->error_mensaje }}">
+                                <span class="ui-badge ui-badge-danger rounded-pill" title="{{ $h->error_mensaje }}">
                                     <i class="bi bi-x-circle me-1"></i>Falló
                                 </span>
                             @endif

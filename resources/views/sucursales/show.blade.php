@@ -16,41 +16,33 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="container-fluid px-4 py-3 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
 
-    <div class="premium-header mb-4">
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
-                    <i class="bi bi-geo-alt"></i>
-                </div>
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>    <div class="bubble"></div>    <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-geo-alt"></i></div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">
+                    <h4 class="ui-header-title">
                         {{ $sucursal->nombre }}
                         @if($sucursal->es_matriz)
-                            <span class="premium-badge active" style="font-size:.6rem;"><i class="bi bi-star-fill me-1"></i>Matriz</span>
+                            <span class="ui-badge ui-badge-success" style="font-size:.6rem;"><i class="bi bi-star-fill me-1"></i>Matriz</span>
                         @endif
                         @if($sucursal->activa)
-                            <span class="premium-badge active" style="font-size:.6rem;"><i class="bi bi-check-circle me-1"></i>Activa</span>
+                            <span class="ui-badge ui-badge-success" style="font-size:.6rem;"><i class="bi bi-check-circle me-1"></i>Activa</span>
                         @else
-                            <span class="premium-badge" style="font-size:.6rem;"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
+                            <span class="ui-badge ui-badge-neutral" style="font-size:.6rem;"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
                         @endif
                     </h4>
-                    <small class="text-white opacity-75">{{ $sucursal->codigo }} &middot; {{ $sucursal->direccion ?? 'Sin dirección' }}</small>
+                    <div class="ui-header-meta">{{ $sucursal->codigo }} &middot; {{ $sucursal->direccion ?? 'Sin dirección' }}</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="ui-header-actions">
                 @can('sucursales.edit')
-                <a href="{{ route('sucursales.edit', $sucursal) }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-pencil me-2"></i>Editar
-                </a>
+                <a href="{{ route('sucursales.edit', $sucursal) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-pencil me-2"></i>Editar</a>
                 @endcan
-                <a href="{{ route('sucursales.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-arrow-left me-2"></i>Volver
-                </a>
+                <a href="{{ route('sucursales.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-arrow-left me-2"></i>Volver</a>
             </div>
         </div>
     </div>
@@ -58,15 +50,15 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
     {{-- Overview Cards --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.1s;">
+            <div class="ui-stat" style="--delay:.1s">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-graph-up text-primary fs-5"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Ventas del mes</div>
-                            <div class="stat-value">{{ $stats['ventas_mes'] }}</div>
+                            <div class="ui-stat-label">Ventas del mes</div>
+                            <div class="ui-stat-value">{{ $stats['ventas_mes'] }}</div>
                             <small class="text-muted">{{ $stats['ingresos_mes'] > 0 ? ($systemMoneda ?? '$') . ' ' . number_format($stats['ingresos_mes'], 0) : 'Sin ingresos' }}</small>
                         </div>
                     </div>
@@ -74,45 +66,45 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.15s;">
+            <div class="ui-stat" style="--delay:.15s">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-building text-success fs-5"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Almacenes</div>
-                            <div class="stat-value">{{ $sucursal->almacenes_count ?? $stats['almacenes'] }}</div>
+                            <div class="ui-stat-label">Almacenes</div>
+                            <div class="ui-stat-value">{{ $sucursal->almacenes_count ?? $stats['almacenes'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.2s;">
+            <div class="ui-stat" style="--delay:.2s">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-cash-stack text-warning fs-5"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Cajas activas</div>
-                            <div class="stat-value">{{ $stats['cajas_activas'] }}</div>
+                            <div class="ui-stat-label">Cajas activas</div>
+                            <div class="ui-stat-value">{{ $stats['cajas_activas'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card" style="animation-delay:.25s;">
+            <div class="ui-stat" style="--delay:.25s">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                             <i class="bi bi-people text-info fs-5"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Empleados</div>
-                            <div class="stat-value">{{ $stats['empleados'] }}</div>
+                            <div class="ui-stat-label">Empleados</div>
+                            <div class="ui-stat-value">{{ $stats['empleados'] }}</div>
                         </div>
                     </div>
                 </div>
@@ -123,8 +115,8 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
     {{-- Detail + Recent Activity --}}
     <div class="row g-3 mb-4">
         <div class="col-lg-5">
-            <div class="premium-card sucursales-detail-card h-100" style="animation-delay:.3s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-card sucursales-detail-card h-100" style="--delay:.3s">
+                <div class="ui-card-accent"></div>
                 <div class="premium-card-title">
                     <i class="bi bi-info-circle icon-purple"></i>
                     Información
@@ -166,8 +158,8 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
             </div>
         </div>
         <div class="col-lg-7">
-            <div class="premium-card h-100" style="animation-delay:.35s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-card h-100" style="--delay:.35s">
+                <div class="ui-card-accent"></div>
                 <div class="premium-card-title">
                     <i class="bi bi-clock-history icon-purple"></i>
                     Ventas recientes
@@ -198,8 +190,8 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
     {{-- Stats row --}}
     <div class="row g-3 mb-4">
         <div class="col-md-6">
-            <div class="premium-card" style="animation-delay:.4s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-card" style="--delay:.4s">
+                <div class="ui-card-accent"></div>
                 <div class="premium-card-title">
                     <i class="bi bi-box-seam icon-purple"></i>
                     Almacenes
@@ -218,8 +210,8 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
             </div>
         </div>
         <div class="col-md-6">
-            <div class="premium-card" style="animation-delay:.45s;">
-                <div class="card-accent purple"></div>
+            <div class="ui-card" style="--delay:.45s">
+                <div class="ui-card-accent"></div>
                 <div class="premium-card-title">
                     <i class="bi bi-cash-coin icon-purple"></i>
                     Cajas
@@ -231,7 +223,7 @@ body.dark-mode .sucursales-detail-card .text-dark { color: #f1f5f9 !important; }
                         <div>
                             <span>{{ $caja->nombre }}</span>
                             @if($caja->activa)
-                                <span class="premium-badge active" style="font-size:.6rem;">Activa</span>
+                                <span class="ui-badge ui-badge-success" style="font-size:.6rem;">Activa</span>
                             @endif
                         </div>
                         <a href="{{ route('cajas.show', $caja) }}" class="btn btn-sm btn-outline-primary rounded-pill">Ver</a>

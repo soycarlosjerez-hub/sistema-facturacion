@@ -18,93 +18,90 @@ body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; 
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-key"></i>
+<div class="ui-page">
+    <div class="ui-header mb-4" style="--delay:0s;background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-key"></i>
+                </div>
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-1">
+                            <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
+                            <li class="breadcrumb-item active text-white">Certificados Digitales</li>
+                        </ol>
+                    </nav>
+                    <h4 class="ui-header-title">Certificados Digitales</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-key me-1"></i>
+                        <span>Certificados para firma de e-CF (.p12 / .pfx) emitidos por entidad autorizada</span>
+                    </div>
+                </div>
             </div>
-            <div>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
-                        <li class="breadcrumb-item active text-white">Certificados Digitales</li>
-                    </ol>
-                </nav>
-                <h3 class="fw-bold mb-0">Certificados Digitales</h3>
-                <p class="mb-0 opacity-75">Certificados para firma de e-CF (.p12 / .pfx) emitidos por entidad autorizada</p>
+            <div class="ui-header-actions d-flex gap-2">
+                <a href="{{ route('ecf.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-receipt me-1"></i> Ver Documentos
+                </a>
+                <a href="{{ route('certificados-digitales.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nuevo Certificado
+                </a>
             </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('ecf.index') }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-receipt me-1"></i>Ver Documentos
-            </a>
-            <a href="{{ route('certificados-digitales.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm text-dark fw-semibold">
-                <i class="bi bi-plus-lg me-1"></i>Nuevo Certificado
-            </a>
-        </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-primary bg-opacity-10 text-primary" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
-                            <i class="bi bi-key"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">Total</div>
-                            <div class="stat-value">{{ $stats['total'] }}</div>
-                        </div>
+            <div class="ui-stat p-3" style="--delay:.1s">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width:52px; height:52px; font-size:1.4rem;">
+                        <i class="bi bi-key"></i>
+                    </div>
+                    <div>
+                        <div class="ui-stat-label">Total</div>
+                        <div class="ui-stat-value">{{ $stats['total'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-success bg-opacity-10 text-success" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">Vigentes</div>
-                            <div class="stat-value">{{ $stats['vigentes'] }}</div>
-                        </div>
+            <div class="ui-stat p-3" style="--delay:.15s">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center" style="width:52px; height:52px; font-size:1.4rem;">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="ui-stat-label">Vigentes</div>
+                        <div class="ui-stat-value">{{ $stats['vigentes'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-warning bg-opacity-10 text-warning" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">Por Vencer (≤30d)</div>
-                            <div class="stat-value">{{ $stats['por_vencer'] }}</div>
-                        </div>
+            <div class="ui-stat p-3" style="--delay:.2s">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center" style="width:52px; height:52px; font-size:1.4rem;">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div>
+                        <div class="ui-stat-label">Por Vencer (≤30d)</div>
+                        <div class="ui-stat-value">{{ $stats['por_vencer'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-danger bg-opacity-10 text-danger" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">Vencidos</div>
-                            <div class="stat-value">{{ $stats['vencidos'] }}</div>
-                        </div>
+            <div class="ui-stat p-3" style="--delay:.25s">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-danger bg-opacity-10 text-danger d-flex align-items-center justify-content-center" style="width:52px; height:52px; font-size:1.4rem;">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <div>
+                        <div class="ui-stat-label">Vencidos</div>
+                        <div class="ui-stat-value">{{ $stats['vencidos'] }}</div>
                     </div>
                 </div>
             </div>
@@ -114,9 +111,8 @@ body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; 
     <div class="row g-3">
         @forelse($certificados as $cert)
         <div class="col-xl-4 col-md-6">
-            <div class="premium-card h-100 overflow-hidden
-                {{ !$cert->vigente() ? 'border-top border-4 border-danger' : ($cert->diasParaVencer() <= 30 ? 'border-top border-4 border-warning' : 'border-top border-4 border-success') }}">
-                <div class="card-accent amber"></div>
+            <div class="ui-card h-100 overflow-hidden" style="--delay:.3s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -143,9 +139,9 @@ body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; 
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form action="{{ route('certificados-digitales.destroy', $cert) }}" method="POST" onsubmit="return confirm('¿Eliminar certificado?')">
+                                    <form action="{{ route('certificados-digitales.destroy', $cert) }}" method="POST">
                                         @csrf @method('DELETE')
-                                        <button class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Eliminar</button>
+                                        <button class="dropdown-item text-danger" onclick="event.preventDefault();UI.confirm.delete('{{ route('certificados-digitales.destroy', $cert) }}', '{{ addslashes($cert->nombre) }}')"><i class="bi bi-trash me-2"></i>Eliminar</button>
                                     </form>
                                 </li>
                             </ul>
@@ -194,7 +190,7 @@ body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; 
         <div class="col-12 text-center py-5">
             <i class="bi bi-key display-1 text-muted opacity-25"></i>
             <p class="text-muted mt-3">No hay certificados digitales registrados.</p>
-            <a href="{{ route('certificados-digitales.create') }}" class="btn btn-primary rounded-pill">
+            <a href="{{ route('certificados-digitales.create') }}" class="ui-btn ui-btn-solid rounded-pill">
                 <i class="bi bi-plus-lg me-1"></i>Registrar Primer Certificado
             </a>
             <p class="small text-muted mt-2">

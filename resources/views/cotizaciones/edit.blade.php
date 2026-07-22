@@ -5,47 +5,33 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.premium-header {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4);
-}
-.premium-card .form-control:focus,
-.premium-card .form-select:focus {
-    border-color: #8b5cf6;
-    box-shadow: 0 0 0 3px rgba(139,92,246,.15);
-}
-.premium-sticky-bar {
-    border-top-color: #8b5cf6;
-}
-.premium-sticky-bar .btn-save {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    box-shadow: 0 4px 14px rgba(139,92,246,.3);
-}
-.premium-sticky-bar .btn-save:hover {
-    box-shadow: 0 6px 20px rgba(139,92,246,.45);
+body.dark-mode .ui-sticky-bar {
+    border-top-color: #8b5cf6 !important;
 }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid premium-page">
-    <div class="premium-header">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-receipt-cutoff"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold mb-1">Editar Cotización</h3>
-                    <p class="mb-0 opacity-75">{{ $cotizacion->numero }}</p>
+                    <h3 class="ui-header-title">Editar Cotización</h3>
+                    <div class="ui-header-meta">{{ $cotizacion->numero }}</div>
                 </div>
             </div>
-            <a href="{{ route('cotizaciones.show', $cotizacion) }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-x-lg me-1"></i> Cancelar
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('cotizaciones.show', $cotizacion) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-x-lg me-1"></i> Cancelar
+                </a>
+            </div>
         </div>
     </div>
 
@@ -56,21 +42,21 @@
         <div class="row g-3">
             <!-- Columna izquierda -->
             <div class="col-lg-8">
-                <div class="premium-card mb-3">
-                    <div class="card-accent purple"></div>
-                    <div class="premium-card-title">
-                        <i class="bi bi-info-circle icon-purple"></i>
+                <div class="ui-card mb-3" style="--delay:.1s">
+                    <div class="ui-card-accent"></div>
+                    <div class="ui-card-title">
+                        <i class="bi bi-info-circle"></i>
                         Información General
                     </div>
-                    <div class="card-body">
+                    <div class="ui-card-body">
                         <div class="row g-3">
                             <div class="col-md-3">
-                                <label class="form-label small fw-semibold">Número</label>
-                                <input type="text" class="form-control" value="{{ $cotizacion->numero }}" disabled>
+                                <label class="ui-label small fw-semibold">Número</label>
+                                <input type="text" class="ui-input" value="{{ $cotizacion->numero }}" disabled>
                             </div>
                             <div class="col-md-5">
-                                <label class="form-label small fw-semibold">Cliente</label>
-                                <select name="cliente_id" class="form-select">
+                                <label class="ui-label small fw-semibold">Cliente</label>
+                                <select name="cliente_id" class="ui-select">
                                     <option value="">-- Consumidor Final --</option>
                                     @foreach($clientes as $cliente)
                                         <option value="{{ $cliente->id }}" {{ old('cliente_id', $cotizacion->cliente_id) == $cliente->id ? 'selected' : '' }}>
@@ -80,38 +66,38 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label small fw-semibold">Fecha</label>
-                                <input type="date" name="fecha" class="form-control" value="{{ old('fecha', $cotizacion->fecha->format('Y-m-d')) }}" required>
+                                <label class="ui-label small fw-semibold">Fecha</label>
+                                <input type="date" name="fecha" class="ui-input" value="{{ old('fecha', $cotizacion->fecha->format('Y-m-d')) }}" required>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label small fw-semibold">Válida hasta</label>
-                                <input type="date" name="fecha_validez" class="form-control" value="{{ old('fecha_validez', $cotizacion->fecha_validez->format('Y-m-d')) }}" required>
+                                <label class="ui-label small fw-semibold">Válida hasta</label>
+                                <input type="date" name="fecha_validez" class="ui-input" value="{{ old('fecha_validez', $cotizacion->fecha_validez->format('Y-m-d')) }}" required>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="premium-card mb-3">
-                    <div class="card-accent purple"></div>
-                    <div class="premium-card-title">
-                        <i class="bi bi-box-seam icon-purple"></i>
+                <div class="ui-card mb-3" style="--delay:.15s">
+                    <div class="ui-card-accent"></div>
+                    <div class="ui-card-title">
+                        <i class="bi bi-box-seam"></i>
                         Productos
                         <span class="badge bg-primary bg-opacity-10 text-primary ms-auto" id="items-count">0 items</span>
                     </div>
-                    <div class="card-body">
+                    <div class="ui-card-body">
                         <div class="position-relative mb-3">
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0">
+                            <div class="ui-input-group">
+                                <span class="ui-input-group-text bg-white border-end-0">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input type="text" id="buscar-producto" class="form-control border-start-0" placeholder="Buscar productos...">
+                                <input type="text" id="buscar-producto" class="ui-input border-start-0" placeholder="Buscar productos...">
                             </div>
                             <div id="resultados-busqueda" class="position-absolute w-100 bg-white border rounded shadow-lg" style="z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
+                            <table class="ui-table table-hover align-middle">
+                                <thead>
                                     <tr>
                                         <th>Producto</th>
                                         <th style="width: 100px;">Cantidad</th>
@@ -128,17 +114,17 @@
                     </div>
                 </div>
 
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
-                    <div class="card-body">
+                <div class="ui-card" style="--delay:.2s">
+                    <div class="ui-card-accent"></div>
+                    <div class="ui-card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold"><i class="bi bi-sticky me-1"></i> Notas</label>
-                                <textarea name="notas" class="form-control" rows="3">{{ old('notas', $cotizacion->notas) }}</textarea>
+                                <label class="ui-label small fw-semibold"><i class="bi bi-sticky me-1"></i> Notas</label>
+                                <textarea name="notas" class="ui-input" rows="3">{{ old('notas', $cotizacion->notas) }}</textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-semibold"><i class="bi bi-file-text me-1"></i> Términos y Condiciones</label>
-                                <textarea name="condiciones" class="form-control" rows="3">{{ old('condiciones', $cotizacion->condiciones) }}</textarea>
+                                <label class="ui-label small fw-semibold"><i class="bi bi-file-text me-1"></i> Términos y Condiciones</label>
+                                <textarea name="condiciones" class="ui-input" rows="3">{{ old('condiciones', $cotizacion->condiciones) }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -147,13 +133,13 @@
 
             <!-- Columna derecha: resumen -->
             <div class="col-lg-4">
-                <div class="premium-card sticky-top" style="top: 20px;">
-                    <div class="card-accent purple"></div>
-                    <div class="premium-card-title">
-                        <i class="bi bi-calculator icon-purple"></i>
+                <div class="ui-card sticky-top" style="top: 20px; --delay:.1s">
+                    <div class="ui-card-accent"></div>
+                    <div class="ui-card-title">
+                        <i class="bi bi-calculator"></i>
                         Resumen
                     </div>
-                    <div class="card-body">
+                    <div class="ui-card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Subtotal:</span>
                             <span class="fw-semibold" id="subtotal-display">RD$0.00</span>
@@ -164,9 +150,9 @@
                         </div>
                         <div class="d-flex justify-content-between mb-2 align-items-center">
                             <span class="text-muted">Descuento:</span>
-                            <div class="input-group input-group-sm" style="width: 130px;">
-                                <span class="input-group-text bg-white">RD$</span>
-                                <input type="number" name="descuento" id="descuento" class="form-control text-end" 
+                            <div class="ui-input-group input-group-sm" style="width: 130px;">
+                                <span class="ui-input-group-text bg-white">RD$</span>
+                                <input type="number" name="descuento" id="descuento" class="ui-input text-end" 
                                        value="{{ old('descuento', $cotizacion->descuento) }}" min="0" step="0.01">
                             </div>
                         </div>
@@ -182,10 +168,10 @@
     </form>
 
     <!-- Sticky Save Bar -->
-    <div class="premium-sticky-bar">
+    <div class="ui-sticky-bar">
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted small d-none d-md-inline">Editando: {{ $cotizacion->numero }}</span>
-            <button type="submit" form="cotizacion-form" class="btn btn-save rounded-pill px-4 py-2 shadow-sm">
+            <button type="submit" form="cotizacion-form" class="ui-btn ui-btn-solid rounded-pill px-4 py-2 shadow-sm">
                 <i class="bi bi-save me-1"></i> Actualizar Cotización
             </button>
         </div>
@@ -304,16 +290,16 @@ function renderItems() {
                     <input type="hidden" name="items[${item._key}][unidad]" value="${item.unidad}">
                 </td>
                 <td>
-                    <div class="input-group input-group-sm">
+                    <div class="ui-input-group input-group-sm">
                         <button type="button" class="btn btn-outline-secondary" onclick="cambiarCantidad(${item._key}, -1)">-</button>
-                        <input type="number" name="items[${item._key}][cantidad]" class="form-control text-center" 
+                        <input type="number" name="items[${item._key}][cantidad]" class="ui-input text-center" 
                                value="${item.cantidad}" min="0.01" step="0.01" onchange="actualizarItem(${item._key}, 'cantidad', this.value)">
                         <button type="button" class="btn btn-outline-secondary" onclick="cambiarCantidad(${item._key}, 1)">+</button>
                     </div>
                 </td>
-                <td><input type="number" name="items[${item._key}][precio_unitario]" class="form-control form-control-sm" value="${item.precio_unitario}" min="0" step="0.01" onchange="actualizarItem(${item._key}, 'precio_unitario', this.value)"></td>
-                <td><input type="number" name="items[${item._key}][itbis_porcentaje]" class="form-control form-control-sm" value="${item.itbis_porcentaje}" min="0" max="100" step="0.01" onchange="actualizarItem(${item._key}, 'itbis_porcentaje', this.value)"></td>
-                <td><input type="number" name="items[${item._key}][descuento]" class="form-control form-control-sm" value="${item.descuento}" min="0" step="0.01" onchange="actualizarItem(${item._key}, 'descuento', this.value)"></td>
+                <td><input type="number" name="items[${item._key}][precio_unitario]" class="ui-input form-control-sm" value="${item.precio_unitario}" min="0" step="0.01" onchange="actualizarItem(${item._key}, 'precio_unitario', this.value)"></td>
+                <td><input type="number" name="items[${item._key}][itbis_porcentaje]" class="ui-input form-control-sm" value="${item.itbis_porcentaje}" min="0" max="100" step="0.01" onchange="actualizarItem(${item._key}, 'itbis_porcentaje', this.value)"></td>
+                <td><input type="number" name="items[${item._key}][descuento]" class="ui-input form-control-sm" value="${item.descuento}" min="0" step="0.01" onchange="actualizarItem(${item._key}, 'descuento', this.value)"></td>
                 <td class="text-end fw-bold">RD$${total.toFixed(2)}</td>
                 <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${item._key})"><i class="bi bi-trash"></i></button></td>
             </tr>

@@ -5,24 +5,6 @@
 @push('styles')
     @vite(['resources/scss/dashboard.scss'])
     <style>
-        .premium-header {
-            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-            border-radius: 1rem;
-            color: white;
-            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
-            position: relative;
-            overflow: hidden;
-        }
-        .premium-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-            border-radius: 50%;
-        }
         .filter-glass {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
@@ -62,7 +44,10 @@
     {{--============ HERO + ACCIONES RÁPIDAS ============--}}
     <div class="row g-3 mb-4">
         <div class="col-lg-8">
-            <div class="premium-header h-100 p-4 p-md-5">
+            <div class="ui-header h-100 p-4 p-md-5" style="--delay:0s">
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
                 <div class="position-relative" style="z-index:2;">
                     <div class="d-flex flex-wrap justify-content-between align-items-start mb-4">
                         <div>

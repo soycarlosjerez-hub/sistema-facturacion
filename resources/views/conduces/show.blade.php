@@ -5,12 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-body.dark-mode .table { color: #e2e8f0; }
-body.dark-mode .table-light { background: rgba(30,41,59,.8); }
-body.dark-mode .table-light th { color: #94a3b8; border-color: #334155; }
-body.dark-mode .table-hover tbody tr:hover { background: rgba(51,65,85,.3); }
-body.dark-mode dl dt { color: #94a3b8; }
-body.dark-mode dl dd { color: #e2e8f0; }
 body.dark-mode .modal-content { background: #1e293b; color: #e2e8f0; }
 body.dark-mode .modal-header { border-color: #334155; }
 body.dark-mode .modal-footer { border-color: #334155; }
@@ -19,18 +13,18 @@ body.dark-mode .card-footer { background: rgba(15,23,42,.8); border-color: #3341
 @endpush
 
 @section('content')
-<div class="container-fluid premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-truck"></i>
                 </div>
                 <div>
-                    <h4 class="mb-1 fw-bold">
+                    <h4 class="ui-header-title">
                         {{ $conduce->numero }}
                         <span class="badge bg-{{ $conduce->estado_color }} ms-2 align-middle">
                             <i class="bi bi-{{ $conduce->estado_icon }} me-1" aria-hidden="true"></i>
@@ -42,30 +36,30 @@ body.dark-mode .card-footer { background: rgba(15,23,42,.8); border-color: #3341
                             </span>
                         @endif
                     </h4>
-                    <p class="mb-0 opacity-75 small">Creado {{ $conduce->created_at->diffForHumans() }}</p>
+                    <div class="ui-header-meta">Creado {{ $conduce->created_at->diffForHumans() }}</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('conduces.index') }}" class="btn btn-outline-secondary">
+            <div class="ui-header-actions">
+                <a href="{{ route('conduces.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left"></i>
                 </a>
                 <div class="btn-group">
                     <a href="{{ route('conduces.ticket', [$conduce, 'paper' => 80]) }}" target="_blank"
-                       class="btn btn-outline-primary" aria-label="Imprimir ticket 80mm">
+                       class="ui-btn ui-btn-primary ui-btn-sm" aria-label="Imprimir ticket 80mm">
                         <i class="bi bi-printer me-1"></i>80mm
                     </a>
                     <a href="{{ route('conduces.ticket', [$conduce, 'paper' => 58]) }}" target="_blank"
-                       class="btn btn-outline-primary" aria-label="Imprimir ticket 58mm">
+                       class="ui-btn ui-btn-primary ui-btn-sm" aria-label="Imprimir ticket 58mm">
                         <i class="bi bi-printer me-1"></i>58mm
                     </a>
                 </div>
-                <a href="{{ route('conduces.pdf', $conduce) }}" class="btn btn-outline-danger"
+                <a href="{{ route('conduces.pdf', $conduce) }}" class="ui-btn ui-btn-danger ui-btn-sm"
                    aria-label="Descargar PDF">
                     <i class="bi bi-file-pdf me-1"></i>PDF
                 </a>
                 @if(in_array($conduce->estado, ['borrador', 'en_transito']))
                     @can('conduces.edit')
-                    <a href="{{ route('conduces.edit', $conduce) }}" class="premium-btn-edit">
+                    <a href="{{ route('conduces.edit', $conduce) }}" class="ui-action ui-action-edit">
                         <i class="bi bi-pencil me-1"></i>Editar
                     </a>
                     @endcan
@@ -75,13 +69,13 @@ body.dark-mode .card-footer { background: rgba(15,23,42,.8); border-color: #3341
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert" style="border-left: 4px solid #22c55e !important;">
             <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     @endif
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm border-0" role="alert" style="border-left: 4px solid #dc3545 !important;">
             <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
@@ -91,16 +85,16 @@ body.dark-mode .card-footer { background: rgba(15,23,42,.8); border-color: #3341
         {{-- Columna izquierda --}}
         <div class="col-lg-8">
             {{-- Items --}}
-            <div class="premium-card mb-3">
-                <div class="card-accent purple"></div>
-                <div class="card-body">
-                    <h6 class="premium-card-title">
-                        <i class="bi bi-box-seam icon-purple"></i>Productos a Entregar
+            <div class="ui-card mb-3" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
+                    <h6 class="ui-card-title">
+                        <i class="bi bi-box-seam"></i>Productos a Entregar
                         <span class="badge bg-secondary ms-2">{{ $conduce->items->count() }} items</span>
                     </h6>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" role="table">
-                            <thead class="table-light">
+                        <table class="ui-table table-hover align-middle mb-0" role="table">
+                            <thead>
                                 <tr>
                                     <th style="width:60px">#</th>
                                     <th>Producto</th>

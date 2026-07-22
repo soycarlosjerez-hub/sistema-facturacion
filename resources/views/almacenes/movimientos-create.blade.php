@@ -15,26 +15,31 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
+<div class="ui-page">
 
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-building"></i>
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Nuevo Movimiento</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-arrow-left-right me-1"></i>
+                        <span>Registra una entrada, salida o traslado de inventario</span>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h2 class="fw-bold mb-1">Nuevo Movimiento</h2>
-                <p class="mb-0 opacity-75 fs-5">Registra una entrada, salida o traslado de inventario</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('almacenes.movimientos') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
             </div>
         </div>
-        <div>
-            <a href="{{ route('almacenes.movimientos') }}" class="btn btn-light text-white bg-white bg-opacity-25 border-0 rounded-pill px-4 py-2 shadow-sm">
-                <i class="bi bi-arrow-left me-1"></i>Volver
-            </a>
-        </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     @error('error')
@@ -53,17 +58,17 @@
         </div>
     @endif
 
-    <div class="premium-card">
-        <div class="card-accent blue"></div>
-        <h5 class="premium-card-title"><i class="bi bi-pencil-square icon-blue"></i> Detalles del movimiento</h5>
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="card-body">
+            <h5 class="fw-bold mb-4"><i class="bi bi-pencil-square me-2" style="color:#3b82f6;"></i> Detalles del movimiento</h5>
 
-        <form action="{{ route('almacenes.movimientos.store') }}" method="POST">
-            @csrf
-            <div class="card-body">
+            <form action="{{ route('almacenes.movimientos.store') }}" method="POST" id="movimientoForm">
+                @csrf
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Producto</label>
-                    <select name="producto_id" id="select-producto" class="form-select @error('producto_id') is-invalid @enderror" required>
+                    <label class="ui-label">Producto</label>
+                    <select name="producto_id" id="select-producto" class="ui-select @error('producto_id') is-invalid @enderror" required>
                         <option value="">Seleccione un producto</option>
                         @foreach($productos as $producto)
                             <option value="{{ $producto->id }}" @selected(old('producto_id') == $producto->id)>
@@ -86,8 +91,8 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="mb-4">
-                            <label class="form-label fw-semibold">Tipo de movimiento</label>
-                            <select name="tipo" id="select-tipo" class="form-select @error('tipo') is-invalid @enderror" required>
+                            <label class="ui-label">Tipo de movimiento</label>
+                            <select name="tipo" id="select-tipo" class="ui-select @error('tipo') is-invalid @enderror" required>
                                 <option value="entrada" @selected(old('tipo') == 'entrada')> Entrada</option>
                                 <option value="salida" @selected(old('tipo') == 'salida')> Salida</option>
                                 <option value="traslado" @selected(old('tipo') == 'traslado')> Traslado</option>
@@ -99,8 +104,8 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-4">
-                            <label class="form-label fw-semibold">Cantidad</label>
-                            <input type="number" name="cantidad" id="input-cantidad" class="form-control @error('cantidad') is-invalid @enderror" min="1" value="{{ old('cantidad') }}" required placeholder="0">
+                            <label class="ui-label">Cantidad</label>
+                            <input type="number" name="cantidad" id="input-cantidad" class="ui-input @error('cantidad') is-invalid @enderror" min="1" value="{{ old('cantidad') }}" required placeholder="0">
                             @error('cantidad')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
@@ -109,8 +114,8 @@
                 </div>
 
                 <div id="field-almacen-simple" class="mb-4">
-                    <label class="form-label fw-semibold">Almacén</label>
-                    <select name="almacen_id" class="form-select @error('almacen_id') is-invalid @enderror" required>
+                    <label class="ui-label">Almacén</label>
+                    <select name="almacen_id" class="ui-select @error('almacen_id') is-invalid @enderror" required>
                         <option value="">Seleccione un almacén</option>
                         @foreach($almacenes as $a)
                             <option value="{{ $a->id }}" @selected(old('almacen_id') == $a->id)>
@@ -125,8 +130,8 @@
 
                 <div id="field-almacen-traslado" class="row g-3 mb-4 d-none">
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Almacén origen <i class="bi bi-arrow-right text-muted small"></i></label>
-                        <select name="almacen_origen_id" class="form-select @error('almacen_origen_id') is-invalid @enderror">
+                        <label class="ui-label">Almacén origen <i class="bi bi-arrow-right text-muted small"></i></label>
+                        <select name="almacen_origen_id" class="ui-select @error('almacen_origen_id') is-invalid @enderror">
                             <option value="">Seleccione origen</option>
                             @foreach($almacenes as $a)
                                 <option value="{{ $a->id }}" @selected(old('almacen_origen_id') == $a->id)>
@@ -139,8 +144,8 @@
                         @enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold"><i class="bi bi-arrow-right text-muted small"></i> Almacén destino</label>
-                        <select name="almacen_destino_id" class="form-select @error('almacen_destino_id') is-invalid @enderror">
+                        <label class="ui-label"><i class="bi bi-arrow-right text-muted small"></i> Almacén destino</label>
+                        <select name="almacen_destino_id" class="ui-select @error('almacen_destino_id') is-invalid @enderror">
                             <option value="">Seleccione destino</option>
                             @foreach($almacenes as $a)
                                 <option value="{{ $a->id }}" @selected(old('almacen_destino_id') == $a->id)>
@@ -155,24 +160,23 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Nota / Motivo</label>
-                    <input type="text" name="nota" class="form-control @error('nota') is-invalid @enderror" value="{{ old('nota') }}" placeholder="Ej: Ajuste de inventario, compra a proveedor, etc.">
+                    <label class="ui-label">Nota / Motivo</label>
+                    <input type="text" name="nota" class="ui-input @error('nota') is-invalid @enderror" value="{{ old('nota') }}" placeholder="Ej: Ajuste de inventario, compra a proveedor, etc.">
                     @error('nota')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
                 </div>
 
-            </div>
-
-            <div class="card-footer bg-light border-top border-light p-4 text-end">
-                <a href="{{ route('almacenes.movimientos') }}" class="btn btn-light rounded-pill px-4 fw-semibold me-2">
-                    Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" id="btn-submit">
-                    <i class="bi bi-check-lg me-2"></i>Guardar Movimiento
-                </button>
-            </div>
-        </form>
+                <div class="pt-4 text-end border-top border-light">
+                    <a href="{{ route('almacenes.movimientos') }}" class="ui-btn ui-btn-ghost rounded-pill px-4 fw-semibold me-2">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-5 shadow-sm fw-bold" id="btn-submit">
+                        <i class="bi bi-check-lg me-2"></i>Guardar Movimiento
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
 </div>

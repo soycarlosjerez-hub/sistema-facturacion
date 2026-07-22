@@ -24,36 +24,39 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-clock-history"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Registro de Auditoría</h4>
-                    <small class="text-white opacity-75">Trazabilidad de acciones en el sistema</small>
+                    <h4 class="ui-header-title">Registro de Auditoría</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>Trazabilidad de acciones en el sistema</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent red"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" action="{{ route('audit-logs.index') }}" class="row g-2 align-items-center">
                 <div class="col-lg-3">
-                    <div class="input-group input-group-merge">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="search" class="form-control" placeholder="Buscar acción..." value="{{ request('search') }}" autocomplete="off">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="search" class="ui-input" placeholder="Buscar acción..." value="{{ request('search') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-2">
-                    <select name="action" class="form-select">
+                    <select name="action" class="ui-select">
                         <option value="">Todas las acciones</option>
                         @foreach($actions as $a)
                             <option value="{{ $a }}" {{ request('action') === $a ? 'selected' : '' }}>{{ ucfirst($a) }}</option>
@@ -61,7 +64,7 @@
                     </select>
                 </div>
                 <div class="col-lg-2">
-                    <select name="model" class="form-select">
+                    <select name="model" class="ui-select">
                         <option value="">Todos los módulos</option>
                         @foreach($models->sort() as $m)
                             <option value="{{ $m }}" {{ request('model') === $m ? 'selected' : '' }}>{{ $m }}</option>
@@ -69,21 +72,21 @@
                     </select>
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="desde" class="form-control" value="{{ request('desde') }}" placeholder="Desde">
+                    <input type="date" name="desde" class="ui-input" value="{{ request('desde') }}" placeholder="Desde">
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}" placeholder="Hasta">
+                    <input type="date" name="hasta" class="ui-input" value="{{ request('hasta') }}" placeholder="Hasta">
                 </div>
                 <div class="col-lg-1 d-flex gap-1">
-                    <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel"></i></button>
-                    <a href="{{ route('audit-logs.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill flex-grow-1"><i class="bi bi-funnel"></i></button>
+                    <a href="{{ route('audit-logs.index') }}" class="ui-btn ui-btn-ghost rounded-pill"><i class="bi bi-x-lg"></i></a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="premium-card overflow-hidden" style="animation-delay:.2s;">
-        <div class="card-accent red"></div>
+    <div class="ui-card overflow-hidden" style="--delay:.2s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead style="background: rgba(15,23,42,0.03);">

@@ -71,28 +71,30 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#0ea5e9,#0284c7,#0ea5e9);box-shadow:0 8px 32px rgba(14,165,233,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-bag-plus"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Nueva Orden</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Nueva Orden</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-plus-circle me-1"></i>
-                        Crea una nueva orden de mostrador, delivery o pickup
-                    </small>
+                        <span>Crea una nueva orden de mostrador, delivery o pickup</span>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('ordenes.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('ordenes.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -114,9 +116,9 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
 
     <div class="row g-4">
         <div class="col-md-5">
-            <div class="premium-card h-100">
-                <div class="card-accent blue"></div>
-                <div class="premium-card-title">
+            <div class="ui-card h-100" style="--delay:.1s">
+                <div class="ui-card-accent blue"></div>
+                <div class="ui-card-title">
                     <i class="bi bi-info-circle icon-blue"></i>
                     Datos de la Orden
                 </div>
@@ -125,8 +127,8 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
                         @csrf
                         <input type="hidden" name="items" id="itemsInput" value="[]">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Tipo de Orden</label>
-                            <select name="tipo_orden" class="form-select" required id="tipo_orden">
+                            <label class="ui-label fw-semibold">Tipo de Orden</label>
+                            <select name="tipo_orden" class="ui-select" required id="tipo_orden">
                                 <option value="mostrador">Mostrador</option>
                                 <option value="delivery">Delivery</option>
                                 <option value="pickup">Pickup</option>
@@ -135,12 +137,12 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
 
                         <div id="delivery_fields" style="display:none;">
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Dirección de Entrega</label>
-                                <textarea name="direccion_entrega" class="form-control" rows="2"></textarea>
+                                <label class="ui-label fw-semibold">Dirección de Entrega</label>
+                                <textarea name="direccion_entrega" class="ui-input" rows="2"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Empresa de Delivery</label>
-                                <select name="entrega_empresa_id" class="form-select">
+                                <label class="ui-label fw-semibold">Empresa de Delivery</label>
+                                <select name="entrega_empresa_id" class="ui-select">
                                     <option value="">Seleccionar</option>
                                     @foreach(\App\Models\DeliveryCompany::where('activo', true)->get() as $emp)
                                     <option value="{{ $emp->id }}">{{ $emp->nombre }}</option>
@@ -151,19 +153,19 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
 
                         <div id="pickup_fields" style="display:none;">
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">Hora de Retiro</label>
-                                <input type="datetime-local" name="hora_retiro" class="form-control">
+                                <label class="ui-label fw-semibold">Hora de Retiro</label>
+                                <input type="datetime-local" name="hora_retiro" class="ui-input">
                             </div>
                         </div>
 
                         <div class="mb-3" id="contacto_fields">
-                            <label class="form-label fw-semibold">Teléfono de Contacto</label>
-                            <input type="text" name="telefono_contacto" class="form-control" maxlength="30">
+                            <label class="ui-label fw-semibold">Teléfono de Contacto</label>
+                            <input type="text" name="telefono_contacto" class="ui-input" maxlength="30">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Cliente</label>
-                            <select name="cliente_id" class="form-select" id="cliente_select">
+                            <label class="ui-label fw-semibold">Cliente</label>
+                            <select name="cliente_id" class="ui-select" id="cliente_select">
                                 <option value="">Consumidor Final</option>
                                 @foreach(\App\Models\Cliente::orderBy('nombre')->limit(50)->get() as $c)
                                 <option value="{{ $c->id }}">{{ $c->nombre }}</option>
@@ -176,9 +178,9 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
         </div>
 
         <div class="col-md-7">
-            <div class="premium-card h-100">
-                <div class="card-accent blue"></div>
-                <div class="premium-card-title">
+            <div class="ui-card h-100" style="--delay:.2s">
+                <div class="ui-card-accent blue"></div>
+                <div class="ui-card-title">
                     <i class="bi bi-box-seam icon-blue"></i>
                     Productos en la Orden
                     <span class="badge bg-primary bg-opacity-10 text-primary ms-auto rounded-pill" id="cart_count">0</span>
@@ -220,12 +222,14 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
     </div>
 
     <!-- Sticky Save Bar -->
-    <div class="premium-sticky-bar d-flex justify-content-end align-items-center gap-3">
-        <span class="text-muted small d-none d-md-inline"><i class="bi bi-info-circle me-1"></i>Creando nueva orden</span>
-        <a href="{{ route('ordenes.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
-        <button type="submit" form="ordenForm" class="btn btn-save rounded-pill px-5 fw-bold">
-            <i class="bi bi-check-lg me-2"></i>Crear Orden
-        </button>
+    <div class="ui-sticky-bar">
+        <div class="ui-sticky-bar-inner">
+            <span class="text-muted small d-none d-md-inline"><i class="bi bi-info-circle me-1"></i>Creando nueva orden</span>
+            <a href="{{ route('ordenes.index') }}" class="ui-btn ui-btn-ghost rounded-pill px-4">Cancelar</a>
+            <button type="submit" form="ordenForm" class="ui-btn ui-btn-solid rounded-pill px-5 fw-bold">
+                <i class="bi bi-check-lg me-2"></i>Crear Orden
+            </button>
+        </div>
     </div>
 </div>
 
@@ -238,19 +242,19 @@ body:not(.dark-mode) .modal-prod-qty span { color: #1e293b; }
                 <button type="button" class="btn-close btn-close-white" style="width:36px;height:36px;" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-3 d-flex flex-column" style="height: calc(95vh - 60px);">
-                <div class="input-group shadow-sm rounded-3 mb-2">
-                    <span class="input-group-text" style="background: rgba(30,41,59,0.8); border-color: #334155; color: #64748b; min-height:48px;"><i class="bi bi-search fs-5"></i></span>
-                    <input type="text" id="modal-buscar-producto" class="form-control" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()" style="min-height:48px; font-size:1.05rem;">
-                    <button class="btn" type="button" id="modal-btn-limpiar" style="display:none; color: #64748b; min-width:48px;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg fs-5"></i></button>
+                <div class="ui-input-group shadow-sm rounded-3 mb-2">
+                    <span class="ui-input-group-text" style="background: rgba(30,41,59,0.8); border-color: #334155; color: #64748b; min-height:48px;"><i class="bi bi-search fs-5"></i></span>
+                    <input type="text" id="modal-buscar-producto" class="ui-input" placeholder="Buscar producto..." autocomplete="off" oninput="modalBuscarProductos()" style="min-height:48px; font-size:1.05rem;">
+                    <button class="ui-btn" type="button" id="modal-btn-limpiar" style="display:none; color: #64748b; min-width:48px;" onclick="modalLimpiarBusqueda()"><i class="bi bi-x-lg fs-5"></i></button>
                 </div>
                 <div class="d-flex gap-2 mb-2">
-                    <select id="modal-item-curso" class="form-select form-select-sm rounded-3" style="max-width:120px;background:rgba(30,41,59,0.8);border-color:#334155;color:#f1f5f9;">
+                    <select id="modal-item-curso" class="ui-select" style="max-width:120px;">
                         <option value="entrada">Entrada</option>
                         <option value="fuerte" selected>Plato Fuerte</option>
                         <option value="postre">Postre</option>
                         <option value="bebida">Bebida</option>
                     </select>
-                    <input type="text" id="modal-item-notas" class="form-control form-control-sm rounded-3" placeholder="Notas" maxlength="200" style="background:rgba(30,41,59,0.8);border-color:#334155;color:#f1f5f9;">
+                    <input type="text" id="modal-item-notas" class="ui-input" placeholder="Notas" maxlength="200" style="">
                 </div>
                 <div id="modal-productos-grid" class="row g-2 overflow-auto mb-2" style="flex:1; min-height:0;"></div>
                 <div class="border-top pt-2 mt-2" id="teclado-virtual" style="border-color: #334155 !important;">

@@ -35,31 +35,31 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="container-fluid px-4 py-3 ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-truck"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Catálogo de Proveedores</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">Catálogo de Proveedores</div>
+                    <div class="ui-header-meta">
                         <i class="bi bi-building me-1"></i>
                         Gestión de proveedores y contactos de negocio
                         <span class="mx-2">·</span>
                         <i class="bi bi-list-ul me-1"></i>
                         {{ $proveedores->count() }} registro(s)
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="ui-header-actions">
                 @can('proveedores.create')
-                <a href="{{ route('proveedores.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('proveedores.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo Proveedor
                 </a>
                 @endcan
@@ -67,14 +67,14 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card mb-4" style="--delay:.1s;">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" id="search-form" class="row g-2 align-items-center">
                 <div class="col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="buscar" id="busqueda-proveedor" class="form-control" placeholder="Nombre, RNC, teléfono o email..." value="{{ request('buscar') }}" autocomplete="off">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="buscar" id="busqueda-proveedor" class="ui-input" placeholder="Nombre, RNC, teléfono o email..." value="{{ request('buscar') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-2 d-flex align-items-center">
@@ -84,18 +84,18 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                     </div>
                 </div>
                 <div class="col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('proveedores.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i></a>
                 </div>
                 <div class="col-lg-4 text-end">
                     <div class="d-flex gap-2 justify-content-end">
-                        <a href="{{ route('proveedores.importar') }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('proveedores.importar') }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-upload me-1"></i> Importar CSV
                         </a>
-                        <a href="{{ route('proveedores.exportar', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('proveedores.exportar', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-excel me-1"></i> Excel
                         </a>
-                        <a href="{{ route('proveedores.pdf', request()->all()) }}" class="btn btn-light rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('proveedores.pdf', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-pdf me-1"></i> PDF
                         </a>
                     </div>
@@ -104,10 +104,10 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.15s;">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-0">
-            <table id="proveedores-table" class="table dt-table nowrap no-footer" style="width:100%">
+            <table id="proveedores-table" class="ui-table dt-table nowrap no-footer" style="width:100%">
                 <thead>
                     <tr>
                         <th class="ps-4" style="width:50px;">#</th>
@@ -359,10 +359,10 @@ $(function() {
     function renderAcciones(id, opts) {
         let html = '<div class="d-flex justify-content-end gap-1">';
         if (opts.show) {
-            html += '<a href="' + opts.show + '" class="premium-btn-edit" title="Ver"><i class="bi bi-eye"></i></a>';
+            html += '<a href="' + opts.show + '" class="ui-action ui-action-edit" title="Ver"><i class="bi bi-eye"></i></a>';
         }
-        html += '<a href="' + opts.edit + '" class="premium-btn-edit" title="Editar"><i class="bi bi-pencil"></i></a>';
-        html += '<button type="button" class="premium-btn-delete border-0 btn-delete-proveedor" data-id="' + id + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar"><i class="bi bi-trash"></i></button>';
+        html += '<a href="' + opts.edit + '" class="ui-action ui-action-edit" title="Editar"><i class="bi bi-pencil"></i></a>';
+        html += '<button type="button" class="ui-action ui-action-delete border-0 btn-delete-proveedor" data-id="' + id + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar"><i class="bi bi-trash"></i></button>';
         html += '</div>';
         return html;
     }

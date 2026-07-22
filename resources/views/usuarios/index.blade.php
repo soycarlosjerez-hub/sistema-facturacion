@@ -123,7 +123,7 @@
 @endphp
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
+<div class="container-fluid px-4 ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb">
 
     <div class="premium-header-amber mb-4">
         <div class="bubble"></div>
@@ -131,7 +131,7 @@
         <div class="bubble"></div>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position:relative; z-index:2;">
             <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-people"></i>
                 </div>
                 <div>
@@ -139,7 +139,7 @@
                     <p class="mb-0 opacity-75">Administra el personal del sistema y sus niveles de acceso</p>
                 </div>
             </div>
-            <a href="{{ route('usuarios.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold">
+            <a href="{{ route('usuarios.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                 <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
             </a>
         </div>
@@ -160,87 +160,87 @@
 
     <div class="row g-3 mb-4">
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="premium-stat-card p-3">
+            <div class="ui-stat p-3" style="--delay:.1s">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-primary bg-opacity-10 text-primary" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-people-fill"></i>
                     </div>
                     <div>
-                        <div class="stat-label">Total</div>
-                        <div class="stat-value text-primary">{{ $stats['total'] }}</div>
+                        <div class="ui-stat-label">Total</div>
+                        <div class="ui-stat-value text-primary">{{ $stats['total'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="premium-stat-card p-3">
+            <div class="ui-stat p-3" style="--delay:.15s">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-danger bg-opacity-10 text-danger" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-shield-lock-fill"></i>
                     </div>
                     <div>
-                        <div class="stat-label">Admins</div>
-                        <div class="stat-value text-danger">{{ $stats['admin'] }}</div>
+                        <div class="ui-stat-label">Admins</div>
+                        <div class="ui-stat-value text-danger">{{ $stats['admin'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="premium-stat-card p-3">
+            <div class="ui-stat p-3" style="--delay:.2s">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-warning bg-opacity-10 text-warning" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-person-badge-fill"></i>
                     </div>
                     <div>
-                        <div class="stat-label">Gerentes</div>
-                        <div class="stat-value text-warning">{{ $stats['gerente'] }}</div>
+                        <div class="ui-stat-label">Gerentes</div>
+                        <div class="ui-stat-value text-warning">{{ $stats['gerente'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="premium-stat-card p-3">
+            <div class="ui-stat p-3" style="--delay:.25s">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-info bg-opacity-10 text-info" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-cart-check-fill"></i>
                     </div>
                     <div>
-                        <div class="stat-label">Vendedores</div>
-                        <div class="stat-value text-info">{{ $stats['vendedor'] }}</div>
+                        <div class="ui-stat-label">Vendedores</div>
+                        <div class="ui-stat-value text-info">{{ $stats['vendedor'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="premium-stat-card p-3">
+            <div class="ui-stat p-3" style="--delay:.3s">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-success bg-opacity-10 text-success" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-box-seam-fill"></i>
                     </div>
                     <div>
-                        <div class="stat-label">Almacén</div>
-                        <div class="stat-value text-success">{{ $stats['almacen'] }}</div>
+                        <div class="ui-stat-label">Almacén</div>
+                        <div class="ui-stat-value text-success">{{ $stats['almacen'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-2 col-md-4 col-6">
-            <div class="premium-stat-card p-3">
+            <div class="ui-stat p-3" style="--delay:.35s">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-secondary bg-opacity-10 text-secondary" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                         <i class="bi bi-calculator-fill"></i>
                     </div>
                     <div>
-                        <div class="stat-label">Contadores</div>
-                        <div class="stat-value">{{ $stats['contador'] }}</div>
+                        <div class="ui-stat-label">Contadores</div>
+                        <div class="ui-stat-value">{{ $stats['contador'] }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent amber"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" class="d-flex align-items-center gap-3 flex-wrap">
                 <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1">
@@ -258,9 +258,9 @@
                         @endif
                     @endforeach
                 </div>
-                <div class="input-group" style="max-width: 280px;">
-                    <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" name="buscar" class="form-control border-0 bg-light" placeholder="Buscar por nombre o email..." value="{{ request('buscar') }}">
+                <div class="ui-input-group" style="max-width: 280px;">
+                    <span class="ui-input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="buscar" class="ui-input border-0 bg-light" placeholder="Buscar por nombre o email..." value="{{ request('buscar') }}">
                     @if(request('buscar') || request('rol'))
                         <a href="{{ route('usuarios.index') }}" class="btn btn-light border-0" title="Limpiar"><i class="bi bi-x-lg"></i></a>
                     @endif
@@ -269,8 +269,8 @@
         </div>
     </div>
 
-    <div class="premium-card overflow-hidden">
-        <div class="card-accent amber"></div>
+    <div class="ui-card overflow-hidden" style="--delay:.2s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead style="background: rgba(15,23,42,0.03);">
@@ -336,13 +336,13 @@
                                 <a href="{{ route('usuarios.show', $user->id) }}" class="user-action-btn view me-1" title="Ver perfil">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ route('usuarios.edit', $user->id) }}" class="premium-btn-edit me-1" title="Editar">
+                                <a href="{{ route('usuarios.edit', $user->id) }}" class="ui-action ui-action-edit me-1" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 @if($user->id !== auth()->id())
-                                    <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar al usuario &quot;{{ $user->name }}&quot;? Esta acción no se puede deshacer.')">
+                                    <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Eliminar al usuario &quot;{{ $user->name }}&quot;? Esta acción no se puede deshacer.')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="premium-btn-delete" title="Eliminar">
+                                        <button type="submit" class="ui-action ui-action-delete" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

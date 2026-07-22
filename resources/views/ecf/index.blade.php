@@ -5,102 +5,105 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
-body.dark-mode .card { background: rgba(15,23,42,.8); }
-body.dark-mode .table { color: #cbd5e1; }
-body.dark-mode .table-light { background: rgba(30,41,59,.6); }
-body.dark-mode .table-light th { color: #94a3b8; border-color: #334155; }
-body.dark-mode .table td { border-color: #1e293b; }
-body.dark-mode .premium-card .form-control:focus,
-body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
-body.dark-mode .premium-card .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
-body.dark-mode .premium-card .form-check-input { background-color: #334155; border-color: #475569; }
+body.dark-mode .ui-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
+body.dark-mode .ui-card { background: rgba(15,23,42,.8); }
+body.dark-mode .ui-table { color: #cbd5e1; }
+body.dark-mode .ui-table thead th { background: rgba(30,41,59,.6); color: #94a3b8; border-color: #334155; }
+body.dark-mode .ui-table tbody td { border-color: #1e293b; }
+body.dark-mode .ui-card .ui-input:focus,
+body.dark-mode .ui-card .ui-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+body.dark-mode .ui-card .ui-btn-solid { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .ui-card .ui-btn-solid:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
+body.dark-mode .ui-card .form-check-input { background-color: #334155; border-color: #475569; }
 body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-color: #f59e0b; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-receipt"></i>
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
+    <div class="ui-header d-flex justify-content-between align-items-center mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Comprobantes Fiscales Electrónicos</h4>
+                    <div class="ui-header-meta">
+                        <span>Gestión de e-CF según normas DGII - República Dominicana</span>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h2 class="fw-bold mb-1">Comprobantes Fiscales Electrónicos</h2>
-                <p class="mb-0 opacity-75">Gestión de e-CF según normas DGII - República Dominicana</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('secuencias-ecf.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-hash me-1"></i> Secuencias
+                </a>
+                <a href="{{ route('certificados-digitales.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-key me-1"></i> Certificados
+                </a>
             </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('secuencias-ecf.index') }}" class="btn btn-light btn-sm rounded-pill text-dark fw-semibold">
-                <i class="bi bi-hash me-1"></i> Secuencias
-            </a>
-            <a href="{{ route('certificados-digitales.index') }}" class="btn btn-light btn-sm rounded-pill text-dark fw-semibold">
-                <i class="bi bi-key me-1"></i> Certificados
-            </a>
-        </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
+            <div class="ui-stat" style="--delay:.1s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-primary bg-opacity-10 text-primary" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+                        <div style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; background:rgba(59,130,246,.1); color:#3b82f6;">
                             <i class="bi bi-file-pdf"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Total Emitidos</div>
-                            <div class="stat-value">{{ $stats['total'] }}</div>
+                            <div class="ui-stat-label">Total Emitidos</div>
+                            <div class="ui-stat-value">{{ $stats['total'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
+            <div class="ui-stat" style="--delay:.15s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-success bg-opacity-10 text-success" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+                        <div style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; background:rgba(34,197,94,.1); color:#16a34a;">
                             <i class="bi bi-check-circle"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Aprobados</div>
-                            <div class="stat-value">{{ $stats['aprobados'] }}</div>
+                            <div class="ui-stat-label">Aprobados</div>
+                            <div class="ui-stat-value">{{ $stats['aprobados'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
+            <div class="ui-stat" style="--delay:.2s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-warning bg-opacity-10 text-warning" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+                        <div style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; background:rgba(245,158,11,.1); color:#d97706;">
                             <i class="bi bi-clock-history"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Pendientes</div>
-                            <div class="stat-value">{{ $stats['pendientes'] }}</div>
+                            <div class="ui-stat-label">Pendientes</div>
+                            <div class="ui-stat-value">{{ $stats['pendientes'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
-                <div class="card-body">
+            <div class="ui-stat" style="--delay:.3s">
+                <div class="ui-stat-body">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-bubble bg-danger bg-opacity-10 text-danger" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
+                        <div style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; background:rgba(239,68,68,.1); color:#dc2626;">
                             <i class="bi bi-x-circle"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Rechazados</div>
-                            <div class="stat-value">{{ $stats['rechazados'] }}</div>
+                            <div class="ui-stat-label">Rechazados</div>
+                            <div class="ui-stat-value">{{ $stats['rechazados'] }}</div>
                         </div>
                     </div>
                 </div>
@@ -108,17 +111,17 @@ body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-col
         </div>
     </div>
 
-    <div class="premium-card mb-3">
-        <div class="card-accent amber"></div>
-        <div class="card-body p-3">
+    <div class="ui-card mb-3" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-3">
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold mb-1">eNCF</label>
-                    <input type="text" name="encf" class="form-control form-control-sm rounded-3" value="{{ request('encf') }}" placeholder="E310000000001">
+                    <label class="ui-label small fw-bold mb-1">eNCF</label>
+                    <input type="text" name="encf" class="ui-input ui-input-sm rounded-3" value="{{ request('encf') }}" placeholder="E310000000001">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold mb-1">Tipo</label>
-                    <select name="tipo_ecf" class="form-select form-select-sm rounded-3">
+                    <label class="ui-label small fw-bold mb-1">Tipo</label>
+                    <select name="tipo_ecf" class="ui-select ui-select-sm rounded-3">
                         <option value="">Todos</option>
                         @foreach($tipos as $key => $nombre)
                             <option value="{{ $key }}" {{ request('tipo_ecf') === $key ? 'selected' : '' }}>{{ $key }} - {{ $nombre }}</option>
@@ -126,8 +129,8 @@ body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-col
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold mb-1">Estado</label>
-                    <select name="estado" class="form-select form-select-sm rounded-3">
+                    <label class="ui-label small fw-bold mb-1">Estado</label>
+                    <select name="estado" class="ui-select ui-select-sm rounded-3">
                         <option value="">Todos</option>
                         @foreach($estados as $key => $info)
                             <option value="{{ $key }}" {{ request('estado') === $key ? 'selected' : '' }}>{{ $info['label'] }}</option>
@@ -135,18 +138,18 @@ body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-col
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold mb-1">Desde</label>
-                    <input type="date" name="desde" class="form-control form-control-sm rounded-3" value="{{ request('desde') }}">
+                    <label class="ui-label small fw-bold mb-1">Desde</label>
+                    <input type="date" name="desde" class="ui-input ui-input-sm rounded-3" value="{{ request('desde') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small fw-bold mb-1">Hasta</label>
-                    <input type="date" name="hasta" class="form-control form-control-sm rounded-3" value="{{ request('hasta') }}">
+                    <label class="ui-label small fw-bold mb-1">Hasta</label>
+                    <input type="date" name="hasta" class="ui-input ui-input-sm rounded-3" value="{{ request('hasta') }}">
                 </div>
                 <div class="col-md-2 d-flex gap-1">
-                    <button class="btn btn-primary btn-sm rounded-pill flex-grow-1">
+                    <button class="ui-btn ui-btn-solid ui-btn-sm rounded-pill flex-grow-1">
                         <i class="bi bi-search"></i>
                     </button>
-                    <a href="{{ route('ecf.index') }}" class="btn btn-light btn-sm rounded-pill">
+                    <a href="{{ route('ecf.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
                         <i class="bi bi-x-lg"></i>
                     </a>
                 </div>
@@ -154,11 +157,11 @@ body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-col
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent amber"></div>
+    <div class="ui-card" style="--delay:.2s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="ui-table table-hover align-middle mb-0">
+                <thead>
                     <tr>
                         <th class="ps-4">eNCF</th>
                         <th>Tipo</th>
@@ -178,7 +181,7 @@ body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-col
                             <br><small class="text-muted">Venta #{{ str_pad($ecf->venta_id, 5, '0', STR_PAD_LEFT) }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary">{{ $ecf->tipo_ecf }}</span>
+                            <span class="ui-badge ui-badge-neutral">{{ $ecf->tipo_ecf }}</span>
                             <br><small class="text-muted">{{ $ecf->tipo_nombre }}</small>
                         </td>
                         <td>
@@ -187,7 +190,7 @@ body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-col
                         </td>
                         <td class="text-end fw-bold">RD$ {{ number_format($ecf->monto_total, 2) }}</td>
                         <td class="text-center">
-                            <span class="badge bg-{{ $estadoInfo['color'] }} rounded-pill px-3">
+                            <span class="ui-badge ui-badge-{{ $estadoInfo['color'] }} rounded-pill px-3">
                                 <i class="bi {{ $estadoInfo['icon'] }} me-1"></i>{{ $estadoInfo['label'] }}
                             </span>
                         </td>
@@ -196,11 +199,11 @@ body.dark-mode .form-check-input:checked { background-color: #f59e0b; border-col
                             <br><small class="text-muted">{{ $ecf->fecha_emision->format('h:i A') }}</small>
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('ecf.show', $ecf) }}" class="premium-btn-edit" title="Ver detalle">
+                            <a href="{{ route('ecf.show', $ecf) }}" class="ui-action ui-action-view" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
                             </a>
                             @if($ecf->xml_content)
-                            <a href="{{ route('ecf.xml', $ecf) }}" target="_blank" class="premium-btn-edit" title="Ver XML" style="margin-left:4px;">
+                            <a href="{{ route('ecf.xml', $ecf) }}" target="_blank" class="ui-action ui-action-view" title="Ver XML" style="margin-left:4px;">
                                 <i class="bi bi-filetype-xml"></i>
                             </a>
                             @endif

@@ -16,23 +16,30 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-key"></i>
+<div class="ui-page">
+    <div class="ui-header mb-4" style="--delay:0s;background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-key"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Editar Certificado</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-pencil me-1"></i>
+                        <span>{{ $cert->nombre }}</span>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h3 class="fw-bold mb-1">Editar Certificado</h3>
-                <p class="mb-0 opacity-75">{{ $cert->nombre }}</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('certificados-digitales.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
             </div>
         </div>
-        <a href="{{ route('certificados-digitales.index') }}" class="btn btn-light rounded-pill text-dark fw-semibold">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     @if (session('error'))
@@ -51,8 +58,8 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
         </div>
     @endif
 
-    <div class="premium-card mb-5">
-        <div class="card-accent amber"></div>
+    <div class="ui-card mb-5" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <form id="certificadoForm" action="{{ route('certificados-digitales.update', $cert) }}" method="POST" enctype="multipart/form-data">
             @csrf @method('PUT')
             <div class="card-body p-4 p-md-5">
@@ -63,45 +70,45 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
                 </div>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Nombre</label>
-                        <input type="text" name="nombre" class="form-control rounded-3" value="{{ $cert->nombre }}" required>
+                        <label class="ui-label">Nombre</label>
+                        <input type="text" name="nombre" class="ui-input" value="{{ $cert->nombre }}" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Entidad Emisora</label>
-                        <input type="text" name="emisor_cert" class="form-control rounded-3" value="{{ $cert->emisor_cert }}">
+                        <label class="ui-label">Entidad Emisora</label>
+                        <input type="text" name="emisor_cert" class="ui-input" value="{{ $cert->emisor_cert }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">RNC Emisor</label>
-                        <input type="text" name="rnc_emisor" class="form-control rounded-3" value="{{ $cert->rnc_emisor }}" required>
+                        <label class="ui-label">RNC Emisor</label>
+                        <input type="text" name="rnc_emisor" class="ui-input" value="{{ $cert->rnc_emisor }}" required>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">RNC Titular</label>
-                        <input type="text" name="rnc_titular" class="form-control rounded-3" value="{{ $cert->rnc_titular }}" required>
+                        <label class="ui-label">RNC Titular</label>
+                        <input type="text" name="rnc_titular" class="ui-input" value="{{ $cert->rnc_titular }}" required>
                     </div>
                     <div class="col-md-12">
-                        <label class="form-label fw-bold small">Reemplazar Archivo (opcional)</label>
-                        <input type="file" name="archivo" class="form-control rounded-3" accept=".p12,.pfx">
+                        <label class="ui-label">Reemplazar Archivo (opcional)</label>
+                        <input type="file" name="archivo" class="ui-input" accept=".p12,.pfx">
                         <small class="text-muted">Solo suba un nuevo archivo si desea reemplazar el actual</small>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Nueva Contraseña (opcional)</label>
-                        <input type="password" name="password" class="form-control rounded-3" placeholder="Solo si la cambió">
+                        <label class="ui-label">Nueva Contraseña (opcional)</label>
+                        <input type="password" name="password" class="ui-input" placeholder="Solo si la cambió">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Número de Serie</label>
-                        <input type="text" name="serial_number" class="form-control rounded-3" value="{{ $cert->serial_number }}">
+                        <label class="ui-label">Número de Serie</label>
+                        <input type="text" name="serial_number" class="ui-input" value="{{ $cert->serial_number }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Fecha de Emisión</label>
-                        <input type="date" name="fecha_emision" class="form-control rounded-3" value="{{ $cert->fecha_emision?->format('Y-m-d') }}">
+                        <label class="ui-label">Fecha de Emisión</label>
+                        <input type="date" name="fecha_emision" class="ui-input" value="{{ $cert->fecha_emision?->format('Y-m-d') }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Fecha de Vencimiento</label>
-                        <input type="date" name="fecha_vencimiento" class="form-control rounded-3" value="{{ $cert->fecha_vencimiento->format('Y-m-d') }}" required>
+                        <label class="ui-label">Fecha de Vencimiento</label>
+                        <input type="date" name="fecha_vencimiento" class="ui-input" value="{{ $cert->fecha_vencimiento->format('Y-m-d') }}" required>
                     </div>
                     <div class="col-md-12">
-                        <label class="form-label fw-bold small">Notas</label>
-                        <textarea name="notas" class="form-control rounded-3" rows="2">{{ $cert->notas }}</textarea>
+                        <label class="ui-label">Notas</label>
+                        <textarea name="notas" class="ui-input" rows="2">{{ $cert->notas }}</textarea>
                     </div>
                     <div class="col-md-12">
                         <div class="form-check form-switch">
@@ -115,12 +122,17 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
     </div>
 </div>
 
-<div id="stickySaveBar" class="premium-sticky-bar d-flex justify-content-between align-items-center">
-    <div>
-        <span class="fw-semibold" style="color: #f59e0b;"><i class="bi bi-key me-1"></i> Editando: {{ $cert->nombre }}</span>
+<div id="stickySaveBar" class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <span class="fw-semibold" style="color: #f59e0b;"><i class="bi bi-key me-1"></i> Editando: {{ $cert->nombre }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('certificados-digitales.index') }}" class="btn-cancel me-2">Cancelar</a>
+            <button type="submit" form="certificadoForm" class="btn-save rounded-pill px-5 fw-bold shadow-sm">
+                <i class="bi bi-check-circle me-1"></i> Actualizar Certificado
+            </button>
+        </div>
     </div>
-    <button type="submit" form="certificadoForm" class="btn-save rounded-pill px-5 fw-bold shadow-sm">
-        <i class="bi bi-check-circle me-1"></i> Actualizar Certificado
-    </button>
 </div>
 @endsection

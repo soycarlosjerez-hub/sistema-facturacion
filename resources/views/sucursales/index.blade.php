@@ -43,56 +43,47 @@ body.dark-mode .sucursales-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="container-fluid px-4 py-3 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
 
-    <div class="premium-header mb-4">
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
-                    <i class="bi bi-geo-alt"></i>
-                </div>
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>    <div class="bubble"></div>    <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-geo-alt"></i></div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Gestión de Sucursales</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-geo-alt me-1"></i>
-                        Administra las sucursales, ubicaciones y datos de contacto
-                    </small>
+                    <h4 class="ui-header-title">Gestión de Sucursales</h4>
+                    <div class="ui-header-meta"><i class="bi bi-geo-alt me-1"></i> <span>Administra las sucursales, ubicaciones y datos de contacto</span></div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('sucursales.create')
-                <a href="{{ route('sucursales.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-plus-lg me-1"></i> Nueva Sucursal
-                </a>
+                <a href="{{ route('sucursales.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-plus-lg me-1"></i> Nueva Sucursal</a>
                 @endcan
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent purple"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-3">
             <form method="GET" action="{{ route('sucursales.index') }}" class="row g-2 align-items-end">
                 <div class="col-lg-5">
-                    <label class="form-label small fw-bold text-muted">Buscar</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="buscar" class="form-control" placeholder="Nombre, dirección o teléfono..." value="{{ request('buscar') }}" autocomplete="off">
+                    <label class="ui-label">Buscar</label>
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="buscar" class="ui-input" placeholder="Nombre, dirección o teléfono..." value="{{ request('buscar') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-3 d-flex gap-2 align-items-end">
-                    <button type="submit" class="btn btn-primary rounded-pill flex-grow-1"><i class="bi bi-funnel me-2"></i>Filtrar</button>
-                    <a href="{{ route('sucursales.index') }}" class="btn btn-outline-secondary rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;" title="Limpiar"><i class="bi bi-arrow-counterclockwise"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill flex-grow-1"><i class="bi bi-funnel me-2"></i>Filtrar</button>
+                    <a href="{{ route('sucursales.index') }}" class="ui-btn ui-btn-ghost rounded-circle" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;" title="Limpiar"><i class="bi bi-arrow-counterclockwise"></i></a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.2s;">
-        <div class="card-accent purple"></div>
+    <div class="ui-card" style="--delay:.2s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
             <table class="table sucursales-table align-middle mb-0">
                 <thead>
@@ -110,25 +101,25 @@ body.dark-mode .sucursales-table tbody td {
                 <tbody>
                     @forelse($sucursales as $s)
                     <tr>
-                        <td class="ps-4"><span class="premium-badge">{{ $s->codigo }}</span></td>
+                        <td class="ps-4"><span class="ui-badge ui-badge-neutral">{{ $s->codigo }}</span></td>
                         <td class="fw-bold">
                             <a href="{{ route('sucursales.show', $s) }}" class="text-decoration-none">{{ $s->nombre }}</a>
                         </td>
-                        <td class="text-center"><span class="premium-badge">{{ $s->almacenes_count }}</span></td>
-                        <td class="text-center"><span class="premium-badge">{{ $s->cajas_count }}</span></td>
+                        <td class="text-center"><span class="ui-badge ui-badge-neutral">{{ $s->almacenes_count }}</span></td>
+                        <td class="text-center"><span class="ui-badge ui-badge-neutral">{{ $s->cajas_count }}</span></td>
                         <td>{{ $s->telefono ?? '—' }}</td>
                         <td class="text-center">
                             @if($s->es_matriz)
-                                <span class="premium-badge active"><i class="bi bi-star-fill me-1"></i>Matriz</span>
+                                <span class="ui-badge ui-badge-success"><i class="bi bi-star-fill me-1"></i>Matriz</span>
                             @else
                                 <span class="text-muted">—</span>
                             @endif
                         </td>
                         <td class="text-center">
                             @if($s->activa)
-                                <span class="premium-badge active"><i class="bi bi-check-circle me-1"></i>Activa</span>
+                                <span class="ui-badge ui-badge-success"><i class="bi bi-check-circle me-1"></i>Activa</span>
                             @else
-                                <span class="premium-badge"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
+                                <span class="ui-badge ui-badge-neutral"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
                             @endif
                         </td>
                         <td class="text-end pe-4">
@@ -136,14 +127,14 @@ body.dark-mode .sucursales-table tbody td {
                                 <i class="bi bi-eye"></i>
                             </a>
                             @can('sucursales.edit')
-                            <a href="{{ route('sucursales.edit', $s) }}" class="premium-btn-edit" title="Editar">
+                            <a href="{{ route('sucursales.edit', $s) }}" class="ui-action ui-action-edit" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @endcan
                             @can('sucursales.delete')
-                            <form action="{{ route('sucursales.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la sucursal {{ $s->nombre }}?')">
+                            <form action="{{ route('sucursales.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Eliminar la sucursal {{ $s->nombre }}?')">
                                 @csrf @method('DELETE')
-                                <button class="premium-btn-delete" title="Eliminar">
+                                <button class="ui-action ui-action-delete" title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>

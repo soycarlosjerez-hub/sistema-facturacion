@@ -2,13 +2,36 @@
 
 @section('title', 'KDS - Pantalla de Cocina')
 
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Pantalla de Cocina</h1>
-        <div>
-            <button class="btn btn-outline-secondary" onclick="location.reload()">Actualizar</button>
-            <span class="badge bg-secondary fs-6" id="order_count">0</span>
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-display"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Pantalla de Cocina</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-egg-fried me-1"></i>
+                        <span>Órdenes en preparación</span>
+                        <span class="divider">·</span>
+                        <span><span class="badge bg-white text-dark rounded-pill px-2" id="order_count">0</span> orden(es)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <button class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+                </button>
+            </div>
         </div>
     </div>
 

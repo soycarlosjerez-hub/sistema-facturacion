@@ -1,81 +1,68 @@
 @extends('layouts.app')
 
 @push('styles')
-<style>
-.ordenes-table {
-    --bs-table-bg: transparent;
-    --bs-table-hover-bg: rgba(59,130,246,.04);
-    margin: 0;
-}
-.ordenes-table thead th {
-    background: rgba(241,245,249,.8);
-    color: #64748b;
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    font-weight: 700;
-    padding: .85rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-.ordenes-table tbody td {
-    padding: .85rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-    font-size: .9rem;
-}
-.ordenes-table tbody tr:last-child td { border-bottom: none; }
-.ordenes-table tbody tr { transition: background .15s; }
-.ordenes-table tbody tr:hover { background: rgba(59,130,246,.03); }
-body.dark-mode .ordenes-table thead th {
-    background: rgba(15,23,42,.5);
-    color: #94a3b8;
-    border-color: #1e293b;
-}
-body.dark-mode .ordenes-table tbody td {
-    border-bottom-color: #1e293b;
-    color: #cbd5e1;
-}
-</style>
+@include('partials.premium-ui')
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Órdenes</h1>
-        <a href="{{ route('ordenes.create') }}" class="btn btn-primary">Nueva Orden</a>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <h5>Pendientes</h5>
-                    <h3>{{ $totales['pendientes'] }}</h3>
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Órdenes</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>Gestión de órdenes de mostrador, delivery y pickup</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <h5>En Proceso</h5>
-                    <h3>{{ $totales['en_proceso'] }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <h5>Total Hoy</h5>
-                    <h3>RD$ {{ number_format($totales['hoy'], 2) }}</h3>
-                </div>
+            <div class="ui-header-actions">
+                <a href="{{ route('ordenes.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Orden
+                </a>
             </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-body">
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="ui-stat" style="--delay:.1s">
+                <div class="ui-stat-body">
+                    <div class="ui-stat-label">Pendientes</div>
+                    <div class="ui-stat-value">{{ $totales['pendientes'] }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="ui-stat" style="--delay:.15s">
+                <div class="ui-stat-body">
+                    <div class="ui-stat-label">En Proceso</div>
+                    <div class="ui-stat-value">{{ $totales['en_proceso'] }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="ui-stat" style="--delay:.2s">
+                <div class="ui-stat-body">
+                    <div class="ui-stat-label">Total Hoy</div>
+                    <div class="ui-stat-value">RD$ {{ number_format($totales['hoy'], 2) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui-card" style="--delay:.25s">
+        <div class="ui-card-accent amber"></div>
+        <div class="ui-card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover ordenes-table">
+                <table class="ui-table">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -107,20 +94,20 @@ body.dark-mode .ordenes-table tbody td {
                             <td>
                                 <div class="d-flex gap-1">
                                     @can('ordenes.view')
-                                    <a href="{{ route('ordenes.show', $orden) }}" class="btn btn-sm btn-outline-info" title="Ver detalle">
+                                    <a href="{{ route('ordenes.show', $orden) }}" class="ui-action ui-action-view" title="Ver detalle">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     @endcan
 
                                     @if(!in_array($orden->estado, ['completada', 'anulada']))
                                         @can('ordenes.update')
-                                        <a href="{{ route('ordenes.show', $orden) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <a href="{{ route('ordenes.show', $orden) }}" class="ui-action ui-action-edit" title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         @endcan
 
                                         @can('ordenes.pay')
-                                        <a href="{{ route('ordenes.show', $orden) }}" class="btn btn-sm btn-outline-success" title="Cobrar">
+                                        <a href="{{ route('ordenes.show', $orden) }}" class="ui-action" style="background:rgba(34,197,94,.1);color:#16a34a;border-color:rgba(34,197,94,.2);" title="Cobrar">
                                             <i class="bi bi-cash-coin"></i>
                                         </a>
                                         @endcan
@@ -129,7 +116,7 @@ body.dark-mode .ordenes-table tbody td {
                                         <form action="{{ route('ordenes.destroy', $orden) }}" method="POST" class="d-inline form-anular">
                                             @csrf @method('DELETE')
                                             <input type="hidden" name="motivo" value="Anulada por usuario">
-                                            <button type="button" class="btn btn-sm btn-outline-danger btn-trigger-anular" title="Anular">
+                                            <button type="button" class="ui-action ui-action-delete btn-trigger-anular" title="Anular">
                                                 <i class="bi bi-x-circle"></i>
                                             </button>
                                         </form>
@@ -137,7 +124,7 @@ body.dark-mode .ordenes-table tbody td {
                                     @endif
 
                                     @can('ordenes.view')
-                                    <a href="{{ route('ordenes.ticket', $orden) }}" class="btn btn-sm btn-outline-secondary" title="Imprimir ticket" target="_blank">
+                                    <a href="{{ route('ordenes.ticket', $orden) }}" class="ui-action ui-action-print" title="Imprimir ticket" target="_blank">
                                         <i class="bi bi-printer"></i>
                                     </a>
                                     @endcan
@@ -146,7 +133,7 @@ body.dark-mode .ordenes-table tbody td {
                                         @can('ordenes.cancel')
                                         <form action="{{ route('ordenes.forceDestroy', $orden) }}" method="POST" class="d-inline form-borrar">
                                             @csrf @method('DELETE')
-                                            <button type="button" class="btn btn-sm btn-outline-dark btn-trigger-borrar" title="Eliminar permanentemente">
+                                            <button type="button" class="ui-action" style="background:rgba(100,116,139,.1);color:#64748b;border-color:rgba(100,116,139,.2);" title="Eliminar permanentemente">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
@@ -159,7 +146,11 @@ body.dark-mode .ordenes-table tbody td {
                     </tbody>
                 </table>
             </div>
-            {{ $ordenes->links() }}
+            @if($ordenes->hasPages())
+            <div class="p-3 border-top border-light">
+                {{ $ordenes->links() }}
+            </div>
+            @endif
         </div>
     </div>
 </div>

@@ -88,7 +88,7 @@
     $isSelf = $usuario->id === auth()->id();
 @endphp
 
-<div class="container-fluid px-4 premium-page">
+<div class="container-fluid px-4 ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb">
 
     <div class="premium-header-amber mb-4">
         <div class="bubble"></div>
@@ -118,10 +118,10 @@
             </div>
             <div class="col-md-auto mt-3 mt-md-0 text-md-end" style="position: relative; z-index: 2;">
                 <div class="d-flex gap-2 justify-content-center justify-content-md-end flex-wrap">
-                    <a href="{{ route('usuarios.index') }}" class="btn btn-light rounded-pill px-3">
+                    <a href="{{ route('usuarios.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                         <i class="bi bi-arrow-left me-1"></i>Volver
                     </a>
-                    <a href="{{ route('usuarios.edit', $usuario->id) }}" class="btn btn-dark rounded-pill px-3 fw-bold">
+                    <a href="{{ route('usuarios.edit', $usuario->id) }}" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
                         <i class="bi bi-pencil me-1"></i>Editar
                     </a>
                 </div>
@@ -131,44 +131,44 @@
 
     <div class="row g-3 mb-3">
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card p-3">
-                <div class="stat-label"><i class="bi bi-shield-check me-1"></i>Permisos</div>
-                <div class="stat-value text-primary">{{ $permisos->count() }}</div>
+            <div class="ui-stat p-3" style="--delay:.1s">
+                <div class="ui-stat-label"><i class="bi bi-shield-check me-1"></i>Permisos</div>
+                <div class="ui-stat-value text-primary">{{ $permisos->count() }}</div>
                 <small class="text-muted">de {{ Spatie\Permission\Models\Permission::count() }} totales</small>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card p-3">
-                <div class="stat-label"><i class="bi bi-diagram-3 me-1"></i>Módulos</div>
-                <div class="stat-value text-info">{{ $permGrouped->count() }}</div>
+            <div class="ui-stat p-3" style="--delay:.15s">
+                <div class="ui-stat-label"><i class="bi bi-diagram-3 me-1"></i>Módulos</div>
+                <div class="ui-stat-value text-info">{{ $permGrouped->count() }}</div>
                 <small class="text-muted">con acceso</small>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card p-3">
-                <div class="stat-label"><i class="bi bi-calendar-plus me-1"></i>Miembro desde</div>
-                <div class="stat-value text-success">{{ $usuario->created_at->format('d M Y') }}</div>
+            <div class="ui-stat p-3" style="--delay:.2s">
+                <div class="ui-stat-label"><i class="bi bi-calendar-plus me-1"></i>Miembro desde</div>
+                <div class="ui-stat-value text-success">{{ $usuario->created_at->format('d M Y') }}</div>
                 <small class="text-muted">{{ $usuario->created_at->diffForHumans() }}</small>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card p-3">
-                <div class="stat-label"><i class="bi bi-clock-history me-1"></i>Última edición</div>
-                <div class="stat-value text-warning">{{ $usuario->updated_at->format('d M Y') }}</div>
+            <div class="ui-stat p-3" style="--delay:.25s">
+                <div class="ui-stat-label"><i class="bi bi-clock-history me-1"></i>Última edición</div>
+                <div class="ui-stat-value text-warning">{{ $usuario->updated_at->format('d M Y') }}</div>
                 <small class="text-muted">{{ $usuario->updated_at->diffForHumans() }}</small>
             </div>
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent amber"></div>
+    <div class="ui-card" style="--delay:.3s">
+        <div class="ui-card-accent"></div>
         <div class="premium-card-title d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-key icon-amber"></i> Permisos del Usuario
             </div>
-            <div class="input-group" style="max-width: 280px;">
-                <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Filtrar permisos...">
+            <div class="ui-input-group" style="max-width: 280px;">
+                <span class="ui-input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                <input type="text" id="permFilter" class="ui-input border-0 bg-light" placeholder="Filtrar permisos...">
             </div>
         </div>
         <div class="premium-card-subtitle">Acciones permitidas a través del rol asignado</div>

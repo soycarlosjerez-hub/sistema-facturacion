@@ -5,25 +5,23 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
-body.dark-mode .card { background: rgba(15,23,42,.8); }
-body.dark-mode .table { color: #cbd5e1; }
-body.dark-mode .table-light { background: rgba(30,41,59,.6); }
-body.dark-mode .table-light th { color: #94a3b8; border-color: #334155; }
-body.dark-mode .table td { border-color: #1e293b; }
+body.dark-mode .ui-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
+body.dark-mode .ui-card { background: rgba(15,23,42,.8); }
+body.dark-mode .ui-table { color: #cbd5e1; }
+body.dark-mode .ui-table thead th { background: rgba(30,41,59,.6); color: #94a3b8; border-color: #334155; }
+body.dark-mode .ui-table tbody td { border-color: #1e293b; }
 body.dark-mode .bg-light { background: rgba(30,41,59,.6) !important; }
 body.dark-mode .text-dark { color: #f1f5f9 !important; }
 body.dark-mode .alert-success { background: rgba(16,185,129,.15); color: #6ee7b7; }
 body.dark-mode .alert-warning { background: rgba(245,158,11,.15); color: #fcd34d; }
 body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; }
 body.dark-mode .alert-info { background: rgba(59,130,246,.15); color: #93c5fd; }
-body.dark-mode .premium-card .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
-body.dark-mode .premium-card .btn-success { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16,185,129,.3); }
-body.dark-mode .premium-card .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 14px rgba(239,68,68,.3); }
-body.dark-mode .premium-card .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-card .form-control:focus,
-body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+body.dark-mode .ui-card .ui-btn-solid { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .ui-card .ui-btn-solid:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
+body.dark-mode .ui-card .ui-btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 14px rgba(239,68,68,.3); }
+body.dark-mode .ui-card .ui-btn-ghost { background: rgba(255,255,255,.05); border-color: #334155; color: #94a3b8; }
+body.dark-mode .ui-card .ui-input:focus,
+body.dark-mode .ui-card .ui-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
 body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2rem .4rem; border-radius: .25rem; }
 </style>
 @endpush
@@ -35,38 +33,40 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
     $cliente = $venta?->cliente;
 @endphp
 
-<div class="container-fluid px-4 premium-page animate__animated animate__fadeIn">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-receipt"></i>
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
+    <div class="ui-header d-flex justify-content-between align-items-center mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-1">
+                            <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
+                            <li class="breadcrumb-item active text-white">{{ $ecf->encf }}</li>
+                        </ol>
+                    </nav>
+                    <h4 class="ui-header-title">Detalle del Comprobante Electrónico</h4>
+                </div>
             </div>
-            <div>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
-                        <li class="breadcrumb-item active text-white">{{ $ecf->encf }}</li>
-                    </ol>
-                </nav>
-                <h3 class="fw-bold mb-0">Detalle del Comprobante Electrónico</h3>
+            <div class="ui-header-actions">
+                <a href="{{ route('ventas.show', $ecf->venta_id) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-receipt me-1"></i>Ver Venta
+                </a>
+                <a href="{{ route('ecf.pdf', $ecf) }}" target="_blank" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-file-pdf me-1"></i>PDF
+                </a>
+                @if($ecf->xml_content)
+                <a href="{{ route('ecf.xml', $ecf) }}" target="_blank" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-filetype-xml me-1"></i>XML
+                </a>
+                @endif
             </div>
         </div>
-        <div class="d-flex gap-2 flex-wrap justify-content-end">
-            <a href="{{ route('ventas.show', $ecf->venta_id) }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-receipt me-1"></i>Ver Venta
-            </a>
-            <a href="{{ route('ecf.pdf', $ecf) }}" target="_blank" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-file-pdf me-1"></i>PDF
-            </a>
-            @if($ecf->xml_content)
-            <a href="{{ route('ecf.xml', $ecf) }}" target="_blank" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-filetype-xml me-1"></i>XML
-            </a>
-            @endif
-        </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     @if(session('success'))
@@ -81,12 +81,12 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
 
     <div class="row g-3">
         <div class="col-lg-5">
-            <div class="premium-card">
-                <div class="card-accent amber"></div>
-                <div class="card-body p-4">
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <small class="text-muted text-uppercase fw-bold" style="font-size:0.7rem;">Comprobante</small>
-                        <span class="badge bg-{{ $estadoInfo['color'] }} rounded-pill px-3">
+                        <span class="ui-badge ui-badge-{{ $estadoInfo['color'] }} rounded-pill px-3">
                             <i class="bi {{ $estadoInfo['icon'] }} me-1"></i>{{ $estadoInfo['label'] }}
                         </span>
                     </div>
@@ -151,7 +151,7 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                         @if(in_array($ecf->estado, ['borrador', 'generado', 'rechazado'], true))
                             <form action="{{ route('ecf.firmar', $ecf) }}" method="POST">
                                 @csrf
-                                <button class="btn btn-primary w-100 rounded-pill">
+                                <button class="ui-btn ui-btn-solid w-100 rounded-pill">
                                     <i class="bi bi-pen me-1"></i>Firmar Documento
                                 </button>
                             </form>
@@ -160,7 +160,7 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                         @if(in_array($ecf->estado, ['firmado', 'generado', 'rechazado'], true))
                             <form action="{{ route('ecf.enviar', $ecf) }}" method="POST">
                                 @csrf
-                                <button class="btn btn-success w-100 rounded-pill">
+                                <button class="ui-btn ui-btn-solid w-100 rounded-pill" style="--accent:#10b981;--accent-hover:#059669;">
                                     <i class="bi bi-cloud-upload me-1"></i>Enviar a DGII
                                 </button>
                             </form>
@@ -169,32 +169,32 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                         @if($ecf->track_id_dgii && $ecf->estado !== 'aprobado')
                             <form action="{{ route('ecf.consultar', $ecf) }}" method="POST">
                                 @csrf
-                                <button class="btn btn-warning w-100 rounded-pill">
+                                <button class="ui-btn ui-btn-solid w-100 rounded-pill" style="--accent:#f59e0b;--accent-hover:#d97706;">
                                     <i class="bi bi-arrow-clockwise me-1"></i>Consultar Estado DGII
                                 </button>
                             </form>
                         @endif
 
                         @if($ecf->notaCredito)
-                            <a href="{{ route('ecf.show', $ecf->notaCredito) }}" class="btn btn-outline-warning w-100 rounded-pill">
+                            <a href="{{ route('ecf.show', $ecf->notaCredito) }}" class="ui-btn ui-btn-ghost w-100 rounded-pill">
                                 <i class="bi bi-file-earmark-minus me-1"></i>Nota de Crédito E34: {{ $ecf->notaCredito->encf }}
-                                <span class="badge bg-{{ $ecf->notaCredito->estado_info['color'] }} ms-1">{{ $ecf->notaCredito->estado_info['label'] }}</span>
+                                <span class="ui-badge ui-badge-{{ $ecf->notaCredito->estado_info['color'] }} ms-1">{{ $ecf->notaCredito->estado_info['label'] }}</span>
                             </a>
                         @endif
                         @if($ecf->documentoOriginal)
-                            <a href="{{ route('ecf.show', $ecf->documentoOriginal) }}" class="btn btn-outline-info w-100 rounded-pill">
+                            <a href="{{ route('ecf.show', $ecf->documentoOriginal) }}" class="ui-btn ui-btn-ghost w-100 rounded-pill">
                                 <i class="bi bi-file-earmark-arrow-up me-1"></i>Doc. Original: {{ $ecf->documentoOriginal->encf }}
                             </a>
                         @endif
                         @if($ecf->puedeAnular())
-                            <button class="btn btn-outline-danger w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#modalAnular">
+                            <button class="ui-btn ui-btn-danger w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#modalAnular">
                                 <i class="bi bi-slash-circle me-1"></i>Anular e-CF (genera E34)
                             </button>
                         @endif
                         @if($ecf->estado === 'aprobado' && $ecf->tipo_ecf !== 'E33')
                             <form action="{{ route('ecf.nota-debito', $ecf) }}" method="POST">
                                 @csrf
-                                <button class="btn btn-outline-warning w-100 rounded-pill" onclick="confirmAction({title:'Nota de Débito E33', text:'¿Generar Nota de Débito (E33) para corregir al alza este comprobante?', icon:'warning', color:'#f59e0b', confirmText:'Generar E33', onSubmit:function(){ this.closest('form').submit(); }})">
+                                <button class="ui-btn ui-btn-ghost w-100 rounded-pill" onclick="confirmAction({title:'Nota de Débito E33', text:'¿Generar Nota de Débito (E33) para corregir al alza este comprobante?', icon:'warning', color:'#f59e0b', confirmText:'Generar E33', onSubmit:function(){ this.closest('form').submit(); }})">
                                     <i class="bi bi-file-earmark-plus me-1"></i>Nota de Débito E33
                                 </button>
                             </form>
@@ -205,17 +205,17 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
         </div>
 
         <div class="col-lg-7">
-            <div class="premium-card mb-3">
-                <div class="card-accent amber"></div>
-                <div class="premium-card-title"><i class="bi bi-person icon-amber"></i> Datos del Cliente</div>
-                <div class="card-body p-4">
+            <div class="ui-card mb-3" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title"><i class="bi bi-person"></i> Datos del Cliente</div>
+                <div class="ui-card-body">
                     @if($cliente)
                     <div class="row g-2 small">
                         <div class="col-md-6"><span class="text-muted d-block">Nombre</span><span class="fw-bold">{{ $cliente->nombre }}</span></div>
                         <div class="col-md-3"><span class="text-muted d-block">Documento</span><span class="fw-bold">{{ ucfirst($cliente->tipo_documento ?? 'N/A') }}</span></div>
                         <div class="col-md-3"><span class="text-muted d-block">RNC/Cédula</span><span class="fw-bold">{{ $cliente->rnc_cedula ?: 'N/A' }}</span></div>
                         <div class="col-md-6"><span class="text-muted d-block">Email</span><span>{{ $cliente->email ?: 'N/A' }}</span></div>
-                        <div class="col-md-6"><span class="text-muted d-block">Tipo Cliente</span><span class="badge bg-info">{{ ucfirst(str_replace('_',' ', $cliente->tipo_cliente)) }}</span></div>
+                        <div class="col-md-6"><span class="text-muted d-block">Tipo Cliente</span><span class="ui-badge ui-badge-info">{{ ucfirst(str_replace('_',' ', $cliente->tipo_cliente)) }}</span></div>
                     </div>
                     @else
                     <p class="text-muted mb-0">Sin cliente asociado</p>
@@ -223,10 +223,10 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                 </div>
             </div>
 
-            <div class="premium-card mb-3">
-                <div class="card-accent amber"></div>
-                <div class="premium-card-title"><i class="bi bi-cash-stack icon-amber"></i> Totales</div>
-                <div class="card-body p-4">
+            <div class="ui-card mb-3" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title"><i class="bi bi-cash-stack"></i> Totales</div>
+                <div class="ui-card-body">
                     <div class="d-flex justify-content-between mb-1"><span class="text-muted">Monto Gravado</span><span>RD$ {{ number_format($ecf->monto_gravado_total, 2) }}</span></div>
                     <div class="d-flex justify-content-between mb-1"><span class="text-muted">Monto Exento</span><span>RD$ {{ number_format($ecf->monto_exento_total, 2) }}</span></div>
                     <div class="d-flex justify-content-between mb-1"><span class="text-muted">ITBIS</span><span>RD$ {{ number_format($ecf->itbis_total, 2) }}</span></div>
@@ -234,12 +234,12 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                 </div>
             </div>
 
-            <div class="premium-card mb-3">
-                <div class="card-accent amber"></div>
-                <div class="premium-card-title"><i class="bi bi-list-ul icon-amber"></i> Items del Comprobante</div>
+            <div class="ui-card mb-3" style="--delay:.3s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title"><i class="bi bi-list-ul"></i> Items del Comprobante</div>
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
-                        <thead class="table-light">
+                    <table class="ui-table table-sm align-middle mb-0">
+                        <thead>
                             <tr style="font-size:0.7rem; text-transform:uppercase;">
                                 <th class="ps-3">#</th>
                                 <th>Descripción</th>
@@ -273,12 +273,12 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
             @endif
 
             @if($ecf->logs->count())
-            <div class="premium-card">
-                <div class="card-accent amber"></div>
-                <div class="premium-card-title"><i class="bi bi-list-task icon-amber"></i> Historial de Operaciones</div>
+            <div class="ui-card" style="--delay:.4s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title"><i class="bi bi-list-task"></i> Historial de Operaciones</div>
                 <div class="table-responsive">
-                    <table class="table table-sm mb-0">
-                        <thead class="table-light">
+                    <table class="ui-table table-sm mb-0">
+                        <thead>
                             <tr style="font-size:0.7rem; text-transform:uppercase;">
                                 <th class="ps-3">Fecha</th>
                                 <th>Acción</th>
@@ -292,7 +292,7 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                                 <td class="ps-3">{{ $log->created_at->format('d/m/Y h:i:s') }}</td>
                                 <td>{{ ucfirst($log->accion) }}</td>
                                 <td>
-                                    <span class="badge bg-{{ $log->estado_resultado === 'exito' ? 'success' : 'danger' }} bg-opacity-10 text-{{ $log->estado_resultado === 'exito' ? 'success' : 'danger' }} rounded-pill">
+                                    <span class="ui-badge ui-badge-{{ $log->estado_resultado === 'exito' ? 'success' : 'danger' }} rounded-pill">
                                         {{ ucfirst($log->estado_resultado) }}
                                     </span>
                                 </td>
@@ -329,12 +329,12 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                         <i class="bi bi-info-circle me-1"></i>
                         <strong>{{ $ecf->encf }}</strong> — Monto: RD$ {{ number_format($ecf->monto_total, 2) }}
                     </div>
-                    <label class="form-label fw-bold small text-uppercase">Motivo <span class="text-danger">*</span></label>
-                    <textarea name="motivo" class="form-control border-0 bg-light" rows="3" required minlength="5"></textarea>
+                    <label class="ui-label fw-bold small text-uppercase">Motivo <span class="text-danger">*</span></label>
+                    <textarea name="motivo" class="ui-input" rows="3" required minlength="5"></textarea>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger rounded-pill px-4">Anular</button>
+                    <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-danger rounded-pill px-4">Anular</button>
                 </div>
             </form>
         </div>

@@ -19,59 +19,64 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page">
 
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-building"></i>
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Inventario por Almacén</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-box-seam me-1"></i>
+                        <span>Consulta el stock y valor del inventario en cada almacén</span>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h2 class="fw-bold mb-1">Inventario por Almacén</h2>
-                <p class="mb-0 opacity-75 fs-5">Consulta el stock y valor del inventario en cada almacén</p>
-            </div>
-        </div>
-        <div class="d-flex gap-3 text-white">
-            @php
-                $totalProductos = 0;
-                $totalValorGeneral = 0;
-                foreach ($almacenes as $alm) {
-                    if ($almacenId && $almacenId != $alm->id) continue;
-                    foreach ($stocks->get($alm->id, collect()) as $it) {
-                        if ((int)$it->stock <= 0) continue;
-                        $p = $productos->firstWhere('id', $it->producto_id);
-                        if (!$p) continue;
-                        $totalProductos++;
-                        $totalValorGeneral += $it->stock * ($p->precio_compra ?? 0);
+            <div class="ui-header-actions d-flex gap-3">
+                @php
+                    $totalProductos = 0;
+                    $totalValorGeneral = 0;
+                    foreach ($almacenes as $alm) {
+                        if ($almacenId && $almacenId != $alm->id) continue;
+                        foreach ($stocks->get($alm->id, collect()) as $it) {
+                            if ((int)$it->stock <= 0) continue;
+                            $p = $productos->firstWhere('id', $it->producto_id);
+                            if (!$p) continue;
+                            $totalProductos++;
+                            $totalValorGeneral += $it->stock * ($p->precio_compra ?? 0);
+                        }
                     }
-                }
-            @endphp
-            <div class="text-end">
-                <small class="opacity-75 d-block">Productos</small>
-                <span class="fw-bold fs-5">{{ $totalProductos }}</span>
-            </div>
-            <div class="text-end">
-                <small class="opacity-75 d-block">Valor Total</small>
-                <span class="fw-bold fs-5">RD$ {{ number_format($totalValorGeneral, 2) }}</span>
+                @endphp
+                <div class="text-end">
+                    <small class="opacity-75 d-block">Productos</small>
+                    <span class="fw-bold fs-5">{{ $totalProductos }}</span>
+                </div>
+                <div class="text-end">
+                    <small class="opacity-75 d-block">Valor Total</small>
+                    <span class="fw-bold fs-5">RD$ {{ number_format($totalValorGeneral, 2) }}</span>
+                </div>
             </div>
         </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent blue"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body">
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" name="buscar" id="buscar-instant" class="form-control border-start-0 ps-0" placeholder="Buscar producto por nombre o código..." value="{{ $buscar }}" autocomplete="off">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="buscar" id="buscar-instant" class="ui-input" placeholder="Buscar producto por nombre o código..." value="{{ $buscar }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-3">
-                    <select name="almacen_id" class="form-select bg-white" onchange="this.form.submit()">
+                    <select name="almacen_id" class="ui-select" onchange="this.form.submit()">
                         <option value="">Todos los almacenes</option>
                         @foreach($almacenes as $a)
                             <option value="{{ $a->id }}" {{ $almacenId == $a->id ? 'selected' : '' }}>{{ $a->nombre }}</option>
@@ -79,10 +84,10 @@
                     </select>
                 </div>
                 <div class="col-lg-2">
-                    <button class="btn btn-primary rounded-pill w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <button class="ui-btn ui-btn-solid rounded-pill w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                 </div>
                 <div class="col-lg-2">
-                    <a href="{{ route('almacenes.inventario') }}" class="btn btn-outline-secondary rounded-pill w-100">Limpiar</a>
+                    <a href="{{ route('almacenes.inventario') }}" class="ui-btn ui-btn-ghost rounded-pill w-100">Limpiar</a>
                 </div>
             </form>
         </div>
@@ -95,8 +100,8 @@
             $totalValor = 0;
             $totalUnidades = 0;
         @endphp
-        <div class="premium-card mb-4 overflow-hidden">
-            <div class="card-accent blue"></div>
+        <div class="ui-card mb-4 overflow-hidden" style="--delay:.2s">
+            <div class="ui-card-accent"></div>
             <div class="card-body">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <div>

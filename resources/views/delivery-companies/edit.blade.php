@@ -7,24 +7,29 @@
 @endpush
 
 @section('content')
-<div class="container-fluid py-4 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-truck"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Editar Empresa de Delivery</h2>
-                    <p class="text-white text-opacity-75 mb-0">{{ $company->nombre }}</p>
+                    <h4 class="ui-header-title">Editar Empresa de Delivery</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-pencil me-1"></i>
+                        <span>{{ $company->nombre }}</span>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('delivery-companies.index') }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('delivery-companies.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -41,30 +46,30 @@
                 </div>
             @endif
 
-            <div class="premium-card">
-                <div class="card-accent green"></div>
-                <div class="card-body p-4">
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
                     <form method="POST" action="{{ route('delivery-companies.update', $company) }}" id="instanceForm">
                         @csrf @method('PUT')
                         <div class="mb-3">
-                            <label for="nombre" class="form-label small fw-semibold">Nombre <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre" id="nombre" class="form-control @error('nombre') is-invalid @enderror"
+                            <label for="nombre" class="ui-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" id="nombre" class="ui-input @error('nombre') is-invalid @enderror"
                                    value="{{ old('nombre', $company->nombre) }}" required maxlength="100">
                             @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="nombre_corto" class="form-label small fw-semibold">Código <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre_corto" id="nombre_corto" class="form-control @error('nombre_corto') is-invalid @enderror"
+                            <label for="nombre_corto" class="ui-label">Código <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre_corto" id="nombre_corto" class="ui-input @error('nombre_corto') is-invalid @enderror"
                                    value="{{ old('nombre_corto', $company->nombre_corto) }}" required maxlength="30">
                             @error('nombre_corto') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="mb-3">
-                            <label for="comision_porcentaje" class="form-label small fw-semibold">Comisión (%) <span class="text-danger">*</span></label>
-                            <div class="input-group">
+                            <label for="comision_porcentaje" class="ui-label">Comisión (%) <span class="text-danger">*</span></label>
+                            <div class="ui-input-group">
+                                <span class="ui-input-group-text">%</span>
                                 <input type="number" step="0.01" min="0" max="100" name="comision_porcentaje" id="comision_porcentaje"
-                                       class="form-control @error('comision_porcentaje') is-invalid @enderror"
+                                       class="ui-input @error('comision_porcentaje') is-invalid @enderror"
                                        value="{{ old('comision_porcentaje', $company->comision_porcentaje) }}" required>
-                                <span class="input-group-text">%</span>
                                 @error('comision_porcentaje') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
@@ -79,17 +84,12 @@
     </div>
 </div>
 
-<div class="premium-sticky-bar">
-    <div class="d-flex justify-content-between align-items-center">
-        <span class="text-muted small d-none d-md-inline">
-            <i class="bi bi-info-circle me-1"></i> Editando empresa: {{ $company->nombre }}
-        </span>
-        <div class="d-flex gap-2 ms-auto">
-            <a href="{{ route('delivery-companies.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold shadow-sm">
-                <i class="bi bi-save me-2"></i>Guardar Cambios
-            </button>
-        </div>
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <a href="{{ route('delivery-companies.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">Cancelar</a>
+        <button type="submit" form="instanceForm" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
+            <i class="bi bi-save me-2"></i>Guardar Cambios
+        </button>
     </div>
 </div>
 @endsection

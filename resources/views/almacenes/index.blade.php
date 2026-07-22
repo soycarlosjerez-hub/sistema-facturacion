@@ -20,35 +20,40 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-building"></i>
+<div class="ui-page">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Gestión de Almacenes</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $almacenes->total() }} registro(s)</span>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h2 class="fw-bold mb-1">Gestión de Almacenes</h2>
-                <p class="mb-0 opacity-75 fs-5">Administra los almacenes y su información</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('almacenes.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nuevo Almacén
+                </a>
             </div>
         </div>
-        <div>
-            <a href="{{ route('almacenes.create') }}" class="btn btn-light text-primary fw-bold rounded-pill px-4 py-2 shadow-sm">
-                <i class="bi bi-plus-lg me-2"></i> Nuevo Almacén
-            </a>
-        </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent blue"></div>
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="card-body">
             <div class="row g-2 align-items-end">
                 <div class="col-lg-6">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" id="buscar-local" class="form-control border-start-0 ps-0" placeholder="Buscar almacén por nombre..." autocomplete="off">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="buscar-local" class="ui-input" placeholder="Buscar almacén por nombre..." autocomplete="off">
                     </div>
                 </div>
             </div>
@@ -59,20 +64,20 @@
     <div class="row g-4">
         @forelse($almacenes as $a)
         <div class="col-md-6 col-lg-4">
-            <div class="premium-card h-100">
-                <div class="card-accent blue"></div>
+            <div class="ui-card h-100" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="rounded-4 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                             <i class="bi bi-building fs-4"></i>
                         </div>
                         <div class="d-flex gap-1">
-                            <a href="{{ route('almacenes.edit', $a->id) }}" class="premium-btn-edit" title="Editar">
+                            <a href="{{ route('almacenes.edit', $a->id) }}" class="ui-action ui-action-edit" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form action="{{ route('almacenes.destroy', $a->id) }}" method="POST" onsubmit="return confirm('¿Borrar este almacén?')" class="d-inline">
+                            <form action="{{ route('almacenes.destroy', $a->id) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="premium-btn-delete" title="Eliminar">
+                                <button type="submit" class="ui-action ui-action-delete" onclick="event.preventDefault();UI.confirm.delete('{{ route('almacenes.destroy', $a->id) }}', '{{ addslashes($a->nombre) }}')" title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -108,13 +113,6 @@
         </div>
         @endforelse
     </div>
-
-    <!-- Paginación -->
-    @if($almacenes->hasPages())
-    <div class="mt-4">
-        {{ $almacenes->links() }}
-    </div>
-    @endif
 </div>
 
 <script>

@@ -5,7 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
 body.dark-mode .prefijo-box { background: rgba(245,158,11,.15); color: #fbbf24; }
 body.dark-mode .progress { background: #1e293b !important; }
 body.dark-mode .bg-light { background: rgba(30,41,59,.6) !important; }
@@ -19,25 +18,27 @@ body.dark-mode .dropdown-item:hover { background: #334155; color: #f1f5f9; }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-shield-check"></i>
+<div class="ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Control de Comprobantes (NCF)</h4>
+                    <div class="ui-header-meta">Configuración de secuencias fiscales para la DGII</div>
+                </div>
             </div>
-            <div>
-                <h2 class="fw-bold mb-1">Control de Comprobantes (NCF)</h2>
-                <p class="mb-0 opacity-75">Configuración de secuencias fiscales para la DGII</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('ncf.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Secuencia
+                </a>
             </div>
         </div>
-        <div>
-            <a href="{{ route('ncf.create') }}" class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-sm">
-                <i class="bi bi-plus-lg me-2"></i> Nueva Secuencia
-            </a>
-        </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     <div class="row g-4">

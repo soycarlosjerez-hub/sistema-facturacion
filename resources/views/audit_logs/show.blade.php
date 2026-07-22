@@ -7,71 +7,90 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-clock-history"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Detalle de Auditoría</h4>
-                    <small class="text-white opacity-75">#{{ $auditLog->id }}</small>
+                    <h4 class="ui-header-title">Detalle de Auditoría</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-hash me-1"></i>
+                        <span>#{{ $auditLog->id }}</span>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('audit-logs.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('audit-logs.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="premium-card h-100" style="animation-delay:.1s;">
-                <div class="card-accent red"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-clock-history icon-red"></i>
-                    Información
-                </div>
-                <div class="card-body pt-0">
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Descripción</div>
-                        <div class="premium-detail-value">{{ $auditLog->description }}</div>
-                    </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Acción</div>
-                        <div class="premium-detail-value">
-                            @php $badge = match($auditLog->action) { 'created' => 'success', 'updated' => 'warning', 'deleted' => 'danger', default => 'info' }; @endphp
-                            <span class="badge bg-{{ $badge }} bg-opacity-10 text-{{ $badge }} rounded-pill px-3 py-1">{{ ucfirst($auditLog->action) }}</span>
+            <div class="ui-card h-100" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4"><i class="bi bi-clock-history me-2" style="color:#64748b;"></i> Información</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Descripción</small>
+                            <span class="fw-semibold">{{ $auditLog->description }}</span>
                         </div>
                     </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Módulo</div>
-                        <div class="premium-detail-value">{{ class_basename($auditLog->model_type) }} #{{ $auditLog->model_id }}</div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Acción</small>
+                            <div>
+                                @php $badge = match($auditLog->action) { 'created' => 'success', 'updated' => 'warning', 'deleted' => 'danger', default => 'info' }; @endphp
+                                <span class="badge bg-{{ $badge }} bg-opacity-10 text-{{ $badge }} rounded-pill px-3 py-1">{{ ucfirst($auditLog->action) }}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Modelo completo</div>
-                        <div class="premium-detail-value"><small class="font-monospace text-muted">{{ $auditLog->model_type }}</small></div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Módulo</small>
+                            <span class="fw-semibold">{{ class_basename($auditLog->model_type) }} #{{ $auditLog->model_id }}</span>
+                        </div>
                     </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Usuario</div>
-                        <div class="premium-detail-value fw-semibold">{{ $auditLog->user?->name ?? '—' }} (#{{ $auditLog->user_id }})</div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Modelo completo</small>
+                            <span class="font-monospace text-muted small">{{ $auditLog->model_type }}</span>
+                        </div>
                     </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Fecha/Hora</div>
-                        <div class="premium-detail-value">{{ $auditLog->created_at->format('d/m/Y h:i:s A') }}</div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Usuario</small>
+                            <span class="fw-semibold">{{ $auditLog->user?->name ?? '—' }} (#{{ $auditLog->user_id }})</span>
+                        </div>
                     </div>
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">Dirección IP</div>
-                        <div class="premium-detail-value"><span class="font-monospace">{{ $auditLog->ip_address }}</span></div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Fecha/Hora</small>
+                            <span class="fw-semibold">{{ $auditLog->created_at->format('d/m/Y h:i:s A') }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Dirección IP</small>
+                            <span class="font-monospace">{{ $auditLog->ip_address }}</span>
+                        </div>
                     </div>
                     @if($auditLog->user_agent)
-                    <div class="premium-detail-row">
-                        <div class="premium-detail-label">User Agent</div>
-                        <div class="premium-detail-value"><small class="text-muted font-monospace" style="word-break:break-all;">{{ $auditLog->user_agent }}</small></div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">User Agent</small>
+                            <span class="font-monospace text-muted small" style="word-break:break-all;">{{ $auditLog->user_agent }}</span>
+                        </div>
                     </div>
                     @endif
                 </div>
@@ -79,26 +98,20 @@
         </div>
         <div class="col-lg-4">
             @if($auditLog->old_values && count($auditLog->old_values) > 0)
-            <div class="premium-card mb-4" style="animation-delay:.15s;">
-                <div class="card-accent red"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-arrow-left-circle icon-red"></i>
-                    Valores Anteriores
-                </div>
-                <div class="card-body pt-0">
+            <div class="ui-card mb-4" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-arrow-left-circle me-2" style="color:#64748b;"></i> Valores Anteriores</h6>
                     <pre class="mb-0" style="font-size:.75rem;max-height:300px;overflow-y:auto;">{{ json_encode($auditLog->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
             </div>
             @endif
 
             @if($auditLog->new_values && count($auditLog->new_values) > 0)
-            <div class="premium-card" style="animation-delay:.2s;">
-                <div class="card-accent red"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-arrow-right-circle icon-red"></i>
-                    Valores Nuevos
-                </div>
-                <div class="card-body pt-0">
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-arrow-right-circle me-2" style="color:#64748b;"></i> Valores Nuevos</h6>
                     <pre class="mb-0" style="font-size:.75rem;max-height:300px;overflow-y:auto;">{{ json_encode($auditLog->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </div>
             </div>

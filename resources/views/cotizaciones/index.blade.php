@@ -4,29 +4,31 @@
 
 @push('styles')
 @include('partials.premium-ui')
+<style>
+body.dark-mode .card-footer { background: rgba(15,23,42,.8); border-color: #334155; }
 </style>
-</push>
+@endpush
 
 @section('content')
-<div class="container-fluid premium-page">
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
     <!-- Header -->
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-receipt-cutoff"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">Cotizaciones</h2>
-                    <p class="mb-0 opacity-75">Gestión de cotizaciones y presupuestos</p>
+                    <h2 class="ui-header-title">Cotizaciones</h2>
+                    <div class="ui-header-meta">Gestión de cotizaciones y presupuestos</div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('cotizaciones.create')
-                <a href="{{ route('cotizaciones.create') }}" class="btn btn-light rounded-pill px-4">
+                <a href="{{ route('cotizaciones.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Cotización
                 </a>
                 @endcan
@@ -37,8 +39,8 @@
     <!-- Estadísticas -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3 col-lg-2">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3">
+            <div class="ui-stat h-100" style="--delay:.05s">
+                <div class="ui-stat-body p-3">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-2">
@@ -46,16 +48,16 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <div class="stat-label">Total</div>
-                            <div class="stat-value">{{ number_format($stats['total']) }}</div>
+                            <div class="ui-stat-label">Total</div>
+                            <div class="ui-stat-value">{{ number_format($stats['total']) }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg-2">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3">
+            <div class="ui-stat h-100" style="--delay:.1s">
+                <div class="ui-stat-body p-3">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="bg-info bg-opacity-10 text-info rounded-3 p-2">
@@ -63,16 +65,16 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <div class="stat-label">Pendientes</div>
-                            <div class="stat-value">{{ number_format($stats['pendientes']) }}</div>
+                            <div class="ui-stat-label">Pendientes</div>
+                            <div class="ui-stat-value">{{ number_format($stats['pendientes']) }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg-2">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3">
+            <div class="ui-stat h-100" style="--delay:.15s">
+                <div class="ui-stat-body p-3">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="bg-success bg-opacity-10 text-success rounded-3 p-2">
@@ -80,16 +82,16 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <div class="stat-label">Aprobadas</div>
-                            <div class="stat-value">{{ number_format($stats['aprobadas']) }}</div>
+                            <div class="ui-stat-label">Aprobadas</div>
+                            <div class="ui-stat-value">{{ number_format($stats['aprobadas']) }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg-2">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3">
+            <div class="ui-stat h-100" style="--delay:.2s">
+                <div class="ui-stat-body p-3">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="bg-warning bg-opacity-10 text-warning rounded-3 p-2">
@@ -97,16 +99,16 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <div class="stat-label">Vencidas</div>
-                            <div class="stat-value">{{ number_format($stats['vencidas']) }}</div>
+                            <div class="ui-stat-label">Vencidas</div>
+                            <div class="ui-stat-value">{{ number_format($stats['vencidas']) }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-3 col-lg-2">
-            <div class="premium-stat-card h-100">
-                <div class="card-body p-3">
+            <div class="ui-stat h-100" style="--delay:.25s">
+                <div class="ui-stat-body p-3">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
                             <div class="bg-secondary bg-opacity-10 text-secondary rounded-3 p-2">
@@ -114,35 +116,35 @@
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <div class="stat-label">Convertidas</div>
-                            <div class="stat-value">{{ number_format($stats['convertidas']) }}</div>
+                            <div class="ui-stat-label">Convertidas</div>
+                            <div class="ui-stat-value">{{ number_format($stats['convertidas']) }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-12 col-lg-2">
-            <div class="premium-stat-card h-100 bg-primary bg-gradient">
-                <div class="card-body p-3 text-white">
-                    <div class="stat-label opacity-75">Monto Activo</div>
-                    <div class="stat-value">RD${{ number_format($stats['monto_total'], 0) }}</div>
+            <div class="ui-stat h-100 bg-primary bg-gradient" style="--delay:.3s">
+                <div class="ui-stat-body p-3 text-white">
+                    <div class="ui-stat-label opacity-75">Monto Activo</div>
+                    <div class="ui-stat-value">RD${{ number_format($stats['monto_total'], 0) }}</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Filtros -->
-    <div class="premium-card mb-3">
-        <div class="card-accent purple"></div>
-        <div class="card-body">
+    <div class="ui-card mb-3" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body">
             <form method="GET" action="{{ route('cotizaciones.index') }}" class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label class="form-label small text-muted">Buscar</label>
-                    <input type="text" name="buscar" class="form-control" placeholder="Número, cliente..." value="{{ request('buscar') }}">
+                    <label class="ui-label small">Buscar</label>
+                    <input type="text" name="buscar" class="ui-input" placeholder="Número, cliente..." value="{{ request('buscar') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small text-muted">Estado</label>
-                    <select name="estado" class="form-select">
+                    <label class="ui-label small">Estado</label>
+                    <select name="estado" class="ui-select">
                         <option value="">Todos</option>
                         @foreach(\App\Models\Cotizacion::ESTADOS as $key => $estado)
                             <option value="{{ $key }}" {{ request('estado') == $key ? 'selected' : '' }}>
@@ -152,15 +154,15 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small text-muted">Desde</label>
-                    <input type="date" name="fecha_desde" class="form-control" value="{{ request('fecha_desde') }}">
+                    <label class="ui-label small">Desde</label>
+                    <input type="date" name="fecha_desde" class="ui-input" value="{{ request('fecha_desde') }}">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small text-muted">Hasta</label>
-                    <input type="date" name="fecha_hasta" class="form-control" value="{{ request('fecha_hasta') }}">
+                    <label class="ui-label small">Hasta</label>
+                    <input type="date" name="fecha_hasta" class="ui-input" value="{{ request('fecha_hasta') }}">
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">
+                    <button type="submit" class="ui-btn ui-btn-solid w-100">
                         <i class="bi bi-search me-1"></i> Filtrar
                     </button>
                 </div>
@@ -169,11 +171,11 @@
     </div>
 
     <!-- Tabla de cotizaciones -->
-    <div class="premium-card">
-        <div class="card-accent purple"></div>
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="ui-table table-hover align-middle mb-0">
+                <thead>
                     <tr>
                         <th class="ps-4">Número</th>
                         <th>Cliente</th>
@@ -237,14 +239,14 @@
                                     @endif
                                     @can('cotizaciones.edit')
                                         @if(!in_array($cot->estado, ['convertida', 'anulada']))
-                                        <a href="{{ route('cotizaciones.edit', $cot) }}" class="premium-btn-edit" title="Editar">
+                                        <a href="{{ route('cotizaciones.edit', $cot) }}" class="ui-action ui-action-edit" title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         @endif
                                     @endcan
                                     @can('cotizaciones.delete')
                                         @if($cot->estado !== 'convertida')
-                                        <button type="button" class="premium-btn-delete" 
+                                        <button type="button" class="ui-action ui-action-delete" 
                                                 onclick="confirmarEliminar({{ $cot->id }}, '{{ $cot->numero }}')" 
                                                 title="Eliminar">
                                             <i class="bi bi-trash"></i>

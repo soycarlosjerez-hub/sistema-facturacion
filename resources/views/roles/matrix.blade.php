@@ -25,14 +25,14 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header">
+<div class="container-fluid px-4 ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
+    <div class="ui-header">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body w-100">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-grid-3x3-gap"></i>
                 </div>
                 <div>
@@ -41,23 +41,23 @@
                             <i class="bi bi-grid-3x3-gap me-1"></i>VISUALIZACIÓN
                         </span>
                     </div>
-                    <h2 class="fw-bold mb-1">Matriz de Permisos</h2>
-                    <p class="mb-0 opacity-75">Vista comparativa de todos los roles y sus permisos</p>
+                    <h2 class="ui-header-title mb-0">Matriz de Permisos</h2>
+                    <div class="ui-header-meta">Vista comparativa de todos los roles y sus permisos</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
+            <div class="ui-header-actions">
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="ui-btn ui-btn-primary rounded-pill px-3">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
-                <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-dark rounded-pill px-3 fw-bold">
+                <a href="{{ route($routePrefix . 'roles.create') }}" class="ui-btn ui-btn-ghost rounded-pill px-3 fw-bold">
                     <i class="bi bi-plus-lg me-1"></i>Nuevo
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="premium-card mb-3">
-        <div class="card-accent purple"></div>
+    <div class="ui-card mb-3">
+        <div class="ui-card-accent"></div>
         <div class="card-body d-flex flex-wrap gap-3 align-items-center">
             <span class="d-flex align-items-center gap-2 small">
                 <span class="perm-check on" style="display: inline-block; width: 22px; height: 22px; border-radius: 6px; background: rgba(34,197,94,0.15); color: #16a34a; text-align: center; line-height: 22px;">
@@ -77,8 +77,8 @@
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent purple"></div>
+    <div class="ui-card">
+        <div class="ui-card-accent"></div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table matrix-table mb-0">

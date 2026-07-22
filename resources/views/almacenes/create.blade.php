@@ -15,28 +15,28 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
+<div class="ui-page">
 
-    <div class="premium-header mb-4">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-building"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Nuevo Almacén</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Nuevo Almacén</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-plus-circle me-1"></i>
-                        Registra un nuevo almacén en el sistema
-                    </small>
+                        <span>Registra un nuevo almacén en el sistema</span>
+                    </div>
                 </div>
             </div>
-            <div>
-                <a href="{{ route('almacenes.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                    <i class="bi bi-arrow-left me-1"></i>Volver
+            <div class="ui-header-actions">
+                <a href="{{ route('almacenes.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
                 </a>
             </div>
         </div>
@@ -58,25 +58,25 @@
         </div>
     @endif
 
-    <div class="premium-card">
-        <div class="card-accent blue"></div>
-        <h5 class="premium-card-title"><i class="bi bi-building icon-blue"></i> Información del Almacén</h5>
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="card-body">
+            <h5 class="fw-bold mb-4"><i class="bi bi-building me-2" style="color:#3b82f6;"></i> Información del Almacén</h5>
 
-        <form action="{{ route('almacenes.store') }}" method="POST" id="instanceForm">
-            @csrf
-            <div class="card-body">
+            <form action="{{ route('almacenes.store') }}" method="POST" id="instanceForm">
+                @csrf
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Nombre</label>
-                    <input type="text" name="nombre" class="form-control" required>
+                    <label class="ui-label">Nombre</label>
+                    <input type="text" name="nombre" class="ui-input" required>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Ubicación</label>
-                    <input type="text" name="ubicacion" class="form-control">
+                    <label class="ui-label">Ubicación</label>
+                    <input type="text" name="ubicacion" class="ui-input">
                 </div>
                 @if(isset($sucursales) && $sucursales->count())
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Sucursal</label>
-                    <select name="sucursal_id" class="form-select">
+                    <label class="ui-label">Sucursal</label>
+                    <select name="sucursal_id" class="ui-select">
                         <option value="">Sin asignar</option>
                         @foreach($sucursales as $s)
                             <option value="{{ $s->id }}" {{ old('sucursal_id') == $s->id ? 'selected' : '' }}>{{ $s->nombre }}</option>
@@ -84,8 +84,8 @@
                     </select>
                 </div>
                 @endif
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 

@@ -11,27 +11,30 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-printer"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold mb-1">Impresoras</h3>
-                    <p class="mb-0 opacity-75">Configuración de impresoras térmicas y documentos</p>
+                    <h4 class="ui-header-title">Impresoras</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $impresoras->total() }} registro(s)</span>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('impresoras.historial') }}" class="btn btn-light rounded-pill">
+            <div class="ui-header-actions">
+                <a href="{{ route('impresoras.historial') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-clock-history me-1"></i> Historial
                 </a>
-                <a href="{{ route('impresoras.plantillas') }}" class="btn btn-light rounded-pill">
+                <a href="{{ route('impresoras.plantillas') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-file-earmark-text me-1"></i> Plantillas
                 </a>
-                <a href="{{ route('impresoras.create') }}" class="btn btn-light rounded-pill">
+                <a href="{{ route('impresoras.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Impresora
                 </a>
             </div>
@@ -47,39 +50,47 @@
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card p-3">
-                <div class="card-accent blue"></div>
-                <small class="stat-label">Total</small>
-                <h3 class="fw-bold mb-0 stat-value">{{ $stats['total'] }}</h3>
+            <div class="ui-stat p-3" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <small class="ui-stat-label">Total</small>
+                    <h3 class="fw-bold mb-0 ui-stat-value">{{ $stats['total'] }}</h3>
+                </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card p-3">
-                <div class="card-accent blue"></div>
-                <small class="stat-label">Activas</small>
-                <h3 class="fw-bold text-success mb-0 stat-value">{{ $stats['activas'] }}</h3>
+            <div class="ui-stat p-3" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <small class="ui-stat-label">Activas</small>
+                    <h3 class="fw-bold text-success mb-0 ui-stat-value">{{ $stats['activas'] }}</h3>
+                </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card p-3">
-                <div class="card-accent blue"></div>
-                <small class="stat-label">Red</small>
-                <h3 class="fw-bold text-info mb-0 stat-value">{{ $stats['red'] }}</h3>
+            <div class="ui-stat p-3" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <small class="ui-stat-label">Red</small>
+                    <h3 class="fw-bold text-info mb-0 ui-stat-value">{{ $stats['red'] }}</h3>
+                </div>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="premium-stat-card p-3">
-                <div class="card-accent blue"></div>
-                <small class="stat-label">Auto-Ventas</small>
-                <h3 class="fw-bold text-warning mb-0 stat-value">{{ $stats['auto_ventas'] }}</h3>
+            <div class="ui-stat p-3" style="--delay:.25s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body">
+                    <small class="ui-stat-label">Auto-Ventas</small>
+                    <h3 class="fw-bold text-warning mb-0 ui-stat-value">{{ $stats['auto_ventas'] }}</h3>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent blue"></div>
+    <div class="ui-card" style="--delay:.3s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="ui-table table-hover align-middle mb-0">
                 <thead>
                     <tr class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:1px;">
                         <th class="ps-4 py-3">Impresora</th>
@@ -100,7 +111,7 @@
                                 <br><small class="text-muted">{{ $imp->descripcion }}</small>
                             @endif
                         </td>
-                        <td><span class="badge bg-light text-dark rounded-pill">{{ $imp->tipo_conexion }}</span></td>
+                        <td><span class="ui-badge ui-badge-neutral rounded-pill">{{ $imp->tipo_conexion }}</span></td>
                         <td><small class="font-monospace">{{ $imp->conexion_resumen }}</small></td>
                         <td>{{ $imp->tamano_label }}</td>
                         <td class="text-center">
@@ -119,24 +130,26 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <span class="badge rounded-pill bg-{{ $imp->activo ? 'success' : 'secondary' }}-subtle text-{{ $imp->activo ? 'success' : 'secondary' }}">
-                                {{ $imp->activo ? 'Activa' : 'Inactiva' }}
-                            </span>
+                            @if($imp->activo)
+                                <span class="ui-badge ui-badge-success rounded-pill">Activa</span>
+                            @else
+                                <span class="ui-badge ui-badge-neutral rounded-pill">Inactiva</span>
+                            @endif
                         </td>
                         <td class="text-end pe-4">
                             <form action="{{ route('impresoras.probar', $imp) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button class="btn btn-sm btn-outline-success rounded-pill px-2" title="Probar impresión">
+                                <button class="ui-action ui-action-edit" title="Probar impresión">
                                     <i class="bi bi-printer"></i>
                                 </button>
                             </form>
-                            <a href="{{ route('impresoras.edit', $imp) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2">
+                            <a href="{{ route('impresoras.edit', $imp) }}" class="ui-action ui-action-edit" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <form action="{{ route('impresoras.destroy', $imp) }}" method="POST" class="d-inline"
-                                onsubmit="return confirm('Eliminar {{ $imp->nombre }}?')">
+                                onsubmit="return UI.confirm.delete('Eliminar {{ $imp->nombre }}?')">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger rounded-pill px-2">
+                                <button class="ui-action ui-action-delete" title="Eliminar">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -151,6 +164,11 @@
                 </tbody>
             </table>
         </div>
+        @if(method_exists($impresoras, 'hasPages') && $impresoras->hasPages())
+        <div class="card-footer bg-transparent border-0 py-3">
+            {{ $impresoras->links() }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection

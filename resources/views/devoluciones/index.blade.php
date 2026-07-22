@@ -42,31 +42,31 @@ body.dark-mode .devoluciones-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#ef4444,#f97316,#ef4444);box-shadow:0 8px 32px rgba(239,68,68,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-arrow-return-left"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Devoluciones</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Devoluciones</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-arrow-return-left me-1"></i>
-                        Gestión de devoluciones de productos y Notas de Crédito
-                        <span class="mx-2">·</span>
+                        <span>Gestión de devoluciones de productos y Notas de Crédito</span>
+                        <span class="divider">·</span>
                         <i class="bi bi-list-ul me-1"></i>
-                        {{ $devoluciones->total() }} registro(s)
-                    </small>
+                        <span>{{ $devoluciones->total() }} registro(s)</span>
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="ui-header-actions">
                 @can('devoluciones.create')
-                <a href="{{ route('devoluciones.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                <a href="{{ route('devoluciones.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Devolución
                 </a>
                 @endcan
@@ -74,18 +74,18 @@ body.dark-mode .devoluciones-table tbody td {
         </div>
     </div>
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent red"></div>
-        <div class="card-body p-3">
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-3">
             <form method="GET" class="row g-2 align-items-center">
                 <div class="col-lg-3">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" name="cliente" class="form-control" placeholder="Buscar cliente..." value="{{ request('cliente') }}">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="cliente" class="ui-input" placeholder="Buscar cliente..." value="{{ request('cliente') }}">
                     </div>
                 </div>
                 <div class="col-lg-2">
-                    <select name="estado" class="form-select">
+                    <select name="estado" class="ui-select">
                         <option value="">Todos los estados</option>
                         <option value="borrador" {{ request('estado') === 'borrador' ? 'selected' : '' }}>Borrador</option>
                         <option value="completada" {{ request('estado') === 'completada' ? 'selected' : '' }}>Completada</option>
@@ -93,22 +93,22 @@ body.dark-mode .devoluciones-table tbody td {
                     </select>
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="fecha_desde" class="form-control" value="{{ request('fecha_desde') }}" placeholder="Desde">
+                    <input type="date" name="fecha_desde" class="ui-input" value="{{ request('fecha_desde') }}" placeholder="Desde">
                 </div>
                 <div class="col-lg-2">
-                    <input type="date" name="fecha_hasta" class="form-control" value="{{ request('fecha_hasta') }}" placeholder="Hasta">
+                    <input type="date" name="fecha_hasta" class="ui-input" value="{{ request('fecha_hasta') }}" placeholder="Hasta">
                 </div>
                 <div class="col-lg-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('devoluciones.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('devoluciones.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i></a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent red"></div>
-        <div class="card-body p-0">
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
             <div class="table-responsive">
                 <table class="table devoluciones-table">
                     <thead>
@@ -126,7 +126,7 @@ body.dark-mode .devoluciones-table tbody td {
                     <tbody>
                         @forelse($devoluciones as $d)
                         <tr>
-                            <td class="ps-4"><span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3">{{ $d->codigo }}</span></td>
+                            <td class="ps-4"><span class="ui-badge ui-badge-neutral rounded-pill px-3">{{ $d->codigo }}</span></td>
                             <td class="fw-bold small">{{ $d->cliente?->nombre ?? 'N/A' }}</td>
                             <td>
                                 @if($d->venta)
@@ -136,25 +136,25 @@ body.dark-mode .devoluciones-table tbody td {
                                 @endif
                             </td>
                             <td class="small">{{ $d->fecha?->format('d/m/Y') ?? $d->created_at->format('d/m/Y') }}</td>
-                            <td><span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3">{{ ucfirst($d->tipo) }}</span></td>
+                            <td><span class="ui-badge ui-badge-info rounded-pill px-3">{{ ucfirst($d->tipo) }}</span></td>
                             <td class="text-end fw-bold">RD$ {{ number_format($d->total, 2) }}</td>
                             <td class="text-center">
                                 @php
                                     $estados = ['borrador' => ['warning', 'clock'], 'completada' => ['success', 'check-circle'], 'anulada' => ['danger', 'x-circle']];
                                     $e = $estados[$d->estado] ?? ['secondary', 'circle'];
                                 @endphp
-                                <span class="badge bg-{{ $e[0] }} bg-opacity-10 text-{{ $e[0] }} rounded-pill px-3">
+                                <span class="ui-badge ui-badge-{{ $e[0] }} rounded-pill px-3">
                                     <i class="bi bi-{{ $e[1] }} me-1"></i>{{ ucfirst($d->estado) }}
                                 </span>
                             </td>
                             <td class="text-end pe-4">
-                                <a href="{{ route('devoluciones.show', $d) }}" class="premium-btn-edit me-1" title="Ver">
+                                <a href="{{ route('devoluciones.show', $d) }}" class="ui-action ui-action-view me-1" title="Ver">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 @if($d->estado === 'borrador')
-                                <form action="{{ route('devoluciones.destroy', $d) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta devolución?')">
+                                <form action="{{ route('devoluciones.destroy', $d) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Eliminar esta devolución?')">
                                     @csrf @method('DELETE')
-                                    <button class="premium-btn-delete" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                    <button class="ui-action ui-action-delete" title="Eliminar"><i class="bi bi-trash"></i></button>
                                 </form>
                                 @endif
                             </td>
@@ -165,7 +165,7 @@ body.dark-mode .devoluciones-table tbody td {
                                 <i class="bi bi-arrow-return-left fs-1" style="color:#cbd5e1;"></i>
                                 <p class="mt-2 mb-0 fw-semibold">No hay devoluciones registradas</p>
                                 @can('devoluciones.create')
-                                <a href="{{ route('devoluciones.create') }}" class="btn btn-primary rounded-pill mt-2">Registrar primera devolución</a>
+                                <a href="{{ route('devoluciones.create') }}" class="ui-btn ui-btn-solid rounded-pill mt-2">Registrar primera devolución</a>
                                 @endcan
                             </td>
                         </tr>

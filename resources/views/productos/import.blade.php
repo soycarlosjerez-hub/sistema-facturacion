@@ -96,7 +96,7 @@ body.dark-mode .mapping-row:hover { background: rgba(255,255,255,.03); }
                     </div>
 
                     <div class="d-flex justify-content-end mt-4">
-                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow fw-bold" id="uploadBtn" disabled>
+                        <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-5 shadow fw-bold" id="uploadBtn" disabled>
                             <i class="bi bi-eye me-2"></i>Vista Previa y Mapear
                         </button>
                     </div>
@@ -258,10 +258,10 @@ Silla Ergonómica;SILL789;8500.00;5;;6000.00;Unidad;18;Muebles</pre>
             </div>
 
             <div class="d-flex justify-content-between mt-4">
-                <a href="{{ route('productos.import') }}" class="btn btn-light rounded-pill px-4 fw-bold">
+                <a href="{{ route('productos.import') }}" class="ui-btn ui-btn-primary rounded-pill px-4 fw-bold">
                     <i class="bi bi-arrow-left me-1"></i> Subir otro archivo
                 </a>
-                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow fw-bold" id="importProcessBtn">
+                <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-5 shadow fw-bold" id="importProcessBtn">
                     <i class="bi bi-cloud-upload me-2"></i>Importar Productos
                 </button>
             </div>

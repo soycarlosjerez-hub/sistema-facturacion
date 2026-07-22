@@ -44,14 +44,14 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header" style="background: linear-gradient(135deg, {{ $cfg['color'] }}, {{ $cfg['color'] }}cc, {{ $cfg['color'] }}99, {{ $cfg['color'] }});">
+<div class="container-fluid px-4 ui-page" style="--accent:{{ $cfg['color'] }};--accent-rgb:{{ implode(',', sscanf($cfg['color'], '#%02x%02x%02x')) }};--accent-hover:{{ $cfg['color'] }};">
+    <div class="ui-header" style="background: linear-gradient(135deg, {{ $cfg['color'] }}, {{ $cfg['color'] }}cc, {{ $cfg['color'] }}99, {{ $cfg['color'] }});">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body w-100">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi {{ $cfg['icon'] }}"></i>
                 </div>
                 <div>
@@ -63,15 +63,15 @@
                             <span class="protected-badge"><i class="bi bi-lock-fill"></i>Protegido</span>
                         @endif
                     </div>
-                    <h2 class="fw-bold mb-0">{{ $cfg['label'] }}</h2>
-                    <p class="mb-0 opacity-75 small">{{ $cfg['desc'] }}</p>
+                    <h2 class="ui-header-title mb-0">{{ $cfg['label'] }}</h2>
+                    <div class="ui-header-meta">{{ $cfg['desc'] }}</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
+            <div class="ui-header-actions">
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="ui-btn ui-btn-primary rounded-pill px-3">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
-                <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="btn btn-dark rounded-pill px-3 fw-bold">
+                <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="ui-btn ui-btn-ghost rounded-pill px-3 fw-bold">
                     <i class="bi bi-pencil me-1"></i>Editar
                 </a>
             </div>
@@ -80,7 +80,7 @@
 
     <div class="row g-3 mb-3">
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble" style="background: {{ $cfg['color'] }}20; color: {{ $cfg['color'] }};">
                         <i class="bi bi-key"></i>
@@ -93,7 +93,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-info bg-opacity-10 text-info">
                         <i class="bi bi-percent"></i>
@@ -106,7 +106,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-success bg-opacity-10 text-success">
                         <i class="bi bi-people"></i>
@@ -119,7 +119,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-folder"></i>
@@ -135,17 +135,17 @@
 
     <div class="row g-3">
         <div class="col-lg-8">
-            <div class="premium-card">
-                <div class="card-accent purple"></div>
+            <div class="ui-card">
+                <div class="ui-card-accent"></div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                         <div>
-                            <h5 class="premium-card-title"><i class="bi bi-key icon-purple"></i>Permisos Asignados</h5>
-                            <small class="premium-card-subtitle">Acciones permitidas para los usuarios con este rol</small>
+                            <h5 class="ui-card-title"><i class="bi bi-key icon-purple"></i>Permisos Asignados</h5>
+                            <small class="ui-card-subtitle">Acciones permitidas para los usuarios con este rol</small>
                         </div>
-                        <div class="input-group" style="max-width: 280px;">
-                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                            <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Filtrar permisos...">
+                        <div class="ui-input-group" style="max-width: 280px;">
+                            <span class="ui-input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" id="permFilter" class="ui-input border-0 bg-light" placeholder="Filtrar permisos...">
                         </div>
                     </div>
                     @forelse($permisosGrouped as $modulo => $perms)
@@ -179,7 +179,7 @@
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-shield-x display-4 d-block mb-2"></i>
                             <p class="mb-0">Este rol no tiene permisos asignados.</p>
-                            <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="btn btn-primary rounded-pill px-4 mt-3">
+                            <a href="{{ route($routePrefix . 'roles.edit', $role) }}" class="ui-btn ui-btn-solid rounded-pill px-4 mt-3">
                                 <i class="bi bi-pencil me-1"></i>Asignar Permisos
                             </a>
                         </div>
@@ -189,11 +189,11 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="premium-card">
-                <div class="card-accent purple"></div>
+            <div class="ui-card">
+                <div class="ui-card-accent"></div>
                 <div class="card-body">
-                    <h5 class="premium-card-title"><i class="bi bi-people icon-purple"></i>Usuarios Asignados</h5>
-                    <small class="premium-card-subtitle">{{ $users->count() }} {{ $users->count() == 1 ? 'persona' : 'personas' }} con este rol</small>
+                    <h5 class="ui-card-title"><i class="bi bi-people icon-purple"></i>Usuarios Asignados</h5>
+                    <small class="ui-card-subtitle">{{ $users->count() }} {{ $users->count() == 1 ? 'persona' : 'personas' }} con este rol</small>
                     @forelse($users as $user)
                         <div class="d-flex align-items-center gap-3 p-2 rounded-3">
                             <div class="user-avatar" style="width: 40px; height: 40px; border-radius: 12px; background: {{ $cfg['gradient'] }}; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">

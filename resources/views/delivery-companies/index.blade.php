@@ -7,26 +7,31 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-truck"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Empresas de Delivery</h2>
-                    <p class="text-white text-opacity-75 mb-0">Configuración de plataformas de delivery y sus comisiones</p>
+                    <h4 class="ui-header-title">Empresas de Delivery</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $companies->total() }} registro(s)</span>
+                    </div>
                 </div>
             </div>
-            @can('delivery-companies.create')
-            <a href="{{ route('delivery-companies.create') }}" class="btn btn-light rounded-pill px-4 fw-bold">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Empresa
-            </a>
-            @endcan
+            <div class="ui-header-actions">
+                @can('delivery-companies.create')
+                <a href="{{ route('delivery-companies.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Empresa
+                </a>
+                @endcan
+            </div>
         </div>
     </div>
 
@@ -36,11 +41,11 @@
         </div>
     @endif
 
-    <div class="premium-card">
-        <div class="card-accent green"></div>
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="ui-table table-hover align-middle mb-0">
+                <thead>
                     <tr>
                         <th class="ps-4">Nombre</th>
                         <th>Código</th>
@@ -53,22 +58,22 @@
                     @forelse($companies as $company)
                     <tr>
                         <td class="ps-4 fw-semibold">{{ $company->nombre }}</td>
-                        <td><span class="badge bg-secondary bg-opacity-10 text-secondary">{{ $company->nombre_corto }}</span></td>
+                        <td><span class="ui-badge ui-badge-neutral">{{ $company->nombre_corto }}</span></td>
                         <td>{{ $company->comision_formateada }}</td>
                         <td>
                             @if($company->activo)
-                                <span class="badge bg-success bg-opacity-10 text-success">Activo</span>
+                                <span class="ui-badge ui-badge-success">Activo</span>
                             @else
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary">Inactivo</span>
+                                <span class="ui-badge ui-badge-neutral">Inactivo</span>
                             @endif
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('delivery-companies.edit', $company) }}" class="premium-btn-edit">
+                            <a href="{{ route('delivery-companies.edit', $company) }}" class="ui-action ui-action-edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form action="{{ route('delivery-companies.destroy', $company) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta empresa? Las ventas asociadas no se verán afectadas.')">
+                            <form action="{{ route('delivery-companies.destroy', $company) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Eliminar esta empresa? Las ventas asociadas no se verán afectadas.')">
                                 @csrf @method('DELETE')
-                                <button class="premium-btn-delete" type="submit">
+                                <button class="ui-action ui-action-delete" type="submit">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>

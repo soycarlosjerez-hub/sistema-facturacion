@@ -26,27 +26,29 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="container-fluid px-4 py-3 ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-upload"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Importar Proveedores</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">Importar Proveedores</div>
+                    <div class="ui-header-meta">
                         <i class="bi bi-file-earmark me-1"></i>Sube un archivo CSV o Excel con tus proveedores
-                    </small>
+                    </div>
                 </div>
             </div>
-            <a href="{{ route('proveedores.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-2"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -60,13 +62,13 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
         </div>
     @endif
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent blue"></div>
-        <div class="premium-card-title">
+    <div class="ui-card mb-4" style="--delay:.1s;">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
             <i class="bi bi-cloud-arrow-up" style="color:#3b82f6;"></i>
             Subir archivo
         </div>
-        <div class="premium-card-subtitle">Arrastra o selecciona tu archivo CSV o Excel</div>
+        <div class="ui-card-subtitle">Arrastra o selecciona tu archivo CSV o Excel</div>
         <div class="card-body p-4">
             <form action="{{ route('proveedores.importar.procesar') }}" method="POST" enctype="multipart/form-data">
                 @csrf
@@ -85,7 +87,7 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">
-                    <button type="submit" class="btn btn-primary rounded-pill px-5 shadow fw-bold" id="uploadBtn" disabled>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-5 shadow fw-bold" id="uploadBtn" disabled>
                         <i class="bi bi-cloud-upload me-2"></i>Importar
                     </button>
                 </div>
@@ -93,9 +95,9 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.2s;">
-        <div class="card-accent blue"></div>
-        <div class="premium-card-title">
+    <div class="ui-card" style="--delay:.2s;">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-title">
             <i class="bi bi-file-text" style="color:#10b981;"></i>
             Formato esperado
         </div>

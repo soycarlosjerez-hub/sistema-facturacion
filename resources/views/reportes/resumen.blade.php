@@ -5,52 +5,42 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.premium-header {
-    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #06b6d4 100%) !important;
-    background-size: 300% 300% !important;
-    animation: premiumGradientShift 6s ease infinite !important;
-    box-shadow: 0 8px 32px rgba(59,130,246,.25) !important;
-}
-body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba(255,255,255,.08); }
-body.dark-mode .premium-card-title { color: #f1f5f9; }
-body.dark-mode .premium-card-subtitle { color: #94a3b8; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+<div class="container-fluid px-4 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
+    <div class="ui-header d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative w-100" style="z-index:2;">
-            <div>
-                <h2 class="fw-bold mb-1">
-                    <i class="bi bi-bar-chart-line text-white me-2"></i>
-                    Resumen Fiscal Anual
-                </h2>
-                <p class="text-white-50 mb-0">Comparativo mensual ITBIS - Ventas vs Compras</p>
+        <div class="ui-header-body w-100">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-bar-chart-line"></i>
+                </div>
+                <div>
+                    <h2 class="ui-header-title">Resumen Fiscal Anual</h2>
+                    <div class="ui-header-meta">Comparativo mensual ITBIS - Ventas vs Compras</div>
+                </div>
             </div>
-            <div class="d-flex gap-2 align-items-center">
-                <a href="{{ route('reportes.index') }}" class="btn btn-outline-secondary rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
+            <div class="ui-header-actions">
+                <a href="{{ route('reportes.index') }}" class="ui-btn ui-btn-ghost rounded-pill"><i class="bi bi-grid me-1"></i> Reportes</a>
                 <form method="GET" action="{{ route('reportes.resumen') }}" class="d-flex gap-2 align-items-center">
-                    <select name="anio" class="form-select border-0 bg-white" onchange="this.form.submit()">
+                    <select name="anio" class="ui-select border-0 bg-white" onchange="this.form.submit()">
                         @for($y = now()->year; $y >= now()->year - 3; $y--)
                             <option value="{{ $y }}" {{ $anio == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endfor
                     </select>
                 </form>
-                <a href="{{ route('reportes.fiscales') }}" class="btn btn-outline-danger rounded-pill">
+                <a href="{{ route('reportes.fiscales') }}" class="ui-btn ui-btn-ghost rounded-pill">
                     <i class="bi bi-file-earmark-text me-1"></i> Ir a 607/606
                 </a>
-                <div class="premium-avatar-circle ms-2">
-                    <i class="bi bi-bar-chart-line"></i>
-                </div>
             </div>
         </div>
     </div>
 
-    <div class="premium-card overflow-hidden">
+    <div class="ui-card overflow-hidden">
         <div class="card-header bg-white border-0 py-3">
             <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>Resumen {{ $anio }}</h5>
         </div>
@@ -121,7 +111,7 @@ body.dark-mode .premium-card-subtitle { color: #94a3b8; }
         </div>
     </div>
 
-    <div class="premium-card card-accent blue mt-4">
+    <div class="ui-card mt-4">
         <div class="card-body p-4">
             <div class="row g-3">
                 <div class="col-md-6">

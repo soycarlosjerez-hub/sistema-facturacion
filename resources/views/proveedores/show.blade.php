@@ -62,30 +62,30 @@ body.dark-mode .compras-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="container-fluid px-4 py-3 ui-page" style="--accent:#3b82f6;--accent-rgb:59,130,246;--accent-hover:#2563eb;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#3b82f6,#6366f1,#8b5cf6,#3b82f6);box-shadow:0 8px 32px rgba(59,130,246,.25);">
+    <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-truck"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">{{ $proveedore->nombre }}</h4>
-                    <small class="text-white opacity-75">
+                    <div class="ui-header-title">{{ $proveedore->nombre }}</div>
+                    <div class="ui-header-meta">
                         <i class="bi bi-building me-1"></i>
                         Detalle del proveedor
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('proveedores.edit', $proveedore) }}" class="btn btn-light rounded-pill px-4 fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+            <div class="ui-header-actions">
+                <a href="{{ route('proveedores.edit', $proveedore) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-pencil-square me-1"></i>Editar
                 </a>
-                <a href="{{ route('proveedores.index') }}" class="btn btn-outline-light rounded-pill px-4">
+                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
@@ -94,8 +94,8 @@ body.dark-mode .compras-table tbody td {
 
     <div class="row g-4">
         <div class="col-lg-5">
-            <div class="premium-card" style="animation-delay:.1s;">
-                <div class="card-accent blue"></div>
+            <div class="ui-card" style="--delay:.1s;">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-4 text-center">
                     <div class="rounded-circle bg-info bg-opacity-10 text-info d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                         <i class="bi bi-truck fs-1"></i>
@@ -105,18 +105,18 @@ body.dark-mode .compras-table tbody td {
                     <p class="text-muted small mb-1"><i class="bi bi-envelope me-1"></i>{{ $proveedore->email ?? '—' }}</p>
                     <p class="text-muted small mb-3"><i class="bi bi-telephone me-1"></i>{{ $proveedore->telefono ?? '—' }}</p>
                     @if($proveedore->activo)
-                    <span class="premium-badge" style="background:rgba(16,185,129,.1);color:#059669;"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>
+                    <span class="ui-badge ui-badge-success"><i class="bi bi-check-circle-fill me-1"></i>Activo</span>
                     @else
-                    <span class="premium-badge" style="background:rgba(107,114,128,.1);color:#6b7280;"><i class="bi bi-x-circle-fill me-1"></i>Inactivo</span>
+                    <span class="ui-badge ui-badge-neutral"><i class="bi bi-x-circle-fill me-1"></i>Inactivo</span>
                     @endif
                 </div>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="premium-card mb-4" style="animation-delay:.15s;">
-                <div class="card-accent blue"></div>
-                <div class="premium-card-title">
+            <div class="ui-card mb-4" style="--delay:.15s;">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
                     <i class="bi bi-info-circle icon-blue"></i>
                     Información Fiscal
                 </div>
@@ -139,9 +139,9 @@ body.dark-mode .compras-table tbody td {
                                 <div class="label">Sujeto a Retención ISR</div>
                                 <div class="value">
                                     @if($proveedore->sujeto_retencion_isr)
-                                        <span class="premium-badge" style="background:rgba(245,158,11,.1);color:#d97706;">Sí</span>
+                                        <span class="ui-badge ui-badge-success">Sí</span>
                                     @else
-                                        <span class="premium-badge">No</span>
+                                        <span class="ui-badge ui-badge-neutral">No</span>
                                     @endif
                                 </div>
                             </div>
@@ -151,9 +151,9 @@ body.dark-mode .compras-table tbody td {
                                 <div class="label">Sujeto a Retención ITBIS</div>
                                 <div class="value">
                                     @if($proveedore->sujeto_retencion_itbis)
-                                        <span class="premium-badge" style="background:rgba(245,158,11,.1);color:#d97706;">Sí</span>
+                                        <span class="ui-badge ui-badge-success">Sí</span>
                                     @else
-                                        <span class="premium-badge">No</span>
+                                        <span class="ui-badge ui-badge-neutral">No</span>
                                     @endif
                                 </div>
                             </div>
@@ -162,9 +162,9 @@ body.dark-mode .compras-table tbody td {
                 </div>
             </div>
 
-            <div class="premium-card" style="animation-delay:.2s;">
-                <div class="card-accent blue"></div>
-                <div class="premium-card-title">
+            <div class="ui-card" style="--delay:.2s;">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
                     <i class="bi bi-cart-check icon-blue"></i>
                     Compras Registradas
                 </div>

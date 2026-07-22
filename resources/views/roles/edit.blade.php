@@ -39,14 +39,14 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header" style="background: linear-gradient(135deg, #f59e0b, #ea580c, #d97706, #f59e0b);">
+<div class="container-fluid px-4 ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
+    <div class="ui-header" style="background: linear-gradient(135deg, #f59e0b, #ea580c, #d97706, #f59e0b);">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body w-100">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi {{ $cfg['icon'] }}"></i>
                 </div>
                 <div>
@@ -58,15 +58,15 @@
                             <span class="protected-badge"><i class="bi bi-lock-fill"></i>Protegido</span>
                         @endif
                     </div>
-                    <h2 class="fw-bold mb-0">{{ $role->name }}</h2>
-                    <p class="mb-0 opacity-75 small">{{ $permisosAsignados ? count($permisosAsignados) . ' permisos asignados' : 'Sin permisos' }}</p>
+                    <h2 class="ui-header-title mb-0">{{ $role->name }}</h2>
+                    <div class="ui-header-meta">{{ $permisosAsignados ? count($permisosAsignados) . ' permisos asignados' : 'Sin permisos' }}</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route($routePrefix . 'roles.show', $role) }}" class="btn btn-light rounded-pill px-3">
+            <div class="ui-header-actions">
+                <a href="{{ route($routePrefix . 'roles.show', $role) }}" class="ui-btn ui-btn-primary rounded-pill px-3">
                     <i class="bi bi-eye me-1"></i>Ver
                 </a>
-                <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-3">
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="ui-btn ui-btn-primary rounded-pill px-3">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
@@ -87,13 +87,13 @@
 
         <div class="row g-4">
             <div class="col-lg-4">
-                <div class="premium-card mb-3">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card mb-3">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body">
-                        <h5 class="premium-card-title"><i class="bi bi-tag icon-purple"></i>Nombre del Rol</h5>
+                        <h5 class="ui-card-title"><i class="bi bi-tag icon-purple"></i>Nombre del Rol</h5>
                         <div class="form-floating-modern">
                             <i class="bi bi-shield form-icon"></i>
-                            <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
+                            <input type="text" name="name" id="name" class="ui-input @error('name') is-invalid @enderror"
                                    value="{{ old('name', $role->name) }}" placeholder=" " required maxlength="50" pattern="[a-z0-9_\-]+">
                             <label class="form-label-float" for="name">Nombre del rol</label>
                             @error('name')<div class="text-danger small mt-1 ms-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
@@ -108,12 +108,12 @@
                 </div>
 
                 @if(!$isProtected)
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body">
-                        <h6 class="premium-card-title"><i class="bi bi-stars icon-purple"></i>Plantillas Rápidas</h6>
+                        <h6 class="ui-card-title"><i class="bi bi-stars icon-purple"></i>Plantillas Rápidas</h6>
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-outline-primary text-start rounded-3 py-2 perm-template" data-template="readonly">
+                            <button type="button" class="ui-btn ui-btn-ghost text-start rounded-3 py-2 perm-template" data-template="readonly">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-eye fs-5"></i>
                                     <div>
@@ -122,7 +122,7 @@
                                     </div>
                                 </div>
                             </button>
-                            <button type="button" class="btn btn-outline-success text-start rounded-3 py-2 perm-template" data-template="all">
+                            <button type="button" class="ui-btn ui-btn-ghost text-start rounded-3 py-2 perm-template" data-template="all">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-check-all fs-5"></i>
                                     <div>
@@ -131,7 +131,7 @@
                                     </div>
                                 </div>
                             </button>
-                            <button type="button" class="btn btn-outline-warning text-start rounded-3 py-2 perm-template" data-template="clear">
+                            <button type="button" class="ui-btn ui-btn-ghost text-start rounded-3 py-2 perm-template" data-template="clear">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-x-lg fs-5"></i>
                                     <div>
@@ -145,8 +145,8 @@
                 </div>
                 @endif
 
-                <div class="premium-card mt-3">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card mt-3">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body text-center">
                         <div class="stat-label">Permisos Seleccionados</div>
                         <div class="stat-value" style="color: #8b5cf6;">{{ count($oldPerms) }}</div>
@@ -156,17 +156,17 @@
             </div>
 
             <div class="col-lg-8">
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                             <div>
-                                <h5 class="premium-card-title"><i class="bi bi-key icon-purple"></i>Permisos</h5>
-                                <small class="premium-card-subtitle">Modifica los permisos asignados a este rol</small>
+                                <h5 class="ui-card-title"><i class="bi bi-key icon-purple"></i>Permisos</h5>
+                                <small class="ui-card-subtitle">Modifica los permisos asignados a este rol</small>
                             </div>
-                            <div class="input-group" style="max-width: 280px;">
-                                <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                                <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Buscar permiso...">
+                            <div class="ui-input-group" style="max-width: 280px;">
+                                <span class="ui-input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                                <input type="text" id="permFilter" class="ui-input border-0 bg-light" placeholder="Buscar permiso...">
                             </div>
                         </div>
                         @foreach($modulos as $modulo => $perms)
@@ -214,7 +214,7 @@
             @if($role->name !== 'admin' && $role->users()->count() == 0)
                 <form action="{{ route($routePrefix . 'roles.destroy', $role) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
                     @csrf @method('DELETE')
-                    <button type="submit" class="premium-btn-delete rounded-pill px-4">
+                    <button type="submit" class="ui-action ui-action-delete rounded-pill px-4">
                         <i class="bi bi-trash me-1"></i>Eliminar Rol
                     </button>
                 </form>

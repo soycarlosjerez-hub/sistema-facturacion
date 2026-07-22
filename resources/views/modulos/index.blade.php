@@ -2,16 +2,38 @@
 
 @section('title', 'Módulos del Sistema')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+    body.dark-mode .ui-card { background: rgba(15,23,42,.8); }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-grid text-primary me-2"></i>Módulos del Sistema</h2>
-            <p class="text-muted mb-0">Define los módulos disponibles y su configuración en el sidebar</p>
+<div class="ui-page" style="--accent:#6366f1;--accent-rgb:99,102,241;--accent-hover:#4f46e5;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-grid"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Módulos del Sistema</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-grid me-1"></i>
+                        <span>Define los módulos disponibles y su configuración en el sidebar</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <button class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo Módulo
+                </button>
+            </div>
         </div>
-        <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#createModal">
-            <i class="bi bi-plus-lg me-1"></i>Nuevo Módulo
-        </button>
     </div>
 
     @if(session('success'))
@@ -20,11 +42,12 @@
         </div>
     @endif
 
-    <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body p-0">
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                <table class="ui-table table-hover align-middle mb-0">
+                    <thead>
                         <tr>
                             <th style="width:40px;">#</th>
                             <th>Módulo</th>
@@ -67,16 +90,16 @@
                                     </td>
                                     <td class="text-center">{{ $modulo->orden }}</td>
                                     <td class="text-end">
-                                        <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-primary rounded-start-pill"
+                                        <div class="d-flex gap-1 justify-content-end">
+                                            <button class="ui-action ui-action-edit rounded-pill"
                                                 onclick="openEditModal({{ $modulo->toJson() }})" title="Editar">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
                                             <form action="{{ route('modulos.destroy', $modulo) }}" method="POST" class="d-inline"
-                                                onsubmit="return confirm('¿Eliminar este módulo?')">
+                                                onsubmit="return UI.confirm.delete('¿Eliminar este módulo?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger rounded-end-pill" title="Eliminar">
+                                                <button type="submit" class="ui-action ui-action-delete rounded-pill" title="Eliminar">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -105,31 +128,31 @@
         <div class="modal-content rounded-4 border-0 shadow">
             <form action="{{ route('modulos.store') }}" method="POST">
                 @csrf
-                <div class="modal-header border-0 pb-0">
+                <div class="modal-header border-0 pb-0" style="background:transparent;">
                     <h6 class="modal-title fw-bold">Nuevo Módulo</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Clave *</label>
-                            <input type="text" name="key" class="form-control rounded-3" required
+                            <label class="ui-label small fw-bold">Clave *</label>
+                            <input type="text" name="key" class="ui-input" required
                                 placeholder="mi-modulo" pattern="[a-z0-9\-]+">
                             <div class="form-text">Minúsculas, números y guiones.</div>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Nombre *</label>
-                            <input type="text" name="label" class="form-control rounded-3" required
+                            <label class="ui-label small fw-bold">Nombre *</label>
+                            <input type="text" name="label" class="ui-input" required
                                 placeholder="Mi Módulo">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Icono (Bootstrap Icons)</label>
-                            <input type="text" name="icon" class="form-control rounded-3" value="bi-grid"
+                            <label class="ui-label small fw-bold">Icono (Bootstrap Icons)</label>
+                            <input type="text" name="icon" class="ui-input" value="bi-grid"
                                 placeholder="bi-grid">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Categoría *</label>
-                            <input type="text" name="categoria" class="form-control rounded-3" required
+                            <label class="ui-label small fw-bold">Categoría *</label>
+                            <input type="text" name="categoria" class="ui-input" required
                                 placeholder="core" list="categoriasList">
                             <datalist id="categoriasList">
                                 <option value="core">
@@ -141,34 +164,34 @@
                             </datalist>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Orden</label>
-                            <input type="number" name="orden" class="form-control rounded-3" value="0" min="0">
+                            <label class="ui-label small fw-bold">Orden</label>
+                            <input type="number" name="orden" class="ui-input" value="0" min="0">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Permiso Sidebar</label>
-                            <input type="text" name="sidebar_permission" class="form-control rounded-3"
+                            <label class="ui-label small fw-bold">Permiso Sidebar</label>
+                            <input type="text" name="sidebar_permission" class="ui-input"
                                 placeholder="modulos.view">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Ruta Sidebar</label>
-                            <input type="text" name="sidebar_route" class="form-control rounded-3"
+                            <label class="ui-label small fw-bold">Ruta Sidebar</label>
+                            <input type="text" name="sidebar_route" class="ui-input"
                                 placeholder="modulos.index">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">is_route (Sidebar)</label>
-                            <input type="text" name="sidebar_is_route" class="form-control rounded-3"
+                            <label class="ui-label small fw-bold">is_route (Sidebar)</label>
+                            <input type="text" name="sidebar_is_route" class="ui-input"
                                 placeholder="modulos.*">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">exact_route (Sidebar)</label>
-                            <input type="text" name="sidebar_exact_route" class="form-control rounded-3"
+                            <label class="ui-label small fw-bold">exact_route (Sidebar)</label>
+                            <input type="text" name="sidebar_exact_route" class="ui-input"
                                 placeholder="modulos.index">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4">
                         <i class="bi bi-check-lg me-1"></i>Crear
                     </button>
                 </div>
@@ -184,27 +207,27 @@
             <form id="editForm" method="POST">
                 @csrf
                 @method('PUT')
-                <div class="modal-header border-0 pb-0">
+                <div class="modal-header border-0 pb-0" style="background:transparent;">
                     <h6 class="modal-title fw-bold">Editar Módulo</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Clave</label>
-                            <input type="text" class="form-control rounded-3" id="edit_key" disabled>
+                            <label class="ui-label small fw-bold">Clave</label>
+                            <input type="text" class="ui-input" id="edit_key" disabled>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Nombre *</label>
-                            <input type="text" name="label" id="edit_label" class="form-control rounded-3" required>
+                            <label class="ui-label small fw-bold">Nombre *</label>
+                            <input type="text" name="label" id="edit_label" class="ui-input" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Icono</label>
-                            <input type="text" name="icon" id="edit_icon" class="form-control rounded-3">
+                            <label class="ui-label small fw-bold">Icono</label>
+                            <input type="text" name="icon" id="edit_icon" class="ui-input">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Categoría *</label>
-                            <input type="text" name="categoria" id="edit_categoria" class="form-control rounded-3" required
+                            <label class="ui-label small fw-bold">Categoría *</label>
+                            <input type="text" name="categoria" id="edit_categoria" class="ui-input" required
                                 list="categoriasList2">
                             <datalist id="categoriasList2">
                                 <option value="core">
@@ -216,30 +239,30 @@
                             </datalist>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Orden</label>
-                            <input type="number" name="orden" id="edit_orden" class="form-control rounded-3" min="0">
+                            <label class="ui-label small fw-bold">Orden</label>
+                            <input type="number" name="orden" id="edit_orden" class="ui-input" min="0">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Permiso Sidebar</label>
-                            <input type="text" name="sidebar_permission" id="edit_sidebar_permission" class="form-control rounded-3">
+                            <label class="ui-label small fw-bold">Permiso Sidebar</label>
+                            <input type="text" name="sidebar_permission" id="edit_sidebar_permission" class="ui-input">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">Ruta Sidebar</label>
-                            <input type="text" name="sidebar_route" id="edit_sidebar_route" class="form-control rounded-3">
+                            <label class="ui-label small fw-bold">Ruta Sidebar</label>
+                            <input type="text" name="sidebar_route" id="edit_sidebar_route" class="ui-input">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">is_route</label>
-                            <input type="text" name="sidebar_is_route" id="edit_sidebar_is_route" class="form-control rounded-3">
+                            <label class="ui-label small fw-bold">is_route</label>
+                            <input type="text" name="sidebar_is_route" id="edit_sidebar_is_route" class="ui-input">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small fw-bold">exact_route</label>
-                            <input type="text" name="sidebar_exact_route" id="edit_sidebar_exact_route" class="form-control rounded-3">
+                            <label class="ui-label small fw-bold">exact_route</label>
+                            <input type="text" name="sidebar_exact_route" id="edit_sidebar_exact_route" class="ui-input">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4">
                         <i class="bi bi-save me-1"></i>Guardar
                     </button>
                 </div>

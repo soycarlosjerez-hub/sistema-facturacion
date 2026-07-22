@@ -6,31 +6,33 @@
 @endpush
 
 @section('content')
-<div class="container-fluid py-4 premium-page">
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
     <div class="row justify-content-center">
         <div class="col-lg-12">
 
             {{-- Header --}}
-            <div class="premium-header mb-4">
+            <div class="ui-header mb-4" style="--delay:0s">
                 <div class="bubble"></div>
                 <div class="bubble"></div>
                 <div class="bubble"></div>
-                <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="premium-avatar-circle">
+                <div class="ui-header-body">
+                    <div class="ui-header-left">
+                        <div class="ui-avatar-circle">
                             <i class="bi bi-truck"></i>
                         </div>
                         <div>
-                            <h4 class="fw-bold mb-1 text-white">Nuevo Conduce</h4>
-                            <small class="text-white opacity-75">
+                            <h4 class="ui-header-title">Nuevo Conduce</h4>
+                            <div class="ui-header-meta">
                                 <i class="bi bi-plus-circle me-1"></i>
-                                Nota de entrega de productos al cliente
-                            </small>
+                                <span>Nota de entrega de productos al cliente</span>
+                            </div>
                         </div>
                     </div>
-                    <a href="{{ route('conduces.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                        <i class="bi bi-arrow-left me-2"></i>Volver
-                    </a>
+                    <div class="ui-header-actions">
+                        <a href="{{ route('conduces.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                            <i class="bi bi-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -53,15 +55,15 @@
             @endif
 
             {{-- Form Card --}}
-            <div class="premium-card">
-                <div class="card-accent purple"></div>
-                <div class="card-body">
-                    <h5 class="premium-card-title"><i class="bi bi-truck icon-purple"></i>Detalles del Conduce</h5>
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
+                    <h5 class="ui-card-title"><i class="bi bi-truck"></i>Detalles del Conduce</h5>
                 </div>
 
                 <form method="POST" action="{{ route('conduces.store') }}" id="formConduce">
                     @csrf
-                    <div class="card-body pt-0">
+                    <div class="ui-card-body pt-0">
                         @include('conduces._form', ['conduce' => null, 'clientes' => $clientes, 'productos' => $productos])
                     </div>
 
@@ -71,7 +73,7 @@
     </div>
 </div>
 
-<div class="premium-sticky-bar">
+<div class="ui-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>

@@ -3,36 +3,30 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
-body.dark-mode .premium-sticky-bar { border-top-color: #f59e0b; }
-body.dark-mode .premium-sticky-bar .btn-save { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-sticky-bar .btn-save:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
-body.dark-mode .premium-card .form-control:focus,
-body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
-body.dark-mode .premium-card .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
-</style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-shield-check"></i>
+<div class="ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Editar Secuencia NCF</h4>
+                    <div class="ui-header-meta">{{ $ncf->prefijo }}</div>
+                </div>
             </div>
-            <div>
-                <h3 class="fw-bold mb-1">Editar Secuencia NCF</h3>
-                <p class="mb-0 opacity-75">{{ $ncf->prefijo }}</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('ncf.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
             </div>
         </div>
-        <a href="{{ route('ncf.index') }}" class="btn btn-light rounded-pill text-dark fw-semibold">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     @if (session('error'))
@@ -51,12 +45,12 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
         </div>
     @endif
 
-    <div class="premium-card mb-5">
-        <div class="card-accent amber"></div>
+    <div class="ui-card mb-5" style="--delay:.1s">
+        <div class="ui-card-accent amber"></div>
         <form id="ncfForm" action="{{ route('ncf.update', $ncf) }}" method="POST">
             @csrf
             @method('PUT')
-            <div class="card-body p-4 p-md-5">
+            <div class="ui-card-body p-4 p-md-5">
                 <div class="mb-4 pb-3 border-bottom">
                     <h6 class="fw-bold mb-0" style="color: #f59e0b;">
                         <i class="bi bi-info-circle me-2"></i>Información del NCF
@@ -64,30 +58,30 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
                 </div>
                 <div class="row g-3">
                     <div class="col-md-8">
-                        <label class="form-label fw-bold">Nombre del Comprobante</label>
-                        <input type="text" name="nombre" class="form-control rounded-3" value="{{ $ncf->nombre }}" required>
+                        <label class="ui-label fw-bold">Nombre del Comprobante</label>
+                        <input type="text" name="nombre" class="ui-input" value="{{ $ncf->nombre }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Prefijo</label>
-                        <input type="text" name="prefijo" class="form-control rounded-3" maxlength="3" value="{{ $ncf->prefijo }}" required onkeyup="this.value = this.value.toUpperCase()">
+                        <label class="ui-label fw-bold">Prefijo</label>
+                        <input type="text" name="prefijo" class="ui-input" maxlength="3" value="{{ $ncf->prefijo }}" required onkeyup="this.value = this.value.toUpperCase()">
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Desde</label>
-                        <input type="number" name="desde" class="form-control rounded-3" value="{{ $ncf->desde }}" required>
+                        <label class="ui-label fw-bold">Desde</label>
+                        <input type="number" name="desde" class="ui-input" value="{{ $ncf->desde }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Hasta</label>
-                        <input type="number" name="hasta" class="form-control rounded-3" value="{{ $ncf->hasta }}" required>
+                        <label class="ui-label fw-bold">Hasta</label>
+                        <input type="number" name="hasta" class="ui-input" value="{{ $ncf->hasta }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">Número Actual</label>
-                        <input type="number" name="actual" class="form-control rounded-3" value="{{ $ncf->actual }}" required>
+                        <label class="ui-label fw-bold">Número Actual</label>
+                        <input type="number" name="actual" class="ui-input" value="{{ $ncf->actual }}" required>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Fecha de Vencimiento</label>
-                        <input type="date" name="fecha_vencimiento" class="form-control rounded-3" value="{{ $ncf->fecha_vencimiento }}" required>
+                        <label class="ui-label fw-bold">Fecha de Vencimiento</label>
+                        <input type="date" name="fecha_vencimiento" class="ui-input" value="{{ $ncf->fecha_vencimiento }}" required>
                     </div>
                 </div>
             </div>
@@ -95,12 +89,12 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
     </div>
 </div>
 
-<div id="stickySaveBar" class="premium-sticky-bar d-flex justify-content-between align-items-center">
-    <div>
-        <span class="fw-semibold" style="color: #f59e0b;"><i class="bi bi-shield-check me-1"></i> Editando: {{ $ncf->prefijo }}</span>
+<div id="stickySaveBar" class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <span class="fw-semibold" style="color: var(--accent);"><i class="bi bi-shield-check me-1"></i> Editando: {{ $ncf->prefijo }}</span>
+        <button type="submit" form="ncfForm" class="ui-btn ui-btn-solid rounded-pill px-5 fw-bold shadow-sm">
+            <i class="bi bi-check-circle me-1"></i> Actualizar Secuencia
+        </button>
     </div>
-    <button type="submit" form="ncfForm" class="btn-save rounded-pill px-5 fw-bold shadow-sm">
-        <i class="bi bi-check-circle me-1"></i> Actualizar Secuencia
-    </button>
 </div>
 @endsection

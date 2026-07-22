@@ -32,30 +32,30 @@ body.dark-mode .info-item .value { color: #f1f5f9; }
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#059669,#10b981,#34d399,#059669);box-shadow:0 8px 32px rgba(5,150,105,.25);">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-bank"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">{{ $cuentasBancarium->nombre }}</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">{{ $cuentasBancarium->nombre }}</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-building me-1"></i>
                         Detalle de la cuenta bancaria
-                    </small>
+                    </div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route('cuentas-bancarias.edit', $cuentasBancarium) }}" class="btn btn-light rounded-pill px-4 fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+            <div class="ui-header-actions">
+                <a href="{{ route('cuentas-bancarias.edit', $cuentasBancarium) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-pencil-square me-1"></i>Editar
                 </a>
-                <a href="{{ route('cuentas-bancarias.index') }}" class="btn btn-outline-light rounded-pill px-4">
+                <a href="{{ route('cuentas-bancarias.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
@@ -64,9 +64,9 @@ body.dark-mode .info-item .value { color: #f1f5f9; }
 
     <div class="row g-4">
         <div class="col-lg-5">
-            <div class="premium-card" style="animation-delay:.1s;">
-                <div class="card-accent green"></div>
-                <div class="card-body p-4 text-center">
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body text-center">
                     <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                         <i class="bi bi-bank fs-1"></i>
                     </div>
@@ -75,22 +75,22 @@ body.dark-mode .info-item .value { color: #f1f5f9; }
                     <p class="text-muted small mb-1"><i class="bi bi-hash me-1"></i>{{ $cuentasBancarium->numero_cuenta ?? '—' }}</p>
                     <p class="text-muted small mb-3"><i class="bi bi-person me-1"></i>{{ $cuentasBancarium->titular ?? '—' }}</p>
                     @if($cuentasBancarium->activo)
-                    <span class="premium-badge" style="background:rgba(16,185,129,.1);color:#059669;"><i class="bi bi-check-circle-fill me-1"></i>Activa</span>
+                    <span class="ui-badge ui-badge-primary"><i class="bi bi-check-circle-fill me-1"></i>Activa</span>
                     @else
-                    <span class="premium-badge" style="background:rgba(107,114,128,.1);color:#6b7280;"><i class="bi bi-x-circle-fill me-1"></i>Inactiva</span>
+                    <span class="ui-badge ui-badge-neutral"><i class="bi bi-x-circle-fill me-1"></i>Inactiva</span>
                     @endif
                 </div>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="premium-card mb-4" style="animation-delay:.15s;">
-                <div class="card-accent green"></div>
-                <div class="premium-card-title">
-                    <i class="bi bi-info-circle icon-blue"></i>
+            <div class="ui-card mb-4" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-info-circle"></i>
                     Información de la Cuenta
                 </div>
-                <div class="card-body">
+                <div class="ui-card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="info-item">

@@ -5,8 +5,7 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
-body.dark-mode .card { background: rgba(15,23,42,.8); }
+body.dark-mode .ui-card { background: rgba(15,23,42,.8); }
 body.dark-mode .dropdown-menu { background: #1e293b; border-color: #334155; }
 body.dark-mode .dropdown-item { color: #94a3b8; }
 body.dark-mode .dropdown-item:hover { background: #334155; color: #f1f5f9; }
@@ -15,98 +14,92 @@ body.dark-mode .progress { background: #1e293b !important; }
 body.dark-mode .alert-success { background: rgba(16,185,129,.15); color: #6ee7b7; }
 body.dark-mode .alert-warning { background: rgba(245,158,11,.15); color: #fcd34d; }
 body.dark-mode .alert-danger { background: rgba(239,68,68,.15); color: #fca5a5; }
-body.dark-mode .premium-card .form-control:focus,
-body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+body.dark-mode .ui-card .ui-input:focus,
+body.dark-mode .ui-card .ui-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-list-ol"></i>
+<div class="container-fluid px-4 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>    <div class="bubble"></div>    <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-list-ol"></i></div>
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-1">
+                            <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
+                            <li class="breadcrumb-item active text-white">Secuencias</li>
+                        </ol>
+                    </nav>
+                    <h4 class="ui-header-title">Secuencias de Comprobantes Electrónicos</h4>
+                    <div class="ui-header-meta"><i class="bi bi-info-circle me-1"></i> <span>Numeración autorizada por la DGII para emisión de e-CF</span></div>
+                </div>
             </div>
-            <div>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a href="{{ route('ecf.index') }}" class="text-decoration-none text-white-50">e-CF</a></li>
-                        <li class="breadcrumb-item active text-white">Secuencias</li>
-                    </ol>
-                </nav>
-                <h3 class="fw-bold mb-0">Secuencias de Comprobantes Electrónicos</h3>
-                <p class="mb-0 opacity-75">Numeración autorizada por la DGII para emisión de e-CF</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('ecf.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-receipt me-1"></i>Ver Documentos</a>
+                <a href="{{ route('secuencias-ecf.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-plus-lg me-1"></i>Nueva Secuencia</a>
             </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('ecf.index') }}" class="btn btn-light rounded-pill px-3">
-                <i class="bi bi-receipt me-1"></i>Ver Documentos
-            </a>
-            <a href="{{ route('secuencias-ecf.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm text-dark fw-semibold">
-                <i class="bi bi-plus-lg me-1"></i>Nueva Secuencia
-            </a>
-        </div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="premium-stat-card">
+            <div class="ui-stat" style="--delay:.1s">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="icon-bubble bg-primary bg-opacity-10 text-primary" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-shield-check"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Total Secuencias</div>
-                            <div class="stat-value">{{ $stats['total'] }}</div>
+                            <div class="ui-stat-label">Total Secuencias</div>
+                            <div class="ui-stat-value">{{ $stats['total'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
+            <div class="ui-stat" style="--delay:.15s">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="icon-bubble bg-success bg-opacity-10 text-success" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-check-circle"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Activas</div>
-                            <div class="stat-value">{{ $stats['activas'] }}</div>
+                            <div class="ui-stat-label">Activas</div>
+                            <div class="ui-stat-value">{{ $stats['activas'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
+            <div class="ui-stat" style="--delay:.2s">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="icon-bubble bg-warning bg-opacity-10 text-warning" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-clock-history"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Vencidas</div>
-                            <div class="stat-value">{{ $stats['vencidas'] }}</div>
+                            <div class="ui-stat-label">Vencidas</div>
+                            <div class="ui-stat-value">{{ $stats['vencidas'] }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="premium-stat-card">
+            <div class="ui-stat" style="--delay:.25s">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3">
                         <div class="icon-bubble bg-danger bg-opacity-10 text-danger" style="width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem;">
                             <i class="bi bi-exclamation-triangle"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Agotadas</div>
-                            <div class="stat-value">{{ $stats['agotadas'] }}</div>
+                            <div class="ui-stat-label">Agotadas</div>
+                            <div class="ui-stat-value">{{ $stats['agotadas'] }}</div>
                         </div>
                     </div>
                 </div>
@@ -117,9 +110,9 @@ body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-sha
     <div class="row g-3">
         @forelse($secuencias as $sec)
         <div class="col-xl-4 col-md-6">
-            <div class="premium-card h-100 overflow-hidden position-relative
-                {{ $sec->vencida() ? 'border-top border-4 border-warning' : ($sec->agotada() ? 'border-top border-4 border-danger' : 'border-top border-4 border-primary') }}">
-                <div class="card-accent amber"></div>
+            <div class="ui-card h-100 overflow-hidden position-relative
+                {{ $sec->vencida() ? 'border-top border-4 border-warning' : ($sec->agotada() ? 'border-top border-4 border-danger' : 'border-top border-4 border-primary') }}" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -146,7 +139,7 @@ body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-sha
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form action="{{ route('secuencias-ecf.destroy', $sec) }}" method="POST" onsubmit="return confirm('¿Eliminar esta secuencia?')">
+                                    <form action="{{ route('secuencias-ecf.destroy', $sec) }}" method="POST" onsubmit="return UI.confirm.delete('¿Eliminar esta secuencia?')">
                                         @csrf @method('DELETE')
                                         <button class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Eliminar</button>
                                     </form>
@@ -206,7 +199,7 @@ body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-sha
         <div class="col-12 text-center py-5">
             <i class="bi bi-shield-check display-1 text-muted opacity-25"></i>
             <p class="text-muted mt-3">No hay secuencias e-CF configuradas.</p>
-            <a href="{{ route('secuencias-ecf.create') }}" class="btn btn-primary rounded-pill">
+            <a href="{{ route('secuencias-ecf.create') }}" class="ui-btn ui-btn-solid rounded-pill">
                 <i class="bi bi-plus-lg me-1"></i>Crear Primera Secuencia
             </a>
         </div>

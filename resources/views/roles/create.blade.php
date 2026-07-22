@@ -41,14 +41,14 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header">
+<div class="container-fluid px-4 ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
+    <div class="ui-header">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body w-100">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-shield-lock"></i>
                 </div>
                 <div>
@@ -57,13 +57,15 @@
                             <i class="bi bi-shield-plus me-1"></i>NUEVO ROL
                         </span>
                     </div>
-                    <h2 class="fw-bold mb-1">Crear Rol</h2>
-                    <p class="mb-0 opacity-75">Define un nuevo rol y selecciona los permisos que tendrá</p>
+                    <h2 class="ui-header-title mb-0">Crear Rol</h2>
+                    <div class="ui-header-meta">Define un nuevo rol y selecciona los permisos que tendrá</div>
                 </div>
             </div>
-            <a href="{{ route($routePrefix . 'roles.index') }}" class="btn btn-light rounded-pill px-4 fw-bold">
-                <i class="bi bi-arrow-left me-1"></i>Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route($routePrefix . 'roles.index') }}" class="ui-btn ui-btn-primary rounded-pill px-4 fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
         </div>
     </div>
 
@@ -88,13 +90,13 @@
 
         <div class="row g-4">
             <div class="col-lg-4">
-                <div class="premium-card mb-3">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card mb-3">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body">
-                        <h5 class="premium-card-title"><i class="bi bi-tag icon-purple"></i>Nombre del Rol</h5>
+                        <h5 class="ui-card-title"><i class="bi bi-tag icon-purple"></i>Nombre del Rol</h5>
                         <div class="form-floating-modern">
                             <i class="bi bi-shield form-icon"></i>
-                            <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror"
+                            <input type="text" name="name" id="name" class="ui-input @error('name') is-invalid @enderror"
                                    value="{{ old('name') }}" placeholder=" " required maxlength="50" pattern="[a-z0-9_\-]+">
                             <label class="form-label-float" for="name">Nombre (ej: supervisor, cajero)</label>
                             @error('name')<div class="text-danger small mt-1 ms-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
@@ -105,13 +107,13 @@
                     </div>
                 </div>
 
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body">
-                        <h6 class="premium-card-title"><i class="bi bi-stars icon-purple"></i>Plantillas Rápidas</h6>
-                        <small class="premium-card-subtitle">Inicia con permisos predefinidos</small>
+                        <h6 class="ui-card-title"><i class="bi bi-stars icon-purple"></i>Plantillas Rápidas</h6>
+                        <small class="ui-card-subtitle">Inicia con permisos predefinidos</small>
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-outline-primary text-start rounded-3 py-2 perm-template" data-template="readonly">
+                            <button type="button" class="ui-btn ui-btn-ghost text-start rounded-3 py-2 perm-template" data-template="readonly">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-eye fs-5"></i>
                                     <div>
@@ -120,7 +122,7 @@
                                     </div>
                                 </div>
                             </button>
-                            <button type="button" class="btn btn-outline-success text-start rounded-3 py-2 perm-template" data-template="all">
+                            <button type="button" class="ui-btn ui-btn-ghost text-start rounded-3 py-2 perm-template" data-template="all">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-check-all fs-5"></i>
                                     <div>
@@ -129,7 +131,7 @@
                                     </div>
                                 </div>
                             </button>
-                            <button type="button" class="btn btn-outline-warning text-start rounded-3 py-2 perm-template" data-template="clear">
+                            <button type="button" class="ui-btn ui-btn-ghost text-start rounded-3 py-2 perm-template" data-template="clear">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="bi bi-x-lg fs-5"></i>
                                     <div>
@@ -142,8 +144,8 @@
                     </div>
                 </div>
 
-                <div class="premium-card mt-3">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card mt-3">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body text-center">
                         <div class="stat-label">Permisos Seleccionados</div>
                         <div class="stat-value" style="color: #8b5cf6;">0</div>
@@ -153,17 +155,17 @@
             </div>
 
             <div class="col-lg-8">
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                             <div>
-                                <h5 class="premium-card-title"><i class="bi bi-key icon-purple"></i>Asignar Permisos</h5>
-                                <small class="premium-card-subtitle">Marca los permisos que tendrá este rol</small>
+                                <h5 class="ui-card-title"><i class="bi bi-key icon-purple"></i>Asignar Permisos</h5>
+                                <small class="ui-card-subtitle">Marca los permisos que tendrá este rol</small>
                             </div>
-                            <div class="input-group" style="max-width: 280px;">
-                                <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                                <input type="text" id="permFilter" class="form-control border-0 bg-light" placeholder="Buscar permiso...">
+                            <div class="ui-input-group" style="max-width: 280px;">
+                                <span class="ui-input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                                <input type="text" id="permFilter" class="ui-input border-0 bg-light" placeholder="Buscar permiso...">
                             </div>
                         </div>
                         @foreach($modulos as $modulo => $perms)

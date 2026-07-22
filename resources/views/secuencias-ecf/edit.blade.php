@@ -4,35 +4,32 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-body.dark-mode .premium-header { background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e); }
-body.dark-mode .premium-sticky-bar { border-top-color: #f59e0b; }
-body.dark-mode .premium-sticky-bar .btn-save { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-sticky-bar .btn-save:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
-body.dark-mode .premium-card .form-control:focus,
-body.dark-mode .premium-card .form-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
-body.dark-mode .premium-card .btn-primary { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
-body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
+body.dark-mode .ui-sticky-bar { border-top-color: #f59e0b; }
+body.dark-mode .ui-sticky-bar .btn-save { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .ui-sticky-bar .btn-save:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
+body.dark-mode .ui-card .ui-input:focus,
+body.dark-mode .ui-card .ui-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
+body.dark-mode .ui-card .ui-btn-solid { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245,158,11,.3); }
+body.dark-mode .ui-card .ui-btn-solid:hover { box-shadow: 0 6px 20px rgba(245,158,11,.45); }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-list-ol"></i>
+<div class="container-fluid px-4 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>    <div class="bubble"></div>    <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-list-ol"></i></div>
+                <div>
+                    <h4 class="ui-header-title">Editar Secuencia e-CF</h4>
+                    <div class="ui-header-meta"><i class="bi bi-info-circle me-1"></i> <span>{{ $secuencia->tipo_ecf }} - {{ $secuencia->nombre }}</span></div>
+                </div>
             </div>
-            <div>
-                <h3 class="fw-bold mb-1">Editar Secuencia e-CF</h3>
-                <p class="mb-0 opacity-75">{{ $secuencia->tipo_ecf }} - {{ $secuencia->nombre }}</p>
+            <div class="ui-header-actions">
+                <a href="{{ route('secuencias-ecf.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-arrow-left me-1"></i> Volver</a>
             </div>
         </div>
-        <a href="{{ route('secuencias-ecf.index') }}" class="btn btn-light rounded-pill text-dark fw-semibold btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Volver
-        </a>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
     </div>
 
     @if (session('error'))
@@ -51,8 +48,8 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
         </div>
     @endif
 
-    <div class="premium-card mb-5">
-        <div class="card-accent amber"></div>
+    <div class="ui-card mb-5" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <form id="secuenciaEcfForm" action="{{ route('secuencias-ecf.update', $secuencia) }}" method="POST">
             @csrf
             @method('PUT')
@@ -65,8 +62,8 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Tipo de e-CF</label>
-                        <select name="tipo_ecf" class="form-select rounded-3" required>
+                        <label class="ui-label">Tipo de e-CF</label>
+                        <select name="tipo_ecf" class="ui-select rounded-3" required>
                             @foreach($tipos as $key => $nombre)
                                 <option value="{{ $key }}" {{ $secuencia->tipo_ecf === $key ? 'selected' : '' }}>
                                     {{ $key }} - {{ $nombre }}
@@ -76,36 +73,36 @@ body.dark-mode .premium-card .btn-primary:hover { box-shadow: 0 6px 20px rgba(24
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Nombre Descriptivo</label>
-                        <input type="text" name="nombre" class="form-control rounded-3" value="{{ $secuencia->nombre }}" required>
+                        <label class="ui-label">Nombre Descriptivo</label>
+                        <input type="text" name="nombre" class="ui-input rounded-3" value="{{ $secuencia->nombre }}" required>
                     </div>
 
                     <div class="col-md-12">
-                        <label class="form-label fw-bold small">Descripción</label>
-                        <input type="text" name="descripcion" class="form-control rounded-3" value="{{ $secuencia->descripcion }}">
+                        <label class="ui-label">Descripción</label>
+                        <input type="text" name="descripcion" class="ui-input rounded-3" value="{{ $secuencia->descripcion }}">
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-bold small">Desde</label>
-                        <input type="number" name="desde" class="form-control rounded-3" min="1" value="{{ $secuencia->desde }}" required>
+                        <label class="ui-label">Desde</label>
+                        <input type="number" name="desde" class="ui-input rounded-3" min="1" value="{{ $secuencia->desde }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold small">Hasta</label>
-                        <input type="number" name="hasta" class="form-control rounded-3" min="1" value="{{ $secuencia->hasta }}" required>
+                        <label class="ui-label">Hasta</label>
+                        <input type="number" name="hasta" class="ui-input rounded-3" min="1" value="{{ $secuencia->hasta }}" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold small">Actual</label>
-                        <input type="number" name="actual" class="form-control rounded-3" min="0" value="{{ $secuencia->actual }}" required>
+                        <label class="ui-label">Actual</label>
+                        <input type="number" name="actual" class="ui-input rounded-3" min="0" value="{{ $secuencia->actual }}" required>
                         <small class="text-muted">Cuidado: modificar esto puede generar saltos o duplicados.</small>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Fecha de Vencimiento</label>
-                        <input type="date" name="fecha_vencimiento" class="form-control rounded-3" value="{{ $secuencia->fecha_vencimiento->format('Y-m-d') }}" required>
+                        <label class="ui-label">Fecha de Vencimiento</label>
+                        <input type="date" name="fecha_vencimiento" class="ui-input rounded-3" value="{{ $secuencia->fecha_vencimiento->format('Y-m-d') }}" required>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Estado</label>
+                        <label class="ui-label">Estado</label>
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo" {{ $secuencia->activo ? 'checked' : '' }}>
                             <label class="form-check-label" for="activo">Activa</label>

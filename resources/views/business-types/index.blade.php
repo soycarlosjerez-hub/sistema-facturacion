@@ -10,24 +10,29 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-building"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Tipos de Negocio</h4>
-                    <small class="text-white opacity-75">Define los tipos de negocio del sistema y sus módulos asociados</small>
+                    <h4 class="ui-header-title">Tipos de Negocio</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>
+                        <span>Define los tipos de negocio del sistema y sus módulos asociados</span>
+                    </div>
                 </div>
             </div>
-            <button class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#createModal" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-plus-lg me-1"></i>Nuevo Tipo
-            </button>
+            <div class="ui-header-actions">
+                <button class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#createModal">
+                    <i class="bi bi-plus-lg me-1"></i> Nuevo Tipo
+                </button>
+            </div>
         </div>
     </div>
 
@@ -44,8 +49,8 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
         </div>
     @endif
 
-    <div class="premium-card overflow-hidden" style="animation-delay:.1s;">
-        <div class="card-accent purple"></div>
+    <div class="ui-card overflow-hidden" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead style="background: rgba(15,23,42,0.03);">
@@ -84,20 +89,20 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                             </td>
                             <td class="text-center">
                                 @if($tipo->activo)
-                                    <span class="premium-badge active">Activo</span>
+                                    <span class="ui-badge ui-badge-success">Activo</span>
                                 @else
-                                    <span class="premium-badge">Inactivo</span>
+                                    <span class="ui-badge ui-badge-neutral">Inactivo</span>
                                 @endif
                             </td>
                             <td class="text-center">{{ $tipo->orden }}</td>
                             <td class="text-end pe-4">
-                                <button class="premium-btn-edit me-1" onclick="openEditModal({{ $tipo->toJson() }})" title="Editar">
+                                <button class="ui-action ui-action-edit me-1" onclick="openEditModal({{ $tipo->toJson() }})" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form action="{{ route('business-types.destroy', $tipo) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este tipo de negocio?')">
+                                <form action="{{ route('business-types.destroy', $tipo) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="premium-btn-delete" title="Eliminar">
+                                    <button type="submit" class="ui-action ui-action-delete" onclick="event.preventDefault();UI.confirm.delete('{{ route('business-types.destroy', $tipo) }}', '{{ addslashes($tipo->nombre) }}')" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -130,24 +135,24 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Nombre</label>
-                        <input type="text" name="nombre" class="form-control rounded-3" required placeholder="Ej: Restaurante / Bar / Café">
+                        <label class="ui-label">Nombre</label>
+                        <input type="text" name="nombre" class="ui-input" required placeholder="Ej: Restaurante / Bar / Café">
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Slug</label>
-                            <input type="text" name="slug" class="form-control rounded-3" required placeholder="Ej: restaurante" pattern="[a-z0-9\-]+">
+                            <label class="ui-label">Slug</label>
+                            <input type="text" name="slug" class="ui-input" required placeholder="Ej: restaurante" pattern="[a-z0-9\-]+">
                             <div class="form-text">Minúsculas, números y guiones.</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Icono</label>
-                            <input type="text" name="icon" class="form-control rounded-3" required value="bi-grid" placeholder="bi-cup-straw">
+                            <label class="ui-label">Icono</label>
+                            <input type="text" name="icon" class="ui-input" required value="bi-grid" placeholder="bi-cup-straw">
                         </div>
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Color</label>
-                            <select name="color" class="form-select rounded-3">
+                            <label class="ui-label">Color</label>
+                            <select name="color" class="ui-select">
                                 <option value="info">Azul (info)</option>
                                 <option value="success">Verde (success)</option>
                                 <option value="warning">Amarillo (warning)</option>
@@ -157,13 +162,13 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Orden</label>
-                            <input type="number" name="orden" class="form-control rounded-3" value="0" min="0">
+                            <label class="ui-label">Orden</label>
+                            <input type="number" name="orden" class="ui-input" value="0" min="0">
                         </div>
                     </div>
                     <div class="mt-3">
-                        <label class="form-label small fw-bold">Descripción</label>
-                        <input type="text" name="descripcion" class="form-control rounded-3" placeholder="Descripción corta (opcional)">
+                        <label class="ui-label">Descripción</label>
+                        <input type="text" name="descripcion" class="ui-input" placeholder="Descripción corta (opcional)">
                     </div>
                     <div class="form-check form-switch mt-3">
                         <input class="form-check-input" type="checkbox" name="activo" value="1" checked>
@@ -171,8 +176,8 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4">
                         <i class="bi bi-check-lg me-1"></i>Crear
                     </button>
                 </div>
@@ -194,23 +199,23 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Nombre</label>
-                        <input type="text" name="nombre" id="edit_nombre" class="form-control rounded-3" required>
+                        <label class="ui-label">Nombre</label>
+                        <input type="text" name="nombre" id="edit_nombre" class="ui-input" required>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Slug</label>
-                            <input type="text" name="slug" id="edit_slug" class="form-control rounded-3" required pattern="[a-z0-9\-]+">
+                            <label class="ui-label">Slug</label>
+                            <input type="text" name="slug" id="edit_slug" class="ui-input" required pattern="[a-z0-9\-]+">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Icono</label>
-                            <input type="text" name="icon" id="edit_icon" class="form-control rounded-3" required>
+                            <label class="ui-label">Icono</label>
+                            <input type="text" name="icon" id="edit_icon" class="ui-input" required>
                         </div>
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Color</label>
-                            <select name="color" id="edit_color" class="form-select rounded-3">
+                            <label class="ui-label">Color</label>
+                            <select name="color" id="edit_color" class="ui-select">
                                 <option value="info">Azul (info)</option>
                                 <option value="success">Verde (success)</option>
                                 <option value="warning">Amarillo (warning)</option>
@@ -220,13 +225,13 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Orden</label>
-                            <input type="number" name="orden" id="edit_orden" class="form-control rounded-3" min="0">
+                            <label class="ui-label">Orden</label>
+                            <input type="number" name="orden" id="edit_orden" class="ui-input" min="0">
                         </div>
                     </div>
                     <div class="mt-3">
-                        <label class="form-label small fw-bold">Descripción</label>
-                        <input type="text" name="descripcion" id="edit_descripcion" class="form-control rounded-3">
+                        <label class="ui-label">Descripción</label>
+                        <input type="text" name="descripcion" id="edit_descripcion" class="ui-input">
                     </div>
                     <div class="form-check form-switch mt-3">
                         <input class="form-check-input" type="checkbox" name="activo" id="edit_activo" value="1">
@@ -234,8 +239,8 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                    <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4">
                         <i class="bi bi-check-lg me-1"></i>Guardar
                     </button>
                 </div>
@@ -286,8 +291,8 @@ body.dark-mode .form-check-input:checked { background-color: var(--bs-primary); 
                 </div>
             </div>
             <div class="modal-footer border-0 pt-0" id="modulesFooter" style="display:none;">
-                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveModules()">
+                <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="ui-btn ui-btn-solid rounded-pill px-4" onclick="saveModules()">
                     <i class="bi bi-save me-1"></i>Guardar Módulos
                 </button>
             </div>

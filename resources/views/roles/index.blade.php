@@ -43,26 +43,26 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header">
+<div class="container-fluid px-4 ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
+    <div class="ui-header">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3" style="position: relative; z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body w-100">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-shield-lock"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">Manejador de Roles</h2>
-                    <p class="mb-0 opacity-75">Define roles y asigna permisos granulares a cada uno</p>
+                    <h2 class="ui-header-title">Manejador de Roles</h2>
+                    <div class="ui-header-meta">Define roles y asigna permisos granulares a cada uno</div>
                 </div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="{{ route($routePrefix . 'roles.matrix') }}" class="btn btn-light rounded-pill px-3">
+            <div class="ui-header-actions">
+                <a href="{{ route($routePrefix . 'roles.matrix') }}" class="ui-btn ui-btn-primary rounded-pill px-3">
                     <i class="bi bi-grid-3x3-gap me-1"></i>Matriz
                 </a>
-                <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-light rounded-pill px-3 fw-bold">
+                <a href="{{ route($routePrefix . 'roles.create') }}" class="ui-btn ui-btn-primary rounded-pill px-3 fw-bold">
                     <i class="bi bi-plus-lg me-1"></i>Nuevo Rol
                 </a>
             </div>
@@ -84,7 +84,7 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-shield-shaded"></i>
@@ -97,7 +97,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-info bg-opacity-10 text-info">
                         <i class="bi bi-key"></i>
@@ -110,7 +110,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-success bg-opacity-10 text-success">
                         <i class="bi bi-people"></i>
@@ -123,7 +123,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card">
+            <div class="ui-stat">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-bubble bg-warning bg-opacity-10 text-warning">
                         <i class="bi bi-person-check"></i>
@@ -175,16 +175,16 @@
                             <small class="text-muted">{{ $rol->users_count == 1 ? 'usuario' : 'usuarios' }}</small>
                         </div>
                         <div class="d-flex gap-1">
-                            <a href="{{ route($routePrefix . 'roles.show', $rol) }}" class="premium-btn-edit" title="Ver detalle">
+                            <a href="{{ route($routePrefix . 'roles.show', $rol) }}" class="ui-action ui-action-edit" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route($routePrefix . 'roles.edit', $rol) }}" class="premium-btn-edit" title="Editar permisos">
+                            <a href="{{ route($routePrefix . 'roles.edit', $rol) }}" class="ui-action ui-action-edit" title="Editar permisos">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             @if($rol->name !== 'admin' && $rol->users_count == 0)
                                 <form action="{{ route($routePrefix . 'roles.destroy', $rol) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $rol->name }}&quot;?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="premium-btn-delete" title="Eliminar">
+                                    <button type="submit" class="ui-action ui-action-delete" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -195,13 +195,13 @@
             </div>
         @empty
             <div class="col-12">
-                <div class="premium-card">
-                    <div class="card-accent purple"></div>
+                <div class="ui-card">
+                    <div class="ui-card-accent"></div>
                     <div class="card-body text-center py-5">
                         <i class="bi bi-shield display-1 text-muted d-block mb-3"></i>
                         <h5 class="fw-bold">No hay roles definidos</h5>
                         <p class="text-muted">Crea tu primer rol para empezar a gestionar permisos.</p>
-                        <a href="{{ route($routePrefix . 'roles.create') }}" class="btn btn-primary rounded-pill px-4">
+                        <a href="{{ route($routePrefix . 'roles.create') }}" class="ui-btn ui-btn-solid rounded-pill px-4">
                             <i class="bi bi-plus-lg me-1"></i>Crear Rol
                         </a>
                     </div>

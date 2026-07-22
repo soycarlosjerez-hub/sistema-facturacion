@@ -6,27 +6,20 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header mb-4" style="background: linear-gradient(135deg, #92400e, #b45309, #d97706, #92400e);">
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
-                    <i class="bi bi-list-ol"></i>
-                </div>
+<div class="container-fluid px-4 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>    <div class="bubble"></div>    <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-list-ol"></i></div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Nueva Secuencia e-CF</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-plus-circle me-1"></i>
-                        Configure una nueva numeración autorizada por DGII
-                    </small>
+                    <h4 class="ui-header-title">Nueva Secuencia e-CF</h4>
+                    <div class="ui-header-meta"><i class="bi bi-plus-circle me-1"></i> <span>Configure una nueva numeración autorizada por DGII</span></div>
                 </div>
             </div>
-            <a href="{{ route('secuencias-ecf.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-arrow-left me-1"></i> Volver
-            </a>
+            <div class="ui-header-actions">
+                <a href="{{ route('secuencias-ecf.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-arrow-left me-1"></i> Volver</a>
+            </div>
         </div>
     </div>
 
@@ -46,8 +39,8 @@
         </div>
     @endif
 
-    <div class="premium-card mb-5">
-        <div class="card-accent amber"></div>
+    <div class="ui-card mb-5" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
         <form id="secuenciaEcfForm" action="{{ route('secuencias-ecf.store') }}" method="POST">
             @csrf
             <div class="card-body p-4 p-md-5">
@@ -64,8 +57,8 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Tipo de e-CF</label>
-                        <select name="tipo_ecf" class="form-select rounded-3" required>
+                        <label class="ui-label">Tipo de e-CF</label>
+                        <select name="tipo_ecf" class="ui-select rounded-3" required>
                             <option value="">Seleccione...</option>
                             @foreach($tipos as $key => $nombre)
                                 @if(!in_array($key, $usadas))
@@ -77,35 +70,35 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Nombre Descriptivo</label>
-                        <input type="text" name="nombre" class="form-control rounded-3" placeholder="Ej: Facturas Crédito Fiscal 2026" required>
+                        <label class="ui-label">Nombre Descriptivo</label>
+                        <input type="text" name="nombre" class="ui-input rounded-3" placeholder="Ej: Facturas Crédito Fiscal 2026" required>
                     </div>
 
                     <div class="col-md-12">
-                        <label class="form-label fw-bold small">Descripción (opcional)</label>
-                        <input type="text" name="descripcion" class="form-control rounded-3" placeholder="Notas internas sobre esta secuencia">
+                        <label class="ui-label">Descripción (opcional)</label>
+                        <input type="text" name="descripcion" class="ui-input rounded-3" placeholder="Notas internas sobre esta secuencia">
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-bold small">Desde</label>
-                        <input type="number" name="desde" class="form-control rounded-3" min="1" required>
+                        <label class="ui-label">Desde</label>
+                        <input type="number" name="desde" class="ui-input rounded-3" min="1" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold small">Hasta</label>
-                        <input type="number" name="hasta" class="form-control rounded-3" min="1" required>
+                        <label class="ui-label">Hasta</label>
+                        <input type="number" name="hasta" class="ui-input rounded-3" min="1" required>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-bold small">Actual (Último usado)</label>
-                        <input type="number" name="actual" class="form-control rounded-3" min="0" value="0" required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small">Fecha de Vencimiento</label>
-                        <input type="date" name="fecha_vencimiento" class="form-control rounded-3" required>
+                        <label class="ui-label">Actual (Último usado)</label>
+                        <input type="number" name="actual" class="ui-input rounded-3" min="0" value="0" required>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label fw-bold small">Estado</label>
+                        <label class="ui-label">Fecha de Vencimiento</label>
+                        <input type="date" name="fecha_vencimiento" class="ui-input rounded-3" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="ui-label">Estado</label>
                         <div class="form-check form-switch mt-2">
                             <input class="form-check-input" type="checkbox" name="activo" value="1" id="activo" checked>
                             <label class="form-check-label" for="activo">Activa</label>

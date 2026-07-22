@@ -1,45 +1,70 @@
 @extends('layouts.app')
 
+@push('styles')
+@include('partials.premium-ui')
+@endpush
+
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Orden #{{ $orden->id }}
-            <span class="badge bg-{{ $orden->estado === 'pendiente' ? 'danger' : ($orden->estado === 'completada' ? 'success' : ($orden->estado === 'anulada' ? 'dark' : 'primary')) }} fs-6">
-                {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
-            </span>
-            <span class="badge bg-{{ $orden->tipo_orden === 'delivery' ? 'info' : ($orden->tipo_orden === 'pickup' ? 'warning' : 'secondary') }} fs-6">
-                {{ ucfirst($orden->tipo_orden) }}
-            </span>
-        </h1>
-        <div>
-            @if(!in_array($orden->estado, ['completada', 'anulada']))
-            <form action="{{ route('ordenes.destroy', $orden) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Anular esta orden?')">
-                @csrf @method('DELETE')
-                <input type="hidden" name="motivo" value="Anulada por usuario">
-                <button class="btn btn-danger">Anular</button>
-            </form>
-            @endif
-            @if($orden->estado === 'anulada')
-            <form action="{{ route('ordenes.forceDestroy', $orden) }}" method="POST" class="d-inline form-borrar-show">
-                @csrf @method('DELETE')
-                <button type="button" class="btn btn-dark btn-trigger-borrar-show">Eliminar permanentemente</button>
-            </form>
-            @endif
-            <a href="{{ route('ordenes.create') }}" class="btn btn-primary">Nueva Orden</a>
-            <a href="{{ route('ordenes.index') }}" class="btn btn-secondary">Volver</a>
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-receipt"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Orden #{{ $orden->id }}
+                        <span class="badge bg-{{ $orden->estado === 'pendiente' ? 'danger' : ($orden->estado === 'completada' ? 'success' : ($orden->estado === 'anulada' ? 'dark' : 'primary')) }} fs-6 ms-2">
+                            {{ ucfirst(str_replace('_', ' ', $orden->estado)) }}
+                        </span>
+                        <span class="badge bg-{{ $orden->tipo_orden === 'delivery' ? 'info' : ($orden->tipo_orden === 'pickup' ? 'warning' : 'secondary') }} fs-6 ms-1">
+                            {{ ucfirst($orden->tipo_orden) }}
+                        </span>
+                    </h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-clock me-1"></i>
+                        <span>{{ $orden->created_at->format('d/m/Y h:i A') }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                @if(!in_array($orden->estado, ['completada', 'anulada']))
+                <form action="{{ route('ordenes.destroy', $orden) }}" method="POST" class="d-inline">
+                    @csrf @method('DELETE')
+                    <input type="hidden" name="motivo" value="Anulada por usuario">
+                    <button type="button" class="ui-btn ui-btn-danger ui-btn-sm rounded-pill" onclick="event.preventDefault();UI.confirm.delete('{{ route('ordenes.destroy', $orden) }}', '{{ addslashes('Orden #'.$orden->id) }}')">Anular</button>
+                </form>
+                @endif
+                @if($orden->estado === 'anulada')
+                <form action="{{ route('ordenes.forceDestroy', $orden) }}" method="POST" class="d-inline form-borrar-show">
+                    @csrf @method('DELETE')
+                    <button type="button" class="ui-btn ui-btn-danger ui-btn-sm rounded-pill btn-trigger-borrar-show">Eliminar</button>
+                </form>
+                @endif
+                <a href="{{ route('ordenes.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva
+                </a>
+                <a href="{{ route('ordenes.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-7">
-            <div class="card mb-3">
-                <div class="card-header d-flex justify-content-between">
-                    <h5>Productos</h5>
+            <div class="ui-card mb-3" style="--delay:.1s">
+                <div class="ui-card-accent amber"></div>
+                <div class="ui-card-title d-flex justify-content-between">
+                    <span><i class="bi bi-box-seam me-2"></i>Productos</span>
                     @if(!in_array($orden->estado, ['completada', 'anulada']))
-                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">+ Agregar</button>
+                    <button type="button" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#addProductModal">+ Agregar</button>
                     @endif
                 </div>
-                <div class="card-body">
+                <div class="ui-card-body">
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -105,9 +130,10 @@
             </div>
 
             @if($orden->estado === 'completada' && $orden->pagos->count() > 0)
-            <div class="card">
-                <div class="card-header"><h5>Pagos</h5></div>
-                <div class="card-body">
+            <div class="ui-card mb-3" style="--delay:.15s">
+                <div class="ui-card-accent amber"></div>
+                <div class="ui-card-title"><i class="bi bi-credit-card me-2"></i>Pagos</div>
+                <div class="ui-card-body">
                     <table class="table table-sm">
                         <thead>
                             <tr><th>Método</th><th>Monto</th><th>Fecha</th></tr>
@@ -129,9 +155,10 @@
 
         <div class="col-md-5">
             @if($orden->cliente)
-            <div class="card mb-3">
-                <div class="card-header"><h5>Cliente</h5></div>
-                <div class="card-body">
+            <div class="ui-card mb-3" style="--delay:.2s">
+                <div class="ui-card-accent amber"></div>
+                <div class="ui-card-title"><i class="bi bi-person me-2"></i>Cliente</div>
+                <div class="ui-card-body">
                     <p><strong>{{ $orden->cliente->nombre }}</strong></p>
                     @if($orden->cliente->telefono)<p>Tel: {{ $orden->cliente->telefono }}</p>@endif
                     @if($orden->cliente->email)<p>Email: {{ $orden->cliente->email }}</p>@endif
@@ -140,18 +167,20 @@
             @endif
 
             @if($orden->tipo_orden === 'delivery')
-            <div class="card mb-3">
-                <div class="card-header"><h5>Entrega</h5></div>
-                <div class="card-body">
+            <div class="ui-card mb-3" style="--delay:.25s">
+                <div class="ui-card-accent amber"></div>
+                <div class="ui-card-title"><i class="bi bi-truck me-2"></i>Entrega</div>
+                <div class="ui-card-body">
                     <p><strong>Dirección:</strong> {{ $orden->direccion_entrega ?? '—' }}</p>
                     <p><strong>Empresa:</strong> {{ $orden->entregaEmpresa?->nombre ?? '—' }}</p>
                     <p><strong>Contacto:</strong> {{ $orden->telefono_contacto ?? '—' }}</p>
                 </div>
             </div>
             @elseif($orden->tipo_orden === 'pickup')
-            <div class="card mb-3">
-                <div class="card-header"><h5>Retiro</h5></div>
-                <div class="card-body">
+            <div class="ui-card mb-3" style="--delay:.25s">
+                <div class="ui-card-accent amber"></div>
+                <div class="ui-card-title"><i class="bi bi-shop me-2"></i>Retiro</div>
+                <div class="ui-card-body">
                     <p><strong>Hora de retiro:</strong> {{ $orden->hora_retiro?->format('h:i A d/m/Y') ?? '—' }}</p>
                     <p><strong>Contacto:</strong> {{ $orden->telefono_contacto ?? '—' }}</p>
                 </div>
@@ -159,21 +188,23 @@
             @endif
 
             @if($orden->notas)
-            <div class="card mb-3">
-                <div class="card-header"><h5>Notas</h5></div>
-                <div class="card-body">{{ $orden->notas }}</div>
+            <div class="ui-card mb-3" style="--delay:.3s">
+                <div class="ui-card-accent amber"></div>
+                <div class="ui-card-title"><i class="bi bi-sticky me-2"></i>Notas</div>
+                <div class="ui-card-body">{{ $orden->notas }}</div>
             </div>
             @endif
 
             @if(!in_array($orden->estado, ['completada', 'anulada']))
-                <div class="card mb-3">
-                    <div class="card-header"><h5>Cobrar</h5></div>
-                    <div class="card-body">
+                <div class="ui-card mb-3" style="--delay:.35s">
+                    <div class="ui-card-accent amber"></div>
+                    <div class="ui-card-title"><i class="bi bi-cash-coin me-2"></i>Cobrar</div>
+                    <div class="ui-card-body">
                         <form action="{{ route('ordenes.cobrar', $orden) }}" method="POST">
                             @csrf
                             <div class="mb-3">
-                                <label class="form-label">Método de Pago</label>
-                                <select name="metodo_pago" class="form-select" required id="metodo_pago">
+                                <label class="ui-label">Método de Pago</label>
+                                <select name="metodo_pago" class="ui-select" required id="metodo_pago">
                                     <option value="efectivo">Efectivo</option>
                                     <option value="tarjeta">Tarjeta</option>
                                     <option value="transferencia">Transferencia</option>
@@ -182,44 +213,45 @@
                             </div>
                             <div id="payment_efectivo">
                                 <div class="mb-3">
-                                    <label class="form-label">Monto Recibido</label>
-                                    <input type="number" step="0.01" name="monto_recibido" class="form-control" placeholder="0.00">
+                                    <label class="ui-label">Monto Recibido</label>
+                                    <input type="number" step="0.01" name="monto_recibido" class="ui-input" placeholder="0.00">
                                 </div>
                             </div>
                             <div id="payment_tarjeta" style="display:none;">
                                 <div class="mb-3">
-                                    <label class="form-label">Monto Tarjeta</label>
-                                    <input type="number" step="0.01" name="monto_tarjeta" class="form-control" placeholder="0.00">
+                                    <label class="ui-label">Monto Tarjeta</label>
+                                    <input type="number" step="0.01" name="monto_tarjeta" class="ui-input" placeholder="0.00">
                                 </div>
                             </div>
                             <div id="payment_transferencia" style="display:none;">
                                 <div class="mb-3">
-                                    <label class="form-label">Monto Transferencia</label>
-                                    <input type="number" step="0.01" name="monto_transferencia" class="form-control" placeholder="0.00">
+                                    <label class="ui-label">Monto Transferencia</label>
+                                    <input type="number" step="0.01" name="monto_transferencia" class="ui-input" placeholder="0.00">
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Propina</label>
-                                <input type="number" step="0.01" name="propina" class="form-control" value="0">
+                                <label class="ui-label">Propina</label>
+                                <input type="number" step="0.01" name="propina" class="ui-input" value="0">
                             </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" name="cargo_servicio" class="form-check-input" value="1" id="cargo_servicio">
                                 <label class="form-check-label" for="cargo_servicio">Cargo por Servicio (10%)</label>
                             </div>
-                            <button type="submit" class="btn btn-success w-100 btn-lg">
-                                Cobrar — RD$ {{ number_format($orden->subtotal + $orden->impuestos - $orden->descuento, 2) }}
+                            <button type="submit" class="ui-btn ui-btn-solid w-100" style="padding:.75rem 1.5rem;font-size:1.1rem;">
+                                <i class="bi bi-cash-coin me-2"></i> Cobrar — RD$ {{ number_format($orden->subtotal + $orden->impuestos - $orden->descuento, 2) }}
                             </button>
                         </form>
                     </div>
                 </div>
 
-                <div class="card mb-3">
-                    <div class="card-header"><h5>Cambiar Estado</h5></div>
-                    <div class="card-body">
+                <div class="ui-card mb-3" style="--delay:.4s">
+                    <div class="ui-card-accent amber"></div>
+                    <div class="ui-card-title"><i class="bi bi-arrow-left-right me-2"></i>Cambiar Estado</div>
+                    <div class="ui-card-body">
                         <form action="{{ route('ordenes.cambiarEstado', $orden) }}" method="POST" class="row g-2">
                             @csrf
                             <div class="col-8">
-                                <select name="estado" class="form-select">
+                                <select name="estado" class="ui-select">
                                     <option value="confirmada">Confirmada</option>
                                     <option value="en_proceso">En Proceso</option>
                                     <option value="lista">Lista</option>
@@ -233,7 +265,7 @@
                                 </select>
                             </div>
                             <div class="col-4">
-                                <button type="submit" class="btn btn-primary w-100">Actualizar</button>
+                                <button type="submit" class="ui-btn ui-btn-solid w-100">Actualizar</button>
                             </div>
                         </form>
                     </div>
@@ -241,7 +273,7 @@
             @endif
 
             <div class="d-grid gap-2">
-                <a href="{{ route('ordenes.ticket', $orden) }}" class="btn btn-outline-secondary" target="_blank">Ver Ticket</a>
+                <a href="{{ route('ordenes.ticket', $orden) }}" class="ui-btn ui-btn-ghost" target="_blank"><i class="bi bi-printer me-2"></i>Ver Ticket</a>
             </div>
         </div>
     </div>
@@ -259,18 +291,18 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Producto</label>
-                        <select name="producto_id" class="form-select" required id="modal_producto_select">
+                        <label class="ui-label">Producto</label>
+                        <select name="producto_id" class="ui-select" required id="modal_producto_select">
                             <option value="">Buscar y seleccionar...</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Cantidad</label>
-                        <input type="number" name="cantidad" class="form-control" value="1" min="1" required>
+                        <label class="ui-label">Cantidad</label>
+                        <input type="number" name="cantidad" class="ui-input" value="1" min="1" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Curso</label>
-                        <select name="curso" class="form-select">
+                        <label class="ui-label">Curso</label>
+                        <select name="curso" class="ui-select">
                             <option value="entrada">Entrada</option>
                             <option value="fuerte" selected>Fuerte</option>
                             <option value="postre">Postre</option>
@@ -278,13 +310,13 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Notas</label>
-                        <input type="text" name="notas" class="form-control" maxlength="200">
+                        <label class="ui-label">Notas</label>
+                        <input type="text" name="notas" class="ui-input" maxlength="200">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Agregar</button>
+                    <button type="button" class="ui-btn ui-btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid">Agregar</button>
                 </div>
             </form>
         </div>

@@ -32,7 +32,7 @@ body.dark-mode .devoluciones-create-table tbody td {
 @endpush
 
 @section('content')
-<div class="container-fluid py-4 premium-page">
+<div class="ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626;">
 
     @if (session('error'))
         <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
@@ -50,25 +50,25 @@ body.dark-mode .devoluciones-create-table tbody td {
         </div>
     @endif
 
-    <div class="premium-header mb-4" style="background:linear-gradient(135deg,#ef4444,#f97316,#ef4444);box-shadow:0 8px 32px rgba(239,68,68,.25);animation:premiumGradientShift 6s ease infinite;background-size:300% 300%;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-arrow-return-left"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Nueva Devolución</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Nueva Devolución</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-arrow-return-left me-1"></i>
-                        Registra la devolución de productos de una venta
-                    </small>
+                        <span>Registra la devolución de productos de una venta</span>
+                    </div>
                 </div>
             </div>
-            <div>
-                <a href="{{ route('devoluciones.index') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+            <div class="ui-header-actions">
+                <a href="{{ route('devoluciones.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i> Volver
                 </a>
             </div>
@@ -78,27 +78,27 @@ body.dark-mode .devoluciones-create-table tbody td {
     <form action="{{ route('devoluciones.store') }}" method="POST" id="formDevolucion">
         @csrf
 
-        <div class="premium-card mb-4" style="animation-delay:.1s;">
-            <div class="card-accent red"></div>
-            <div class="premium-card-title">
-                <i class="bi bi-arrow-return-left icon-red"></i>
+        <div class="ui-card mb-4" style="--delay:.1s">
+            <div class="ui-card-accent"></div>
+            <div class="ui-card-title">
+                <i class="bi bi-arrow-return-left"></i>
                 Datos de la Devolución
             </div>
-            <div class="premium-card-subtitle">Información general de la devolución</div>
-            <div class="card-body p-4">
+            <div class="ui-card-subtitle">Información general de la devolución</div>
+            <div class="ui-card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">Buscar Venta</label>
-                        <div class="input-group">
-                            <input type="text" id="buscarVenta" class="form-control" placeholder="# de venta o nombre cliente" autocomplete="off">
+                        <label class="ui-label">Buscar Venta</label>
+                        <div class="ui-input-group">
+                            <input type="text" id="buscarVenta" class="ui-input" placeholder="# de venta o nombre cliente" autocomplete="off">
                             <input type="hidden" name="venta_id" id="venta_id" value="{{ $venta?->id }}">
-                            <button type="button" class="btn btn-outline-secondary" id="btnLimpiarVenta"><i class="bi bi-x-lg"></i></button>
+                            <button type="button" class="ui-btn ui-btn-ghost ui-btn-sm" id="btnLimpiarVenta"><i class="bi bi-x-lg"></i></button>
                         </div>
                         <div id="resultadosVenta" class="list-group mt-1" style="position:absolute;z-index:10;max-height:200px;overflow-y:auto;display:none;"></div>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                        <select name="cliente_id" class="form-select" required>
+                        <label class="ui-label">Cliente <span class="text-danger">*</span></label>
+                        <select name="cliente_id" class="ui-select" required>
                             <option value="">Seleccionar cliente</option>
                             @foreach($clientes as $c)
                                 <option value="{{ $c->id }}" {{ $venta && $venta->cliente_id == $c->id ? 'selected' : '' }}>{{ $c->nombre }} ({{ $c->rnc_cedula ?? '—' }})</option>
@@ -106,12 +106,12 @@ body.dark-mode .devoluciones-create-table tbody td {
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" name="fecha" class="form-control" value="{{ old('fecha', date('Y-m-d')) }}" required>
+                        <label class="ui-label">Fecha</label>
+                        <input type="date" name="fecha" class="ui-input" value="{{ old('fecha', date('Y-m-d')) }}" required>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Tipo</label>
-                        <select name="tipo" class="form-select" required>
+                        <label class="ui-label">Tipo</label>
+                        <select name="tipo" class="ui-select" required>
                             <option value="parcial">Parcial</option>
                             <option value="total">Total</option>
                         </select>
@@ -119,23 +119,23 @@ body.dark-mode .devoluciones-create-table tbody td {
                 </div>
                 <div class="row mt-3">
                     <div class="col-12">
-                        <label class="form-label">Motivo <span class="text-danger">*</span></label>
-                        <textarea name="motivo" class="form-control" rows="2" required minlength="5">{{ old('motivo') }}</textarea>
+                        <label class="ui-label">Motivo <span class="text-danger">*</span></label>
+                        <textarea name="motivo" class="ui-input" rows="2" required minlength="5">{{ old('motivo') }}</textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="premium-card mb-4" style="animation-delay:.2s;">
-            <div class="card-accent red"></div>
-            <div class="premium-card-title">
-                <i class="bi bi-box-seam icon-red"></i>
+        <div class="ui-card mb-4" style="--delay:.2s">
+            <div class="ui-card-accent"></div>
+            <div class="ui-card-title">
+                <i class="bi bi-box-seam"></i>
                 Productos a Devolver
             </div>
-            <div class="premium-card-subtitle">Detalle de los productos incluidos en la devolución</div>
-            <div class="card-body p-0">
+            <div class="ui-card-subtitle">Detalle de los productos incluidos en la devolución</div>
+            <div class="ui-card-body p-0">
                 <div class="d-flex justify-content-end px-4 pt-3">
-                    <button type="button" class="btn btn-primary rounded-pill px-3" id="btnAgregarFila">
+                    <button type="button" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill px-3" id="btnAgregarFila">
                         <i class="bi bi-plus-lg me-1"></i>Agregar producto
                     </button>
                 </div>
@@ -175,12 +175,13 @@ body.dark-mode .devoluciones-create-table tbody td {
         </div>
     </form>
 
-    <div class="premium-sticky-bar d-flex justify-content-end align-items-center gap-3">
-        <span class="text-muted small d-none d-md-inline"><i class="bi bi-info-circle me-1"></i>Registrando nueva devolución</span>
-        <a href="{{ route('devoluciones.index') }}" class="btn btn-cancel rounded-pill px-4">Cancelar</a>
-        <button type="submit" form="formDevolucion" class="btn btn-save rounded-pill px-5 fw-bold">
-            <i class="bi bi-save me-2"></i>Registrar Devolución
-        </button>
+    <div class="ui-sticky-bar">
+        <div class="ui-sticky-bar-inner">
+            <a href="{{ route('devoluciones.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">Cancelar</a>
+            <button type="submit" form="formDevolucion" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
+                <i class="bi bi-save me-2"></i>Registrar Devolución
+            </button>
+        </div>
     </div>
 </div>
 
@@ -193,15 +194,15 @@ body.dark-mode .devoluciones-create-table tbody td {
 <template id="fila-template">
     <tr>
         <td>
-            <input type="text" class="form-control nombre" list="productList" placeholder="Nombre del producto" required>
+            <input type="text" class="ui-input nombre" list="productList" placeholder="Nombre del producto" required>
             <input type="hidden" class="producto-id" name="items[0][producto_id]" value="">
         </td>
-        <td><input type="number" min="0.01" step="0.01" class="form-control cantidad" value="1" required></td>
-        <td><input type="number" min="0" step="0.01" class="form-control precio" value="0.00" required></td>
-        <td><input type="number" min="0" max="100" step="0.01" class="form-control itbis" value="18"></td>
+        <td><input type="number" min="0.01" step="0.01" class="ui-input cantidad" value="1" required></td>
+        <td><input type="number" min="0" step="0.01" class="ui-input precio" value="0.00" required></td>
+        <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="18"></td>
         <td class="subtotal fw-bold text-end">RD$ 0.00</td>
         <td class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btnEliminarFila"><i class="bi bi-trash"></i></button>
+            <button type="button" class="ui-action ui-action-delete btnEliminarFila"><i class="bi bi-trash"></i></button>
         </td>
     </tr>
 </template>
