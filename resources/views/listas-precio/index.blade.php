@@ -88,6 +88,24 @@
         background: linear-gradient(135deg, rgba(220,53,69,0.12), rgba(220,53,69,0.05));
         border-color: rgba(220,53,69,0.4) !important;
     }
+
+    body.dark-mode .price-card {
+        background: rgba(15,23,42,.8);
+        border-color: rgba(255,255,255,.08);
+    }
+    body.dark-mode .icon-wrapper {
+        background: linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(168,85,247,0.15) 100%) !important;
+    }
+    body.dark-mode .status-badge.bg-light { background: rgba(30,41,59,.8) !important; }
+    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,.1); }
+    body.dark-mode .alert-banner-warning {
+        background: linear-gradient(135deg, rgba(255,193,7,0.08), rgba(255,193,7,0.03));
+        border-color: rgba(255,193,7,0.2) !important;
+    }
+    body.dark-mode .alert-banner-danger {
+        background: linear-gradient(135deg, rgba(220,53,69,0.08), rgba(220,53,69,0.03));
+        border-color: rgba(220,53,69,0.2) !important;
+    }
 </style>
 @endpush
 
@@ -126,84 +144,97 @@
     </div>
     @endif
 
-    <div class="premium-header d-flex justify-content-between align-items-center mb-4">
+    <div class="premium-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex align-items-center gap-3 position-relative" style="z-index: 2;">
-            <div class="premium-avatar-circle">
-                <i class="bi bi-tag"></i>
+        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="premium-avatar-circle">
+                    <i class="bi bi-tag"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-1 text-white">Listas de Precios</h4>
+                    <small class="text-white opacity-75">
+                        <i class="bi bi-tags me-1"></i>
+                        Gestiona diferentes tarifas para tus canales o clientes especiales
+                        <span class="mx-2">·</span>
+                        <i class="bi bi-list-ul me-1"></i>
+                        {{ $listas->count() }} lista(s)
+                    </small>
+                </div>
             </div>
             <div>
-                <h4 class="fw-bold mb-1 text-white">Listas de Precios</h4>
-                <small class="text-white opacity-75">
-                    <i class="bi bi-tags me-1"></i>
-                    Gestiona diferentes tarifas para tus canales o clientes especiales
-                </small>
+                @can('listas-precio.create')
+                <a href="{{ route('listas-precio.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
+                    <i class="bi bi-plus-lg me-2"></i> Nueva Lista
+                </a>
+                @endcan
             </div>
-        </div>
-        <div>
-            @can('listas-precio.create')
-            <a href="{{ route('listas-precio.create') }}" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-plus-lg me-2"></i> Nueva Lista
-            </a>
-            @endcan
         </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.05s;">
+            <div class="premium-stat-card" style="animation-delay:.05s;">
                 <div class="card-accent purple"></div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(139,92,246,0.1);color:#8b5cf6;font-size:1.4rem;">
-                        <i class="bi bi-tags"></i>
-                    </div>
-                    <div>
-                        <div class="stat-value" style="color:#8b5cf6;">{{ $listas->count() }}</div>
-                        <div class="stat-label">Total Listas</div>
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(139,92,246,0.1);color:#8b5cf6;font-size:1.4rem;">
+                            <i class="bi bi-tags"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" style="color:#8b5cf6;">{{ $listas->count() }}</div>
+                            <div class="stat-label">Total Listas</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.1s;">
+            <div class="premium-stat-card" style="animation-delay:.1s;">
                 <div class="card-accent purple"></div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.4rem;">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div>
-                        <div class="stat-value text-success">{{ $vigentes }}</div>
-                        <div class="stat-label">Vigentes</div>
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(25,135,84,0.1);color:#198754;font-size:1.4rem;">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-success">{{ $vigentes }}</div>
+                            <div class="stat-label">Vigentes</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.15s;">
+            <div class="premium-stat-card" style="animation-delay:.15s;">
                 <div class="card-accent purple"></div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,193,7,0.1);color:#ffc107;font-size:1.4rem;">
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                        <div class="stat-value text-warning">{{ $porExpirar->count() }}</div>
-                        <div class="stat-label">Por Expirar</div>
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,193,7,0.1);color:#ffc107;font-size:1.4rem;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-warning">{{ $porExpirar->count() }}</div>
+                            <div class="stat-label">Por Expirar</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
-            <div class="premium-stat-card p-3" style="animation-delay:.2s;">
+            <div class="premium-stat-card" style="animation-delay:.2s;">
                 <div class="card-accent purple"></div>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(220,53,69,0.1);color:#dc3545;font-size:1.4rem;">
-                        <i class="bi bi-x-octagon"></i>
-                    </div>
-                    <div>
-                        <div class="stat-value text-danger">{{ $expiradas->count() }}</div>
-                        <div class="stat-label">Expiradas</div>
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(220,53,69,0.1);color:#dc3545;font-size:1.4rem;">
+                            <i class="bi bi-x-octagon"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value text-danger">{{ $expiradas->count() }}</div>
+                            <div class="stat-label">Expiradas</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -230,33 +261,39 @@
                         <div class="icon-wrapper">
                             <i class="bi bi-tag-fill"></i>
                         </div>
-                        <div class="dropdown">
-                            <button class="btn btn-icon-hover text-muted" data-bs-toggle="dropdown" title="Acciones">
-                                <i class="bi bi-three-dots-vertical"></i>
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{{ route('listas-precio.show', $lista) }}" class="btn btn-sm btn-outline-primary rounded-circle" style="width:32px;height:32px;border-color:rgba(139,92,246,0.2);color:#8b5cf6;" title="Ver detalles">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @can('listas-precio.edit')
+                            <a href="{{ route('listas-precio.edit', $lista) }}" class="premium-btn-edit" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            @endcan
+                            @can('listas-precio.delete')
+                            <button type="button" class="premium-btn-delete" 
+                                    onclick="confirmDelete('{{ route('listas-precio.destroy', $lista) }}', '{{ addslashes($lista->nombre) }}')"
+                                    title="Eliminar">
+                                <i class="bi bi-trash"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
-                                <li><a class="dropdown-item py-2" href="{{ route('listas-precio.show', $lista) }}"><i class="bi bi-eye text-info me-2"></i>Ver detalles</a></li>
-                                @can('listas-precio.edit')
-                                <li><a class="dropdown-item py-2" href="{{ route('listas-precio.edit', $lista) }}"><i class="bi bi-pencil text-primary me-2"></i>Editar lista</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('listas-precio.impacto', $lista) }}"><i class="bi bi-graph-up text-warning me-2"></i>Impacto de precios</a></li>
-                                <li><a class="dropdown-item py-2" href="{{ route('listas-precio.logs', $lista) }}"><i class="bi bi-clock-history text-secondary me-2"></i>Historial de cambios</a></li>
-                                <li>
-                                    <form action="{{ route('listas-precio.duplicar', $lista) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button class="dropdown-item py-2"><i class="bi bi-copy text-secondary me-2"></i>Duplicar</button>
-                                    </form>
-                                </li>
-                                @endcan
-                                @can('listas-precio.delete')
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form action="{{ route('listas-precio.destroy', $lista) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas eliminar esta lista de precios? Se mantendrá por 30 días por seguridad.')">
-                                        @csrf @method('DELETE')
-                                        <button class="dropdown-item py-2 text-danger"><i class="bi bi-trash text-danger me-2"></i>Eliminar</button>
-                                    </form>
-                                </li>
-                                @endcan
-                            </ul>
+                            @endcan
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-sm btn-outline-secondary rounded-circle" style="width:32px;height:32px;" data-bs-toggle="dropdown" title="Más acciones">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3">
+                                    @can('listas-precio.edit')
+                                    <li><a class="dropdown-item py-2" href="{{ route('listas-precio.impacto', $lista) }}"><i class="bi bi-graph-up text-warning me-2"></i>Impacto de precios</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ route('listas-precio.logs', $lista) }}"><i class="bi bi-clock-history text-secondary me-2"></i>Historial de cambios</a></li>
+                                    <li>
+                                        <form action="{{ route('listas-precio.duplicar', $lista) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button class="dropdown-item py-2"><i class="bi bi-copy text-info me-2"></i>Duplicar</button>
+                                        </form>
+                                    </li>
+                                    @endcan
+                                </ul>
+                            </div>
                         </div>
                     </div>
 
@@ -321,3 +358,29 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function confirmDelete(url, nombre) {
+    Swal.fire({
+        title: '¿Eliminar lista?',
+        text: `Se eliminará: "${nombre}"`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            form.innerHTML = '@csrf @method("DELETE")';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+</script>
+@endpush
