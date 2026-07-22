@@ -302,7 +302,7 @@
         </div>
     </div>
 
-    {{ ═══ TABLA DETALLE POR PROVEEDOR ═══ }}
+  
     <div class="premium-card overflow-hidden" style="animation-delay:.25s;">
         <div class="premium-card-title">
             <i class="icon-red bi bi-people"></i>
