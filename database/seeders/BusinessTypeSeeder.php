@@ -149,6 +149,29 @@ class BusinessTypeSeeder extends Seeder
                     'auditoria', 'backups', 'plantilla-gastos',
                 ],
             ],
+            [
+                'slug' => 'climatizacion',
+                'nombre' => 'Climatización / HVAC',
+                'descripcion' => 'Servicios de climatización, aire acondicionado y mantenimiento',
+                'color' => 'purple',
+                'icon' => 'bi-wind',
+                'activo' => true,
+                'orden' => 8,
+                'modulos' => [
+                    'dashboard', 'inventario', 'compras', 'proveedores',
+                    'clientes', 'cajas', 'gastos',
+                    'climatizacion', 'climatizacion-tipos-equipos', 'climatizacion-instalaciones',
+                    'climatizacion-contratos', 'climatizacion-mantenimientos',
+                    'climatizacion-ordenes-emergencia', 'climatizacion-garantias',
+                    'sucursales', 'almacenes',
+                    'reportes-ventas', 'reportes-caja', 'reportes-stock',
+                    'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
+                    'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
+                    'configuracion-general', 'impresoras', 'payment-processors',
+                    'auditoria', 'backups', 'plantilla-gastos',
+                ],
+            ],
         ];
 
         foreach ($tipos as $tipoData) {

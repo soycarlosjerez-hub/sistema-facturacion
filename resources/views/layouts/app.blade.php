@@ -630,7 +630,9 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             'mayorista' => 'warning',
                             'servicios' => 'primary',
                             'lavadero' => 'primary',
-                            'mixto' => 'secondary'
+                            'mixto' => 'secondary',
+                            'tattoo' => 'dark',
+                            'climatizacion' => 'secondary',
                         ];
                         $iconos = [
                             'restaurante' => 'cup-straw',
@@ -638,7 +640,9 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             'mayorista' => 'truck',
                             'servicios' => 'briefcase',
                             'lavadero' => 'droplet',
-                            'mixto' => 'grid'
+                            'mixto' => 'grid',
+                            'tattoo' => 'brush',
+                            'climatizacion' => 'wind',
                         ];
                         $color = $colores[$tipoNegocio] ?? 'secondary';
                         $icono = $iconos[$tipoNegocio] ?? 'grid';

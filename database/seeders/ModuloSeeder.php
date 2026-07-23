@@ -157,6 +157,22 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'tattoo.disenos.index', 'sidebar_is_route' => 'tattoo.disenos.*', 'sidebar_exact_route' => 'tattoo.disenos.index', 'sidebar_permission' => 'tattoo.disenos'],
             ['key' => 'tattoo-citas', 'label' => 'Citas / Agenda', 'icon' => 'bi-calendar-event', 'categoria' => 'tattoo', 'orden' => 83,
              'sidebar_route' => 'tattoo.citas.index', 'sidebar_is_route' => 'tattoo.citas.*', 'sidebar_exact_route' => 'tattoo.citas.index', 'sidebar_permission' => 'tattoo.citas'],
+
+            // Climatización
+            ['key' => 'climatizacion', 'label' => 'Dashboard Climatización', 'icon' => 'bi-wind', 'categoria' => 'climatizacion', 'orden' => 90,
+             'sidebar_route' => 'climatizacion.dashboard', 'sidebar_is_route' => 'climatizacion.dashboard', 'sidebar_exact_route' => 'climatizacion.dashboard', 'sidebar_permission' => 'climatizacion.view'],
+            ['key' => 'climatizacion-tipos-equipos', 'label' => 'Tipos de Equipo', 'icon' => 'bi-cpu', 'categoria' => 'climatizacion', 'orden' => 91,
+             'sidebar_route' => 'climatizacion.tipos-equipos.index', 'sidebar_is_route' => 'climatizacion.tipos-equipos.*', 'sidebar_exact_route' => 'climatizacion.tipos-equipos.index', 'sidebar_permission' => 'tipos-equipos.view'],
+            ['key' => 'climatizacion-instalaciones', 'label' => 'Instalaciones', 'icon' => 'bi-tools', 'categoria' => 'climatizacion', 'orden' => 92,
+             'sidebar_route' => 'climatizacion.instalaciones.index', 'sidebar_is_route' => 'climatizacion.instalaciones.*', 'sidebar_exact_route' => 'climatizacion.instalaciones.index', 'sidebar_permission' => 'instalaciones.view'],
+            ['key' => 'climatizacion-contratos', 'label' => 'Contratos', 'icon' => 'bi-file-earmark-text', 'categoria' => 'climatizacion', 'orden' => 93,
+             'sidebar_route' => 'climatizacion.contratos.index', 'sidebar_is_route' => 'climatizacion.contratos.*', 'sidebar_exact_route' => 'climatizacion.contratos.index', 'sidebar_permission' => 'contratos.view'],
+            ['key' => 'climatizacion-mantenimientos', 'label' => 'Mantenimientos', 'icon' => 'bi-wrench-adjustable', 'categoria' => 'climatizacion', 'orden' => 94,
+             'sidebar_route' => 'climatizacion.mantenimientos.index', 'sidebar_is_route' => 'climatizacion.mantenimientos.*', 'sidebar_exact_route' => 'climatizacion.mantenimientos.index', 'sidebar_permission' => 'mantenimientos.view'],
+            ['key' => 'climatizacion-ordenes-emergencia', 'label' => 'Emergencias', 'icon' => 'bi-exclamation-octagon', 'categoria' => 'climatizacion', 'orden' => 95,
+             'sidebar_route' => 'climatizacion.ordenes-emergencia.index', 'sidebar_is_route' => 'climatizacion.ordenes-emergencia.*', 'sidebar_exact_route' => 'climatizacion.ordenes-emergencia.index', 'sidebar_permission' => 'ordenes-emergencia.view'],
+            ['key' => 'climatizacion-garantias', 'label' => 'Garantías', 'icon' => 'bi-ticket-perforated', 'categoria' => 'climatizacion', 'orden' => 96,
+             'sidebar_route' => 'climatizacion.tickets-garantia.index', 'sidebar_is_route' => 'climatizacion.tickets-garantia.*', 'sidebar_exact_route' => 'climatizacion.tickets-garantia.index', 'sidebar_permission' => 'garantias.view'],
         ];
 
         foreach ($modulos as $modulo) {

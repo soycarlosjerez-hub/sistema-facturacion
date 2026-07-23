@@ -18,6 +18,17 @@ class Producto extends Model
         'nombre',
         'codigo_barras',
         'descripcion',
+        'marca',
+        'modelo',
+        'capacidad_toneladas',
+        'capacidad_btu',
+        'tipo_equipo',
+        'eficiencia_seer',
+        'gas_refrigerante',
+        'voltaje',
+        'peso_kg',
+        'dimensiones',
+        'categoria_clima',
         'precio',
         'precio_compra',
         'unidad_medida',
@@ -36,6 +47,10 @@ class Producto extends Model
         'stock'            => 'integer',
         'stock_minimo'     => 'integer',
         'activo'            => 'boolean',
+        'capacidad_toneladas' => 'decimal:2',
+        'capacidad_btu'    => 'integer',
+        'eficiencia_seer'  => 'decimal:1',
+        'peso_kg'          => 'decimal:2',
     ];
 
     protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen', 'can_delete'];
@@ -140,4 +155,12 @@ class Producto extends Model
     {
         return $this->belongsToMany(Ingrediente::class, 'producto_ingrediente')
             ->withPivot('cantidad');
-    }}
+    }
+
+    public function instalacionProductos()
+    {
+        return $this->belongsToMany(\App\Models\Instalacion::class, 'instalacion_productos')
+                    ->withPivot('cantidad', 'precio_unitario')
+                    ->withTimestamps();
+    }
+}}

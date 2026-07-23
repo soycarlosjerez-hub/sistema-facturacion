@@ -15,6 +15,7 @@ Este proyecto utiliza subagentes especializados para desarrollo eficiente.
 | `software-architect` | Arquitecto de Software Senior — diseño, patrones, escalabilidad, modelado de datos, trade-offs técnicos | "arquitectura", "diseño", "patron", "escala", "refactor", "estructura", "modelo de datos", "relaciones", "decision tecnica", "trade-off", "DDD", "CQRS" |
 | `qa-engineer` | Ingeniero QA — pruebas funcionales, integración, validaciones ERP, detección de errores, control de calidad | "test", "QA", "prueba", "validación", "bug", "regresión", "caso de prueba", "coverage" |
 | `erp-analyst` | Analista funcional ERP — procesos empresariales, levantamiento de requerimientos, flujos de facturación, inventario, contabilidad | "requerimiento", "proceso", "flujo", "negocio", "user story", "análisis funcional", "levantamiento" |
+| `analista-negocio` | Senior Business Analyst — descubre procesos, actores, reglas, excepciones, documentos, permisos, KPIs, integraciones, automatización | "analista negocio", "analista-negocio", "proceso", "regla negocio", "permisos", "flujos", "KPI", "automatización", "documentos", "actores", "requisitos funcionales", "matriz permisos" |
 | `security-expert` | Especialista en seguridad web — Laravel Security, autenticación, autorización, OWASP, protección de APIs, auditoría | "seguridad", "auth", "permiso", "OWASP", "vulnerabilidad", "auditoría", "encriptación", "protección" |
 
 ## Ubicación
@@ -26,6 +27,7 @@ Los agentes están en `.opencode/agent/`:
 ├── contable-rd.md
 ├── database-expert.md
 ├── erp-analyst.md
+├── analista-negocio.md
 ├── frontend.md
 ├── orchestrator.md
 ├── qa-engineer.md
@@ -50,6 +52,7 @@ Usa `@nombre-agente` para invocar uno específico:
 @software-architect diseña la arquitectura del módulo de reportes
 @qa-engineer crea pruebas para el flujo de facturación
 @erp-analyst levanta requerimientos del módulo de nómina
+@analista-negocio analiza el flujo completo de facturación
 @security-expert audita la protección de APIs
 ```
 

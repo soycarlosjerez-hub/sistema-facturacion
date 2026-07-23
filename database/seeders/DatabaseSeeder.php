@@ -38,5 +38,9 @@ class DatabaseSeeder extends Seeder
         $this->call(DeliveryCompanySeeder::class);
         $this->call(WizardStepSeeder::class);
         $this->call(CategoryPermissionsSeeder::class);
+        
+        // Climatización
+        $this->call(TiposClimaSeeder::class);
+        $this->call(ClimatizacionSeeder::class);
     }
 }

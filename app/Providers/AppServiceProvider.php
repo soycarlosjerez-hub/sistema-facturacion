@@ -7,6 +7,12 @@ use App\Models\Category;
 use App\Models\SystemSetting;
 use App\Policies\BusinessInstancePolicy;
 use App\Policies\CategoryPolicy;
+use App\Policies\TipoClimaPolicy;
+use App\Policies\InstalacionPolicy;
+use App\Policies\ContratoMantenimientoPolicy;
+use App\Policies\MantenimientoPolicy;
+use App\Policies\TicketGarantiaPolicy;
+use App\Policies\OrdenEmergenciaPolicy;
 use App\View\Composers\DashboardComposer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -35,6 +41,12 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(BusinessInstance::class, BusinessInstancePolicy::class);
+        Gate::policy(\App\Models\TipoClima::class, TipoClimaPolicy::class);
+        Gate::policy(\App\Models\Instalacion::class, InstalacionPolicy::class);
+        Gate::policy(\App\Models\ContratoMantenimiento::class, ContratoMantenimientoPolicy::class);
+        Gate::policy(\App\Models\Mantenimiento::class, MantenimientoPolicy::class);
+        Gate::policy(\App\Models\TicketGarantia::class, TicketGarantiaPolicy::class);
+        Gate::policy(\App\Models\OrdenEmergencia::class, OrdenEmergenciaPolicy::class);
 
         // Dynamic mail config from system settings
         try {

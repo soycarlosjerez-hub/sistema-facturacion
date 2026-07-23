@@ -1110,5 +1110,203 @@ Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function
     Route::get('/', fn() => view('ui-demo.index'))->name('index');
 });
 
+// ============================================
+// CLIMATIZACIÓN MODULE
+// ============================================
+Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->group(function () {
+
+    // Dashboard principal
+    Route::get('/dashboard', function () {
+        return view('climatizacion.dashboard');
+    })->name('dashboard');
+
+    // Tipos de Clima / Equipos
+    Route::middleware(['auth', 'permission:view_any_climatizacion::tipo_clima'])->group(function () {
+        Route::get('/tipos-equipos', [\App\Http\Controllers\TipoClimaController::class, 'index'])
+            ->name('tipos-equipos.index');
+        Route::get('/tipos-equipos/data', [\App\Http\Controllers\TipoClimaController::class, 'index'])
+            ->name('tipos-equipos.data');
+    });
+    Route::middleware(['auth', 'permission:create_climatizacion::tipo_clima'])->group(function () {
+        Route::get('/tipos-equipos/create', [\App\Http\Controllers\TipoClimaController::class, 'create'])
+            ->name('tipos-equipos.create');
+        Route::post('/tipos-equipos', [\App\Http\Controllers\TipoClimaController::class, 'store'])
+            ->name('tipos-equipos.store');
+    });
+    Route::middleware(['auth', 'permission:update_climatizacion::tipo_clima'])->group(function () {
+        Route::get('/tipos-equipos/{tipo}/edit', [\App\Http\Controllers\TipoClimaController::class, 'edit'])
+            ->name('tipos-equipos.edit');
+        Route::put('/tipos-equipos/{tipo}', [\App\Http\Controllers\TipoClimaController::class, 'update'])
+            ->name('tipos-equipos.update');
+        Route::get('/tipos-equipos/{tipo}', [\App\Http\Controllers\TipoClimaController::class, 'show'])
+            ->name('tipos-equipos.show');
+    });
+    Route::middleware(['auth', 'permission:delete_climatizacion::tipo_clima'])->group(function () {
+        Route::delete('/tipos-equipos/{tipo}', [\App\Http\Controllers\TipoClimaController::class, 'destroy'])
+            ->name('tipos-equipos.destroy');
+    });
+
+    // Instalaciones
+    Route::middleware(['auth', 'permission:view_any_climatizacion::instalacion'])->group(function () {
+        Route::get('/instalaciones', [\App\Http\Controllers\InstalacionController::class, 'index'])
+            ->name('instalaciones.index');
+        Route::get('/instalaciones/data', [\App\Http\Controllers\InstalacionController::class, 'index'])
+            ->name('instalaciones.data');
+        Route::get('/instalaciones/export-excel', [\App\Http\Controllers\InstalacionController::class, 'exportExcel'])
+            ->name('instalaciones.export-excel');
+        Route::get('/instalaciones/{instalacion}', [\App\Http\Controllers\InstalacionController::class, 'show'])
+            ->name('instalaciones.show');
+    });
+    Route::middleware(['auth', 'permission:create_climatizacion::instalacion'])->group(function () {
+        Route::get('/instalaciones/create', [\App\Http\Controllers\InstalacionController::class, 'create'])
+            ->name('instalaciones.create');
+        Route::post('/instalaciones', [\App\Http\Controllers\InstalacionController::class, 'store'])
+            ->name('instalaciones.store');
+        Route::post('/instalaciones/{instalacion}/advance-state', [\App\Http\Controllers\InstalacionController::class, 'advance'])
+            ->name('instalaciones.advance');
+    });
+    Route::middleware(['auth', 'permission:update_climatizacion::instalacion'])->group(function () {
+        Route::get('/instalaciones/{instalacion}/edit', [\App\Http\Controllers\InstalacionController::class, 'edit'])
+            ->name('instalaciones.edit');
+        Route::put('/instalaciones/{instalacion}', [\App\Http\Controllers\InstalacionController::class, 'update'])
+            ->name('instalaciones.update');
+    });
+    Route::middleware(['auth', 'permission:delete_climatizacion::instalacion'])->group(function () {
+        Route::delete('/instalaciones/{instalacion}', [\App\Http\Controllers\InstalacionController::class, 'destroy'])
+            ->name('instalaciones.destroy');
+    });
+
+    // Contratos de Mantenimiento
+    Route::middleware(['auth', 'permission:view_any_climatizacion::contrato_mantenimiento'])->group(function () {
+        Route::get('/contratos', [\App\Http\Controllers\ContratoMantenimientoController::class, 'index'])
+            ->name('contratos.index');
+        Route::get('/contratos/data', [\App\Http\Controllers\ContratoMantenimientoController::class, 'index'])
+            ->name('contratos.data');
+        Route::get('/contratos/export-excel', [\App\Http\Controllers\ContratoMantenimientoController::class, 'exportExcel'])
+            ->name('contratos.export-excel');
+        Route::get('/contratos/{contrato}', [\App\Http\Controllers\ContratoMantenimientoController::class, 'show'])
+            ->name('contratos.show');
+    });
+    Route::middleware(['auth', 'permission:create_climatizacion::contrato_mantenimiento'])->group(function () {
+        Route::get('/contratos/create', [\App\Http\Controllers\ContratoMantenimientoController::class, 'create'])
+            ->name('contratos.create');
+        Route::post('/contratos', [\App\Http\Controllers\ContratoMantenimientoController::class, 'store'])
+            ->name('contratos.store');
+    });
+    Route::middleware(['auth', 'permission:update_climatizacion::contrato_mantenimiento'])->group(function () {
+        Route::get('/contratos/{contrato}/edit', [\App\Http\Controllers\ContratoMantenimientoController::class, 'edit'])
+            ->name('contratos.edit');
+        Route::put('/contratos/{contrato}', [\App\Http\Controllers\ContratoMantenimientoController::class, 'update'])
+            ->name('contratos.update');
+        Route::patch('/contratos/{contrato}/activar', [\App\Http\Controllers\ContratoMantenimientoController::class, 'activar'])
+            ->name('contratos.activar');
+        Route::patch('/contratos/{contrato}/cancelar', [\App\Http\Controllers\ContratoMantenimientoController::class, 'cancelar'])
+            ->name('contratos.cancelar');
+    });
+    Route::middleware(['auth', 'permission:delete_climatizacion::contrato_mantenimiento'])->group(function () {
+        Route::delete('/contratos/{contrato}', [\App\Http\Controllers\ContratoMantenimientoController::class, 'destroy'])
+            ->name('contratos.destroy');
+    });
+
+    // Mantenimientos
+    Route::middleware(['auth', 'permission:view_any_climatizacion::mantenimiento'])->group(function () {
+        Route::get('/mantenimientos', [\App\Http\Controllers\MantenimientoController::class, 'index'])
+            ->name('mantenimientos.index');
+        Route::get('/mantenimientos/data', [\App\Http\Controllers\MantenimientoController::class, 'index'])
+            ->name('mantenimientos.data');
+        Route::get('/mantenimientos/export-excel', [\App\Http\Controllers\MantenimientoController::class, 'exportExcel'])
+            ->name('mantenimientos.export-excel');
+        Route::get('/mantenimientos/{mantenimiento}', [\App\Http\Controllers\MantenimientoController::class, 'show'])
+            ->name('mantenimientos.show');
+    });
+    Route::middleware(['auth', 'permission:create_climatizacion::mantenimiento'])->group(function () {
+        Route::get('/mantenimientos/create', [\App\Http\Controllers\MantenimientoController::class, 'create'])
+            ->name('mantenimientos.create');
+        Route::post('/mantenimientos', [\App\Http\Controllers\MantenimientoController::class, 'store'])
+            ->name('mantenimientos.store');
+        Route::post('/mantenimientos/{mantenimiento}/advance-state', [\App\Http\Controllers\MantenimientoController::class, 'advance'])
+            ->name('mantenimientos.advance');
+    });
+    Route::middleware(['auth', 'permission:update_climatizacion::mantenimiento'])->group(function () {
+        Route::get('/mantenimientos/{mantenimiento}/edit', [\App\Http\Controllers\MantenimientoController::class, 'edit'])
+            ->name('mantenimientos.edit');
+        Route::put('/mantenimientos/{mantenimiento}', [\App\Http\Controllers\MantenimientoController::class, 'update'])
+            ->name('mantenimientos.update');
+    });
+    Route::middleware(['auth', 'permission:delete_climatizacion::mantenimiento'])->group(function () {
+        Route::delete('/mantenimientos/{mantenimiento}', [\App\Http\Controllers\MantenimientoController::class, 'destroy'])
+            ->name('mantenimientos.destroy');
+    });
+
+    // Tickets de Garantía
+    Route::middleware(['auth', 'permission:view_any_climatizacion::ticket_garantia'])->group(function () {
+        Route::get('/tickets-garantia', [\App\Http\Controllers\TicketGarantiaController::class, 'index'])
+            ->name('tickets-garantia.index');
+        Route::get('/tickets-garantia/data', [\App\Http\Controllers\TicketGarantiaController::class, 'index'])
+            ->name('tickets-garantia.data');
+        Route::get('/tickets-garantia/export-excel', [\App\Http\Controllers\TicketGarantiaController::class, 'exportExcel'])
+            ->name('tickets-garantia.export-excel');
+        Route::get('/tickets-garantia/{ticket}', [\App\Http\Controllers\TicketGarantiaController::class, 'show'])
+            ->name('tickets-garantia.show');
+    });
+    Route::middleware(['auth', 'permission:create_climatizacion::ticket_garantia'])->group(function () {
+        Route::get('/tickets-garantia/create', [\App\Http\Controllers\TicketGarantiaController::class, 'create'])
+            ->name('tickets-garantia.create');
+        Route::post('/tickets-garantia', [\App\Http\Controllers\TicketGarantiaController::class, 'store'])
+            ->name('tickets-garantia.store');
+    });
+    Route::middleware(['auth', 'permission:update_climatizacion::ticket_garantia'])->group(function () {
+        Route::get('/tickets-garantia/{ticket}/edit', [\App\Http\Controllers\TicketGarantiaController::class, 'edit'])
+            ->name('tickets-garantia.edit');
+        Route::put('/tickets-garantia/{ticket}', [\App\Http\Controllers\TicketGarantiaController::class, 'update'])
+            ->name('tickets-garantia.update');
+        Route::post('/tickets-garantia/{ticket}/evaluar', [\App\Http\Controllers\TicketGarantiaController::class, 'evaluar'])
+            ->name('tickets-garantia.evaluar');
+        Route::post('/tickets-garantia/{ticket}/rechazar', [\App\Http\Controllers\TicketGarantiaController::class, 'rechazar'])
+            ->name('tickets-garantia.rechazar');
+    });
+    Route::middleware(['auth', 'permission:delete_climatizacion::ticket_garantia'])->group(function () {
+        Route::delete('/tickets-garantia/{ticket}', [\App\Http\Controllers\TicketGarantiaController::class, 'destroy'])
+            ->name('tickets-garantia.destroy');
+    });
+
+    // Órdenes de Emergencia
+    Route::middleware(['auth', 'permission:view_any_climatizacion::orden_emergencia'])->group(function () {
+        Route::get('/ordenes-emergencia', [\App\Http\Controllers\OrdenEmergenciaController::class, 'index'])
+            ->name('ordenes-emergencia.index');
+        Route::get('/ordenes-emergencia/data', [\App\Http\Controllers\OrdenEmergenciaController::class, 'index'])
+            ->name('ordenes-emergencia.data');
+        Route::get('/ordenes-emergencia/export-excel', [\App\Http\Controllers\OrdenEmergenciaController::class, 'exportExcel'])
+            ->name('ordenes-emergencia.export-excel');
+        Route::get('/ordenes-emergencia/{orden}', [\App\Http\Controllers\OrdenEmergenciaController::class, 'show'])
+            ->name('ordenes-emergencia.show');
+    });
+    Route::middleware(['auth', 'permission:create_climatizacion::orden_emergencia'])->group(function () {
+        Route::get('/ordenes-emergencia/create', [\App\Http\Controllers\OrdenEmergenciaController::class, 'create'])
+            ->name('ordenes-emergencia.create');
+        Route::post('/ordenes-emergencia', [\App\Http\Controllers\OrdenEmergenciaController::class, 'store'])
+            ->name('ordenes-emergencia.store');
+    });
+    Route::middleware(['auth', 'permission:update_climatizacion::orden_emergencia'])->group(function () {
+        Route::get('/ordenes-emergencia/{orden}/edit', [\App\Http\Controllers\OrdenEmergenciaController::class, 'edit'])
+            ->name('ordenes-emergencia.edit');
+        Route::put('/ordenes-emergencia/{orden}', [\App\Http\Controllers\OrdenEmergenciaController::class, 'update'])
+            ->name('ordenes-emergencia.update');
+        Route::post('/ordenes-emergencia/{orden}/asignar-tecnico', [\App\Http\Controllers\OrdenEmergenciaController::class, 'asignar'])
+            ->name('ordenes-emergencia.asignar-tecnico');
+        Route::post('/ordenes-emergencia/{orden}/cerrar', [\App\Http\Controllers\OrdenEmergenciaController::class, 'cerrar'])
+            ->name('ordenes-emergencia.cerrar');
+    });
+    Route::middleware(['auth', 'permission:delete_climatizacion::orden_emergencia'])->group(function () {
+        Route::delete('/ordenes-emergencia/{orden}', [\App\Http\Controllers\OrdenEmergenciaController::class, 'destroy'])
+            ->name('ordenes-emergencia.destroy');
+    });
+});
+
+// UI System Demo
+Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function () {
+    Route::get('/', fn() => view('ui-demo.index'))->name('index');
+});
+
 require __DIR__ . '/auth.php';
 

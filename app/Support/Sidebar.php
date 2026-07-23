@@ -316,6 +316,72 @@ class Sidebar
             }
         }
 
+        // Climatización
+        if ($mod('climatizacion') && $can('climatizacion.view')) {
+            $items[] = ['section' => 'Climatización'];
+            $items[] = [
+                'route' => 'climatizacion.dashboard',
+                'icon'  => 'bi-wind',
+                'label' => 'Dashboard',
+                'is_route' => 'climatizacion.dashboard',
+                'exact_route' => 'climatizacion.dashboard',
+            ];
+            if ($mod('climatizacion-tipos-equipos') && $can('tipos-equipos.view')) {
+                $items[] = [
+                    'route' => 'climatizacion.tipos-equipos.index',
+                    'icon'  => 'bi-cpu',
+                    'label' => 'Tipos de Equipo',
+                    'is_route' => 'climatizacion.tipos-equipos.*',
+                    'exact_route' => 'climatizacion.tipos-equipos.index',
+                ];
+            }
+            if ($mod('climatizacion-instalaciones') && $can('instalaciones.view')) {
+                $items[] = [
+                    'route' => 'climatizacion.instalaciones.index',
+                    'icon'  => 'bi-tools',
+                    'label' => 'Instalaciones',
+                    'is_route' => 'climatizacion.instalaciones.*',
+                    'exact_route' => 'climatizacion.instalaciones.index',
+                ];
+            }
+            if ($mod('climatizacion-contratos') && $can('contratos.view')) {
+                $items[] = [
+                    'route' => 'climatizacion.contratos.index',
+                    'icon'  => 'bi-file-earmark-text',
+                    'label' => 'Contratos',
+                    'is_route' => 'climatizacion.contratos.*',
+                    'exact_route' => 'climatizacion.contratos.index',
+                ];
+            }
+            if ($mod('climatizacion-mantenimientos') && $can('mantenimientos.view')) {
+                $items[] = [
+                    'route' => 'climatizacion.mantenimientos.index',
+                    'icon'  => 'bi-wrench-adjustable',
+                    'label' => 'Mantenimientos',
+                    'is_route' => 'climatizacion.mantenimientos.*',
+                    'exact_route' => 'climatizacion.mantenimientos.index',
+                ];
+            }
+            if ($mod('climatizacion-ordenes-emergencia') && $can('ordenes-emergencia.view')) {
+                $items[] = [
+                    'route' => 'climatizacion.ordenes-emergencia.index',
+                    'icon'  => 'bi-exclamation-octagon',
+                    'label' => 'Emergencias',
+                    'is_route' => 'climatizacion.ordenes-emergencia.*',
+                    'exact_route' => 'climatizacion.ordenes-emergencia.index',
+                ];
+            }
+            if ($mod('climatizacion-garantias') && $can('garantias.view')) {
+                $items[] = [
+                    'route' => 'climatizacion.tickets-garantia.index',
+                    'icon'  => 'bi-ticket-perforated',
+                    'label' => 'Garantías',
+                    'is_route' => 'climatizacion.tickets-garantia.*',
+                    'exact_route' => 'climatizacion.tickets-garantia.index',
+                ];
+            }
+        }
+
         // Alquileres
         if ($mod('alquileres') && $can('alquileres.view')) {
             $items[] = ['section' => 'Alquileres'];
