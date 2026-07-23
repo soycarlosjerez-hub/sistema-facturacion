@@ -177,6 +177,24 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                         </div>
                     </div>
                 </div>
+
+                <div id="api-password-section" class="mt-4" style="display: none;">
+                    <div class="form-section-title">Cambiar Contraseña API</div>
+                    <div class="row g-3">
+                        <div class="col-lg-6">
+                            <label class="ui-label">Nueva Contraseña <span class="text-danger">*</span></label>
+                            <input type="password" name="password" id="input-password" class="ui-input @error('password') is-invalid @enderror" placeholder="Mínimo 12 caracteres" minlength="12">
+                            @error('password')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Dejar vacío para mantener la actual (solo obligatorio si se activa Acceso API sin contraseña previa)</small>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="ui-label">Confirmar Nueva Contraseña</label>
+                            <input type="password" name="password_confirmation" id="input-password-confirm" class="ui-input" placeholder="Repite la contraseña" minlength="12">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -190,4 +208,41 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const apiCheckbox = document.getElementById('check-api');
+    const passwordSection = document.getElementById('api-password-section');
+    const passwordInput = document.getElementById('input-password');
+    const passwordConfirmInput = document.getElementById('input-password-confirm');
+
+    function togglePasswordSection() {
+        if (apiCheckbox.checked) {
+            passwordSection.style.display = 'block';
+            if (!{{ $cliente->password ? 'true' : 'false' }}) {
+                passwordInput.required = true;
+                passwordConfirmInput.required = true;
+            } else {
+                passwordInput.required = false;
+                passwordConfirmInput.required = false;
+            }
+        } else {
+            passwordSection.style.display = 'none';
+            passwordInput.value = '';
+            passwordConfirmInput.value = '';
+            passwordInput.required = false;
+            passwordConfirmInput.required = false;
+        }
+    }
+
+    apiCheckbox.addEventListener('change', function() {
+        if (this.checked && !{{ $cliente->password ? 'true' : 'false' }}) {
+            passwordInput.required = true;
+            passwordConfirmInput.required = true;
+        }
+    });
+
+    togglePasswordSection();
+});
+</script>
 @endsection

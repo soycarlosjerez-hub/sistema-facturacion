@@ -2,6 +2,17 @@
 
 @section('title', 'Terminal de Ventas (POS)')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+:root {
+    --accent: #3b82f6;
+    --accent-rgb: 59,130,246;
+    --accent-hover: #2563eb;
+}
+</style>
+@endpush
+
 @section('fullbleed')
 @php
     $dgiiAmbiente = config('dgii.ambiente_actual', 'sandbox');
@@ -11,9 +22,9 @@
 <style>
     /* ============ Base POS Layout ============ */
 :root {
-    --pos-accent: #0ea5e9;
-    --pos-accent-2: #06b6d4;
-    --pos-accent-3: #0284c7;
+    --pos-accent: #3b82f6;
+    --pos-accent-2: #2563eb;
+    --pos-accent-3: #1d4ed8;
     --pos-success: #10b981;
     --pos-warning: #f59e0b;
     --pos-danger: #ef4444;
@@ -26,8 +37,8 @@
     --pos-topbar-dark: rgba(255, 255, 255, 0.12);
     --pos-search-light: rgba(255, 255, 255, 0.06);
     --pos-search-dark: rgba(255, 255, 255, 0.12);
-    --pos-search-focus-light: rgba(14, 165, 233, 0.08);
-    --pos-search-focus-dark: rgba(14, 165, 233, 0.12);
+    --pos-search-focus-light: rgba(59, 130, 246, 0.08);
+    --pos-search-focus-dark: rgba(59, 130, 246, 0.12);
     --pos-dropdown-light: rgba(255, 255, 255, 0.9);
     --pos-dropdown-dark: rgba(30, 41, 59, 0.9);
     --pos-accent-soft: rgba(var(--pos-accent-rgb), 0.1);
@@ -44,8 +55,8 @@
     --pos-border-dark: rgba(255, 255, 255, 0.15);
     --pos-shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --pos-shadow-dark: 0 4px 6px -1px rgba(255, 255, 255, 0.1), 0 2px 4px -1px rgba(255, 255, 255, 0.06);
-    --pos-accent-rgb: 14, 165, 233;
-    --pos-accent2-rgb: 6, 182, 212;
+    --pos-accent-rgb: 59, 130, 246;
+    --pos-accent2-rgb: 37, 99, 235;
     --pos-success-rgb: 16, 185, 129;
     --pos-warning-rgb: 245, 158, 11;
     --pos-danger-rgb: 239, 68, 68;
@@ -483,7 +494,7 @@ body:not(.dark-mode) {
     .ecf-hint {
         margin-top: 6px;
         padding: 8px 10px;
-        background: rgba(14, 165, 233, 0.1);
+        background: rgba(59, 130, 246, 0.1);
         border-left: 3px solid var(--pos-accent);
         border-radius: 8px;
         font-size: 0.75rem;
@@ -542,7 +553,7 @@ body:not(.dark-mode) {
     .total-display .td-amount {
         font-size: 2.4rem;
         font-weight: 900;
-        background: linear-gradient(135deg, #38bdf8, #06b6d4);
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -566,10 +577,16 @@ body:not(.dark-mode) {
     align-items: center;
     gap: 16px;
     padding: 12px 20px;
-    background: var(--pos-topbar);
+    background:
+        linear-gradient(135deg, rgba(var(--pos-accent-rgb),.12), rgba(var(--pos-accent-rgb),.04)),
+        var(--pos-topbar);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--pos-border);
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    animation: uiSlideUp .5s ease both;
+    animation-delay: var(--delay, 0s);
 }
 .pos-topbar .caja-tag {
     display: inline-flex;
@@ -642,6 +659,8 @@ body:not(.dark-mode) {
     grid-template-columns: 1fr 420px;
     gap: 0;
     overflow: hidden;
+    animation: uiSlideUp .5s ease both;
+    animation-delay: var(--delay, .05s);
 }
 .pos-left {
     display: flex;
@@ -650,6 +669,8 @@ body:not(.dark-mode) {
     padding: 16px;
     gap: 12px;
     min-width: 0;
+    animation: uiSlideUp .5s ease both;
+    animation-delay: var(--delay, .1s);
 }
 .pos-right {
     background: var(--pos-topbar);
@@ -658,12 +679,16 @@ body:not(.dark-mode) {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    animation: uiSlideUp .5s ease both;
+    animation-delay: var(--delay, .15s);
 }
 
     /* ============ Search Section ============ */
     .pos-search-wrap {
         position: relative;
         flex-shrink: 0;
+        animation: uiSlideUp .5s ease both;
+        animation-delay: var(--delay, .2s);
     }
 .pos-search {
     width: 100%;
@@ -681,15 +706,15 @@ body:not(.dark-mode) {
     .pos-search::placeholder { color: var(--pos-text-muted); font-weight: 400; }
     .pos-search:focus {
         border-color: var(--pos-accent);
-        background: rgba(14, 165, 233, 0.05);
-        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+        background: rgba(59, 130, 246, 0.05);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
     }
     .pos-search.scanner-flash {
         animation: scanFlash 0.5s ease;
     }
     @keyframes scanFlash {
-        0% { background: rgba(14, 165, 233, 0.3); border-color: var(--pos-accent); }
-        100% { background: rgba(14, 165, 233, 0.05); border-color: var(--pos-accent); }
+        0% { background: rgba(59, 130, 246, 0.3); border-color: var(--pos-accent); }
+        100% { background: rgba(59, 130, 246, 0.05); border-color: var(--pos-accent); }
     }
     .pos-search-icon {
         position: absolute;
@@ -814,6 +839,8 @@ body:not(.dark-mode) {
         gap: 6px;
         flex-shrink: 0;
         flex-wrap: wrap;
+        animation: uiSlideUp .5s ease both;
+        animation-delay: var(--delay, .25s);
     }
     .pos-tab {
         background: rgba(255,255,255,0.04);
@@ -873,8 +900,8 @@ body:not(.dark-mode) {
     .pos-product-card:hover {
         transform: translateY(-2px);
         border-color: var(--pos-accent);
-        background: rgba(14, 165, 233, 0.05);
-        box-shadow: 0 8px 24px rgba(14, 165, 233, 0.15);
+        background: rgba(59, 130, 246, 0.05);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
     }
     .pos-product-card:active { transform: scale(0.97); }
     .pos-product-card .ppc-img {
@@ -1118,7 +1145,7 @@ body:not(.dark-mode) {
     .ecf-hint {
         margin-top: 6px;
         padding: 8px 10px;
-        background: rgba(14, 165, 233, 0.1);
+        background: rgba(59, 130, 246, 0.1);
         border-left: 3px solid var(--pos-accent);
         border-radius: 8px;
         font-size: 0.75rem;
@@ -1149,10 +1176,10 @@ body:not(.dark-mode) {
     .total-display {
         text-align: center;
         padding: 16px 12px;
-        background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%);
         border-radius: 14px;
         margin-top: 10px;
-        border: 1px solid rgba(14, 165, 233, 0.3);
+        border: 1px solid rgba(59, 130, 246, 0.3);
     }
     .total-display .td-label {
         font-size: 0.7rem;
@@ -1164,7 +1191,7 @@ body:not(.dark-mode) {
     .total-display .td-amount {
         font-size: 2.4rem;
         font-weight: 900;
-        background: linear-gradient(135deg, #38bdf8, #06b6d4);
+        background: linear-gradient(135deg, #60a5fa, #3b82f6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -1211,7 +1238,7 @@ body:not(.dark-mode) {
         border-radius: 4px;
         font-weight: 700;
     }
-    .btn-pay.tarjeta { background: #0ea5e9; }
+    .btn-pay.tarjeta { background: #3b82f6; }
     .btn-pay.transferencia { background: #6366f1; }
     .btn-pay.fiado { background: #f59e0b; color: #1f2937; }
     .btn-pay.cuenta_abierta { background: #8b5cf6; }
@@ -1279,7 +1306,7 @@ body:not(.dark-mode) {
     .cash-total-display {
         text-align: center;
         padding: 16px;
-        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
         border-radius: 14px;
         margin-bottom: 16px;
     }
@@ -1298,12 +1325,12 @@ body:not(.dark-mode) {
         text-align: right;
         font-variant-numeric: tabular-nums;
     }
-    .cash-recibido-input:focus { outline: none; border-color: var(--pos-accent); background: rgba(14, 165, 233, 0.05); }
+    .cash-recibido-input:focus { outline: none; border-color: var(--pos-accent); background: rgba(59, 130, 246, 0.05); }
 
     .cambio-display {
         text-align: center;
         padding: 14px;
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(14, 165, 233, 0.05));
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.05));
         border-radius: 12px;
     }
     .cambio-display.negativo { background: rgba(239, 68, 68, 0.1); }
@@ -1313,8 +1340,8 @@ body:not(.dark-mode) {
     .cambio-display.negativo .cd-amount { color: #fca5a5; }
 
     .quick-amount-btn {
-        background: rgba(14, 165, 233, 0.1);
-        border: 1px solid rgba(14, 165, 233, 0.3);
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
         color: var(--pos-accent);
         border-radius: 10px;
         padding: 10px 6px;
@@ -1462,10 +1489,10 @@ body:not(.dark-mode) {
 
     /* ============ Modal Productos — Virtual Keyboard ============ */
     #productosModal .modal-content { background: var(--pos-bg); color: var(--pos-text); }
-    #productosModal .modal-header { background: linear-gradient(135deg, var(--pos-accent), #0284c7); }
+    #productosModal .modal-header { background: linear-gradient(135deg, var(--pos-accent), #1d4ed8); }
     #productosModal .form-control { background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text); }
     #productosModal .form-control::placeholder { color: var(--pos-text-muted); }
-    #productosModal .form-control:focus { border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); color: var(--pos-text); }
+    #productosModal .form-control:focus { border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); color: var(--pos-text); }
 
     .tecla {
         flex: 1; height: 52px; border-radius: 10px;
@@ -1476,16 +1503,16 @@ body:not(.dark-mode) {
         touch-action: manipulation; user-select: none; -webkit-user-select: none;
         transition: background .08s, transform .08s; padding: 0 4px; min-width: 0;
     }
-    .tecla:active { background: rgba(14,165,233,0.2); transform: scale(0.93); box-shadow: 0 0 0 2px rgba(14,165,233,0.2); }
+    .tecla:active { background: rgba(59,130,246,0.2); transform: scale(0.93); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
     .tecla-func { background: rgba(255,255,255,0.06); font-size: 1rem; }
     .tecla-shift { flex: 1.6; }
-    .tecla-shift.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+    .tecla-shift.active { background: rgba(59,130,246,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
     .tecla-backspace { flex: 1.3; }
     .tecla-space { flex: 4; }
     .tecla-enter { flex: 1.3; background: var(--pos-accent); color: #fff; border-color: var(--pos-accent); }
     .tecla-punct { flex: 1; }
-    .tecla-func:active { background: rgba(14,165,233,0.2); }
-    .tecla-func.active { background: rgba(14,165,233,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
+    .tecla-func:active { background: rgba(59,130,246,0.2); }
+    .tecla-func.active { background: rgba(59,130,246,0.25); box-shadow: inset 0 2px 4px rgba(0,0,0,.3); border-color: var(--pos-accent); }
     .tecla-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 6px; }
     #teclado-rows { max-width: 100%; }
     #teclado-rows::-webkit-scrollbar { height: 0; }
@@ -1514,20 +1541,20 @@ body:not(.dark-mode) {
         background: rgba(255,255,255,0.06); color: var(--pos-text); font-weight: 700; font-size: 1.1rem;
         display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s;
     }
-    .modal-prod-qty button:hover { background: rgba(14,165,233,0.15); border-color: var(--pos-accent); }
+    .modal-prod-qty button:hover { background: rgba(59,130,246,0.15); border-color: var(--pos-accent); }
     .modal-prod-qty span { font-weight: 800; font-size: 1rem; min-width: 24px; text-align: center; color: var(--pos-text); }
 
     /* ============ Premium Payment Modal ============ */
     @keyframes cobrarGradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     .cobrar-premium .modal-content { border-radius: 20px; overflow: hidden; border: 0; box-shadow: 0 25px 60px rgba(0,0,0,0.5); }
-    .cobrar-premium .cobrar-header { background: linear-gradient(135deg, #059669, #10b981, #06b6d4, #059669); background-size: 300% 300%; animation: cobrarGradientShift 6s ease infinite; padding: 20px 24px 16px; color: #fff; }
+    .cobrar-premium .cobrar-header { background: linear-gradient(135deg, #059669, #10b981, #3b82f6, #059669); background-size: 300% 300%; animation: cobrarGradientShift 6s ease infinite; padding: 20px 24px 16px; color: #fff; }
     .cobrar-premium .cobrar-header .icon-circle { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; backdrop-filter: blur(8px); }
     .cobrar-total-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 16px 20px; text-align: center; border: 1px solid rgba(255,255,255,0.15); }
     .cobrar-total-card h2 { font-size: 3rem; font-weight: 900; color: var(--pos-text); font-variant-numeric: tabular-nums; }
     .metodo-btn { border: 2px solid var(--pos-border); border-radius: 14px; padding: 14px 6px; background: rgba(255,255,255,0.03); color: var(--pos-text); font-weight: 700; font-size: 0.9rem; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; min-height: 68px; }
     .metodo-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
     .metodo-btn.active-metodo.efectivo { border-color: #10b981; background: rgba(16,185,129,0.12); color: #6ee7b7; }
-    .metodo-btn.active-metodo.tarjeta { border-color: #0ea5e9; background: rgba(14,165,233,0.12); color: #38bdf8; }
+    .metodo-btn.active-metodo.tarjeta { border-color: #3b82f6; background: rgba(59,130,246,0.12); color: #60a5fa; }
     .metodo-btn.active-metodo.transferencia { border-color: #6366f1; background: rgba(99,102,241,0.12); color: #a5b4fc; }
     .metodo-btn.active-metodo.mixto { border-color: #f59e0b; background: rgba(245,158,11,0.12); color: #fbbf24; }
     .metodo-btn i { font-size: 1.5rem; }
@@ -1561,9 +1588,9 @@ body:not(.dark-mode) {
     #clienteModal .modal-content { border-radius: 16px; background: var(--pos-bg); color: var(--pos-text); border: 1px solid var(--pos-border); }
     #clienteModal .modal-header { border-bottom: 1px solid var(--pos-border); }
     #clienteModal .cliente-search-input { background: rgba(255,255,255,0.06); border: 1px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 12px 16px; font-size: 1rem; width: 100%; }
-    #clienteModal .cliente-search-input:focus { outline: none; border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
+    #clienteModal .cliente-search-input:focus { outline: none; border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
     .cliente-result-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 4px; }
-    .cliente-result-item:hover { background: rgba(14,165,233,0.05); border-color: var(--pos-border); }
+    .cliente-result-item:hover { background: rgba(59,130,246,0.05); border-color: var(--pos-border); }
     .cliente-result-item .cr-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
     .cliente-result-item .cr-info { flex: 1; min-width: 0; }
     .cliente-result-item .cr-name { font-weight: 700; color: var(--pos-text); }
@@ -1573,9 +1600,9 @@ body:not(.dark-mode) {
 <form id="pos-form" action="{{ route('ventas.store') }}" method="POST" autocomplete="off">
     @csrf
 
-    <div class="pos-app">
+    <div class="pos-app" style="--delay:0s">
         <!-- ============ TOP BAR ============ -->
-        <div class="pos-topbar">
+        <div class="pos-topbar" style="--delay:0s">
             <div class="caja-tag">
                 <span class="pulse-dot"></span>
                 <span>{{ $sesion->caja->nombre }}</span>
@@ -3325,7 +3352,7 @@ body:not(.dark-mode) {
                             c.tipo_cliente === 'especial' ? 'Especial' : 'Consumo';
                 const nombreSeguro = escapeHtml(c.nombre);
                 return `<div class="cliente-result-item" data-cliente-id="${c.id}" data-cliente-nombre='${nombreSeguro}'>
-                    <div class="cr-icon" style="background:rgba(14,165,233,0.1);color:#38bdf8;">${initial}</div>
+                    <div class="cr-icon" style="background:rgba(59,130,246,0.1);color:#60a5fa;">${initial}</div>
                     <div class="cr-info">
                         <div class="cr-name">${escapeHtml(c.nombre)}</div>
                         <div class="cr-meta">${tipo} ${c.rnc || c.rnc_cedula ? '· ' + escapeHtml(c.rnc || c.rnc_cedula) : ''}</div>
