@@ -18,23 +18,35 @@ use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
+    private function tenantId(): ?int
+    {
+        return auth()->user()->business_instance_id ?? null;
+    }
+
+    private function tenantFilter(string $table): array
+    {
+        $id = $this->tenantId();
+        return $id ? [$table . '.tenant_id' => $id] : [];
+    }
+
     public function getKpis(string $startDate = null, string $endDate = null): array
     {
-        $instanceId = auth()->user()->business_instance_id ?? 'global';
+        $instanceId = $this->tenantId() ?? 'global';
         $cacheKey = sprintf('dashboard_kpis_%s_%s_%s', $instanceId, $startDate ?? 'default', $endDate ?? 'default');
 
         return Cache::remember($cacheKey, 60, function () use ($startDate, $endDate) {
             if ($startDate || $endDate) {
                 return $this->getFilteredKpis($startDate, $endDate);
             }
-
             return $this->getDefaultKpis();
         });
     }
 
     private function getFilteredKpis(?string $startDate, ?string $endDate): array
     {
-        $ventasQuery = Venta::query();
+        $tenantId = $this->tenantId();
+
+        $ventasQuery = Venta::where('tenant_id', $tenantId);
         $pagosQuery = Pago::query();
 
         if ($startDate) {
@@ -61,38 +73,41 @@ class DashboardService
             'utilidadMes' => 0,
             'utilidadMesAnt' => 0,
             'margen' => 0,
-            'totalCuentasPorCobrar' => (float) Cliente::sum('balance_pendiente'),
-            'clientesConDeuda' => Cliente::where('balance_pendiente', '>', 0)->count(),
-            'facturasPendientes' => Venta::whereIn('estado', ['pendiente', 'cuenta_abierta'])->count(),
+            'totalCuentasPorCobrar' => (float) Cliente::where('tenant_id', $tenantId)->sum('balance_pendiente'),
+            'clientesConDeuda' => Cliente::where('tenant_id', $tenantId)->where('balance_pendiente', '>', 0)->count(),
+            'facturasPendientes' => Venta::where('tenant_id', $tenantId)->whereIn('estado', ['pendiente', 'cuenta_abierta'])->count(),
         ];
     }
 
     private function getDefaultKpis(): array
     {
+        $tenantId = $this->tenantId();
         $hoy = Carbon::today();
         $ayer = Carbon::yesterday();
         $mes = Carbon::now();
         $mesAnt = Carbon::now()->subMonth();
 
-        $ventasHoy = (float) Venta::whereDate('created_at', $hoy)->sum('total');
-        $ventasAyer = (float) Venta::whereDate('created_at', $ayer)->sum('total');
-        $ticketsHoy = (int) Venta::whereDate('created_at', $hoy)->count();
-        $ticketsAyer = (int) Venta::whereDate('created_at', $ayer)->count();
-        $ticketPromedio = (float) (Venta::whereDate('created_at', $hoy)->avg('total') ?? 0);
+        $ventasHoy = (float) Venta::where('tenant_id', $tenantId)->whereDate('created_at', $hoy)->sum('total');
+        $ventasAyer = (float) Venta::where('tenant_id', $tenantId)->whereDate('created_at', $ayer)->sum('total');
+        $ticketsHoy = (int) Venta::where('tenant_id', $tenantId)->whereDate('created_at', $hoy)->count();
+        $ticketsAyer = (int) Venta::where('tenant_id', $tenantId)->whereDate('created_at', $ayer)->count();
+        $ticketPromedio = (float) (Venta::where('tenant_id', $tenantId)->whereDate('created_at', $hoy)->avg('total') ?? 0);
 
-        $ingresosMes = (float) Venta::whereMonth('created_at', $mes->month)
+        $ingresosMes = (float) Venta::where('tenant_id', $tenantId)
+            ->whereMonth('created_at', $mes->month)
             ->whereYear('created_at', $mes->year)
             ->sum('total');
-        $ingresosMesAnt = (float) Venta::whereMonth('created_at', $mesAnt->month)
+        $ingresosMesAnt = (float) Venta::where('tenant_id', $tenantId)
+            ->whereMonth('created_at', $mesAnt->month)
             ->whereYear('created_at', $mesAnt->year)
             ->sum('total');
 
         $utilidadMes = $this->calcularUtilidad($mes->month, $mes->year);
         $utilidadMesAnt = $this->calcularUtilidad($mesAnt->month, $mesAnt->year);
 
-        $totalCuentasPorCobrar = (float) Cliente::sum('balance_pendiente');
-        $clientesConDeuda = Cliente::where('balance_pendiente', '>', 0)->count();
-        $facturasPendientes = Venta::whereIn('estado', ['pendiente', 'cuenta_abierta'])->count();
+        $totalCuentasPorCobrar = (float) Cliente::where('tenant_id', $tenantId)->sum('balance_pendiente');
+        $clientesConDeuda = Cliente::where('tenant_id', $tenantId)->where('balance_pendiente', '>', 0)->count();
+        $facturasPendientes = Venta::where('tenant_id', $tenantId)->whereIn('estado', ['pendiente', 'cuenta_abierta'])->count();
 
         $margen = $ingresosMes > 0 ? round(($utilidadMes / $ingresosMes) * 100, 1) : 0;
 
@@ -108,7 +123,7 @@ class DashboardService
         return (float) (VentaDetalle::query()
             ->join('ventas', 'ventas.id', '=', 'venta_detalles.venta_id')
             ->join('productos', 'productos.id', '=', 'venta_detalles.producto_id')
-            ->where('ventas.tenant_id', auth()->user()->business_instance_id)
+            ->where('ventas.tenant_id', $this->tenantId())
             ->whereMonth('ventas.created_at', $month)
             ->whereYear('ventas.created_at', $year)
             ->selectRaw('SUM(venta_detalles.cantidad * (venta_detalles.precio_unitario - productos.precio_compra)) as total_utilidad')
@@ -117,6 +132,7 @@ class DashboardService
 
     public function getCashRegisterStatus(): array
     {
+        $tenantId = $this->tenantId();
         $sesionCajaActiva = SesionCaja::where('user_id', auth()->id())
             ->where('estado', 'abierta')
             ->with('caja')
@@ -131,7 +147,7 @@ class DashboardService
             'abierta_en' => $sesionCajaActiva?->created_at,
             'monto_inicial' => $sesionCajaActiva?->monto_inicial ?? 0,
             'ventas_caja' => $sesionCajaActiva
-                ? Venta::where('user_id', auth()->id())->whereDate('created_at', $hoy)->sum('total')
+                ? Venta::where('tenant_id', $tenantId)->where('user_id', auth()->id())->whereDate('created_at', $hoy)->sum('total')
                 : 0,
             'cobros_caja' => $sesionCajaActiva
                 ? Pago::where('sesion_caja_id', $sesionCajaActiva->id)->whereDate('created_at', $hoy)->sum('monto')
@@ -141,15 +157,16 @@ class DashboardService
 
     public function getSecondaryStats(): array
     {
-        $instanceId = auth()->user()->business_instance_id ?? 'global';
+        $tenantId = $this->tenantId();
+        $instanceId = $tenantId ?? 'global';
         $cacheKey = 'dashboard_secondary_stats_' . $instanceId;
-        return Cache::remember($cacheKey, 120, function () {
+        return Cache::remember($cacheKey, 120, function () use ($tenantId) {
             return [
-                'totalProductos' => Producto::count(),
-                'productosCriticos' => Producto::where('stock', '<=', 5)->count(),
-                'productosBajos' => Producto::whereBetween('stock', [6, 15])->count(),
-                'valorInventario' => Producto::selectRaw('SUM(stock * precio_compra) as val')->value('val') ?? 0,
-                'totalClientes' => Cliente::count(),
+                'totalProductos' => Producto::where('tenant_id', $tenantId)->count(),
+                'productosCriticos' => Producto::where('tenant_id', $tenantId)->where('stock', '<=', 5)->count(),
+                'productosBajos' => Producto::where('tenant_id', $tenantId)->whereBetween('stock', [6, 15])->count(),
+                'valorInventario' => Producto::where('tenant_id', $tenantId)->selectRaw('SUM(stock * precio_compra) as val')->value('val') ?? 0,
+                'totalClientes' => Cliente::where('tenant_id', $tenantId)->count(),
                 'cobrosHoy' => Pago::whereDate('created_at', Carbon::today())->sum('monto'),
                 'cobrosMes' => Pago::whereMonth('created_at', Carbon::now()->month)
                     ->whereYear('created_at', Carbon::now()->year)
@@ -160,7 +177,8 @@ class DashboardService
 
     public function getSalesChartData(int $days = 29): array
     {
-        $ventasPorDia = Venta::query()
+        $tenantId = $this->tenantId();
+        $ventasPorDia = Venta::where('tenant_id', $tenantId)
             ->selectRaw('DATE(created_at) as fecha, SUM(total) as total, COUNT(*) as tickets')
             ->whereDate('created_at', '>=', Carbon::today()->subDays($days))
             ->groupBy(DB::raw('DATE(created_at)'))
@@ -184,8 +202,10 @@ class DashboardService
 
     public function getHourlySalesChart(): array
     {
+        $tenantId = $this->tenantId();
         $hoy = Carbon::today();
-        $ventasPorHora = Venta::whereDate('created_at', $hoy)
+        $ventasPorHora = Venta::where('tenant_id', $tenantId)
+            ->whereDate('created_at', $hoy)
             ->selectRaw('HOUR(created_at) as hora, SUM(total) as total')
             ->groupBy(DB::raw('HOUR(created_at)'))
             ->pluck('total', 'hora');
@@ -203,7 +223,7 @@ class DashboardService
     public function getPaymentMethodChart(): array
     {
         $hoy = Carbon::today();
-        
+
         $efectivo = Pago::whereDate('created_at', $hoy)->where('metodo_pago', 'efectivo')->sum('monto');
         $tarjeta = Pago::whereDate('created_at', $hoy)->where('metodo_pago', 'tarjeta')->sum('monto');
         $transferencia = Pago::whereDate('created_at', $hoy)->where('metodo_pago', 'transferencia')->sum('monto');
@@ -221,11 +241,12 @@ class DashboardService
 
     public function getTopProducts(int $limit = 5): Collection
     {
+        $tenantId = $this->tenantId();
         $mes = Carbon::now();
         return DB::table('venta_detalles')
             ->join('ventas', 'ventas.id', '=', 'venta_detalles.venta_id')
             ->join('productos', 'productos.id', '=', 'venta_detalles.producto_id')
-            ->where('ventas.tenant_id', auth()->user()->business_instance_id)
+            ->where('ventas.tenant_id', $tenantId)
             ->whereMonth('ventas.created_at', $mes->month)
             ->whereYear('ventas.created_at', $mes->year)
             ->select(
@@ -246,7 +267,8 @@ class DashboardService
 
     public function getTopDebtors(int $limit = 5): Collection
     {
-        return Cliente::where('balance_pendiente', '>', 0)
+        return Cliente::where('tenant_id', $this->tenantId())
+            ->where('balance_pendiente', '>', 0)
             ->orderBy('balance_pendiente', 'desc')
             ->limit($limit)
             ->get();
@@ -254,12 +276,15 @@ class DashboardService
 
     public function getRecentActivity(): array
     {
+        $tenantId = $this->tenantId();
         return [
-            'ultimasVentas' => Venta::with(['cliente:id,nombre', 'usuario:id,name'])
+            'ultimasVentas' => Venta::where('tenant_id', $tenantId)
+                ->with(['cliente:id,nombre', 'usuario:id,name'])
                 ->latest()
                 ->limit(8)
                 ->get(),
-            'ultimasCompras' => Compra::with(['proveedor:id,nombre', 'user:id,name'])
+            'ultimasCompras' => Compra::where('tenant_id', $tenantId)
+                ->with(['proveedor:id,nombre', 'user:id,name'])
                 ->latest('fecha')
                 ->limit(5)
                 ->get(),
@@ -272,9 +297,10 @@ class DashboardService
 
     public function getAlerts(): array
     {
+        $tenantId = $this->tenantId();
         $mes = Carbon::now();
         return [
-            'stock_critico' => Producto::stockCritico()
+            'stock_critico' => Producto::where('tenant_id', $tenantId)->stockCritico()
                 ->orderBy('stock', 'asc')
                 ->limit(5)
                 ->get(),
@@ -283,24 +309,27 @@ class DashboardService
                 ->whereDate('fecha_vencimiento', '<=', Carbon::today()->addDays(30))
                 ->whereDate('fecha_vencimiento', '>=', Carbon::today())
                 ->get(),
-            'clientes_morosos' => Cliente::where('balance_pendiente', '>', 0)
+            'clientes_morosos' => Cliente::where('tenant_id', $tenantId)
+                ->where('balance_pendiente', '>', 0)
                 ->orderBy('balance_pendiente', 'desc')
                 ->limit(3)
                 ->get(),
             'sistema' => AlertasSistema::todas(),
-            'productos_sin_rotacion' => Producto::whereDoesntHave('ventaDetalles', function ($q) use ($mes) {
-                $q->whereMonth('venta_detalles.created_at', $mes->month)
-                  ->whereYear('venta_detalles.created_at', $mes->year);
-            })->where('stock', '>', 0)->count(),
+            'productos_sin_rotacion' => Producto::where('tenant_id', $tenantId)
+                ->whereDoesntHave('ventaDetalles', function ($q) use ($mes) {
+                    $q->whereMonth('venta_detalles.created_at', $mes->month)
+                      ->whereYear('venta_detalles.created_at', $mes->year);
+                })->where('stock', '>', 0)->count(),
         ];
     }
 
     public function getUserRanking(): Collection
     {
+        $tenantId = $this->tenantId();
         $mes = Carbon::now();
         return DB::table('ventas')
             ->join('users', 'users.id', '=', 'ventas.user_id')
-            ->where('ventas.tenant_id', auth()->user()->business_instance_id)
+            ->where('ventas.tenant_id', $tenantId)
             ->whereMonth('ventas.created_at', $mes->month)
             ->whereYear('ventas.created_at', $mes->year)
             ->select(

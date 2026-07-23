@@ -44,6 +44,14 @@
         justify-content: center;
         font-size: 1.5rem;
     }
+    body.dark-mode .kpi-premium-card {
+        background: rgba(15,23,42,.7);
+        border-color: rgba(255,255,255,.06);
+    }
+    body.dark-mode .kpi-premium-card h3,
+    body.dark-mode .kpi-premium-card h4 { color: #f1f5f9 !important; }
+    body.dark-mode .kpi-premium-card .text-muted { color: #94a3b8 !important; }
+    body.dark-mode .quick-action-premium { border-color: rgba(255,255,255,.1) !important; }
 </style>
 
 <div class="row g-3 mb-4">
