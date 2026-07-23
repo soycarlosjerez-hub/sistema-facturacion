@@ -137,6 +137,46 @@ Cada módulo define su **acento** en el wrapper principal `.ui-page`:
 | `.ui-textarea` | Textarea |
 | `.ui-input-group` | Contenedor de grupo input+addon |
 | `.ui-input-group-text` | Texto/icono del addon |
+| `.ui-input-group-lg` | Input group tamaño grande |
+| `.ui-select-sm` | Select tamaño pequeño |
+
+### Form Section Headers (divisores de sección)
+
+| Estilo | Descripción |
+|---|---|
+| `border-bottom` + `mb-4 pb-3` | Divisor de sección con borde inferior |
+| `h6.fw-bold.mb-0` con `style="color:COLOR"` | Título de sección con color de acento |
+| `i.bi.bi-ICON.me-2` | Icono alineado con el título |
+
+### Alertas
+
+| Clase/Estilo | Descripción |
+|---|---|
+| `.alert.alert-danger.rounded-4.shadow-sm.border-0` con `style="border-left:4px solid #dc3545 !important"` | Alerta de error con barra roja izquierda |
+| `.alert.rounded-4.shadow-sm.border-0` con `background:rgba(ACCENT_RGB,.05);border-left:4px solid ACCENT` | Banner informativo con icono circular y barra de acento |
+
+### Detail Cards (show view)
+
+| Patrón | Descripción |
+|---|---|
+| `.p-3.rounded-3` con `background:rgba(ACCENT_RGB,.05)` | Tarjeta de dato con fondo tenue del acento |
+| `small.text-muted.text-uppercase.d-block.small.fw-semibold` | Label en mayúsculas |
+| `span.fs-4.fw-bold` con `style="color:ACCENT"` | Valor destacado grande |
+
+### Drop Zone (importar archivos)
+
+| Clase | Descripción |
+|---|---|
+| `.drop-zone` | Zona de arrastre con borde dashed y padding 3rem |
+| `.drop-zone:hover`, `.drop-zone.dragover` | Hover con cambio de color de borde al acento |
+| `.drop-zone.has-file` | Estado con archivo seleccionado (borde verde) |
+
+### Toggle / Switch
+
+| Elemento | Descripción |
+|---|---|
+| `.form-check.form-switch` + `input.form-check-input[role="switch"]` | Toggle on/off con estilo Bootstrap |
+| `style="width:3em;height:1.5em"` | Tamaño personalizado del switch |
 
 ### Tablas
 
@@ -332,6 +372,133 @@ Cada módulo define su **acento** en el wrapper principal `.ui-page`:
     <span class="ui-input-group-text">RD$</span>
     <input type="number" class="ui-input" name="[name]">
 </div>
+
+<div class="ui-input-group input-group-lg">
+    <span class="ui-input-group-text bg-light fw-bold">$</span>
+    <input type="number" class="ui-input" name="[name]" step="0.01" min="0" placeholder="0.00">
+</div>
+```
+
+### Template: Input Group with Action Button
+
+```html
+<div class="ui-input-group input-group-lg">
+    <input type="text" name="[name]" class="ui-input" placeholder="Valor...">
+    <button class="ui-btn ui-btn-ghost px-3" type="button" id="btnAction" title="Acción">
+        <i class="bi bi-magic"></i>
+    </button>
+</div>
+```
+
+### Template: Form Section Header
+
+```html
+<div class="mb-4 pb-3 border-bottom">
+    <h6 class="fw-bold mb-0" style="color: ACCENT_HEX;">
+        <i class="bi bi-ICON me-2"></i>TÍTULO DE SECCIÓN
+    </h6>
+</div>
+```
+
+Usar estos colores para secciones:
+| Contexto | Icono | Color |
+|---|---|---|
+| Información básica | `bi-box-seam` | `#4f46e5` (acento del módulo) |
+| Precios y existencias | `bi-currency-dollar` | `#059669` (verde) |
+| Imagen del producto | `bi-image` | `#0891b2` (cyan) |
+| Estado del producto | `bi-toggle-on` | `#059669` (verde) |
+
+### Template: Error/Validation Alert
+
+```html
+@if ($errors->any())
+    <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+```
+
+### Template: Info/Banner Alert (para edit)
+
+```html
+<div class="alert rounded-4 shadow-sm border-0 mb-4" style="background:rgba(ACCENT_RGB,.05);border-left:4px solid ACCENT_HEX !important;">
+    <div class="d-flex align-items-center">
+        <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;color:ACCENT_HEX;background:rgba(ACCENT_RGB,.1);">
+            <i class="bi bi-info-circle fs-5"></i>
+        </div>
+        <div>
+            <span class="text-muted">Estás editando [elemento]:</span>
+            <strong class="d-block" style="font-size:1.1rem;color:#1e293b;">{{ $[modelo]->nombre }}</strong>
+        </div>
+    </div>
+</div>
+```
+
+### Template: Show Detail Card with Accent Background
+
+```html
+<div class="p-3 rounded-3" style="background:rgba(ACCENT_RGB,.05);">
+    <small class="text-muted text-uppercase d-block small fw-semibold">LABEL</small>
+    <span class="fs-5 fw-bold" style="color:ACCENT_HEX;">VALOR</span>
+</div>
+```
+
+Usar en un grid `.row.g-4` dentro de la columna derecha de `show`.
+
+### Template: Drop Zone (File Upload)
+
+```html
+<style>
+.drop-zone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 1rem;
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all .3s;
+    background: #f8fafc;
+}
+.drop-zone:hover, .drop-zone.dragover {
+    border-color: ACCENT_HEX;
+    background: rgba(ACCENT_RGB,.05);
+}
+.drop-zone.has-file {
+    border-color: #22c55e;
+    background: rgba(34,197,94,.05);
+}
+</style>
+
+<div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" role="button" tabindex="0">
+    <div id="dropContent">
+        <i class="bi bi-file-earmark-spreadsheet" style="font-size:3rem;color:ACCENT_HEX;"></i>
+        <h6 class="fw-bold mt-3 mb-1">Arrastra el archivo aquí o haz clic para seleccionar</h6>
+        <p class="text-muted small mb-0">Formatos: CSV, XLSX • Máx. 10 MB</p>
+    </div>
+    <div id="dropFileInfo" class="d-none">
+        <i class="bi bi-check-circle-fill text-success" style="font-size:2rem;"></i>
+        <h6 class="fw-bold mt-2 mb-0" id="fileName"></h6>
+        <p class="text-muted small mb-0" id="fileSize"></p>
+    </div>
+    <input type="file" name="file" id="fileInput" class="d-none" accept=".csv,.txt,.xlsx,.xls" required>
+</div>
+```
+
+### Template: Toggle / Switch Field
+
+```html
+<div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(ACCENT_RGB,.05);">
+    <div class="form-check form-switch mb-0">
+        <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo"
+               {{ old('activo', true) ? 'checked' : '' }} role="switch"
+               style="width:3em;height:1.5em;">
+        <label class="form-check-label fw-semibold ms-2" for="chk-activo">Elemento Activo</label>
+    </div>
+    <small class="text-muted">Si está inactivo no aparecerá en las listas.</small>
+</div>
 ```
 
 ---
@@ -348,6 +515,19 @@ Cada módulo define su **acento** en el wrapper principal `.ui-page`:
 6. Paginación después de la card
 7. Empty state con `ui-empty-state`
 
+**DataTables con UI Premium:**
+- El contenedor wrapper de DataTables debe ir dentro de `.ui-card .card-body.p-0`
+- Usar `<table class="table productos-table nowrap">` con CSS personalizado:
+  - `--bs-table-bg: transparent; --bs-table-hover-bg: rgba(ACCENT_RGB,.04);`
+  - `thead th`: `font-size:.7rem; text-transform:uppercase; letter-spacing:.5px;`
+  - `tbody td`: `font-size:.9rem; border-bottom: 1px solid var(--dt-gray-100);`
+- Input de búsqueda: `border-radius:2rem; padding-left:2.2rem;` con icono search SVG inline
+- Paginación: botones con `.paginate_button` (border redondeado, gradient purple en active)
+- Responsive: usar `responsive: { details: { type: 'column', target: 'tr' } }` en config DataTables
+- DOM personalizado: `dom: '<"row px-3 pt-2"<"col-sm-6"l><"col-sm-6"f>>' + '<"row"<"col-12"tr>>' + '<"row px-3 pb-2"<"col-sm-5"i><"col-sm-7"p>>'`
+- Imagen en celda: usar `<img class="producto-img me-3 shadow-sm">` con `border-radius:50%; width:48px; height:48px; object-fit:cover;`
+- **Dark mode en DataTables**: Agregar estilos `body.dark-mode` para `.productos-table`, `.paginate_button`, `.dataTables_filter input`, etc. (ver productos como referencia)
+
 ### 2. `create.blade.php` / `edit.blade.php`
 
 1. Incluir partial
@@ -357,13 +537,34 @@ Cada módulo define su **acento** en el wrapper principal `.ui-page`:
 5. Campos con `ui-label` + `ui-input`/`ui-select`/`ui-textarea`
 6. Sticky bar con Cancelar + Guardar/Actualizar
 
+**Para edit, agregar banner informativo** (Template: Info/Banner Alert):
+- Mostrar qué elemento se está editando con su nombre.
+
+**Formularios extensos**: dividir en secciones con `border-bottom` + colored title:
+- Template: Form Section Header
+- Usar colores distintos por sección (indigo → info, verde → precios, cyan → imagen)
+
 ### 3. `show.blade.php`
 
 1. Incluir partial
 2. Wrapper `ui-page`
 3. Header con nombre del elemento + Editar + Volver
-4. Layout 2 columnas con `ui-stat` cards + `ui-card` con `ui-detail-row`
-5. User card con `ui-user-avatar`
+4. Layout 2 columnas:
+   - Columna izquierda (col-lg-4): Imagen del elemento + nombre + código + badge estado + stock
+   - Columna derecha (col-lg-8): `ui-card` con `ui-card-title` "Información General" + datos en grid con Template: Show Detail Card
+5. Debajo: fila de stat cards (compras, ventas, etc.) con `ui-user-avatar` y contadores
+6. User card con `ui-user-avatar`
+
+### 4. `import.blade.php` (cuando aplique)
+
+1. Incluir partial
+2. Wrapper `ui-page`
+3. Header con icono `bi-upload`, título "Importar [Elementos]"
+4. **Step 1 — Upload**: Template Drop Zone dentro de `ui-card` + botón "Vista Previa"
+5. Card de consejos con `ui-card` y lista de tips
+6. Card de formato de ejemplo con `bg-dark rounded-3` y `<pre>` con datos de muestra
+7. **Step 2 — Mapping** (condicional): Tabla de mapeo con `ui-select` por fila, columnas "Campo del Producto" / "Columna del Archivo" / "Obligatorio"
+8. Footer con botones "Subir otro archivo" + "Importar [Elementos]"
 
 ---
 
@@ -417,9 +618,16 @@ UI.toast.info('mensaje')
 - [ ] Botones usan `.ui-btn-*`
 - [ ] Acciones usan `.ui-action-*`
 - [ ] Formularios: `.ui-label`, `.ui-input`, `.ui-select`, `.ui-textarea`
-- [ ] Sticky bar con `.ui-sticky-bar` + `.ui-sticky-bar-inner`
-- [ ] Tablas usan `.ui-table`
+- [ ] Form sections con `border-bottom` + colored title
+- [ ] Sticky bar con `.ui-sticky-bar` + `.ui-sticky-bar-inner` (con info context a la izquierda)
+- [ ] Tablas usan `.ui-table` o DataTables con estilos premium
 - [ ] Badges usan `.ui-badge-*`
+- [ ] Input groups con addon o botón de acción
 - [ ] `UI.confirm.delete()` reemplaza `confirm()` nativo
-- [ ] Dark mode funciona sin overrides
+- [ ] Error/validation alerts con `border-left:4px solid`
+- [ ] Edit view con banner informativo (Template: Info/Banner)
+- [ ] Show view con detail cards de fondo tenue (Template: Show Detail Card)
+- [ ] Show view con layout 2 columnas (imagen izq + datos der + stat cards)
+- [ ] Dark mode en DataTables cubierto (si se usa DataTables)
 - [ ] `--delay` reemplaza `animation-delay:`
+- [ ] Import view con Drop Zone + Step mapping (cuando aplique)
