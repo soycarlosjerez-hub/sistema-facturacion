@@ -120,12 +120,14 @@ class Producto extends Model
             return $this->attributes['venta_detalles_count'] == 0
                 && $this->attributes['detalles_compras_count'] == 0
                 && $this->attributes['movimientos_almacen_count'] == 0
-                && $this->attributes['ingredientes_count'] == 0;
+                && $this->attributes['ingredientes_count'] == 0
+                && $this->attributes['instalacion_productos_count'] == 0;
         }
         return $this->ventaDetalles()->doesntExist()
             && $this->detallesCompras()->doesntExist()
             && $this->movimientosAlmacen()->doesntExist()
-            && $this->ingredientes()->doesntExist();
+            && $this->ingredientes()->doesntExist()
+            && $this->instalaciones()->doesntExist();
     }
 
     public function getTieneImagenAttribute(): bool
@@ -157,10 +159,10 @@ class Producto extends Model
             ->withPivot('cantidad');
     }
 
-    public function instalacionProductos()
+    public function instalaciones(): BelongsToMany
     {
-        return $this->belongsToMany(\App\Models\Instalacion::class, 'instalacion_productos')
-                    ->withPivot('cantidad', 'precio_unitario')
-                    ->withTimestamps();
+        return $this->belongsToMany(Instalacion::class, 'instalacion_productos')
+            ->withPivot('cantidad', 'precio_unitario')
+            ->withTimestamps();
     }
-}}
+}
