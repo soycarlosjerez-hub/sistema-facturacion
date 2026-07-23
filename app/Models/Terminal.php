@@ -10,6 +10,8 @@ class Terminal extends Model
 {
     use Auditable, TenantScope;
 
+    protected $table = 'terminales';
+
     protected $fillable = [
         'tenant_id', 'nombre', 'codigo',
         'ubicacion', 'caja_id', 'activo',

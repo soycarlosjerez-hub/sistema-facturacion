@@ -13,6 +13,8 @@ class Instalacion extends Model
 {
     use HasFactory, Auditable, TenantScope;
 
+    protected $table = 'instalaciones';
+
     protected $fillable = [
         'numero',
         'business_instance_id',
