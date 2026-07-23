@@ -141,10 +141,10 @@
     </div>
 </div>
 
-<div class="premium-sticky-bar">
+<div class="ui-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
         <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Creando nueva instancia</span>
-        <button type="submit" form="instanceForm" class="btn btn-save rounded-pill px-5 fw-bold shadow-sm">
+        <button type="submit" form="instanceForm" class="ui-btn ui-btn-solid rounded-pill px-5 fw-bold shadow-sm" style="background:#8b5cf6;border-color:#8b5cf6;color:#fff;">
             <i class="bi bi-save me-2"></i>Crear Instancia
         </button>
     </div>

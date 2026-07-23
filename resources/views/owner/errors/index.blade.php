@@ -23,19 +23,19 @@
 @endpush
 
 @section('content')
-<div class="premium-page">
+<div class="ui-page" style="--accent:#ef4444;--accent-rgb:239,68,68;--accent-hover:#dc2626">
 <div class="container-fluid px-4 py-3">
 
-    <div class="premium-header" style="margin-bottom: 2rem;">
+    <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-x-circle"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0">Todos los Errores</h2>
-                    <p class="text-white text-opacity-75 mb-0">Todas las instancias &middot; Visi&oacute;n global</p>
+                    <h4 class="fw-bold mb-1">Todos los Errores</h4>
+                    <small class="opacity-75"><i class="bi bi-globe me-1"></i>Todas las instancias &middot; Visi&oacute;n global</small>
                 </div>
             </div>
         </div>
@@ -43,7 +43,7 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat-card h-100" style="--delay:.15s">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="bg-secondary bg-opacity-10 text-secondary rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                         <i class="bi bi-list-check fs-4"></i>
@@ -56,7 +56,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat-card h-100" style="--delay:.2s">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="bg-danger bg-opacity-10 text-danger rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                         <i class="bi bi-bug-fill fs-4"></i>
@@ -69,7 +69,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat-card h-100" style="--delay:.25s">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="bg-warning bg-opacity-10 text-warning rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                         <i class="bi bi-exclamation-triangle-fill fs-4"></i>
@@ -82,7 +82,7 @@
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="premium-stat-card h-100">
+            <div class="ui-stat-card h-100" style="--delay:.3s">
                 <div class="card-body d-flex align-items-center gap-3">
                     <div class="bg-dark bg-opacity-10 text-dark rounded-3 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
                         <i class="bi bi-x-octagon-fill fs-4"></i>
@@ -96,8 +96,8 @@
         </div>
     </div>
 
-    <div class="premium-card mb-4">
-        <div class="card-accent red"></div>
+    <div class="ui-card mb-4" style="--delay:.35s">
+        <div class="ui-card-accent" style="background:#ef4444"></div>
         <div class="card-body p-3">
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-md-2">
@@ -146,7 +146,7 @@
                 </div>
                 <div class="col-md-1">
                     <label class="form-label fw-bold small text-muted">&nbsp;</label>
-                    <button type="submit" class="btn btn-danger btn-sm rounded-pill w-100 fw-bold">
+                    <button type="submit" class="ui-btn ui-btn-danger btn-sm rounded-pill w-100">
                         <i class="bi bi-search"></i>
                     </button>
                 </div>
@@ -154,9 +154,9 @@
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent red"></div>
-        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+    <div class="ui-card" style="--delay:.4s">
+        <div class="ui-card-accent" style="background:#ef4444"></div>
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0"><i class="bi bi-bug text-danger me-2"></i>Registro de Errores</h5>
             <small class="text-muted">{{ $errorLogs->total() }} resultado(s)</small>
         </div>

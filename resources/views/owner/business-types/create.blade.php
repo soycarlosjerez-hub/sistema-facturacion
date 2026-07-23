@@ -117,15 +117,15 @@
 </div>
 </div>
 
-<div class="premium-sticky-bar">
+<div class="ui-sticky-bar">
     <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
             <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>
             <span class="fw-semibold d-none d-sm-inline">Creando Tipo de Negocio</span>
         </div>
         <div>
-            <a href="{{ route('owner.business-types.index') }}" class="btn-cancel me-2">Cancelar</a>
-            <button type="submit" form="instanceForm" class="btn-save">
+            <a href="{{ route('owner.business-types.index') }}" class="ui-btn ui-btn-ghost btn-sm rounded-pill me-2">Cancelar</a>
+            <button type="submit" form="instanceForm" class="ui-btn ui-btn-solid btn-sm rounded-pill" style="background:#8b5cf6;border-color:#8b5cf6;color:#fff;">
                 <i class="bi bi-check-lg me-2"></i>Guardar
             </button>
         </div>
