@@ -42,6 +42,34 @@ class ClienteService
 
     public function delete(Cliente $cliente): void
     {
+        $blockingRecords = [];
+
+        $checks = [
+            ['table' => 'Conduces', 'relation' => 'conduces'],
+            ['table' => 'Órdenes de Reparación', 'relation' => 'ordenesReparacion'],
+            ['table' => 'Servicios Domótica', 'relation' => 'serviciosDomotica'],
+            ['table' => 'Vehículos', 'relation' => 'vehiculos'],
+            ['table' => 'Citas Lavadero', 'relation' => 'lavaderoCitas'],
+            ['table' => 'Lavaderos', 'relation' => 'lavaderos'],
+            ['table' => 'Alquileres', 'relation' => 'alquileres'],
+            ['table' => 'Citas Tatuaje', 'relation' => 'tattooAppointments'],
+        ];
+
+        foreach ($checks as $check) {
+            $relation = $check['relation'];
+            if (method_exists($cliente, $relation)) {
+                $count = $cliente->{$relation}()->count();
+                if ($count > 0) {
+                    $blockingRecords[] = "{$check['table']} ({$count})";
+                }
+            }
+        }
+
+        if (!empty($blockingRecords)) {
+            $lista = implode(', ', $blockingRecords);
+            throw new \RuntimeException("No se puede eliminar el cliente. Tiene registros asociados a: {$lista}");
+        }
+
         $cliente->delete();
     }
 

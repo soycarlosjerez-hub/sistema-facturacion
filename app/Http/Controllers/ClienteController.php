@@ -16,7 +16,8 @@ class ClienteController extends Controller
     public function index(Request $request)
     {
         $clientes = $this->clienteService->list($request->all());
-        return view('clientes.index', compact('clientes'));
+        $deletableIds = Cliente::deletable()->pluck('id')->toArray();
+        return view('clientes.index', compact('clientes', 'deletableIds'));
     }
 
     public function create()
@@ -157,8 +158,12 @@ class ClienteController extends Controller
 
     public function destroy(Cliente $cliente)
     {
-        $this->clienteService->delete($cliente);
-        return redirect()->route('clientes.index')->with('success', 'Cliente eliminado');
+        try {
+            $this->clienteService->delete($cliente);
+            return redirect()->route('clientes.index')->with('success', 'Cliente eliminado');
+        } catch (\RuntimeException $e) {
+            return redirect()->route('clientes.index')->with('error', $e->getMessage());
+        }
     }
 
     public function resumenCreditos(Request $request)

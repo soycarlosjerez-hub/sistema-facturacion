@@ -215,6 +215,7 @@ tr:hover .avatar-circle { transform: scale(1.1); }
                                     <a href="{{ route('clientes.edit', $c) }}" class="ui-action ui-action-edit" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    @if(in_array($c->id, $deletableIds ?? []))
                                     <form action="{{ route('clientes.destroy', $c) }}" method="POST" class="d-inline">
                                         @csrf @method('DELETE')
                                         <button type="button" class="ui-action ui-action-delete" title="Eliminar"
@@ -222,6 +223,11 @@ tr:hover .avatar-circle { transform: scale(1.1); }
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    @else
+                                    <span class="ui-action ui-action-disabled" title="No se puede eliminar: tiene registros asociados">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

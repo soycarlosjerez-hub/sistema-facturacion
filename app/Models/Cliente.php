@@ -108,6 +108,81 @@ class Cliente extends Authenticatable
         return $this->hasMany(Conduce::class);
     }
 
+    public function ordenesReparacion()
+    {
+        return $this->hasMany(OrdenReparacion::class);
+    }
+
+    public function serviciosDomotica()
+    {
+        return $this->hasMany(ServicioDomotica::class);
+    }
+
+    public function vehiculos()
+    {
+        return $this->hasMany(Vehiculo::class);
+    }
+
+    public function lavaderoCitas()
+    {
+        return $this->hasMany(LavaderoCita::class);
+    }
+
+    public function lavaderos()
+    {
+        return $this->hasMany(Lavadero::class);
+    }
+
+    public function alquileres()
+    {
+        return $this->hasMany(Alquiler::class);
+    }
+
+    public function tattooAppointments()
+    {
+        return $this->hasMany(TattooAppointment::class);
+    }
+
+    public function reservaciones()
+    {
+        return $this->hasMany(Reservacion::class);
+    }
+
+    public function devoluciones()
+    {
+        return $this->hasMany(Devolucion::class);
+    }
+
+    public function ordenes()
+    {
+        return $this->hasMany(Orden::class);
+    }
+
+    public function contratosMantenimiento()
+    {
+        return $this->hasMany(ContratoMantenimiento::class);
+    }
+
+    public function instalaciones()
+    {
+        return $this->hasMany(Instalacion::class);
+    }
+
+    public function mantenimientos()
+    {
+        return $this->hasMany(Mantenimiento::class);
+    }
+
+    public function ticketsGarantia()
+    {
+        return $this->hasMany(TicketGarantia::class);
+    }
+
+    public function ordenesEmergencia()
+    {
+        return $this->hasMany(OrdenEmergencia::class);
+    }
+
     // Helper to get or create the generic consumer client
     public static function consumidorFinal(): self
     {
@@ -311,5 +386,29 @@ class Cliente extends Authenticatable
     public function scopeDelSegmento($query, string $segmento)
     {
         return $query->where('segmento', $segmento);
+    }
+
+    public function scopeDeletable($query)
+    {
+        return $query->whereDoesntHave('conduces')
+            ->whereDoesntHave('ordenesReparacion')
+            ->whereDoesntHave('serviciosDomotica')
+            ->whereDoesntHave('vehiculos')
+            ->whereDoesntHave('lavaderoCitas')
+            ->whereDoesntHave('lavaderos')
+            ->whereDoesntHave('alquileres')
+            ->whereDoesntHave('tattooAppointments');
+    }
+
+    public function canBeDeleted(): bool
+    {
+        return !($this->conduces()->exists()
+            || $this->ordenesReparacion()->exists()
+            || $this->serviciosDomotica()->exists()
+            || $this->vehiculos()->exists()
+            || $this->lavaderoCitas()->exists()
+            || $this->lavaderos()->exists()
+            || $this->alquileres()->exists()
+            || $this->tattooAppointments()->exists());
     }
 }
