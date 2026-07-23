@@ -8,6 +8,7 @@
         'restaurante' => 'bi-cup-straw', 'reportes' => 'bi-graph-up',
         'sistema' => 'bi-gear', 'configuracion' => 'bi-sliders',
         'alquileres' => 'bi-building', 'tattoo' => 'bi-brush',
+        'climatizacion' => 'bi-wind', 'tecnologia' => 'bi-phone',
     ];
     $categoriaColores = [
         'core' => '#3b82f6', 'operaciones' => '#22c55e', 'clientes' => '#ec4899',
@@ -15,6 +16,7 @@
         'restaurante' => '#f97316', 'reportes' => '#a855f7',
         'sistema' => '#64748b', 'configuracion' => '#6366f1',
         'alquileres' => '#8b5cf6', 'tattoo' => '#f43f5e',
+        'climatizacion' => '#0ea5e9', 'tecnologia' => '#ef4444',
     ];
     $selectedMods = old('modulos', []);
 @endphp

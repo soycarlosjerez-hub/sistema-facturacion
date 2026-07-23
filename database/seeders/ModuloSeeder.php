@@ -173,6 +173,20 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'climatizacion.ordenes-emergencia.index', 'sidebar_is_route' => 'climatizacion.ordenes-emergencia.*', 'sidebar_exact_route' => 'climatizacion.ordenes-emergencia.index', 'sidebar_permission' => 'ordenes-emergencia.view'],
             ['key' => 'climatizacion-garantias', 'label' => 'Garantías', 'icon' => 'bi-ticket-perforated', 'categoria' => 'climatizacion', 'orden' => 96,
              'sidebar_route' => 'climatizacion.tickets-garantia.index', 'sidebar_is_route' => 'climatizacion.tickets-garantia.*', 'sidebar_exact_route' => 'climatizacion.tickets-garantia.index', 'sidebar_permission' => 'garantias.view'],
+
+            // Tecnología / Celulares
+            ['key' => 'tecnologia', 'label' => 'Dashboard Tecnología', 'icon' => 'bi-phone', 'categoria' => 'tecnologia', 'orden' => 100,
+             'sidebar_route' => 'tecnologia.dashboard', 'sidebar_is_route' => 'tecnologia.dashboard', 'sidebar_exact_route' => 'tecnologia.dashboard', 'sidebar_permission' => 'tecnologia.view'],
+            ['key' => 'equipos', 'label' => 'Equipos (IMEI)', 'icon' => 'bi-phone', 'categoria' => 'tecnologia', 'orden' => 101,
+             'sidebar_route' => 'equipos.index', 'sidebar_is_route' => 'equipos.*', 'sidebar_exact_route' => 'equipos.index', 'sidebar_permission' => 'equipos.view'],
+            ['key' => 'tecnicas', 'label' => 'Órdenes Técnicas', 'icon' => 'bi-tools', 'categoria' => 'tecnologia', 'orden' => 102,
+             'sidebar_route' => 'tecnicas.index', 'sidebar_is_route' => 'tecnicas.*', 'sidebar_exact_route' => 'tecnicas.index', 'sidebar_permission' => 'tecnicas.view'],
+            ['key' => 'tecnicos', 'label' => 'Técnicos', 'icon' => 'bi-person-gear', 'categoria' => 'tecnologia', 'orden' => 103,
+             'sidebar_route' => 'tecnicos.index', 'sidebar_is_route' => 'tecnicos.*', 'sidebar_exact_route' => 'tecnicos.index', 'sidebar_permission' => 'tecnicos.view'],
+            ['key' => 'domotica', 'label' => 'Domótica', 'icon' => 'bi-houses', 'categoria' => 'tecnologia', 'orden' => 104,
+             'sidebar_route' => 'domotica.index', 'sidebar_is_route' => 'domotica.*', 'sidebar_exact_route' => 'domotica.index', 'sidebar_permission' => 'domotica.view'],
+            ['key' => 'garantias', 'label' => 'Garantías', 'icon' => 'bi-shield-check', 'categoria' => 'tecnologia', 'orden' => 105,
+             'sidebar_route' => 'garantias.index', 'sidebar_is_route' => 'garantias.*', 'sidebar_exact_route' => 'garantias.index', 'sidebar_permission' => 'garantias.view'],
         ];
 
         foreach ($modulos as $modulo) {

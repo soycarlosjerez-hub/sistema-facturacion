@@ -172,6 +172,28 @@ class BusinessTypeSeeder extends Seeder
                     'auditoria', 'backups', 'plantilla-gastos',
                 ],
             ],
+            [
+                'slug' => 'tecnologia',
+                'nombre' => 'Tienda de Celulares / Reparaciones',
+                'descripcion' => 'Venta de celulares, accesorios y servicios técnicos de reparación',
+                'color' => 'danger',
+                'icon' => 'bi-phone',
+                'activo' => true,
+                'orden' => 9,
+                'modulos' => [
+                    'dashboard', 'inventario', 'compras', 'proveedores',
+                    'clientes', 'cajas', 'gastos',
+                    'equipos', 'tecnicas', 'tecnicos',
+                    'domotica', 'garantias',
+                    'sucursales', 'almacenes',
+                    'reportes-ventas', 'reportes-caja', 'reportes-stock',
+                    'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
+                    'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
+                    'configuracion-general', 'impresoras', 'payment-processors',
+                    'auditoria', 'backups', 'plantilla-gastos',
+                ],
+            ],
         ];
 
         foreach ($tipos as $tipoData) {

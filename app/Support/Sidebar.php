@@ -382,6 +382,63 @@ class Sidebar
             }
         }
 
+        // Tecnología / Celulares
+        if ($mod('tecnologia') && $can('tecnologia.view')) {
+            $items[] = ['section' => 'Tecnología'];
+            $items[] = [
+                'route' => 'tecnologia.dashboard',
+                'icon'  => 'bi-phone',
+                'label' => 'Dashboard',
+                'is_route' => 'tecnologia.dashboard',
+                'exact_route' => 'tecnologia.dashboard',
+            ];
+            if ($can('equipos.view')) {
+                $items[] = [
+                    'route' => 'equipos.index',
+                    'icon'  => 'bi-phone',
+                    'label' => 'Equipos (IMEI)',
+                    'is_route' => 'equipos.*',
+                    'exact_route' => 'equipos.index',
+                ];
+            }
+            if ($can('tecnicas.view')) {
+                $items[] = [
+                    'route' => 'tecnicas.index',
+                    'icon'  => 'bi-tools',
+                    'label' => 'Órdenes Técnicas',
+                    'is_route' => 'tecnicas.*',
+                    'exact_route' => 'tecnicas.index',
+                ];
+            }
+            if ($can('tecnicos.view')) {
+                $items[] = [
+                    'route' => 'tecnicos.index',
+                    'icon'  => 'bi-person-gear',
+                    'label' => 'Técnicos',
+                    'is_route' => 'tecnicos.*',
+                    'exact_route' => 'tecnicos.index',
+                ];
+            }
+            if ($can('domotica.view')) {
+                $items[] = [
+                    'route' => 'domotica.index',
+                    'icon'  => 'bi-houses',
+                    'label' => 'Domótica',
+                    'is_route' => 'domotica.*',
+                    'exact_route' => 'domotica.index',
+                ];
+            }
+            if ($can('garantias.view')) {
+                $items[] = [
+                    'route' => 'garantias.index',
+                    'icon'  => 'bi-shield-check',
+                    'label' => 'Garantías',
+                    'is_route' => 'garantias.*',
+                    'exact_route' => 'garantias.index',
+                ];
+            }
+        }
+
         // Alquileres
         if ($mod('alquileres') && $can('alquileres.view')) {
             $items[] = ['section' => 'Alquileres'];

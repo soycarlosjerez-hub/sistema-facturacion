@@ -633,6 +633,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             'mixto' => 'secondary',
                             'tattoo' => 'dark',
                             'climatizacion' => 'secondary',
+                            'tecnologia' => 'danger',
                         ];
                         $iconos = [
                             'restaurante' => 'cup-straw',
@@ -643,6 +644,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             'mixto' => 'grid',
                             'tattoo' => 'brush',
                             'climatizacion' => 'wind',
+                            'tecnologia' => 'phone',
                         ];
                         $color = $colores[$tipoNegocio] ?? 'secondary';
                         $icono = $iconos[$tipoNegocio] ?? 'grid';
