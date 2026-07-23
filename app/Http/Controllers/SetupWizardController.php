@@ -13,6 +13,7 @@ use App\Models\MesaCategoria;
 use App\Models\MesaUbicacion;
 use App\Models\NcfSequence;
 use App\Models\Producto;
+use Illuminate\Validation\Rule;
 use App\Models\Proveedor;
 use App\Models\Sucursal;
 use App\Models\SystemSetting;
@@ -52,7 +53,7 @@ class SetupWizardController extends Controller
     {
         $user = Auth::user();
         $step = $request->input('step');
-        $rules = $this->rulesFor($step);
+        $rules = $this->rulesFor($step, $user->business_instance_id);
 
         $data = $request->validate($rules);
         $data['tenant_id'] = $user->business_instance_id;
@@ -113,7 +114,7 @@ class SetupWizardController extends Controller
         return redirect()->route('ventas.create');
     }
 
-    protected function rulesFor(string $step): array
+    protected function rulesFor(string $step, ?int $tenantId = null): array
     {
         return match ($step) {
             'parametros' => [
@@ -124,7 +125,10 @@ class SetupWizardController extends Controller
             ],
             'sucursal' => [
                 'nombre' => 'required|string|max:255',
-                'codigo' => 'required|string|max:50',
+                'codigo' => ['required', 'string', 'max:50',
+                    Rule::unique('sucursales', 'codigo')
+                        ->where(fn($q) => $q->where('tenant_id', $tenantId)),
+                ],
             ],
             'caja' => [
                 'nombre' => 'required|string|max:255',
