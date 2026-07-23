@@ -117,11 +117,11 @@ class Producto extends Model
     public function getCanDeleteAttribute(): bool
     {
         if (isset($this->attributes['venta_detalles_count'])) {
-            return $this->attributes['venta_detalles_count'] == 0
-                && $this->attributes['detalles_compras_count'] == 0
-                && $this->attributes['movimientos_almacen_count'] == 0
-                && $this->attributes['ingredientes_count'] == 0
-                && $this->attributes['instalacion_productos_count'] == 0;
+            return ($this->attributes['venta_detalles_count'] ?? 0) == 0
+                && ($this->attributes['detalles_compras_count'] ?? 0) == 0
+                && ($this->attributes['movimientos_almacen_count'] ?? 0) == 0
+                && ($this->attributes['ingredientes_count'] ?? 0) == 0
+                && ($this->attributes['instalacion_productos_count'] ?? 0) == 0;
         }
         return $this->ventaDetalles()->doesntExist()
             && $this->detallesCompras()->doesntExist()
