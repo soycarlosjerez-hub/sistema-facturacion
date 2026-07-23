@@ -5,7 +5,7 @@
 @include('partials.premium-ui')
 <style>
 /* ============================================================
-   SETUP WIZARD — Overrides específicos
+   SETUP WIZARD — Premium overrides
    ============================================================ */
 
 /* Page override for wizard */
@@ -17,15 +17,27 @@
 }
 
 /* ============================================================
-   STEPPER BAR
+   STEPPER BAR — Glassmorphism horizontal
    ============================================================ */
+.wizard-stepper-wrapper {
+    background: rgba(255,255,255,.5);
+    backdrop-filter: blur(12px);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255,255,255,.6);
+    padding: 1rem 1.25rem;
+}
+body.dark-mode .wizard-stepper-wrapper {
+    background: rgba(15,23,42,.5);
+    border-color: rgba(255,255,255,.06);
+}
+
 .wizard-stepper {
     display: flex;
     gap: 0;
     overflow-x: auto;
-    padding: .75rem 0;
     scrollbar-width: thin;
     scrollbar-color: rgba(139,92,246,.2) transparent;
+    padding-bottom: 2px;
 }
 .wizard-stepper::-webkit-scrollbar { height: 4px; }
 .wizard-stepper::-webkit-scrollbar-track { background: transparent; }
@@ -33,7 +45,7 @@
 
 .wizard-step {
     flex: 1;
-    min-width: 90px;
+    min-width: 85px;
     text-align: center;
     position: relative;
     padding-bottom: .5rem;
@@ -41,13 +53,13 @@
 .wizard-step:not(:last-child)::after {
     content: '';
     position: absolute;
-    top: 18px;
-    left: calc(50% + 16px);
-    width: calc(100% - 32px);
+    top: 17px;
+    left: calc(50% + 14px);
+    width: calc(100% - 28px);
     height: 2px;
     background: #e2e8f0;
     z-index: 0;
-    transition: background .4s ease;
+    transition: background .5s ease;
 }
 body.dark-mode .wizard-step:not(:last-child)::after {
     background: #334155;
@@ -68,35 +80,36 @@ body.dark-mode .wizard-step.current:not(:last-child)::after {
 }
 
 .wizard-circle {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 6px;
-    font-size: .75rem;
+    margin: 0 auto 5px;
+    font-size: .72rem;
     font-weight: 700;
     position: relative;
     z-index: 1;
-    transition: all .35s cubic-bezier(.4,0,.2,1);
+    transition: all .4s cubic-bezier(.4,0,.2,1);
 }
 
 .wizard-step.completed .wizard-circle {
-    background: #22c55e;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
     color: #fff;
     border: 3px solid #dcfce7;
-    box-shadow: 0 2px 8px rgba(34,197,94,.25);
+    box-shadow: 0 3px 10px rgba(34,197,94,.3);
 }
 body.dark-mode .wizard-step.completed .wizard-circle {
-    border-color: rgba(34,197,94,.3);
+    border-color: rgba(34,197,94,.35);
+    box-shadow: 0 3px 10px rgba(34,197,94,.2);
 }
 
 .wizard-step.current .wizard-circle {
-    background: var(--accent, #8b5cf6);
+    background: linear-gradient(135deg, var(--accent, #8b5cf6), var(--accent-hover, #7c3aed));
     color: #fff;
     border: 3px solid rgba(139,92,246,.2);
-    box-shadow: 0 0 0 4px rgba(139,92,246,.15);
+    box-shadow: 0 0 0 5px rgba(139,92,246,.12);
     animation: wizardPulse 2s infinite;
 }
 
@@ -112,14 +125,15 @@ body.dark-mode .wizard-step.pending .wizard-circle {
 }
 
 .wizard-label {
-    font-size: .65rem;
+    font-size: .62rem;
     display: block;
-    color: #64748b;
+    color: #94a3b8;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: 500;
     margin-top: 2px;
+    transition: color .3s ease;
 }
 .wizard-step.current .wizard-label {
     color: var(--accent, #8b5cf6);
@@ -131,42 +145,61 @@ body.dark-mode .wizard-step.pending .wizard-circle {
 }
 
 @keyframes wizardPulse {
-    0% { box-shadow: 0 0 0 0 rgba(139,92,246,.35); }
+    0% { box-shadow: 0 0 0 0 rgba(139,92,246,.3); }
     70% { box-shadow: 0 0 0 8px rgba(139,92,246,0); }
     100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); }
 }
 
 /* ============================================================
-   FINAL CHECKLIST
+   SUCCESS SCREEN — Confetti-like decoration
    ============================================================ */
+.success-icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(34,197,94,.1), rgba(34,197,94,.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    animation: successPop .6s cubic-bezier(.4,0,.2,1);
+}
+.success-icon-container i {
+    font-size: 2.5rem;
+    color: #22c55e;
+}
+@keyframes successPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Checklist items */
 .wizard-checklist .check-item {
     display: flex;
     align-items: center;
     gap: .75rem;
-    padding: .7rem 1rem;
+    padding: .65rem 1rem;
     border-radius: var(--radius);
-    margin-bottom: .4rem;
-    background: #f8fafc;
-    transition: all .2s ease;
+    margin-bottom: .35rem;
+    background: rgba(248,250,252,.6);
+    transition: all .25s ease;
+    border: 1px solid transparent;
 }
 .wizard-checklist .check-item:hover {
-    background: #f1f5f9;
+    background: rgba(241,245,249,.8);
     transform: translateX(4px);
+    border-color: rgba(34,197,94,.15);
 }
 body.dark-mode .wizard-checklist .check-item {
-    background: #1e293b;
+    background: rgba(30,41,59,.5);
 }
 body.dark-mode .wizard-checklist .check-item:hover {
-    background: #334155;
-}
-.wizard-checklist .check-item.done {
-    background: #f0fdf4;
-}
-body.dark-mode .wizard-checklist .check-item.done {
-    background: rgba(34,197,94,.08);
+    background: rgba(51,65,85,.5);
+    border-color: rgba(34,197,94,.2);
 }
 .wizard-checklist .check-item i {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     flex-shrink: 0;
 }
 
@@ -176,12 +209,13 @@ body.dark-mode .wizard-checklist .check-item.done {
 .wizard-alert {
     border-radius: var(--radius-lg);
     border: none;
-    padding: 1rem 1.25rem;
+    padding: .85rem 1.25rem;
     display: flex;
     align-items: center;
     gap: .75rem;
     font-weight: 500;
     animation: uiSlideUp .3s ease;
+    backdrop-filter: blur(12px);
 }
 .wizard-alert i {
     font-size: 1.2rem;
@@ -212,9 +246,6 @@ body.dark-mode .wizard-alert-danger {
 .wizard-form {
     padding: .25rem 0;
 }
-.wizard-form .ui-card-title {
-    padding-top: 1.25rem;
-}
 .wizard-form .mt-4 {
     margin-top: 1.5rem !important;
 }
@@ -223,9 +254,10 @@ body.dark-mode .wizard-alert-danger {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 575.98px) {
-    .wizard-step { min-width: 70px; }
-    .wizard-circle { width: 30px; height: 30px; font-size: .7rem; }
+    .wizard-step { min-width: 65px; }
+    .wizard-circle { width: 28px; height: 28px; font-size: .65rem; }
     .wizard-label { font-size: .55rem; }
+    .wizard-stepper-wrapper { padding: .75rem .75rem; }
 }
 </style>
 @endpush
@@ -265,10 +297,16 @@ body.dark-mode .wizard-alert-danger {
                 <div class="ui-card" style="--delay:.1s">
                     <div class="ui-card-accent"></div>
                     <div class="ui-card-body text-center py-4">
+                        <div class="success-icon-container">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mb-1">Configuración completada</h5>
+                        <p class="text-muted mb-4">Tu sistema está preparado para comenzar a operar</p>
+
                         <div class="wizard-checklist text-start mb-4 mx-auto" style="max-width:450px;">
                             @foreach($steps as $step)
                                 @if($step['completed'])
-                                    <div class="check-item done">
+                                    <div class="check-item">
                                         <i class="bi bi-check-circle-fill text-success"></i>
                                         <span>{{ $step['label'] }}</span>
                                     </div>
@@ -322,6 +360,9 @@ body.dark-mode .wizard-alert-danger {
                 <div class="ui-card" style="--delay:.1s">
                     <div class="ui-card-accent"></div>
                     <div class="ui-card-body text-center py-4">
+                        <div class="success-icon-container" style="background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(139,92,246,.05));">
+                            <i class="bi bi-check2-all" style="color:var(--accent,#8b5cf6);"></i>
+                        </div>
                         <p class="text-muted mb-4">Marca la configuración como completada y empieza a trabajar.</p>
                         <form action="{{ route('setup.complete') }}" method="POST">
                             @csrf
@@ -350,23 +391,20 @@ body.dark-mode .wizard-alert-danger {
         @endif
 
         {{-- Stepper bar --}}
-        <div class="ui-card mb-4" style="--delay:0s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-body p-3">
-                <div class="wizard-stepper">
-                    @foreach($steps as $i => $step)
-                        <div class="wizard-step {{ $step['completed'] ? 'completed' : ($current && $step['key'] === $current['key'] ? 'current' : 'pending') }}">
-                            <div class="wizard-circle">
-                                @if($step['completed'])
-                                    <i class="bi bi-check-lg"></i>
-                                @else
-                                    {{ $i + 1 }}
-                                @endif
-                            </div>
-                            <span class="wizard-label">{{ $step['label'] }}</span>
+        <div class="wizard-stepper-wrapper mb-4" style="--delay:0s">
+            <div class="wizard-stepper">
+                @foreach($steps as $i => $step)
+                    <div class="wizard-step {{ $step['completed'] ? 'completed' : ($current && $step['key'] === $current['key'] ? 'current' : 'pending') }}">
+                        <div class="wizard-circle">
+                            @if($step['completed'])
+                                <i class="bi bi-check-lg"></i>
+                            @else
+                                {{ $i + 1 }}
+                            @endif
                         </div>
-                    @endforeach
-                </div>
+                        <span class="wizard-label">{{ $step['label'] }}</span>
+                    </div>
+                @endforeach
             </div>
         </div>
 
