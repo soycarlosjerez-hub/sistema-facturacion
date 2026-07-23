@@ -722,19 +722,11 @@ $(function() {
             const $row = $btn.closest('tr');
             $row.css('opacity', '0.5');
 
+            const formData = new FormData();
+            formData.append('_token', csrfToken);
+
             try {
-                const res = await fetch(API_BASE + '/' + id, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                });
-                if (!res.ok) throw new Error('El servidor respondió con estado ' + res.status + '. Verifica que tengas permiso de edición.');
-                const ct = res.headers.get('content-type') || '';
-                if (!ct.includes('application/json')) throw new Error('Respuesta inesperada del servidor (no es JSON). Es posible que la sesión haya expirado.');
-                const data = await res.json();
+                const data = await fetchJSON(API_BASE + '/' + id + '/delete-ajax', formData);
                 if (data.success) {
                     table.row($row).remove().draw();
                     swalExito(data.message);
