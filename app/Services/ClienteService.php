@@ -50,8 +50,6 @@ class ClienteService
             ['table' => 'Servicios Domótica', 'relation' => 'serviciosDomotica'],
             ['table' => 'Vehículos', 'relation' => 'vehiculos'],
             ['table' => 'Citas Lavadero', 'relation' => 'lavaderoCitas'],
-            ['table' => 'Lavaderos', 'relation' => 'lavaderos'],
-            ['table' => 'Alquileres', 'relation' => 'alquileres'],
             ['table' => 'Citas Tatuaje', 'relation' => 'tattooAppointments'],
         ];
 

@@ -128,16 +128,6 @@ class Cliente extends Authenticatable
         return $this->hasMany(LavaderoCita::class);
     }
 
-    public function lavaderos()
-    {
-        return $this->hasMany(Lavadero::class);
-    }
-
-    public function alquileres()
-    {
-        return $this->hasMany(Alquiler::class);
-    }
-
     public function tattooAppointments()
     {
         return $this->hasMany(TattooAppointment::class);
@@ -395,8 +385,6 @@ class Cliente extends Authenticatable
             ->whereDoesntHave('serviciosDomotica')
             ->whereDoesntHave('vehiculos')
             ->whereDoesntHave('lavaderoCitas')
-            ->whereDoesntHave('lavaderos')
-            ->whereDoesntHave('alquileres')
             ->whereDoesntHave('tattooAppointments');
     }
 
@@ -407,8 +395,6 @@ class Cliente extends Authenticatable
             || $this->serviciosDomotica()->exists()
             || $this->vehiculos()->exists()
             || $this->lavaderoCitas()->exists()
-            || $this->lavaderos()->exists()
-            || $this->alquileres()->exists()
             || $this->tattooAppointments()->exists());
     }
 }
