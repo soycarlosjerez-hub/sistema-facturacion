@@ -15,6 +15,8 @@ class Instalacion extends Model
 
     protected $table = 'instalaciones';
 
+    public $tenantColumn = 'business_instance_id';
+
     protected $fillable = [
         'numero',
         'business_instance_id',
