@@ -5,7 +5,7 @@
 @include('partials.premium-ui')
 <style>
 /* ============================================================
-   SETUP WIZARD — Premium overrides
+   SETUP WIZARD — Premium v2 overrides
    ============================================================ */
 
 /* Page override for wizard */
@@ -25,6 +25,7 @@
     border-radius: var(--radius-xl);
     border: 1px solid rgba(255,255,255,.6);
     padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
 }
 body.dark-mode .wizard-stepper-wrapper {
     background: rgba(15,23,42,.5);
@@ -417,18 +418,4 @@ body.dark-mode .wizard-alert-danger {
                         @include("setup._step-{$current['key']}", ['step' => $current])
                     </div>
                 </div>
-            </div>
-        </div>
-    @endif
-</div>
-@endsection
-
-@push('scripts')
-<script>
-function confirmAction({title, text, icon, color, confirmText, onSubmit}) {
-    if(confirm(title + '\n\n' + text)) {
-        onSubmit();
-    }
-}
-</script>
-@endpush
+            </div
