@@ -10,7 +10,9 @@
                         <small class="text-muted">Últimos 30 días · Total: {{ $moneda }} {{ number_format(array_sum($chartData['data'] ?? []), 0) }}</small>
                     </div>
                 </div>
-                <canvas id="ventasChart" height="100"></canvas>
+                <div style="height:220px;">
+                    <canvas id="ventasChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -22,7 +24,9 @@
             <div class="ui-card-body">
                 <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart me-2" style="color:var(--accent);"></i>Ventas por hora</h5>
                 <small class="text-muted d-block mb-3">Hoy · Pico: {{ $moneda }} {{ number_format(max($hourlyData['data']), 0) }}</small>
-                <canvas id="horasChart" height="180"></canvas>
+                <div style="height:200px;">
+                    <canvas id="horasChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -38,8 +42,8 @@
                     <h5 class="fw-bold mb-0"><i class="bi bi-pie-chart me-2" style="color:var(--accent);"></i>Métodos de pago</h5>
                     <span class="ui-badge ui-badge-info">Hoy</span>
                 </div>
-                <div class="text-center mb-3">
-                    <canvas id="paymentChart" height="160"></canvas>
+                <div class="text-center mb-3" style="height:180px;">
+                    <canvas id="paymentChart"></canvas>
                 </div>
                 <div class="row g-2">
                     @foreach($paymentMethod['labels'] as $i => $label)
