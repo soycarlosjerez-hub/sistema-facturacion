@@ -418,4 +418,8 @@ body.dark-mode .wizard-alert-danger {
                         @include("setup._step-{$current['key']}", ['step' => $current])
                     </div>
                 </div>
-            </div
+            </div>
+        </div>
+    @endif
+</div>
+@endsection
