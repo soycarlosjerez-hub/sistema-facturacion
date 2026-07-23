@@ -838,6 +838,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         function confirmAction(opts) { return UI._fire(opts); }
         function confirmDelete(url, label) { UI.confirm.delete(url, label); }
         function confirmSubmit(formSelector, opts) { UI.confirm.submit(formSelector, opts); }
+    </script>
     <script src="{{ asset('js/a11y.js') }}"></script>
     <script>
     (function() {
