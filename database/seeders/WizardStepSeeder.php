@@ -17,6 +17,14 @@ use App\Models\Lavador;
 use App\Models\Cliente;
 use App\Models\Proveedor;
 use App\Models\SystemSetting;
+use App\Models\TipoClima;
+use App\Models\Instalacion;
+use App\Models\ContratoMantenimiento;
+use App\Models\Mantenimiento;
+use App\Models\Tecnico;
+use App\Models\Equipo;
+use App\Models\OrdenReparacion;
+use App\Models\ServicioDomotica;
 use Illuminate\Database\Seeder;
 
 class WizardStepSeeder extends Seeder
@@ -24,6 +32,7 @@ class WizardStepSeeder extends Seeder
     public function run(): void
     {
         $steps = [
+            // ===== PASOS GENERALES (siempre disponibles) =====
             [
                 'key'          => 'parametros',
                 'module_key'   => 'configuracion-general',
@@ -114,6 +123,8 @@ class WizardStepSeeder extends Seeder
                 'entity_class' => NcfSequence::class,
                 'orden' => 50,
             ],
+
+            // ===== RESTAURANTE =====
             [
                 'key' => 'ubicacion-mesa',
                 'module_key' => 'restaurante',
@@ -144,6 +155,8 @@ class WizardStepSeeder extends Seeder
                 'entity_class' => Mesa::class,
                 'orden' => 80,
             ],
+
+            // ===== LAVADERO =====
             [
                 'key' => 'servicio-lavado',
                 'module_key' => 'lavadero',
@@ -163,6 +176,90 @@ class WizardStepSeeder extends Seeder
                 'skipable' => false,
                 'entity_class' => Lavador::class,
                 'orden' => 100,
+            ],
+
+            // ===== CLIMATIZACIÓN =====
+            [
+                'key' => 'tipo-equipo',
+                'module_key' => 'climatizacion-tipos-equipos',
+                'label' => 'Tipo de Equipo',
+                'icon' => 'bi-cpu',
+                'required' => true,
+                'skipable' => false,
+                'entity_class' => TipoClima::class,
+                'orden' => 110,
+            ],
+            [
+                'key' => 'instalacion',
+                'module_key' => 'climatizacion-instalaciones',
+                'label' => 'Instalación',
+                'icon' => 'bi-tools',
+                'required' => true,
+                'skipable' => false,
+                'entity_class' => Instalacion::class,
+                'orden' => 120,
+            ],
+            [
+                'key' => 'contrato',
+                'module_key' => 'climatizacion-contratos',
+                'label' => 'Contrato de Mantenimiento',
+                'icon' => 'bi-file-earmark-text',
+                'required' => false,
+                'skipable' => false,
+                'entity_class' => ContratoMantenimiento::class,
+                'orden' => 130,
+            ],
+            [
+                'key' => 'mantenimiento',
+                'module_key' => 'climatizacion-mantenimientos',
+                'label' => 'Mantenimiento',
+                'icon' => 'bi-wrench-adjustable',
+                'required' => false,
+                'skipable' => false,
+                'entity_class' => Mantenimiento::class,
+                'orden' => 140,
+            ],
+
+            // ===== TECNOLOGÍA / CELULARES =====
+            [
+                'key' => 'tecnico',
+                'module_key' => 'tecnicos',
+                'label' => 'Técnico',
+                'icon' => 'bi-person-gear',
+                'required' => true,
+                'skipable' => false,
+                'entity_class' => Tecnico::class,
+                'orden' => 150,
+            ],
+            [
+                'key' => 'equipo',
+                'module_key' => 'equipos',
+                'label' => 'Equipo (IMEI)',
+                'icon' => 'bi-phone',
+                'required' => true,
+                'skipable' => false,
+                'entity_class' => Equipo::class,
+                'orden' => 160,
+            ],
+            [
+                'key' => 'orden-tecnica',
+                'module_key' => 'tecnicas',
+                'label' => 'Orden Técnica',
+                'icon' => 'bi-tools',
+                'required' => false,
+                'skipable' => false,
+                'entity_class' => OrdenReparacion::class,
+                'orden' => 170,
+            ],
+            [
+                'key' => 'servicio-domotica',
+                'module_key' => 'domotica',
+                'label' => 'Servicio Domótico',
+                'icon' => 'bi-houses',
+                'required' => false,
+                'skipable' => false,
+                'entity_class' => ServicioDomotica::class,
+                'orden' => 180,
             ],
         ];
 

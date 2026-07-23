@@ -9,27 +9,51 @@ use Illuminate\Support\Facades\Schema;
 
 class SetupWizardService
 {
+    protected array $businessTypeModules = [
+        'general' => [
+            'ncf', 'configuracion-general', 'sucursales', 'almacenes',
+            'cajas', 'inventario', 'proveedores', 'clientes',
+        ],
+        'restaurante' => [
+            'restaurante',
+        ],
+        'lavadero' => [
+            'lavadero',
+        ],
+        'climatizacion' => [
+            'climatizacion', 'climatizacion-tipos-equipos',
+            'climatizacion-instalaciones', 'climatizacion-contratos',
+            'climatizacion-mantenimientos',
+        ],
+        'tecnologia' => [
+            'equipos', 'tecnicas', 'tecnicos', 'domotica', 'garantias',
+        ],
+    ];
+
     public function getSteps(User $user): array
     {
-        // Los módulos visibles del rol del admin determinan qué pasos del wizard se muestran.
-        // Si el admin tiene 'restaurante' → aparecen los pasos de mesas.
-        // Si no tiene 'restaurante' → no aparecen, independientemente del BusinessType.
+        $instance = $user->businessInstance;
+        $businessTypeSlug = $instance?->businessType?->slug;
+
         $roleModules = $user->instanceRole?->visibleModules->pluck('modulo_key') ?? collect();
 
-        // Si el admin no tiene rol con módulos configurados, usamos los módulos del BusinessType
-        // para no dejar el wizard vacío en instancias recién creadas.
         if ($roleModules->isEmpty()) {
             $roleModules = collect(
-                BusinessType::getModulosVisibles($user->businessInstance?->businessType?->slug)
+                BusinessType::getModulosVisibles($businessTypeSlug)
             );
         }
 
-        // Los módulos siempre requeridos, incluso si el admin no los tiene asignados
         $systemMods = collect(['ncf', 'configuracion-general']);
 
-        $steps = WizardStep::where(function ($q) use ($roleModules, $systemMods) {
+        $allowedModuleKeys = $this->getAllowedModuleKeys($businessTypeSlug);
+
+        $steps = WizardStep::where(function ($q) use ($roleModules, $systemMods, $allowedModuleKeys) {
                 $q->whereIn('module_key', $roleModules)
                   ->orWhereIn('module_key', $systemMods);
+            })
+            ->whereIn('module_key', $allowedModuleKeys)
+            ->orWhere(function ($q) use ($systemMods) {
+                $q->whereIn('module_key', $systemMods);
             })
             ->orderBy('orden')
             ->get()
@@ -48,6 +72,30 @@ class SetupWizardService
         return $steps;
     }
 
+    protected function getAllowedModuleKeys(?string $businessTypeSlug): array
+    {
+        if (!$businessTypeSlug) {
+            return $this->businessTypeModules['general'];
+        }
+
+        $keys = $this->businessTypeModules['general'];
+
+        foreach ($this->businessTypeModules as $type => $mods) {
+            if ($type !== 'general' && strpos($businessTypeSlug, $type) !== false) {
+                $keys = array_merge($keys, $mods);
+            }
+        }
+
+        if (in_array('restaurante', explode('-', $businessTypeSlug))) {
+            $keys = array_unique(array_merge($keys, $this->businessTypeModules['restaurante']));
+        }
+        if (in_array('lavadero', explode('-', $businessTypeSlug))) {
+            $keys = array_unique(array_merge($keys, $this->businessTypeModules['lavadero']));
+        }
+
+        return array_unique($keys);
+    }
+
     public function isStepCompleted(WizardStep $step, ?User $user = null): bool
     {
         if (!$step->entity_class || !class_exists($step->entity_class)) {
@@ -56,7 +104,6 @@ class SetupWizardService
 
         $query = $step->entity_class::query();
 
-        // Filtrar por tenant del usuario actual para evitar falsos positivos
         $tenantId = $user?->business_instance_id;
         if ($tenantId) {
             $table = (new $step->entity_class)->getTable();

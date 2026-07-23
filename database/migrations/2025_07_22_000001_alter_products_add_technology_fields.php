@@ -13,18 +13,17 @@ return new class extends Migration
     {
         Schema::table('productos', function (Blueprint $table) {
             $table->enum('especializacion', ['celular', 'accesorio', 'domotica', 'servicio', 'pieza'])
-                ->default('accesorio')
-                ->after('categoria_id');
+                ->default('accesorio');
 
-            $table->boolean('vendible_imei')->default(false)->after('especializacion');
-            $table->boolean('requiere_imei')->default(false)->after('vendible_imei');
-            $table->string('marca', 100)->nullable()->after('requiere_imei');
-            $table->string('modelo', 200)->nullable()->after('marca');
-            $table->string('almacenamiento_gb', 20)->nullable()->after('modelo');
-            $table->string('color', 50)->nullable()->after('almacenamiento_gb');
-            $table->decimal('precio_servicio', 10, 2)->default(0)->after('color');
-            $table->unsignedInteger('duracion_servicio_horas')->default(0)->after('precio_servicio');
-            $table->unsignedInteger('garantia_dias')->default(30)->after('duracion_servicio_horas');
+            $table->boolean('vendible_imei')->default(false);
+            $table->boolean('requiere_imei')->default(false);
+            $table->string('marca', 100)->nullable();
+            $table->string('modelo', 200)->nullable();
+            $table->string('almacenamiento_gb', 20)->nullable();
+            $table->string('color', 50)->nullable();
+            $table->decimal('precio_servicio', 10, 2)->default(0);
+            $table->unsignedInteger('duracion_servicio_horas')->default(0);
+            $table->unsignedInteger('garantia_dias')->default(30);
         });
     }
 

@@ -16,6 +16,14 @@ use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\Sucursal;
 use App\Models\SystemSetting;
+use App\Models\TipoClima;
+use App\Models\Instalacion;
+use App\Models\ContratoMantenimiento;
+use App\Models\Mantenimiento;
+use App\Models\Tecnico;
+use App\Models\Equipo;
+use App\Models\OrdenReparacion;
+use App\Models\ServicioDomotica;
 use App\Services\CajaService;
 use App\Services\SetupWizardService;
 use Illuminate\Http\RedirectResponse;
@@ -176,6 +184,62 @@ class SetupWizardController extends Controller
                 'nombre' => 'required|string|max:255',
                 'telefono' => 'nullable|string|max:50',
             ],
+            'tipo-equipo' => [
+                'nombre' => 'required|string|max:255',
+                'categoria' => 'nullable|string|max:50',
+            ],
+            'instalacion' => [
+                'cliente_id' => 'required|exists:clientes,id',
+                'direccion_instalacion' => 'nullable|string|max:500',
+                'tipo_inmueble' => 'nullable|string|max:50',
+            ],
+            'contrato' => [
+                'cliente_id' => 'nullable|exists:clientes,id',
+                'tipo_periodicidad' => 'nullable|string|in:mensual,trimestral,semestral,aunal',
+                'vigencia_desde' => 'nullable|date',
+                'vigencia_hasta' => 'nullable|date|gte:vigencia_desde',
+                'valor_mensual' => 'nullable|numeric|min:0',
+            ],
+            'mantenimiento' => [
+                'cliente_id' => 'nullable|exists:clientes,id',
+                'tipo' => 'nullable|string|in:preventivo,correctivo',
+                'descripcion_falla' => 'nullable|string|max:1000',
+                'programada_para' => 'nullable|date',
+            ],
+            'tecnico' => [
+                'nombre' => 'required|string|max:255',
+                'cedula' => 'nullable|string|max:20',
+                'telefono' => 'nullable|string|max:50',
+                'email' => 'nullable|email|max:255',
+                'especialidad' => 'nullable|string|max:50',
+                'tarifa_hora' => 'nullable|numeric|min:0',
+            ],
+            'equipo' => [
+                'marca' => 'required|string|max:100',
+                'modelo' => 'required|string|max:100',
+                'serial_imei' => 'required|string|max:50',
+                'serial_esn' => 'nullable|string|max:50',
+                'almacenamiento_gb' => 'nullable|integer|min:0',
+                'color' => 'nullable|string|max:50',
+                'estado' => 'nullable|string|max:50',
+                'precio_compra' => 'nullable|numeric|min:0',
+                'precio_venta' => 'nullable|numeric|min:0',
+            ],
+            'orden-tecnica' => [
+                'cliente_id' => 'nullable|exists:clientes,id',
+                'equipo_id' => 'nullable|exists:equipos,id',
+                'tecnico_id' => 'nullable|exists:tecnicos,id',
+                'tipo_servicio' => 'nullable|string|max:50',
+                'problema_reportado' => 'nullable|string|max:2000',
+            ],
+            'servicio-domotica' => [
+                'cliente_id' => 'nullable|exists:clientes,id',
+                'tipo_servicio' => 'nullable|string|max:50',
+                'titulo' => 'nullable|string|max:255',
+                'descripcion' => 'nullable|string|max:2000',
+                'presupuesto' => 'nullable|numeric|min:0',
+                'fecha_programada' => 'nullable|date',
+            ],
             default => ['_error' => 'required'],
         };
     }
@@ -279,6 +343,78 @@ class SetupWizardController extends Controller
             'lavador' => Lavador::create([
                 'nombre' => $data['nombre'],
                 'telefono' => $data['telefono'] ?? '',
+                'tenant_id' => $tenantId,
+            ]),
+            'tipo-equipo' => TipoClima::create([
+                'nombre' => $data['nombre'],
+                'categoria' => $data['categoria'] ?? null,
+                'activo' => true,
+                'orden' => TipoClima::count() + 1,
+                'tenant_id' => $tenantId,
+            ]),
+            'instalacion' => Instalacion::create([
+                'cliente_id' => $data['cliente_id'],
+                'direccion_instalacion' => $data['direccion_instalacion'] ?? null,
+                'tipo_inmueble' => $data['tipo_inmueble'] ?? null,
+                'estado' => 'pendiente',
+                'tenant_id' => $tenantId,
+            ]),
+            'contrato' => ContratoMantenimiento::create([
+                'cliente_id' => $data['cliente_id'] ?? null,
+                'tipo_periodicidad' => $data['tipo_periodicidad'] ?? 'mensual',
+                'vigencia_desde' => $data['vigencia_desde'] ?? now()->toDateString(),
+                'vigencia_hasta' => $data['vigencia_hasta'] ?? now()->addYear()->toDateString(),
+                'valor_mensual' => $data['valor_mensual'] ?? 0,
+                'estado' => 'activo',
+                'tenant_id' => $tenantId,
+            ]),
+            'mantenimiento' => Mantenimiento::create([
+                'cliente_id' => $data['cliente_id'] ?? null,
+                'tipo' => $data['tipo'] ?? 'preventivo',
+                'descripcion_falla' => $data['descripcion_falla'] ?? null,
+                'programada_para' => $data['programada_para'] ?? null,
+                'estado' => 'pendiente',
+                'tenant_id' => $tenantId,
+            ]),
+            'tecnico' => Tecnico::create([
+                'nombre' => $data['nombre'],
+                'cedula' => $data['cedula'] ?? null,
+                'telefono' => $data['telefono'] ?? null,
+                'email' => $data['email'] ?? null,
+                'especialidad' => $data['especialidad'] ?? null,
+                'tarifa_hora' => $data['tarifa_hora'] ?? 0,
+                'activo' => true,
+                'tenant_id' => $tenantId,
+            ]),
+            'equipo' => Equipo::create([
+                'marca' => $data['marca'],
+                'modelo' => $data['modelo'],
+                'serial_imei' => $data['serial_imei'],
+                'serial_esn' => $data['serial_esn'] ?? null,
+                'almacenamiento_gb' => $data['almacenamiento_gb'] ?? null,
+                'color' => $data['color'] ?? null,
+                'estado' => $data['estado'] ?? 'disponible',
+                'precio_compra' => $data['precio_compra'] ?? 0,
+                'precio_venta' => $data['precio_venta'] ?? 0,
+                'tenant_id' => $tenantId,
+            ]),
+            'orden-tecnica' => OrdenReparacion::create([
+                'cliente_id' => $data['cliente_id'] ?? null,
+                'equipo_id' => $data['equipo_id'] ?? null,
+                'tecnico_id' => $data['tecnico_id'] ?? null,
+                'tipo_servicio' => $data['tipo_servicio'] ?? 'hardware',
+                'problema_reportado' => $data['problema_reportado'] ?? null,
+                'estado' => 'recibido',
+                'tenant_id' => $tenantId,
+            ]),
+            'servicio-domotica' => ServicioDomotica::create([
+                'cliente_id' => $data['cliente_id'] ?? null,
+                'tipo_servicio' => $data['tipo_servicio'] ?? 'otro',
+                'titulo' => $data['titulo'] ?? null,
+                'descripcion' => $data['descripcion'] ?? null,
+                'presupuesto' => $data['presupuesto'] ?? 0,
+                'fecha_programada' => $data['fecha_programada'] ?? null,
+                'estado' => 'pendiente',
                 'tenant_id' => $tenantId,
             ]),
             default => null,

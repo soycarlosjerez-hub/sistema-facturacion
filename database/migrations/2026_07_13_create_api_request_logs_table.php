@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('business_instance_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('method', 10);
-            $table->string('uri', 750);
+            $table->string('uri', 191);
             $table->text('query_string')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->string('user_agent', 500)->nullable();
@@ -24,11 +24,12 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
 
-            $table->index(['method', 'uri']);
             $table->index('user_id');
             $table->index('business_instance_id');
             $table->index('response_status');
             $table->index('created_at');
+            $table->index('method');
+            $table->index('uri');
         });
     }
 
