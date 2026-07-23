@@ -216,10 +216,10 @@ tr:hover .avatar-circle { transform: scale(1.1); }
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     @if(in_array($c->id, $deletableIds ?? []))
-                                    <form action="{{ route('clientes.destroy', $c) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('clientes.destroy', $c) }}" method="POST" class="d-inline" id="del-form-{{ $c->id }}">
                                         @csrf @method('DELETE')
                                         <button type="button" class="ui-action ui-action-delete" title="Eliminar"
-                                                onclick="UI.confirm.delete('{{ route('clientes.destroy', $c) }}', '{{ addslashes($c->nombre) }}')">
+                                                onclick="UI.confirm.deleteWithForm('del-form-{{ $c->id }}', '{{ addslashes($c->nombre) }}')">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

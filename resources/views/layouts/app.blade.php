@@ -770,6 +770,18 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         url: url
                     });
                 },
+                deleteWithForm: function(formId, label) {
+                    var form = document.getElementById(formId);
+                    if (!form) return;
+                    UI._fire({
+                        title: '\u00bfEliminar registro?',
+                        text: label ? 'Se eliminar\u00e1: "' + label + '"' : null,
+                        icon: 'error',
+                        color: '#dc2626',
+                        confirmText: 'S\u00ED, eliminar',
+                        form: form
+                    });
+                },
                 submit: function(formSelector, opts) {
                     UI._fire(Object.assign({}, opts || {}, {
                         form: document.querySelector(formSelector)
