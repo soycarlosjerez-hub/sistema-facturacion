@@ -1001,6 +1001,110 @@ Route::middleware(['auth', 'instance.blocked'])->prefix('setup')->name('setup.')
     Route::get('/wizard/abrir-caja', [\App\Http\Controllers\SetupWizardController::class, 'abrirCaja'])->name('abrir-caja');
 });
 
+// Tecnología — Cell Phone Shop & Technical Services
+Route::middleware(['auth'])->prefix('tecnologia')->name('tecnologia.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardTecnologiaController::class, 'index'])->name('dashboard')->middleware('permission:tecnologia.view');
+    Route::get('/dashboard/kpis', [\App\Http\Controllers\DashboardTecnologiaController::class, 'getKpis'])->name('dashboard.kpis')->middleware('permission:tecnologia.view');
+    Route::get('/dashboard/recent-orders', [\App\Http\Controllers\DashboardTecnologiaController::class, 'getRecentOrders'])->name('dashboard.recent-orders')->middleware('permission:tecnologia.view');
+});
+
+// Equipos (Phones/Tablets)
+Route::middleware(['auth', 'permission:equipos.view'])->group(function () {
+    Route::get('equipos', [\App\Http\Controllers\EquipoController::class, 'index'])->name('equipos.index');
+    Route::get('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'show'])->name('equipos.show');
+    Route::get('equipos/buscar-imei', [\App\Http\Controllers\EquipoController::class, 'buscarPorImei'])->name('equipos.buscar-imei');
+});
+Route::middleware(['auth', 'permission:equipos.create'])->group(function () {
+    Route::get('equipos/create', [\App\Http\Controllers\EquipoController::class, 'create'])->name('equipos.create');
+    Route::post('equipos', [\App\Http\Controllers\EquipoController::class, 'store'])->name('equipos.store');
+});
+Route::middleware(['auth', 'permission:equipos.edit'])->group(function () {
+    Route::get('equipos/{equipo}/edit', [\App\Http\Controllers\EquipoController::class, 'edit'])->name('equipos.edit');
+    Route::put('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'update'])->name('equipos.update');
+    Route::post('equipos/{equipo}/cambiar-estado', [\App\Http\Controllers\EquipoController::class, 'cambiarEstado'])->name('equipos.cambiar-estado');
+});
+Route::middleware(['auth', 'permission:equipos.delete'])->group(function () {
+    Route::delete('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'destroy'])->name('equipos.destroy');
+});
+
+// Órdenes de Reparación
+Route::middleware(['auth', 'permission:tecnicas.view'])->group(function () {
+    Route::get('tecnicas', [\App\Http\Controllers\OrdenReparacionController::class, 'index'])->name('tecnicas.index');
+    Route::get('tecnicas/estadisticas', [\App\Http\Controllers\OrdenReparacionController::class, 'getEstadisticas'])->name('tecnicas.estadisticas');
+    Route::get('tecnicas/buscar-imei', [\App\Http\Controllers\OrdenReparacionController::class, 'getOrdenPorImei'])->name('tecnicas.buscar-imei');
+    Route::get('tecnicas/{orden}', [\App\Http\Controllers\OrdenReparacionController::class, 'show'])->name('tecnicas.show');
+});
+Route::middleware(['auth', 'permission:tecnicas.create'])->group(function () {
+    Route::get('tecnicas/create', [\App\Http\Controllers\OrdenReparacionController::class, 'create'])->name('tecnicas.create');
+    Route::post('tecnicas', [\App\Http\Controllers\OrdenReparacionController::class, 'store'])->name('tecnicas.store');
+    Route::post('tecnicas/{orden}/agregar-pieza', [\App\Http\Controllers\OrdenReparacionController::class, 'agregarPieza'])->name('tecnicas.agregar-pieza');
+});
+Route::middleware(['auth', 'permission:tecnicas.edit'])->group(function () {
+    Route::get('tecnicas/{orden}/edit', [\App\Http\Controllers\OrdenReparacionController::class, 'edit'])->name('tecnicas.edit');
+    Route::put('tecnicas/{orden}', [\App\Http\Controllers\OrdenReparacionController::class, 'update'])->name('tecnicas.update');
+    Route::post('tecnicas/{orden}/cambiar-estado', [\App\Http\Controllers\OrdenReparacionController::class, 'cambiarEstado'])->name('tecnicas.cambiar-estado');
+    Route::post('tecnicas/{orden}/entregar', [\App\Http\Controllers\OrdenReparacionController::class, 'entregar'])->name('tecnicas.entregar');
+    Route::post('tecnicas/{orden}/cancelar', [\App\Http\Controllers\OrdenReparacionController::class, 'cancelar'])->name('tecnicas.cancelar');
+    Route::delete('tecnicas/{orden}/quitar-pieza/{detalle}', [\App\Http\Controllers\OrdenReparacionController::class, 'quitarPieza'])->name('tecnicas.quitar-pieza');
+});
+Route::middleware(['auth', 'permission:tecnicas.delete'])->group(function () {
+    Route::delete('tecnicas/{orden}', [\App\Http\Controllers\OrdenReparacionController::class, 'destroy'])->name('tecnicas.destroy');
+});
+
+// Técnicos
+Route::middleware(['auth', 'permission:tecnicos.view'])->group(function () {
+    Route::get('tecnicos', [\App\Http\Controllers\TecnicoController::class, 'index'])->name('tecnicos.index');
+    Route::get('tecnicos/{tecnico}', [\App\Http\Controllers\TecnicoController::class, 'show'])->name('tecnicos.show');
+});
+Route::middleware(['auth', 'permission:tecnicos.create'])->group(function () {
+    Route::get('tecnicos/create', [\App\Http\Controllers\TecnicoController::class, 'create'])->name('tecnicos.create');
+    Route::post('tecnicos', [\App\Http\Controllers\TecnicoController::class, 'store'])->name('tecnicos.store');
+});
+Route::middleware(['auth', 'permission:tecnicos.edit'])->group(function () {
+    Route::get('tecnicos/{tecnico}/edit', [\App\Http\Controllers\TecnicoController::class, 'edit'])->name('tecnicos.edit');
+    Route::put('tecnicos/{tecnico}', [\App\Http\Controllers\TecnicoController::class, 'update'])->name('tecnicos.update');
+});
+Route::middleware(['auth', 'permission:tecnicos.delete'])->group(function () {
+    Route::delete('tecnicos/{tecnico}', [\App\Http\Controllers\TecnicoController::class, 'destroy'])->name('tecnicos.destroy');
+});
+
+// Servicios Domótica
+Route::middleware(['auth', 'permission:domotica.view'])->group(function () {
+    Route::get('domotica', [\App\Http\Controllers\ServicioDomoticaController::class, 'index'])->name('domotica.index');
+    Route::get('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'show'])->name('domotica.show');
+});
+Route::middleware(['auth', 'permission:domotica.create'])->group(function () {
+    Route::get('domotica/create', [\App\Http\Controllers\ServicioDomoticaController::class, 'create'])->name('domotica.create');
+    Route::post('domotica', [\App\Http\Controllers\ServicioDomoticaController::class, 'store'])->name('domotica.store');
+    Route::post('domotica/{servicio}/agregar-equipo', [\App\Http\Controllers\ServicioDomoticaController::class, 'agregarEquipo'])->name('domotica.agregar-equipo');
+});
+Route::middleware(['auth', 'permission:domotica.edit'])->group(function () {
+    Route::get('domotica/{servicio}/edit', [\App\Http\Controllers\ServicioDomoticaController::class, 'edit'])->name('domotica.edit');
+    Route::put('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'update'])->name('domotica.update');
+    Route::post('domotica/{servicio}/cambiar-estado', [\App\Http\Controllers\ServicioDomoticaController::class, 'cambiarEstado'])->name('domotica.cambiar-estado');
+    Route::post('domotica/{servicio}/completar', [\App\Http\Controllers\ServicioDomoticaController::class, 'completar'])->name('domotica.completar');
+    Route::delete('domotica/{servicio}/eliminar-equipo/{instalacion}', [\App\Http\Controllers\ServicioDomoticaController::class, 'eliminarEquipo'])->name('domotica.eliminar-equipo');
+});
+Route::middleware(['auth', 'permission:domotica.delete'])->group(function () {
+    Route::delete('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'destroy'])->name('domotica.destroy');
+});
+
+// Garantías
+Route::middleware(['auth', 'permission:garantias.view'])->group(function () {
+    Route::get('garantias', [\App\Http\Controllers\GarantiaController::class, 'index'])->name('garantias.index');
+    Route::get('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'show'])->name('garantias.show');
+    Route::get('garantias/vigentes', [\App\Http\Controllers\GarantiaController::class, 'getVigentes'])->name('garantias.vigentes');
+    Route::get('garantias/por-vencer', [\App\Http\Controllers\GarantiaController::class, 'getPorVencer'])->name('garantias.por-vencer');
+});
+Route::middleware(['auth', 'permission:garantias.create'])->group(function () {
+    Route::get('garantias/create', [\App\Http\Controllers\GarantiaController::class, 'create'])->name('garantias.create');
+    Route::post('garantias', [\App\Http\Controllers\GarantiaController::class, 'store'])->name('garantias.store');
+});
+Route::middleware(['auth', 'permission:garantias.edit'])->group(function () {
+    Route::post('garantias/{garantia}/extender', [\App\Http\Controllers\GarantiaController::class, 'extender'])->name('garantias.extender');
+    Route::post('garantias/{garantia}/reclamar', [\App\Http\Controllers\GarantiaController::class, 'procesarReclamo'])->name('garantias.reclamar');
+});
+
 // UI System Demo
 Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function () {
     Route::get('/', fn() => view('ui-demo.index'))->name('index');
