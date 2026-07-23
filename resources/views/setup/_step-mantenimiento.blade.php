@@ -1,13 +1,15 @@
-<h5 class="fw-bold mb-2"><i class="bi bi-wrench-adjustable me-2 text-primary"></i>Mantenimiento</h5>
-<p class="text-muted small mb-4">Registra un mantenimiento preventivo o correctivo (opcional).</p>
+<div class="ui-card-title">
+    <i class="bi bi-wrench-adjustable"></i>Mantenimiento
+</div>
+<div class="ui-card-subtitle">Registra un mantenimiento preventivo o correctivo (opcional).</div>
 
 <form action="{{ route('setup.step') }}" method="POST" class="row g-3" id="form-mantenimiento">
     @csrf
     <input type="hidden" name="step" value="mantenimiento">
     
     <div class="col-md-6">
-        <label class="form-label small fw-bold">Cliente</label>
-        <select name="cliente_id" class="form-select rounded-3">
+        <label class="ui-label">Cliente</label>
+        <select name="cliente_id" class="ui-select">
             <option value="">-- Seleccionar --</option>
             @foreach(\App\Models\Cliente::where('tenant_id', auth()->user()->business_instance_id)->get() as $c)
                 <option value="{{ $c->id }}">{{ $c->nombre }}</option>
@@ -16,26 +18,31 @@
     </div>
     
     <div class="col-md-6">
-        <label class="form-label small fw-bold">Tipo</label>
-        <select name="tipo" class="form-select rounded-3">
+        <label class="ui-label">Tipo</label>
+        <select name="tipo" class="ui-select">
             <option value="preventivo">Preventivo</option>
             <option value="correctivo">Correctivo</option>
         </select>
     </div>
 
     <div class="col-md-6">
-        <label class="form-label small fw-bold">Descripción de Falla</label>
-        <textarea name="descripcion_falla" class="form-control rounded-3" rows="2" placeholder="Describe el problema o tarea"></textarea>
+        <label class="ui-label">Descripción de Falla</label>
+        <textarea name="descripcion_falla" class="ui-textarea" placeholder="Describe el problema o tarea"></textarea>
     </div>
 
     <div class="col-md-6">
-        <label class="form-label small fw-bold">Programada Para</label>
-        <input type="datetime-local" name="programada_para" class="form-control rounded-3">
+        <label class="ui-label">Programada Para</label>
+        <input type="datetime-local" name="programada_para" class="ui-input">
     </div>
 
-    <div class="col-12 mt-4 text-end">
-        <button type="submit" class="btn btn-wizard-next" form="form-mantenimiento">
-            <i class="bi bi-check-lg me-1"></i> Guardar y Siguiente
-        </button>
+    <div class="col-12 mt-4">
+        <div class="ui-sticky-bar">
+            <div class="ui-sticky-bar-inner">
+                <a href="{{ route('setup.wizard') }}" class="ui-btn ui-btn-ghost ui-btn-pill">Cancelar</a>
+                <button type="submit" form="form-mantenimiento" class="ui-btn ui-btn-solid ui-btn-pill px-5">
+                    <i class="bi bi-check-lg me-2"></i>Guardar y Siguiente
+                </button>
+            </div>
+        </div>
     </div>
 </form>

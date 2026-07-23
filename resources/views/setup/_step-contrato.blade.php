@@ -1,13 +1,15 @@
-<h5 class="fw-bold mb-2"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Contrato de Mantenimiento</h5>
-<p class="text-muted small mb-4">Crea un contrato de mantenimiento preventivo para tus clientes (opcional).</p>
+<div class="ui-card-title">
+    <i class="bi bi-file-earmark-text"></i>Contrato de Mantenimiento
+</div>
+<div class="ui-card-subtitle">Crea un contrato de mantenimiento preventivo para tus clientes (opcional).</div>
 
 <form action="{{ route('setup.step') }}" method="POST" class="row g-3" id="form-contrato">
     @csrf
     <input type="hidden" name="step" value="contrato">
     
     <div class="col-md-6">
-        <label class="form-label small fw-bold">Cliente</label>
-        <select name="cliente_id" class="form-select rounded-3">
+        <label class="ui-label">Cliente</label>
+        <select name="cliente_id" class="ui-select">
             <option value="">-- Seleccionar --</option>
             @foreach(\App\Models\Cliente::where('tenant_id', auth()->user()->business_instance_id)->get() as $c)
                 <option value="{{ $c->id }}">{{ $c->nombre }}</option>
@@ -16,8 +18,8 @@
     </div>
     
     <div class="col-md-6">
-        <label class="form-label small fw-bold">Periodicidad</label>
-        <select name="tipo_periodicidad" class="form-select rounded-3">
+        <label class="ui-label">Periodicidad</label>
+        <select name="tipo_periodicidad" class="ui-select">
             <option value="mensual">Mensual</option>
             <option value="trimestral">Trimestral</option>
             <option value="semestral">Semestral</option>
@@ -26,23 +28,31 @@
     </div>
 
     <div class="col-md-4">
-        <label class="form-label small fw-bold">Vigencia Desde</label>
-        <input type="date" name="vigencia_desde" class="form-control rounded-3" value="{{ date('Y-m-d') }}">
+        <label class="ui-label">Vigencia Desde</label>
+        <input type="date" name="vigencia_desde" class="ui-input" value="{{ date('Y-m-d') }}">
     </div>
 
     <div class="col-md-4">
-        <label class="form-label small fw-bold">Vigencia Hasta</label>
-        <input type="date" name="vigencia_hasta" class="form-control rounded-3" value="{{ date('Y-m-d', strtotime('+1 year')) }}">
+        <label class="ui-label">Vigencia Hasta</label>
+        <input type="date" name="vigencia_hasta" class="ui-input" value="{{ date('Y-m-d', strtotime('+1 year')) }}">
     </div>
 
     <div class="col-md-4">
-        <label class="form-label small fw-bold">Valor Mensual</label>
-        <input type="number" step="0.01" name="valor_mensual" class="form-control rounded-3" placeholder="0.00">
+        <label class="ui-label">Valor Mensual</label>
+        <div class="ui-input-group">
+            <span class="ui-input-group-text">RD$</span>
+            <input type="number" step="0.01" name="valor_mensual" class="ui-input" placeholder="0.00">
+        </div>
     </div>
 
-    <div class="col-12 mt-4 text-end">
-        <button type="submit" class="btn btn-wizard-next" form="form-contrato">
-            <i class="bi bi-check-lg me-1"></i> Guardar y Siguiente
-        </button>
+    <div class="col-12 mt-4">
+        <div class="ui-sticky-bar">
+            <div class="ui-sticky-bar-inner">
+                <a href="{{ route('setup.wizard') }}" class="ui-btn ui-btn-ghost ui-btn-pill">Cancelar</a>
+                <button type="submit" form="form-contrato" class="ui-btn ui-btn-solid ui-btn-pill px-5">
+                    <i class="bi bi-check-lg me-2"></i>Guardar y Siguiente
+                </button>
+            </div>
+        </div>
     </div>
 </form>
