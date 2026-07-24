@@ -24,6 +24,7 @@ class EcfXmlBuilder
             'https://dgii.gov.do/onecore/electronicinvoice/v1',
             'ECF'
         );
+        $root->setAttribute('id', 'ECF');
         $xml->appendChild($root);
 
         $root->setAttributeNS(

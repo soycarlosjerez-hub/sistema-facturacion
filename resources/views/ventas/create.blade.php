@@ -2820,9 +2820,10 @@ body:not(.dark-mode) {
 
     function abrirModalProductos() {
         const modalEl = $('productosModal');
-        const old = bootstrap.Modal.getInstance(modalEl);
-        if (old) old.dispose();
-        const modal = new bootstrap.Modal(modalEl, { keyboard: false });
+        if (window._productosModalInstance) {
+            window._productosModalInstance.hide();
+        }
+        window._productosModalInstance = new bootstrap.Modal(modalEl, { keyboard: false });
         $('modal-buscar-producto').value = '';
         $('modal-btn-limpiar').style.display = 'none';
         $('modal-item-notas').value = '';
@@ -2835,14 +2836,14 @@ body:not(.dark-mode) {
         renderizarTecladoModal();
         tecladoIdioma('es');
         renderizarProductosModal('');
-        modal.show();
+        window._productosModalInstance.show();
         setTimeout(() => $('modal-buscar-producto').focus(), 300);
     }
 
     function cerrarModalProductos() {
-        const el = $('productosModal');
-        const m = bootstrap.Modal.getInstance(el);
-        if (m) m.hide();
+        if (window._productosModalInstance) {
+            window._productosModalInstance.hide();
+        }
     }
 
     function modalBuscarProductos() {
@@ -3399,7 +3400,7 @@ body:not(.dark-mode) {
             $('turno-timer').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
         };
         updateTimer();
-        setInterval(updateTimer, 60000);
+        window._turnoInterval = setInterval(updateTimer, 60000);
     }
 
     // ============ Event delegation (FIX BUGS) ============
@@ -3477,7 +3478,17 @@ body:not(.dark-mode) {
         startTurnoTimer();
 
         // Refrescar estadísticas cada minuto
-        setInterval(loadDayStats, 60000);
+        window._statsInterval = setInterval(loadDayStats, 60000);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            clearInterval(window._turnoInterval);
+            clearInterval(window._statsInterval);
+            if (window._productosModalInstance) {
+                window._productosModalInstance.dispose();
+                window._productosModalInstance = null;
+            }
+        });
 
         // Mute audio toggle
         const muteBtn = $('btn-mute-audio');

@@ -38,6 +38,8 @@ class StoreVentaRequest extends FormRequest
             'impuestos'     => 'nullable|numeric|min:0',
             'subtotal_final' => 'nullable|numeric|min:0',
             'propina'       => 'nullable|numeric|min:0',
+            'delivery_fee'  => 'nullable|numeric|min:0',
+            'cargo_servicio'=> 'nullable|numeric|min:0',
             'general_descuento' => 'nullable|numeric|min:0',
             'metodo_pago'   => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',
             'ncf_tipo'      => 'nullable|string|exists:ncf_sequences,tipo_comprobante',
@@ -55,5 +57,33 @@ class StoreVentaRequest extends FormRequest
             'precio.*.min' => 'El precio no puede ser negativo.',
             'total.min' => 'El total debe ser mayor a 0.',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $totals = $this->input('total', 0);
+            $subtotals = $this->input('subtotal', []);
+            $precios = $this->input('precio', []);
+            $cantidades = $this->input('cantidad', []);
+
+            if (is_array($subtotals) && count($subtotals) > 0) {
+                $sumaSubtotales = array_sum(array_map('floatval', $subtotals));
+                if (abs($sumaSubtotales - $totals) > 0.02) {
+                    $validator->errors()->add('total', "El total ({$totals}) no coincide con la suma de subtotales ({$sumaSubtotales}). Verifique los cálculos.");
+                }
+            }
+
+            if (is_array($precios) && is_array($cantidades)) {
+                $maxItems = min(count($precios), count($cantidades));
+                for ($i = 0; $i < $maxItems; $i++) {
+                    $calc = (float)($precios[$i] ?? 0) * (float)($cantidades[$i] ?? 0);
+                    $expectedSub = is_array($subtotals) ? (float)($subtotals[$i] ?? 0) : 0;
+                    if (abs($calc - $expectedSub) > 0.02) {
+                        $validator->errors()->add("subtotal.{$i}", "El subtotal no coincide con precio × cantidad.");
+                    }
+                }
+            }
+        });
     }
 }

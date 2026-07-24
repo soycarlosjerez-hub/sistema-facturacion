@@ -116,32 +116,80 @@ class EcfDigitalSignature
     private function insertarFirmaEnXml(string $xmlContent, array $signatureData): string
     {
         $xml = new \DOMDocument();
+        $xml->preserveWhiteSpace = false;
+        $xml->formatOutput = false;
         $xml->loadXML($xmlContent);
 
-        $root = $xml->documentElement;
-        $signature = $xml->createElement('Signature');
-        $signature->setAttribute('xmlns', 'http://www.w3.org/2000/09/xmldsig#');
+        $xpath = new \DOMXPath($xml);
+        $xpath->registerNamespace('ds', 'http://www.w3.org/2000/09/xmldsig#');
 
-        $signedInfo = $xml->createElement('SignedInfo');
-        $signedInfo->appendChild($xml->createElement('CanonicalizationMethod', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'));
-        $signedInfo->appendChild($xml->createElement('SignatureMethod', $signatureData['algoritmo']));
-        $reference = $xml->createElement('Reference', '#ECF');
-        $digest = $xml->createElement('DigestMethod', $signatureData['algoritmo']);
-        $digest->appendChild(new \DOMCdataSection(base64_encode(hash('sha256', $xmlContent, true))));
-        $reference->appendChild($digest);
+        $elementosEcf = $xpath->query('//ecf:ECF') ?: $xpath->query('//ECF');
+        $ecfNode = $elementosEcf->item(0);
+        
+        if (!$ecfNode) {
+            $ecfNode = $xml->documentElement;
+        }
+
+        $xmlContentParaHash = $xml->saveXML($ecfNode);
+        $digestValue = base64_encode(hash('sha256', $xmlContentParaHash, true));
+
+        $signature = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:Signature');
+
+        $signedInfo = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:SignedInfo');
+
+        $canonicalizationMethod = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:CanonicalizationMethod');
+        $canonicalizationMethod->setAttribute('Algorithm', 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315');
+        $signedInfo->appendChild($canonicalizationMethod);
+
+        $signatureMethod = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:SignatureMethod');
+        $signatureMethod->setAttribute('Algorithm', 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256');
+        $signedInfo->appendChild($signatureMethod);
+
+        $reference = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:Reference');
+        $reference->setAttribute('URI', '#ECF');
+
+        $transforms = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:Transforms');
+        $transform = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:Transform');
+        $transform->setAttribute('Algorithm', 'http://www.w3.org/2000/09/xmldsig#enveloped-signature');
+        $transforms->appendChild($transform);
+        $reference->appendChild($transforms);
+
+        $digestMethod = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:DigestMethod');
+        $digestMethod->setAttribute('Algorithm', 'http://www.w3.org/2001/04/xmlenc#sha256');
+        $reference->appendChild($digestMethod);
+
+        $digestValueElem = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:DigestValue');
+        $digestValueText = $xml->createTextNode($digestValue);
+        $digestValueElem->appendChild($digestValueText);
+        $reference->appendChild($digestValueElem);
+
         $signedInfo->appendChild($reference);
         $signature->appendChild($signedInfo);
 
-        $signature->appendChild($xml->createElement('SignatureValue', $signatureData['firma']));
-        $keyInfo = $xml->createElement('KeyInfo');
-        $x509Data = $xml->createElement('X509Data');
-        $x509Data->appendChild($xml->createElement('X509Certificate', $signatureData['certificado']));
-        $x509Data->appendChild($xml->createElement('X509SerialNumber', $signatureData['serial']));
-        $x509Data->appendChild($xml->createElement('X509Issuer', $signatureData['emisor']));
+        $signatureValue = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:SignatureValue');
+        $signatureValueText = $xml->createTextNode($signatureData['firma']);
+        $signatureValue->appendChild($signatureValueText);
+        $signature->appendChild($signatureValue);
+
+        $keyInfo = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:KeyInfo');
+        $x509Data = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:X509Data');
+        
+        $x509Cert = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:X509Certificate');
+        $x509Cert->appendChild($xml->createTextNode($signatureData['certificado']));
+        $x509Data->appendChild($x509Cert);
+
+        $x509Serial = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:X509SerialNumber');
+        $x509Serial->appendChild($xml->createTextNode($signatureData['serial']));
+        $x509Data->appendChild($x509Serial);
+
+        $x509Issuer = $xml->createElementNS('http://www.w3.org/2000/09/xmldsig#', 'ds:X509IssuerName');
+        $x509Issuer->appendChild($xml->createTextNode($signatureData['emisor']));
+        $x509Data->appendChild($x509Issuer);
+
         $keyInfo->appendChild($x509Data);
         $signature->appendChild($keyInfo);
 
-        $root->appendChild($signature);
+        $ecfNode->appendChild($signature);
 
         return $xml->saveXML();
     }

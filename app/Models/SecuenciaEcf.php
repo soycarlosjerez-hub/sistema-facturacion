@@ -51,7 +51,8 @@ class SecuenciaEcf extends Model
         return match (strtolower($tipoCliente)) {
             'credito_fiscal' => 'E31',
             'gubernamental' => 'E45',
-            'especial' => 'E44',
+            'especial' => 'E31',
+            'zona_franc' => 'E44',
             'consumo' => 'E32',
             default => 'E32',
         };

@@ -13,19 +13,24 @@ class VentasExport implements FromCollection, WithHeadings, WithMapping
     protected $cliente;
     protected $desde;
     protected $hasta;
+    protected $tenantId;
 
-    public function __construct($cliente = null, $desde = null, $hasta = null)
+    public function __construct($cliente = null, $desde = null, $hasta = null, $tenantId = null)
     {
         $this->cliente = $cliente;
         $this->desde = $desde;
         $this->hasta = $hasta;
+        $this->tenantId = $tenantId;
     }
 
     public function collection()
     {
         $query = Venta::with(['usuario', 'cliente', 'tipoVenta'])
-            ->select('id', 'user_id', 'cliente_id', 'tipo_venta_id', 'fecha', 'subtotal', 'impuestos', 'descuento', 'total', 'estado', 'created_at', 'updated_at');
+            ->select('id', 'user_id', 'cliente_id', 'tipo_venta_id', 'fecha', 'subtotal', 'impuestos', 'descuento', 'total', 'estado', 'created_at', 'updated_at', 'tenant_id');
 
+        if ($this->tenantId) {
+            $query->where('tenant_id', $this->tenantId);
+        }
         if ($this->cliente) {
             $query->whereHas('cliente', fn($q) => $q->where('nombre', 'like', '%' . $this->cliente . '%'));
         }

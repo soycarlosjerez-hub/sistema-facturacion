@@ -45,7 +45,7 @@ return [
     'moneda' => env('MONEDA_DEFAULT', 'DOP'),
     'codigo_moneda_dop' => 'DOP',
 
-    'simular_dgii' => env('DGII_SIMULAR', true),
+    'simular_dgii' => env('DGII_SIMULAR', false),
     'probabilidad_aprobacion_sim' => env('DGII_PROB_APROB', 0.85),
 
     'qr_endpoint' => env('DGII_QR_ENDPOINT', 'https://dgii.gov.do/app/WebApps/ConsultasWeb/ConsultasWeb/consulta'),

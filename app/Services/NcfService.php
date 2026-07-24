@@ -8,13 +8,14 @@ use Exception;
 class NcfService
 {
     /**
-     * Obtener el próximo NCF para un tipo específico.
+     * Reservar un NCF dentro de una transacción DB ya activa.
+     * El increment se hace aquí DENTRO de la transacción para evitar gaps.
      * 
      * @param string $prefijo El prefijo del NCF (B01, B02, etc.)
-     * @return string
+     * @return array ['ncf' => string, 'sequence_id' => int]
      * @throws Exception
      */
-    public function getNextNcf(string $prefijo): string
+    public function reservarNcfDentroTransaction(string $prefijo): array
     {
         $sequence = NcfSequence::where('prefijo', $prefijo)
             ->where('activo', true)
@@ -33,9 +34,21 @@ class NcfService
         $numero = str_pad($sequence->actual, 8, '0', STR_PAD_LEFT);
         $ncf = $prefijo . $numero;
 
-        // Incrementar el contador actual
         $sequence->increment('actual');
 
-        return $ncf;
+        return ['ncf' => $ncf, 'sequence_id' => $sequence->id, 'fecha_vencimiento' => $sequence->fecha_vencimiento];
+    }
+
+    /**
+     * Obtener el próximo NCF para un tipo específico.
+     * 
+     * @param string $prefijo El prefijo del NCF (B01, B02, etc.)
+     * @return string
+     * @throws Exception
+     */
+    public function getNextNcf(string $prefijo): string
+    {
+        $result = $this->reservarNcfDentroTransaction($prefijo);
+        return $result['ncf'];
     }
 }

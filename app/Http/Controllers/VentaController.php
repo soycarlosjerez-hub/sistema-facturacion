@@ -15,6 +15,7 @@ use App\Services\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class VentaController extends Controller
@@ -30,7 +31,7 @@ class VentaController extends Controller
     {
         $query = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal']);
 
-        if (!auth()->user()->can('ventas.view') && auth()->user()->can('ventas.view.own')) {
+        if (auth()->user()->can('ventas.view.own') && !auth()->user()->can('ventas.view')) {
             $query->where('user_id', auth()->id());
         }
 
@@ -144,11 +145,12 @@ class VentaController extends Controller
             return response()->json([]);
         }
 
-        $productos = Producto::where(function ($q) use ($termino) {
-            $q->where('nombre', 'like', '%' . $termino . '%')
-              ->orWhere('codigo_barras', $termino)
-              ->orWhere('codigo_barras', 'like', '%' . $termino . '%');
-        })->orderBy('nombre')->limit(20)
+        $productos = Producto::where('tenant_id', Auth::user()->business_instance_id)
+            ->where(function ($q) use ($termino) {
+                $q->where('nombre', 'like', '%' . $termino . '%')
+                  ->orWhere('codigo_barras', $termino)
+                  ->orWhere('codigo_barras', 'like', '%' . $termino . '%');
+            })->orderBy('nombre')->limit(20)
             ->get(['id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'unidad_medida', 'imagen']);
 
         return response()->json($productos);
@@ -156,7 +158,10 @@ class VentaController extends Controller
 
     public function buscarPorCodigoBarras($codigo)
     {
-        $producto = Producto::where('codigo_barras', $codigo)->first();
+        $producto = Producto::where('codigo_barras', $codigo)
+            ->where('tenant_id', Auth::user()->business_instance_id)
+            ->where('activo', true)
+            ->first();
         if (!$producto) {
             return response()->json(['encontrado' => false], 404);
         }
@@ -178,6 +183,7 @@ class VentaController extends Controller
     public function exportPdf($id)
     {
         $venta = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal', 'detalles.producto', 'detalles.almacen'])
+            ->where('tenant_id', Auth::user()->business_instance_id)
             ->findOrFail($id);
 
         return Pdf::loadView('ventas.pdf', compact('venta'))
@@ -187,7 +193,8 @@ class VentaController extends Controller
 
     public function exportAllPdf(Request $request)
     {
-        $query = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'detalles.producto', 'detalles.almacen']);
+        $query = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'detalles.producto', 'detalles.almacen'])
+            ->where('tenant_id', Auth::user()->business_instance_id);
 
         if ($request->filled('cliente')) {
             $query->whereHas('cliente', fn($q) => $q->where('nombre', 'like', '%' . $request->cliente . '%'));
@@ -199,7 +206,7 @@ class VentaController extends Controller
             $query->whereDate('created_at', '<=', $request->hasta);
         }
 
-        $ventas = $query->orderBy('created_at', 'desc')->get();
+        $ventas = $query->orderBy('created_at', 'desc')->take(1000)->get();
         $pdf = Pdf::loadView('ventas.all-pdf', compact('ventas'))->setPaper('a4', 'landscape');
 
         return $pdf->download('ventas_reporte.pdf');
@@ -238,7 +245,9 @@ class VentaController extends Controller
         $fecha  = $request->input('fecha', now()->toDateString());
         $sesion = $request->input('sesion_id');
 
-        $query = Venta::whereDate('created_at', $fecha)->where('estado', 'completada');
+        $query = Venta::where('tenant_id', Auth::user()->business_instance_id)
+            ->whereDate('created_at', $fecha)
+            ->where('estado', 'completada');
         if ($sesion) {
             $query->where('sesion_caja_id', $sesion);
         }
@@ -252,7 +261,7 @@ class VentaController extends Controller
 
     public function getVentasTurno($sesionId)
     {
-        $ventas = Venta::with('cliente')
+        $ventas = Venta::with(['cliente', 'pagos'])
             ->where('sesion_caja_id', $sesionId)
             ->where('estado', 'completada')
             ->orderBy('created_at', 'desc')
@@ -260,9 +269,9 @@ class VentaController extends Controller
             ->get()
             ->map(fn($v) => [
                 'id'            => $v->id,
-                'cliente_nombre'=> $v->cliente->nombre ?? 'Consumidor Final',
+                'cliente_nombre'=> $v->cliente?->nombre ?? 'Consumidor Final',
                 'total'         => (float) $v->total,
-                'metodo_pago'   => optional($v->pagos()->latest()->first())->metodo_pago ?? 'efectivo',
+                'metodo_pago'   => $v->pagos->last()?->metodo_pago ?? 'efectivo',
                 'hora'          => $v->created_at->format('h:i A'),
                 'ncf'           => $v->ncf,
                 'encf'          => $v->encf,
@@ -273,12 +282,14 @@ class VentaController extends Controller
 
     public function imprimir($id)
     {
-        $venta = Venta::findOrFail($id);
+        $venta = Venta::where('tenant_id', Auth::user()->business_instance_id)
+            ->findOrFail($id);
+
         try {
             app(PrintService::class)->imprimir($venta);
             return response()->json(['success' => true, 'message' => 'Impresión enviada.']);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Error al imprimir.'], 500);
         }
     }
 
@@ -301,8 +312,12 @@ class VentaController extends Controller
             $ecfService->enviar($firmado);
             return response()->json(['success' => true, 'message' => 'e-CF generado y enviado a DGII.']);
         } catch (\Throwable $e) {
-            $debug = config('app.debug') ? ' ['.get_class($e).'] '.$e->getFile().':'.$e->getLine() : '';
-            return response()->json(['error' => 'Error al facturar: ' . $e->getMessage() . $debug], 500);
+            Log::error('Facturación DGII fallida', [
+                'venta_id' => $id,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Error al facturar. Contacte al administrador.'], 500);
         }
     }
 }

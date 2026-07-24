@@ -34,10 +34,7 @@ class SaleService
     public function createSale(array $data, SesionCaja $sesion): Venta
     {
         if (empty($data['cliente_id'])) {
-            $consumidorFinal = Cliente::firstOrCreate(
-                ['nombre' => 'Consumidor Final'],
-                ['limite_credito' => 0, 'balance_pendiente' => 0, 'tipo_cliente' => 'consumo']
-            );
+            $consumidorFinal = Cliente::consumidorFinal(Auth::user()->business_instance_id);
             $data['cliente_id'] = $consumidorFinal->id;
         }
 
@@ -48,7 +45,7 @@ class SaleService
             default => 'completada',
         };
 
-        $subtotalTotal = array_sum($data['subtotal'] ?? []);
+        $subtotalTotal = array_sum(array_map('floatval', $data['subtotal'] ?? []));
         if ($subtotalTotal > 0) {
             $descuentosLinea = 0;
             foreach (($data['descuento'] ?? []) as $i => $desc) {
@@ -62,16 +59,22 @@ class SaleService
                     $descuentosLinea += $desc;
                 }
             }
-            $pctDescuento = ($descuentosLinea / $subtotalTotal) * 100;
-            if ($pctDescuento > 50 && !auth()->user()->hasRole('admin')) {
+            $pctDescuento = $subtotalTotal > 0 ? ($descuentosLinea / $subtotalTotal) * 100 : 0;
+            $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
+            if ($pctDescuento > 50 && !auth()->user()->hasRole($rolesAutorizados)) {
                 throw new \Exception('Descuentos superiores al 50% requieren autorización de administrador.');
             }
         }
 
         return DB::transaction(function () use ($data, $sesion, $metodo, $estado) {
             $ncf = null;
+            $ncfTipo = null;
+            $ncfVencimiento = null;
             if (!empty($data['ncf_tipo'])) {
-                $ncf = $this->ncfService->getNextNcf($data['ncf_tipo']);
+                $ncfTipo = $data['ncf_tipo'];
+                $resultadoNcf = $this->ncfService->reservarNcfDentroTransaction($ncfTipo);
+                $ncf = $resultadoNcf['ncf'];
+                $ncfVencimiento = $resultadoNcf['fecha_vencimiento'];
             }
 
             $ventaExistente = null;
@@ -84,10 +87,18 @@ class SaleService
 
             if ($ventaExistente) {
                 $venta = $ventaExistente;
-                $venta->increment('subtotal', $data['subtotal_final'] ?? array_sum($data['subtotal']));
+                $venta->increment('subtotal', $data['subtotal_final'] ?? array_sum(array_map('floatval', $data['subtotal'])));
                 $venta->increment('impuestos', $data['impuestos'] ?? 0);
                 $venta->increment('total', $data['total']);
                 $venta->update(['fecha' => now()]);
+
+                // Incrementar deuda del cliente al agregar productos a cuenta abierta
+                $clienteExistente = Cliente::where('id', $venta->cliente_id)
+                    ->where('tenant_id', Auth::user()->business_instance_id)
+                    ->first();
+                if ($clienteExistente && $clienteExistente->nombre !== 'Consumidor Final') {
+                    $clienteExistente->increment('balance_pendiente', $data['total']);
+                }
             } else {
                 $tipoComprobante = $data['tipo_comprobante'] ?? 'ncf';
                 if ($tipoComprobante === 'ncf' && empty($data['ncf_tipo'])) {
@@ -96,8 +107,8 @@ class SaleService
 
                 $venta = Venta::create([
                     'ncf'              => $ncf,
-                    'ncf_tipo'         => $data['ncf_tipo'] ?? null,
-                    'ncf_vencimiento'  => null,
+                    'ncf_tipo'         => $ncfTipo,
+                    'ncf_vencimiento'  => $ncfVencimiento,
                     'tipo_comprobante' => $tipoComprobante,
                     'encf'             => null,
                     'user_id'          => Auth::id(),
@@ -108,11 +119,13 @@ class SaleService
                     'tipo_venta_id'    => $data['tipo_venta_id'],
                     'fecha'            => now(),
                     'impuestos'        => $data['impuestos'] ?? 0,
-                    'descuento'        => is_array($data['descuento'] ?? null) ? ($data['descuento'][0] ?? 0) : ($data['descuento'] ?? 0),
-                    'subtotal'         => $data['subtotal_final'] ?? array_sum($data['subtotal']),
+                    'descuento'        => is_array($data['descuento'] ?? null) ? ((isset($data['descuento'][0]) ? (float)$data['descuento'][0] : 0)) : ((float)($data['descuento'] ?? 0)),
+                    'subtotal'         => $data['subtotal_final'] ?? array_sum(array_map('floatval', $data['subtotal'])),
                     'total'            => $data['total'],
                     'estado'           => $estado,
                     'propina'          => $data['propina'] ?? 0,
+                    'delivery_fee'     => $data['delivery_fee'] ?? 0,
+                    'cargo_servicio'   => $data['cargo_servicio'] ?? 0,
                     'tenant_id'        => Auth::user()->business_instance_id,
                 ]);
 
@@ -138,9 +151,12 @@ class SaleService
     public function cancelSale(int $id, string $motivo): void
     {
         $motivo = strip_tags(trim($motivo));
+        $tenantId = Auth::user()->business_instance_id;
 
-        DB::transaction(function () use ($id, $motivo) {
-            $venta = Venta::with(['detalles', 'ecfDocumento'])->findOrFail($id);
+        DB::transaction(function () use ($id, $motivo, $tenantId) {
+            $venta = Venta::with(['detalles', 'ecfDocumento'])
+                ->where('tenant_id', $tenantId)
+                ->findOrFail($id);
 
             if ($venta->trashed()) {
                 throw new \Exception('Esta venta ya fue anulada previamente.');
@@ -151,10 +167,13 @@ class SaleService
             }
 
             // Restaurar stock de productos
+            $productIds = $venta->detalles->pluck('producto_id')->unique()->all();
+            $stockUpdates = [];
+            
             foreach ($venta->detalles as $detalle) {
                 $almacenId = ($detalle->almacen_id > 0) ? $detalle->almacen_id : 1;
                 AlmacenMovimiento::create([
-                    'tenant_id'   => Auth::user()->business_instance_id,
+                    'tenant_id'   => $tenantId,
                     'producto_id' => $detalle->producto_id,
                     'almacen_id'  => $almacenId,
                     'tipo'        => 'entrada',
@@ -163,15 +182,20 @@ class SaleService
                     'user_id'     => Auth::id(),
                 ]);
 
-                $productoObj = Producto::find($detalle->producto_id);
-                if ($productoObj) {
-                    $productoObj->increment('stock', $detalle->cantidad);
+                $stockUpdates[$detalle->producto_id] = ($stockUpdates[$detalle->producto_id] ?? 0) + $detalle->cantidad;
+            }
+
+            if (!empty($stockUpdates)) {
+                foreach ($stockUpdates as $productId => $qty) {
+                    Producto::where('id', $productId)->increment('stock', $qty);
                 }
             }
 
             // Devolver deuda del cliente si estaba pendiente
             if ($venta->cliente_id && in_array($venta->estado, ['pendiente', 'cuenta_abierta'])) {
-                $cliente = Cliente::find($venta->cliente_id);
+                $cliente = Cliente::where('id', $venta->cliente_id)
+                    ->where('tenant_id', $tenantId)
+                    ->first();
                 if ($cliente) {
                     $montoDeuda = $venta->total - $venta->montoPagado();
                     if ($montoDeuda > 0) {
@@ -182,7 +206,9 @@ class SaleService
 
             // Devolver montos de caja
             if ($venta->sesion_caja_id) {
-                $sesion = SesionCaja::find($venta->sesion_caja_id);
+                $sesion = SesionCaja::where('id', $venta->sesion_caja_id)
+                    ->where('tenant_id', $tenantId)
+                    ->first();
                 if ($sesion) {
                     foreach ($venta->pagos as $pago) {
                         match ($pago->metodo_pago) {
@@ -225,9 +251,12 @@ class SaleService
 
     public function getCreationData(): array
     {
+        $tenantId = Auth::user()->business_instance_id;
+        
         $sesion = SesionCaja::with('caja')
             ->where('user_id', Auth::id())
             ->where('estado', 'abierta')
+            ->where('tenant_id', $tenantId)
             ->latest('fecha_apertura')
             ->first();
 
@@ -235,41 +264,31 @@ class SaleService
             return ['sesion' => null];
         }
 
-        $clienteConsumidorFinal = Cliente::firstOrCreate(
-            ['nombre' => 'Consumidor Final'],
-            ['limite_credito' => 0, 'balance_pendiente' => 0, 'tipo_cliente' => 'consumo']
-        );
+        $clienteConsumidorFinal = Cliente::consumidorFinal($tenantId);
 
-        $clientes   = Cliente::orderBy('nombre')->get();
-        $tiposVenta = \App\Models\TipoVenta::orderBy('nombre')->get();
+        $clientes   = Cliente::where('tenant_id', $tenantId)->orderBy('nombre')->get();
+        $tiposVenta = \App\Models\TipoVenta::where('tenant_id', $tenantId)->orderBy('nombre')->get();
         $tipoVentaDefault = $tiposVenta->firstWhere('nombre', 'Contado') ?? $tiposVenta->first();
-        $almacenes = \App\Models\Almacen::orderBy('nombre');
+        $almacenes = \App\Models\Almacen::where('tenant_id', $tenantId)->orderBy('nombre');
         if ($sucursalId = session('sucursal_id')) {
             $almacenes = $almacenes->where('sucursal_id', $sucursalId);
         }
         $almacenes = $almacenes->get();
-        // Fallback: if no almacenes in this sucursal, get any almacen in the tenant
-        if ($almacenes->isEmpty()) {
-            $almacenes = \App\Models\Almacen::orderBy('nombre')->limit(1)->get();
-        }
 
-        $productos = Producto::orderBy('nombre')
+        $productos = Producto::where('tenant_id', $tenantId)
+            ->orderBy('nombre')
             ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen', 'categoria_id')
             ->get()
             ->map(fn($p) => $p->setAttribute('imagen_url', $p->imagen_url));
 
         // Apply restaurante_valida_stock setting (shared with restaurant module)
-        $validaStock = true;
-        $user = Auth::user();
-        if ($user && $user->businessInstance) {
-            $config = $user->businessInstance->configuracion ?? [];
-            $validaStock = ($config['restaurante_valida_stock'] ?? '1') === '1';
-        }
+        $validaStock = $this->validaStock();
         if ($validaStock) {
             $productos = $productos->filter(fn($p) => $p->stock > 0)->values();
         }
 
         $stockPorProductoAlmacen = AlmacenMovimiento::query()
+            ->where('tenant_id', $tenantId)
             ->selectRaw('producto_id, almacen_id, SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
             ->groupBy('producto_id', 'almacen_id')
             ->get();
@@ -281,11 +300,12 @@ class SaleService
             $stocks[$producto->id] ??= [];
         }
 
-        $ncfSequences = \App\Models\NcfSequence::where('activo', true)
+        $ncfSequences = \App\Models\NcfSequence::where('tenant_id', $tenantId)
+            ->where('activo', true)
             ->where('fecha_vencimiento', '>=', now())
             ->get();
 
-        $cajas = \App\Models\Caja::activas()->orderBy('nombre')->get();
+        $cajas = \App\Models\Caja::where('tenant_id', $tenantId)->activas()->orderBy('nombre')->get();
 
         $productosJs = $productos->map(fn($p) => [
             'id'           => (int) $p->id,
@@ -301,7 +321,7 @@ class SaleService
             'categoria_id' => (int) ($p->categoria_id ?? 0),
         ])->values()->all();
 
-        $categoriasJs = Categoria::orderBy('nombre')->get(['id', 'nombre'])->toArray();
+        $categoriasJs = Categoria::where('tenant_id', $tenantId)->orderBy('nombre')->get(['id', 'nombre'])->toArray();
 
         $clientesJs = $clientes->map(fn($c) => [
             'id'         => (int) $c->id,
@@ -322,13 +342,17 @@ class SaleService
         );
     }
 
+    private function validaStock(): bool
+    {
+        $user = Auth::user();
+        if (!$user?->businessInstance) return true;
+        return ($user->businessInstance->configuracion['restaurante_valida_stock'] ?? '1') === '1';
+    }
+
     public function checkStock(int $productoId, int $almacenId): int
     {
-        $entrada = AlmacenMovimiento::where('producto_id', $productoId)
-            ->where('almacen_id', $almacenId)->where('tipo', 'entrada')->sum('cantidad');
-        $salida = AlmacenMovimiento::where('producto_id', $productoId)
-            ->where('almacen_id', $almacenId)->where('tipo', 'salida')->sum('cantidad');
-        return $entrada - $salida;
+        $producto = Producto::where('id', $productoId)->value('stock') ?? 0;
+        return (int) $producto;
     }
 
     private function procesarEcf(Venta $venta): void
@@ -355,30 +379,37 @@ class SaleService
 
     private function procesarDetalles(Venta $venta, array $data, ?Venta $ventaExistente): void
     {
-        $validaStock = true;
-        $user = Auth::user();
-        if ($user && $user->businessInstance) {
-            $config = $user->businessInstance->configuracion ?? [];
-            $validaStock = ($config['restaurante_valida_stock'] ?? '1') === '1';
-        }
+        $tenantId = Auth::user()->business_instance_id;
 
         // Ensure we always have a fallback almacen for the FK constraint
-        $fallbackAlmacen = \App\Models\Almacen::first();
+        $fallbackAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
         if (!$fallbackAlmacen) {
             $fallbackAlmacen = \App\Models\Almacen::create([
-                'tenant_id'   => Auth::user()->business_instance_id,
+                'tenant_id'   => $tenantId,
                 'nombre'      => 'General',
                 'ubicacion'   => 'Principal',
             ]);
         }
 
-        foreach ($data['producto_id'] as $key => $productoId) {
-            $almacenId = isset($data['almacen_id'][$key]) ? (int)$data['almacen_id'][$key] : $fallbackAlmacen->id;
-            $cantidad = $data['cantidad'][$key];
+        $productoIds = $data['producto_id'] ?? [];
+        $cantidades  = $data['cantidad'] ?? [];
+        $precios     = $data['precio'] ?? [];
+        $subtotales  = $data['subtotal'] ?? [];
+        $almacenes   = $data['almacen_id'] ?? [];
+        
+        $maxItems = count($productoIds);
+        for ($i = 0; $i < $maxItems; $i++) {
+            $productoId = $productoIds[$i] ?? null;
+            if (!$productoId) continue;
+            
+            $cantidad = $cantidades[$i] ?? 0;
+            $precio = $precios[$i] ?? 0;
+            $subtotal = $subtotales[$i] ?? 0;
+            $almacenId = isset($almacenes[$i]) ? (int)$almacenes[$i] : $fallbackAlmacen->id;
 
             $producto = Producto::findOrFail($productoId);
 
-            if ($validaStock) {
+            if ($this->validaStock()) {
                 $disponiblePorAlmacen = $this->checkStock($productoId, $almacenId);
                 if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
                     throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
@@ -389,15 +420,15 @@ class SaleService
                 'venta_id'        => $venta->id,
                 'producto_id'     => $productoId,
                 'cantidad'        => $cantidad,
-                'precio_unitario' => $data['precio'][$key],
-                'subtotal'        => $data['subtotal'][$key],
+                'precio_unitario' => $precio,
+                'subtotal'        => $subtotal,
                 'almacen_id'      => $almacenId,
-                'tenant_id'       => Auth::user()->business_instance_id,
+                'tenant_id'       => $tenantId,
             ]);
 
-            if ($validaStock) {
+            if ($this->validaStock()) {
                 AlmacenMovimiento::create([
-                    'tenant_id'   => Auth::user()->business_instance_id,
+                    'tenant_id'   => $tenantId,
                     'producto_id' => $productoId,
                     'almacen_id'  => $almacenId,
                     'tipo'        => 'salida',
