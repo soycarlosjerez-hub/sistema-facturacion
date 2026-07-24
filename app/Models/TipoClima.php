@@ -11,6 +11,8 @@ class TipoClima extends Model
 {
     use HasFactory, Auditable, TenantScope;
 
+    protected $table = 'tipos_clima';
+
     protected $fillable = [
         'slug',
         'nombre',

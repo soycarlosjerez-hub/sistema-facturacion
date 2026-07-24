@@ -12,6 +12,8 @@ class Mantenimiento extends Model
 {
     use HasFactory, Auditable, TenantScope;
 
+    public $tenantColumn = 'business_instance_id';
+
     protected $fillable = [
         'numero',
         'business_instance_id',

@@ -12,6 +12,10 @@ class TicketGarantia extends Model
 {
     use HasFactory, Auditable, TenantScope;
 
+    protected $table = 'tickets_garantia';
+
+    public $tenantColumn = 'business_instance_id';
+
     protected $fillable = [
         'codigo',
         'business_instance_id',

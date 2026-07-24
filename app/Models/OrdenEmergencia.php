@@ -12,6 +12,10 @@ class OrdenEmergencia extends Model
 {
     use HasFactory, Auditable, TenantScope;
 
+    protected $table = 'ordenes_emergencia';
+
+    public $tenantColumn = 'business_instance_id';
+
     protected $fillable = [
         'codigo',
         'business_instance_id',
