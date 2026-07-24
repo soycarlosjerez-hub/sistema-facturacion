@@ -15,6 +15,8 @@ class ContratoMantenimiento extends Model
 
     protected $table = 'contratos_mantenimiento';
 
+    public $tenantColumn = 'business_instance_id';
+
     protected $fillable = [
         'codigo',
         'business_instance_id',
