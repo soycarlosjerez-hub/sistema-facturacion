@@ -109,7 +109,7 @@
                         <label class="ui-label">Técnico Asignado</label>
                         <select name="tecnico_id" class="ui-select @error('tecnico_id') is-invalid @enderror">
                             <option value="">Sin asignar</option>
-                            @foreach (\App\Models\User::where('activo', true)->get() as $tecnico)
+                            @foreach (\App\Models\User::all() as $tecnico)
                                 <option value="{{ $tecnico->id }}" {{ old('tecnico_id') == $tecnico->id ? 'selected' : '' }}>
                                     {{ $tecnico->name }}
                                 </option>
