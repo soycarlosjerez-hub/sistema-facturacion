@@ -1154,8 +1154,6 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
             ->name('instalaciones.data');
         Route::get('/instalaciones/export-excel', [\App\Http\Controllers\InstalacionController::class, 'exportExcel'])
             ->name('instalaciones.export-excel');
-        Route::get('/instalaciones/{instalacion}', [\App\Http\Controllers\InstalacionController::class, 'show'])
-            ->name('instalaciones.show');
     });
     Route::middleware(['auth', 'permission:create_climatizacion::instalacion'])->group(function () {
         Route::get('/instalaciones/create', [\App\Http\Controllers\InstalacionController::class, 'create'])
@@ -1165,6 +1163,9 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
         Route::post('/instalaciones/{instalacion}/advance-state', [\App\Http\Controllers\InstalacionController::class, 'advance'])
             ->name('instalaciones.advance');
     });
+    Route::get('/instalaciones/{instalacion}', [\App\Http\Controllers\InstalacionController::class, 'show'])
+        ->name('instalaciones.show')
+        ->middleware(['auth', 'permission:view_any_climatizacion::instalacion']);
     Route::middleware(['auth', 'permission:update_climatizacion::instalacion'])->group(function () {
         Route::get('/instalaciones/{instalacion}/edit', [\App\Http\Controllers\InstalacionController::class, 'edit'])
             ->name('instalaciones.edit');
@@ -1184,8 +1185,6 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
             ->name('contratos.data');
         Route::get('/contratos/export-excel', [\App\Http\Controllers\ContratoMantenimientoController::class, 'exportExcel'])
             ->name('contratos.export-excel');
-        Route::get('/contratos/{contrato}', [\App\Http\Controllers\ContratoMantenimientoController::class, 'show'])
-            ->name('contratos.show');
     });
     Route::middleware(['auth', 'permission:create_climatizacion::contrato_mantenimiento'])->group(function () {
         Route::get('/contratos/create', [\App\Http\Controllers\ContratoMantenimientoController::class, 'create'])
@@ -1193,6 +1192,9 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
         Route::post('/contratos', [\App\Http\Controllers\ContratoMantenimientoController::class, 'store'])
             ->name('contratos.store');
     });
+    Route::get('/contratos/{contrato}', [\App\Http\Controllers\ContratoMantenimientoController::class, 'show'])
+        ->name('contratos.show')
+        ->middleware(['auth', 'permission:view_any_climatizacion::contrato_mantenimiento']);
     Route::middleware(['auth', 'permission:update_climatizacion::contrato_mantenimiento'])->group(function () {
         Route::get('/contratos/{contrato}/edit', [\App\Http\Controllers\ContratoMantenimientoController::class, 'edit'])
             ->name('contratos.edit');
@@ -1216,8 +1218,6 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
             ->name('mantenimientos.data');
         Route::get('/mantenimientos/export-excel', [\App\Http\Controllers\MantenimientoController::class, 'exportExcel'])
             ->name('mantenimientos.export-excel');
-        Route::get('/mantenimientos/{mantenimiento}', [\App\Http\Controllers\MantenimientoController::class, 'show'])
-            ->name('mantenimientos.show');
     });
     Route::middleware(['auth', 'permission:create_climatizacion::mantenimiento'])->group(function () {
         Route::get('/mantenimientos/create', [\App\Http\Controllers\MantenimientoController::class, 'create'])
@@ -1227,6 +1227,9 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
         Route::post('/mantenimientos/{mantenimiento}/advance-state', [\App\Http\Controllers\MantenimientoController::class, 'advance'])
             ->name('mantenimientos.advance');
     });
+    Route::get('/mantenimientos/{mantenimiento}', [\App\Http\Controllers\MantenimientoController::class, 'show'])
+        ->name('mantenimientos.show')
+        ->middleware(['auth', 'permission:view_any_climatizacion::mantenimiento']);
     Route::middleware(['auth', 'permission:update_climatizacion::mantenimiento'])->group(function () {
         Route::get('/mantenimientos/{mantenimiento}/edit', [\App\Http\Controllers\MantenimientoController::class, 'edit'])
             ->name('mantenimientos.edit');
@@ -1246,8 +1249,6 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
             ->name('tickets-garantia.data');
         Route::get('/tickets-garantia/export-excel', [\App\Http\Controllers\TicketGarantiaController::class, 'exportExcel'])
             ->name('tickets-garantia.export-excel');
-        Route::get('/tickets-garantia/{ticket}', [\App\Http\Controllers\TicketGarantiaController::class, 'show'])
-            ->name('tickets-garantia.show');
     });
     Route::middleware(['auth', 'permission:create_climatizacion::ticket_garantia'])->group(function () {
         Route::get('/tickets-garantia/create', [\App\Http\Controllers\TicketGarantiaController::class, 'create'])
@@ -1255,6 +1256,9 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
         Route::post('/tickets-garantia', [\App\Http\Controllers\TicketGarantiaController::class, 'store'])
             ->name('tickets-garantia.store');
     });
+    Route::get('/tickets-garantia/{ticket}', [\App\Http\Controllers\TicketGarantiaController::class, 'show'])
+        ->name('tickets-garantia.show')
+        ->middleware(['auth', 'permission:view_any_climatizacion::ticket_garantia']);
     Route::middleware(['auth', 'permission:update_climatizacion::ticket_garantia'])->group(function () {
         Route::get('/tickets-garantia/{ticket}/edit', [\App\Http\Controllers\TicketGarantiaController::class, 'edit'])
             ->name('tickets-garantia.edit');
@@ -1278,8 +1282,6 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
             ->name('ordenes-emergencia.data');
         Route::get('/ordenes-emergencia/export-excel', [\App\Http\Controllers\OrdenEmergenciaController::class, 'exportExcel'])
             ->name('ordenes-emergencia.export-excel');
-        Route::get('/ordenes-emergencia/{orden}', [\App\Http\Controllers\OrdenEmergenciaController::class, 'show'])
-            ->name('ordenes-emergencia.show');
     });
     Route::middleware(['auth', 'permission:create_climatizacion::orden_emergencia'])->group(function () {
         Route::get('/ordenes-emergencia/create', [\App\Http\Controllers\OrdenEmergenciaController::class, 'create'])
@@ -1287,6 +1289,9 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
         Route::post('/ordenes-emergencia', [\App\Http\Controllers\OrdenEmergenciaController::class, 'store'])
             ->name('ordenes-emergencia.store');
     });
+    Route::get('/ordenes-emergencia/{orden}', [\App\Http\Controllers\OrdenEmergenciaController::class, 'show'])
+        ->name('ordenes-emergencia.show')
+        ->middleware(['auth', 'permission:view_any_climatizacion::orden_emergencia']);
     Route::middleware(['auth', 'permission:update_climatizacion::orden_emergencia'])->group(function () {
         Route::get('/ordenes-emergencia/{orden}/edit', [\App\Http\Controllers\OrdenEmergenciaController::class, 'edit'])
             ->name('ordenes-emergencia.edit');
