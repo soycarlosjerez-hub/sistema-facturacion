@@ -133,7 +133,7 @@ body.dark-mode .vigencia-card .vigencia-text small { color: #94a3b8; }
                             </span>
                         </span>
                         <span class="divider">·</span>
-                        <a href="{{ route('climatizacion.garantias.index') }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
+                        <a href="{{ route('climatizacion.tickets-garantia.index') }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
                             <i class="bi bi-arrow-left"></i> Volver
                         </a>
                     </div>
@@ -141,7 +141,7 @@ body.dark-mode .vigencia-card .vigencia-text small { color: #94a3b8; }
             </div>
             <div class="ui-header-actions">
                 @if(!in_array($ticket->estado, ['abierto']))
-                    <a href="{{ route('climatizacion.garantias.edit', $ticket) }}" class="ui-btn ui-btn-primary ui-btn-pill">
+                    <a href="{{ route('climatizacion.tickets-garantia.edit', $ticket) }}" class="ui-btn ui-btn-primary ui-btn-pill">
                         <i class="bi bi-pencil"></i> Editar
                     </a>
                 @endif
@@ -328,7 +328,7 @@ body.dark-mode .vigencia-card .vigencia-text small { color: #94a3b8; }
                 </h5>
 
                 {{-- Evaluar / Aprobar --}}
-                <form action="{{ route('climatizacion.garantias.evaluar', $ticket) }}" method="POST" class="mb-3">
+                <form action="{{ route('climatizacion.tickets-garantia.evaluar', $ticket) }}" method="POST" class="mb-3">
                     @csrf @method('PATCH')
                     <div class="mb-3">
                         <label class="ui-label">Resultado de Evaluación <span class="text-danger">*</span></label>
@@ -365,7 +365,7 @@ body.dark-mode .vigencia-card .vigencia-text small { color: #94a3b8; }
                 <hr style="border-color:#e2e8f0;">
 
                 {{-- Rechazar --}}
-                <form action="{{ route('climatizacion.garantias.rechazar', $ticket) }}" method="POST">
+                <form action="{{ route('climatizacion.tickets-garantia.rechazar', $ticket) }}" method="POST">
                     @csrf @method('PATCH')
                     <div class="mb-3">
                         <label class="ui-label">Motivo de Rechazo <span class="text-danger">*</span></label>
@@ -382,11 +382,11 @@ body.dark-mode .vigencia-card .vigencia-text small { color: #94a3b8; }
 
             {{-- Acciones adicionales --}}
             <div class="d-flex gap-2 mt-3" style="--delay:.3s;animation:uiSlideUp .5s ease both;">
-                <a href="{{ route('climatizacion.garantias.index') }}" class="ui-btn ui-btn-ghost flex-fill">
+                <a href="{{ route('climatizacion.tickets-garantia.index') }}" class="ui-btn ui-btn-ghost flex-fill">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
                 @if(!in_array($ticket->estado, ['abierto']) && !in_array($ticket->estado, ['evaluando']))
-                    <a href="{{ route('climatizacion.garantias.edit', $ticket) }}" class="ui-btn ui-btn-solid flex-fill">
+                    <a href="{{ route('climatizacion.tickets-garantia.edit', $ticket) }}" class="ui-btn ui-btn-solid flex-fill">
                         <i class="bi bi-pencil"></i> Editar
                     </a>
                 @endif

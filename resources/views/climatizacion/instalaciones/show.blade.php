@@ -2,118 +2,169 @@
 
 @section('title', $instalacion->numero)
 
-@section('content')
-<div class="container-fluid py-3">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="mb-0"><i class="bi bi-tools me-2"></i>{{ $instalacion->numero }}</h2>
-            <p class="text-muted mb-0">Detalles de la instalación</p>
-        </div>
-    </div>
+@push('styles')
+@include('partials.premium-ui')
+<style>
+.ui-page { --accent: #06b6d4; --accent-rgb: 6,182,212; --accent-hover: #0891b2; }
+body.dark-mode .ui-detail-row { border-bottom-color: #1e293b; }
+body.dark-mode .ui-detail-label { color: #94a3b8; }
+body.dark-mode .ui-detail-value { color: #cbd5e1; }
+.text-pre-wrap { white-space: pre-wrap; word-wrap: break-word; }
+</style>
+@endpush
 
-    <div class="row g-3">
-        <!-- Información General -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 pt-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Información General</h5>
-                    @php
-                        $badgeColor = match ($instalacion->estado) {
-                            'pendiente' => 'secondary',
-                            'programada' => 'info',
-                            'en_progreso' => 'warning',
-                            'completada' => 'success',
-                            'cancelada' => 'danger',
-                            default => 'secondary',
-                        };
-                    @endphp
-                    <span class="badge bg-{{ $badgeColor }} fs-6">{{ \App\Models\Instalacion::ESTADOS[$instalacion->estado] ?? $instalacion->estado }}</span>
+@section('content')
+<div class="ui-page" style="--accent:#06b6d4;--accent-rgb:6,182,212;--accent-hover:#0891b2;">
+
+    <div class="ui-header" style="--delay:0s;">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-tools"></i>
                 </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Número</label>
-                            <p class="fw-medium">{{ $instalacion->numero }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Cliente</label>
-                            <p class="fw-medium">{{ $instalacion->cliente?->nombre ?? 'Sin cliente' }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Tipo de Inmueble</label>
-                            <p>{{ \App\Models\Instalacion::TIPOS_INMUEBLE[$instalacion->tipo_inmueble] ?? $instalacion->tipo_inmueble }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Instalador</label>
-                            <p>{{ $instalacion->instalador?->name ?? 'No asignado' }}</p>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label text-muted small">Dirección de Instalación</label>
-                            <p>{{ $instalacion->direccion_instalacion ?? 'No especificada' }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Programada Para</label>
-                            <p>{{ $instalacion->programada_para ? $instalacion->programada_para->format('d/m/Y H:i') : 'Por definir' }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Completada En</label>
-                            <p>{{ $instalacion->completada_en ? $instalacion->completada_en->format('d/m/Y H:i') : '-' }}</p>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label text-muted small">Nota Interna</label>
-                            <p class="text-pre-wrap">{{ $instalacion->nota_interna ?? 'Sin notas' }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted small">Creado por</label>
-                            <p>{{ $instalacion->creadoPor?->name ?? '-' }}</p>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label text-muted small">Creado</label>
-                            <p>{{ $instalacion->created_at?->format('d/m/Y h:i A') ?? '-' }}</p>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label text-muted small">Actualizado</label>
-                            <p>{{ $instalacion->updated_at?->format('d/m/Y h:i A') ?? '-' }}</p>
-                        </div>
+                <div>
+                    <h1 class="ui-header-title">{{ $instalacion->numero }}</h1>
+                    <div class="ui-header-meta">
+                        <span>Instalación de climatización</span>
+                        <span class="divider">·</span>
+                        <span>{{ $instalacion->cliente?->nombre ?? 'Sin cliente' }}</span>
+                        <span class="divider">·</span>
+                        <span>
+                            @php
+                                $badgeColor = match ($instalacion->estado) {
+                                    'pendiente' => 'neutral',
+                                    'programada' => 'info',
+                                    'en_progreso' => 'warning',
+                                    'completada' => 'success',
+                                    'cancelada' => 'danger',
+                                    default => 'neutral',
+                                };
+                            @endphp
+                            <span class="ui-badge ui-badge-{{ $badgeColor }}">
+                                {{ \App\Models\Instalacion::ESTADOS[$instalacion->estado] ?? $instalacion->estado }}
+                            </span>
+                        </span>
+                        <span class="divider">·</span>
+                        <a href="{{ route('climatizacion.instalaciones.index') }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
                     </div>
                 </div>
             </div>
+            <div class="ui-header-actions">
+                @if (!in_array($instalacion->estado, ['completada', 'cancelada']))
+                    <a href="{{ route('climatizacion.instalaciones.edit', $instalacion) }}" class="ui-btn ui-btn-primary ui-btn-pill">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+
+            <div class="ui-card" style="--delay:.1s;">
+                <div style="height:4px;background:linear-gradient(90deg, #06b6d4, rgba(255,255,255,.3));"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title" style="padding:0 0 .75rem;margin:0;">
+                        <i class="bi bi-info-circle"></i> Información General
+                    </div>
+
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Número</span>
+                        <span class="ui-detail-value fw-bold">{{ $instalacion->numero }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Cliente</span>
+                        <span class="ui-detail-value">{{ $instalacion->cliente?->nombre ?? 'Sin cliente' }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Tipo Inmueble</span>
+                        <span class="ui-detail-value">{{ \App\Models\Instalacion::TIPOS_INMUEBLE[$instalacion->tipo_inmueble] ?? $instalacion->tipo_inmueble }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Instalador</span>
+                        <span class="ui-detail-value">{{ $instalacion->instalador?->name ?? 'No asignado' }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Dirección</span>
+                        <span class="ui-detail-value">{{ $instalacion->direccion_instalacion ?? 'No especificada' }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Programada Para</span>
+                        <span class="ui-detail-value">{{ $instalacion->programada_para ? $instalacion->programada_para->format('d/m/Y H:i') : 'Por definir' }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Completada En</span>
+                        <span class="ui-detail-value">{{ $instalacion->completada_en ? $instalacion->completada_en->format('d/m/Y H:i') : '-' }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Creado por</span>
+                        <span class="ui-detail-value">{{ $instalacion->creadoPor?->name ?? '-' }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Creado</span>
+                        <span class="ui-detail-value">{{ $instalacion->created_at?->format('d/m/Y h:i A') ?? '-' }}</span>
+                    </div>
+                    <div class="ui-detail-row">
+                        <span class="ui-detail-label">Actualizado</span>
+                        <span class="ui-detail-value">{{ $instalacion->updated_at?->format('d/m/Y h:i A') ?? '-' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            @if ($instalacion->nota_interna)
+            <div class="ui-card" style="--delay:.15s;">
+                <div style="height:4px;background:linear-gradient(90deg, #06b6d4, rgba(255,255,255,.3));"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title" style="padding:0 0 .75rem;margin:0;">
+                        <i class="bi bi-journal-text"></i> Nota Interna
+                    </div>
+                    <p style="color:#475569;line-height:1.6;font-size:.9rem;white-space:pre-wrap;">{{ $instalacion->nota_interna }}</p>
+                </div>
+            </div>
+            @endif
         </div>
 
-        <!-- Resumen / Total -->
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 pt-3">
-                    <h5 class="mb-0">Resumen</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label text-muted small">Total de Productos</label>
-                        <p class="h4 mb-0">{{ $instalacion->productos->sum('pivot.cantidad') }} unidades</p>
+        <div class="col-lg-5">
+            <div class="ui-card" style="--delay:.1s;">
+                <div style="height:4px;background:linear-gradient(90deg, #06b6d4, rgba(255,255,255,.3));"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title" style="padding:0 0 .75rem;margin:0;">
+                        <i class="bi bi-bar-chart"></i> Resumen
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-muted small">Total de la Instalación</label>
-                        <p class="h3 mb-0 fw-bold text-success">${{ number_format($instalacion->total ?? 0, 2) }}</p>
+                        <div class="ui-detail-label" style="width:auto;">Total de Productos</div>
+                        <div class="h4 mb-0 fw-bold" style="color:var(--accent);">{{ $instalacion->productos->sum('pivot.cantidad') }} unidades</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="ui-detail-label" style="width:auto;">Total Instalación</div>
+                        <div class="h3 mb-0 fw-bold" style="color:#16a34a;">${{ number_format($instalacion->total ?? 0, 2) }}</div>
                     </div>
                     <hr>
-                    <label class="form-label text-muted small">Transiciones de Estado</label>
-                    <ul class="list-unstyled mb-0">
+                    <div class="ui-detail-label" style="width:auto;margin-bottom:.5rem;">Transiciones de Estado</div>
+                    <ul class="list-unstyled mb-0" style="font-size:.85rem;">
                         @foreach (\App\Models\Instalacion::ESTADOS as $key => $label)
                             @php
+                                $estadosArr = array_keys(\App\Models\Instalacion::ESTADOS);
+                                $currentIdx = array_search($instalacion->estado, $estadosArr);
+                                $keyIdx = array_search($key, $estadosArr);
                                 $isCurrent = $instalacion->estado === $key;
-                                $isPast = in_array($key, [
-                                    'pendiente', 'programada', 'en_progreso', 'completada'
-                                ]) && array_search($key, array_keys(\App\Models\Instalacion::ESTADOS)) <= array_search($instalacion->estado, array_keys(\App\Models\Instalacion::ESTADOS));
+                                $isPast = $keyIdx < $currentIdx && $instalacion->estado !== 'cancelada';
                             @endphp
                             <li class="d-flex align-items-center mb-1">
                                 @if ($isCurrent)
-                                    <i class="bi bi-arrow-right-circle-fill text-{{ $badgeColor }} me-2"></i>
+                                    <i class="bi bi-arrow-right-circle-fill me-2" style="color:var(--accent);"></i>
                                     <span class="fw-bold">{{ $label }}</span>
-                                @elseif ($isPast && $instalacion->estado !== 'cancelada')
+                                @elseif ($isPast)
                                     <i class="bi bi-check-circle text-success me-2"></i>
                                     <span class="text-muted">{{ $label }}</span>
                                 @else
-                                    <i class="bi bi-circle text-secondary me-2"></i>
+                                    <i class="bi bi-circle me-2" style="color:#cbd5e1;"></i>
                                     <span class="text-muted">{{ $label }}</span>
                                 @endif
                             </li>
@@ -124,12 +175,12 @@
         </div>
     </div>
 
-    <!-- Productos -->
-    <div class="card border-0 shadow-sm mt-3">
-        <div class="card-header bg-white border-0 pt-3">
-            <h5 class="mb-0">Productos de la Instalación</h5>
-        </div>
-        <div class="card-body">
+    <div class="ui-card mt-4" style="--delay:.2s;">
+        <div style="height:4px;background:linear-gradient(90deg, #06b6d4, rgba(255,255,255,.3));"></div>
+        <div class="ui-card-body">
+            <div class="ui-card-title" style="padding:0 0 .75rem;margin:0;">
+                <i class="bi bi-box-seam"></i> Productos de la Instalación
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -152,7 +203,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-3">No hay productos asociados a esta instalación</td>
+                            <td colspan="5" class="text-center text-muted py-3">No hay productos asociados</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -167,11 +218,11 @@
         </div>
     </div>
 
-    <!-- Acciones -->
-    <div class="mt-3">
+    <div class="d-flex gap-2 mt-4" style="--delay:.25s;">
         @if (!in_array($instalacion->estado, ['completada', 'cancelada']))
-            <a href="{{ route('climatizacion.instalaciones.edit', $instalacion) }}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
-
+            <a href="{{ route('climatizacion.instalaciones.edit', $instalacion) }}" class="ui-btn ui-btn-solid">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
             @php
                 $nextState = match ($instalacion->estado) {
                     'pendiente' => 'programada',
@@ -184,20 +235,15 @@
                 <form action="{{ route('climatizacion.instalaciones.advance', $instalacion) }}" method="POST" class="d-inline">
                     @csrf @method('PATCH')
                     <input type="hidden" name="next_state" value="{{ $nextState }}">
-                    <button type="submit" class="btn btn-primary" onclick="return confirm('¿Avanzar estado a {{ \App\Models\Instalacion::ESTADOS[$nextState] }}?');">
-                        <i class="bi bi-forward me-1"></i>Avanzar a {{ \App\Models\Instalacion::ESTADOS[$nextState] }}
+                    <button type="submit" class="ui-btn ui-btn-primary" onclick="return confirm('¿Avanzar estado a {{ \App\Models\Instalacion::ESTADOS[$nextState] }}?');">
+                        <i class="bi bi-forward"></i> Avanzar a {{ \App\Models\Instalacion::ESTADOS[$nextState] }}
                     </button>
                 </form>
             @endif
         @endif
-        <a href="{{ route('climatizacion.instalaciones.index') }}" class="btn btn-outline-secondary ms-2"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+        <a href="{{ route('climatizacion.instalaciones.index') }}" class="ui-btn ui-btn-ghost">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
     </div>
 </div>
-
-<style>
-.text-pre-wrap {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-</style>
 @endsection

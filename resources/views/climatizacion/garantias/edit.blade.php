@@ -32,11 +32,11 @@ body.dark-mode .ui-card-subtitle { color: #94a3b8; }
                     <div class="ui-header-meta">
                         <span>Modificar ticket de garantía</span>
                         <span class="divider">·</span>
-                        <a href="{{ route('climatizacion.garantias.show', $ticket) }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
+                        <a href="{{ route('climatizacion.tickets-garantia.show', $ticket) }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
                             <i class="bi bi-eye"></i> Ver detalle
                         </a>
                         <span class="divider">·</span>
-                        <a href="{{ route('climatizacion.garantias.index') }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
+                        <a href="{{ route('climatizacion.tickets-garantia.index') }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
                             <i class="bi bi-arrow-left"></i> Volver al listado
                         </a>
                     </div>
@@ -58,7 +58,7 @@ body.dark-mode .ui-card-subtitle { color: #94a3b8; }
         </div>
 
         <div class="ui-card-body">
-            <form action="{{ route('climatizacion.garantias.update', $ticket) }}" method="POST">
+            <form action="{{ route('climatizacion.tickets-garantia.update', $ticket) }}" method="POST">
                 @csrf @method('PUT')
 
                 {{-- Cliente y Producto --}}
@@ -210,7 +210,7 @@ body.dark-mode .ui-card-subtitle { color: #94a3b8; }
                 {{-- Sticky Bar --}}
                 <div class="ui-sticky-bar" style="position:sticky;bottom:0;left:0;right:0;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-top:2px solid #06b6d4;padding:.7rem 1.5rem;z-index:1050;box-shadow:0 -4px 20px rgba(0,0,0,.08);margin:0 -1.75rem -1.5rem;border-radius:0 0 var(--radius-2xl) var(--radius-2xl);">
                     <div class="ui-sticky-bar-inner">
-                        <a href="{{ route('climatizacion.garantias.show', $ticket) }}" class="ui-btn ui-btn-ghost">
+                        <a href="{{ route('climatizacion.tickets-garantia.show', $ticket) }}" class="ui-btn ui-btn-ghost">
                             <i class="bi bi-x-lg"></i> Cancelar
                         </a>
                         <button type="submit" class="ui-btn ui-btn-solid">

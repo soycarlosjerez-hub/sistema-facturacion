@@ -87,7 +87,7 @@ body.dark-mode .dias-restantes.negativo { color: #f87171; }
                 </div>
             </div>
             <div class="ui-header-actions">
-                <a href="{{ route('climatizacion.garantias.create') }}" class="ui-btn ui-btn-primary ui-btn-pill">
+                <a href="{{ route('climatizacion.tickets-garantia.create') }}" class="ui-btn ui-btn-primary ui-btn-pill">
                     <i class="bi bi-plus-lg"></i> Nuevo Ticket
                 </a>
             </div>
@@ -190,7 +190,7 @@ body.dark-mode .dias-restantes.negativo { color: #f87171; }
                     <button type="submit" class="ui-btn ui-btn-solid ui-btn-sm flex-fill" style="border-radius:.65rem;">
                         <i class="bi bi-search"></i> Filtrar
                     </button>
-                    <a href="{{ route('climatizacion.garantias.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm" style="border-radius:.65rem;">
+                    <a href="{{ route('climatizacion.tickets-garantia.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm" style="border-radius:.65rem;">
                         <i class="bi bi-x-circle"></i>
                     </a>
                 </div>
@@ -254,7 +254,7 @@ body.dark-mode .dias-restantes.negativo { color: #f87171; }
                         </td>
                         <td class="text-end">
                             <div class="d-flex gap-1 justify-content-end">
-                                <a href="{{ route('climatizacion.garantias.show', $t) }}"
+                                <a href="{{ route('climatizacion.tickets-garantia.show', $t) }}"
                                    class="ui-action ui-action-view" title="Ver detalle">
                                     <i class="bi bi-eye"></i>
                                 </a>
@@ -268,7 +268,7 @@ body.dark-mode .dias-restantes.negativo { color: #f87171; }
                                                 icon:'question',
                                                 color:'#16a34a',
                                                 confirmText:'Sí, aprobar',
-                                                url:'{{ route('climatizacion.garantias.evaluar', $t) }}'
+                                                url:'{{ route('climatizacion.tickets-garantia.evaluar', $t) }}'
                                             })">
                                         <i class="bi bi-check-circle"></i>
                                     </button>
@@ -281,13 +281,13 @@ body.dark-mode .dias-restantes.negativo { color: #f87171; }
                                                 icon:'warning',
                                                 color:'#dc2626',
                                                 confirmText:'Sí, rechazar',
-                                                url:'{{ route('climatizacion.garantias.rechazar', $t) }}'
+                                                url:'{{ route('climatizacion.tickets-garantia.rechazar', $t) }}'
                                             })">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                 @endif
                                 @if(!in_array($t->estado, ['abierto']))
-                                    <a href="{{ route('climatizacion.garantias.edit', $t) }}"
+                                    <a href="{{ route('climatizacion.tickets-garantia.edit', $t) }}"
                                        class="ui-action ui-action-edit" title="Editar">
                                         <i class="bi bi-pencil"></i>
                                     </a>
@@ -305,7 +305,7 @@ body.dark-mode .dias-restantes.negativo { color: #f87171; }
                                         <i class="bi bi-trash"></i>
                                     </button>
                                     <form id="delete-form-{{ $t->id }}"
-                                          action="{{ route('climatizacion.garantias.destroy', $t) }}"
+                                          action="{{ route('climatizacion.tickets-garantia.destroy', $t) }}"
                                           method="POST" class="d-none">
                                         @csrf @method('DELETE')
                                     </form>

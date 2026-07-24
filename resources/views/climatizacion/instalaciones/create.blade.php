@@ -2,67 +2,101 @@
 
 @section('title', 'Nueva Instalación')
 
+@push('styles')
+@include('partials.premium-ui')
+<style>
+.ui-page { --accent: #06b6d4; --accent-rgb: 6,182,212; --accent-hover: #0891b2; }
+body.dark-mode .ui-card-title { color: #f1f5f9; }
+body.dark-mode .ui-card-subtitle { color: #94a3b8; }
+</style>
+@endpush
+
 @section('content')
-<div class="container-fluid py-3">
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="mb-0"><i class="bi bi-tools me-2"></i>Nueva Instalación</h2>
-            <p class="text-muted mb-0">Registrar una nueva instalación de climatización</p>
+<div class="ui-page" style="--accent:#06b6d4;--accent-rgb:6,182,212;--accent-hover:#0891b2;">
+
+    <div class="ui-header" style="--delay:0s;">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-tools"></i>
+                </div>
+                <div>
+                    <h1 class="ui-header-title">Nueva Instalación</h1>
+                    <div class="ui-header-meta">
+                        <span>Registrar una nueva instalación de climatización</span>
+                        <span class="divider">·</span>
+                        <a href="{{ route('climatizacion.instalaciones.index') }}" style="color:rgba(255,255,255,.8);text-decoration:none;">
+                            <i class="bi bi-arrow-left"></i> Volver al listado
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
+    <div class="ui-card" style="--delay:.1s;max-width:960px;margin:0 auto;">
+        <div style="height:4px;background:linear-gradient(90deg, #06b6d4, rgba(255,255,255,.3));"></div>
+        <div style="padding:1.25rem 1.75rem 0;">
+            <div class="ui-card-title" style="padding:0;margin-bottom:.15rem;">
+                <i class="bi bi-file-earmark-plus"></i> Datos de la Instalación
+            </div>
+            <div class="ui-card-subtitle" style="padding:0;">Completa la información para registrar la instalación</div>
+        </div>
+
+        <div class="ui-card-body">
             <form action="{{ route('climatizacion.instalaciones.store') }}" method="POST">
                 @csrf
 
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label">Cliente</label>
-                        <select name="cliente_id" class="form-select @error('cliente_id') is-invalid @enderror">
+                        <label class="ui-label">Cliente</label>
+                        <select name="cliente_id" class="ui-select @error('cliente_id') is-invalid @enderror">
                             <option value="">Seleccionar cliente</option>
                             @foreach ($clientes as $cliente)
                                 <option value="{{ $cliente->id }}" {{ old('cliente_id') == $cliente->id ? 'selected' : '' }}>{{ $cliente->nombre }}</option>
                             @endforeach
                         </select>
-                        @error('cliente_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        @error('cliente_id') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label">Tipo de Inmueble <span class="text-danger">*</span></label>
-                        <select name="tipo_inmueble" class="form-select @error('tipo_inmueble') is-invalid @enderror" required>
+                        <label class="ui-label">Tipo de Inmueble <span class="text-danger">*</span></label>
+                        <select name="tipo_inmueble" class="ui-select @error('tipo_inmueble') is-invalid @enderror" required>
                             <option value="">Seleccionar</option>
                             @foreach (\App\Models\Instalacion::TIPOS_INMUEBLE as $key => $label)
                                 <option value="{{ $key }}" {{ old('tipo_inmueble') === $key ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
-                        @error('tipo_inmueble') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        @error('tipo_inmueble') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label">Programada Para</label>
-                        <input type="datetime-local" name="programada_para" class="form-control @error('programada_para') is-invalid @enderror" value="{{ old('programada_para') }}">
-                        @error('programada_para') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <label class="ui-label">Programada Para</label>
+                        <input type="datetime-local" name="programada_para" class="ui-input @error('programada_para') is-invalid @enderror" value="{{ old('programada_para') }}">
+                        @error('programada_para') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label">Dirección de Instalación</label>
-                        <input type="text" name="direccion_instalacion" class="form-control @error('direccion_instalacion') is-invalid @enderror" value="{{ old('direccion_instalacion') }}" placeholder="Dirección donde se realizará la instalación" maxlength="300">
-                        @error('direccion_instalacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <label class="ui-label">Dirección de Instalación</label>
+                        <input type="text" name="direccion_instalacion" class="ui-input @error('direccion_instalacion') is-invalid @enderror" value="{{ old('direccion_instalacion') }}" placeholder="Dirección donde se realizará la instalación" maxlength="300">
+                        @error('direccion_instalacion') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label">Nota Interna</label>
-                        <textarea name="nota_interna" class="form-control @error('nota_interna') is-invalid @enderror" rows="3" placeholder="Instrucciones u observaciones internas..." maxlength="2000">{{ old('nota_interna') }}</textarea>
-                        @error('nota_interna') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <label class="ui-label">Nota Interna</label>
+                        <textarea name="nota_interna" class="ui-textarea @error('nota_interna') is-invalid @enderror" rows="3" placeholder="Instrucciones u observaciones internas..." maxlength="2000">{{ old('nota_interna') }}</textarea>
+                        @error('nota_interna') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                     </div>
                 </div>
 
                 <!-- Productos -->
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Productos de la Instalación</h5>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="addProductRow">
+                        <h5 class="mb-0" style="font-size:.95rem;font-weight:600;"><i class="bi bi-box-seam me-2" style="color:#06b6d4;"></i>Productos de la Instalación</h5>
+                        <button type="button" class="ui-btn ui-btn-primary ui-btn-sm" id="addProductRow">
                             <i class="bi bi-plus-circle me-1"></i>Agregar Producto
                         </button>
                     </div>
@@ -83,7 +117,7 @@
                                     @foreach (old('productos') as $index => $prod)
                                     <tr class="product-row">
                                         <td>
-                                            <select name="productos[{{ $index }}][producto_id]" class="form-select form-select-sm">
+                                            <select name="productos[{{ $index }}][producto_id]" class="form-select form-select-sm product-select">
                                                 <option value="">Seleccionar</option>
                                                 @foreach ($productos as $p)
                                                     <option value="{{ $p->id }}" {{ $prod['producto_id'] == $p->id ? 'selected' : '' }} data-precio="{{ $p->precio_venta ?? 0 }}">
@@ -119,10 +153,13 @@
                     @error('productos.*.producto_id') <div class="text-danger small">Debe seleccionar un producto válido.</div> @enderror
                 </div>
 
-                <div class="border-top pt-3">
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Guardar</button>
-                    <a href="{{ route('climatizacion.instalaciones.index') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                <div class="ui-sticky-bar" style="position:sticky;bottom:0;left:0;right:0;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-top:2px solid #06b6d4;padding:.7rem 1.5rem;z-index:1050;box-shadow:0 -4px 20px rgba(0,0,0,.08);margin:0 -1.75rem -1.5rem;border-radius:0 0 var(--radius-2xl) var(--radius-2xl);">
+                    <div class="ui-sticky-bar-inner">
+                        <a href="{{ route('climatizacion.instalaciones.index') }}" class="ui-btn ui-btn-ghost"><i class="bi bi-x-lg"></i> Cancelar</a>
+                        <button type="submit" class="ui-btn ui-btn-solid"><i class="bi bi-check-lg"></i> Guardar</button>
+                    </div>
                 </div>
+
             </form>
         </div>
     </div>
@@ -143,17 +180,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateSubtotal(row) {
         const cantidad = parseFloat(row.querySelector('.product-cantidad').value) || 0;
         const precio = parseFloat(row.querySelector('.product-precio').value) || 0;
-        const subtotal = cantidad * precio;
-        row.querySelector('.product-subtotal').textContent = '$' + subtotal.toFixed(2);
+        row.querySelector('.product-subtotal').textContent = '$' + (cantidad * precio).toFixed(2);
         updateTotal();
     }
 
     function updateTotal() {
         let total = 0;
         container.querySelectorAll('.product-row').forEach(function (row) {
-            const cantidad = parseFloat(row.querySelector('.product-cantidad').value) || 0;
-            const precio = parseFloat(row.querySelector('.product-precio').value) || 0;
-            total += cantidad * precio;
+            total += (parseFloat(row.querySelector('.product-cantidad').value) || 0) * (parseFloat(row.querySelector('.product-precio').value) || 0);
         });
         document.getElementById('productosTotal').textContent = '$' + total.toFixed(2);
     }
@@ -162,7 +196,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const tr = document.createElement('tr');
         tr.className = 'product-row';
         const i = rowIndex++;
-        const selectedAttr = data && data.producto_id ? `data-selected="${data.producto_id}"` : '';
         tr.innerHTML = `
             <td>
                 <select name="productos[${i}][producto_id]" class="form-select form-select-sm product-select">
@@ -200,29 +233,19 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             updateSubtotal(tr);
         });
-        tr.querySelector('.remove-product-row').addEventListener('click', function () {
-            tr.remove();
-            updateTotal();
-        });
+        tr.querySelector('.remove-product-row').addEventListener('click', function () { tr.remove(); updateTotal(); });
 
-        // Trigger change to set price if available
         const select = tr.querySelector('.product-select');
-        if (select.value) {
-            select.dispatchEvent(new Event('change'));
-        }
+        if (select.value) select.dispatchEvent(new Event('change'));
         updateSubtotal(tr);
     }
 
-    addBtn.addEventListener('click', function () {
-        addRow();
-    });
+    addBtn.addEventListener('click', function () { addRow(); });
 
-    // Initialize existing rows
     container.querySelectorAll('.product-row').forEach(function (row) {
         const cantidad = row.querySelector('.product-cantidad');
         const precio = row.querySelector('.product-precio');
         const select = row.querySelector('.product-select');
-
         cantidad.addEventListener('input', function () { updateSubtotal(row); });
         precio.addEventListener('input', function () { updateSubtotal(row); });
         select.addEventListener('change', function () {
@@ -235,22 +258,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             updateSubtotal(row);
         });
-
         const btn = row.querySelector('.remove-product-row');
-        if (btn) {
-            btn.addEventListener('click', function () {
-                row.remove();
-                updateTotal();
-            });
-        }
-
+        if (btn) btn.addEventListener('click', function () { row.remove(); updateTotal(); });
         updateSubtotal(row);
     });
 
     container.querySelectorAll('.product-row .product-select').forEach(function (sel) {
-        if (sel.value) {
-            sel.dispatchEvent(new Event('change'));
-        }
+        if (sel.value) sel.dispatchEvent(new Event('change'));
     });
 });
 </script>
