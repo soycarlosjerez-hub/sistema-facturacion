@@ -4,19 +4,10 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%; transition: background-color 0.2s;
-    }
-    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
-</style>
 @endpush
 
 @section('content')
-<div class="ui-page">
+<div class="ui-page" style="--accent:#14b8a6;--accent-rgb:20,184,166;--accent-hover:#0d9488;">
 
     <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
@@ -58,8 +49,8 @@
         @method('PUT')
         <div class="ui-card" style="--delay:.1s">
             <div class="ui-card-accent"></div>
-            <div class="card-body">
-                <h5 class="fw-bold mb-4"><i class="bi bi-building me-2" style="color:#3b82f6;"></i> Información del Almacén</h5>
+            <div class="ui-card-body">
+                <h5 class="fw-bold mb-4"><i class="bi bi-building me-2" style="color:var(--accent);"></i> Información del Almacén</h5>
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label for="nombre" class="ui-label">Nombre del almacén <span class="text-danger">*</span></label>
@@ -87,17 +78,12 @@
         </div>
     </form>
 
-    <div class="premium-sticky-bar">
-        <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted small d-none d-md-inline">
-                <i class="bi bi-info-circle me-1"></i> Editando almacén
-            </span>
-            <div class="d-flex gap-2 ms-auto">
-                <a href="{{ route('almacenes.index') }}" class="btn-cancel rounded-pill px-4">Cancelar</a>
-                <button type="submit" form="instanceForm" class="btn-save rounded-pill px-5 fw-bold shadow-sm">
-                    <i class="bi bi-save me-2"></i>Guardar Almacén
-                </button>
-            </div>
+    <div class="ui-sticky-bar">
+        <div class="ui-sticky-bar-inner">
+            <a href="{{ route('almacenes.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="instanceForm" class="ui-btn ui-btn-solid rounded-pill px-5">
+                <i class="bi bi-save me-2"></i>Guardar Almacén
+            </button>
         </div>
     </div>
 </div>

@@ -1,5 +1,5 @@
-<table class="table table-hover align-middle mb-0">
-    <thead class="table-light">
+<table class="ui-table mb-0">
+    <thead>
         <tr>
             <th class="ps-4">Fecha y Hora</th>
             <th>Producto</th>
@@ -26,11 +26,11 @@
             </td>
             <td>
                 @if($m->tipo === 'entrada')
-                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">
+                    <span class="ui-badge ui-badge-success">
                         <i class="bi bi-arrow-down-left me-1"></i> Entrada
                     </span>
                 @else
-                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">
+                    <span class="ui-badge ui-badge-danger">
                         <i class="bi bi-arrow-up-right me-1"></i> Salida
                     </span>
                 @endif
@@ -50,8 +50,10 @@
         @empty
         <tr>
             <td colspan="7" class="text-center py-5">
-                <i class="bi bi-arrow-left-right display-1 text-muted opacity-25"></i>
-                <p class="text-muted mt-3">No hay movimientos registrados.</p>
+                <div class="ui-empty-state">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <p>No hay movimientos registrados.</p>
+                </div>
             </td>
         </tr>
         @endforelse

@@ -4,23 +4,10 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%; transition: background-color 0.2s;
-    }
-    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    .status-badge {
-        padding: 0.4em 0.8em; border-radius: 2rem;
-        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
-    }
-    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
-</style>
 @endpush
 
 @section('content')
-<div class="ui-page">
+<div class="ui-page" style="--accent:#14b8a6;--accent-rgb:20,184,166;--accent-hover:#0d9488;">
     <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -48,7 +35,7 @@
 
     <div class="ui-card mb-4" style="--delay:.1s">
         <div class="ui-card-accent"></div>
-        <div class="card-body">
+        <div class="ui-card-body">
             <div class="row g-2 align-items-end">
                 <div class="col-lg-6">
                     <div class="ui-input-group">
@@ -66,9 +53,9 @@
         <div class="col-md-6 col-lg-4">
             <div class="ui-card h-100" style="--delay:.2s">
                 <div class="ui-card-accent"></div>
-                <div class="card-body">
+                <div class="ui-card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="rounded-4 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <div class="d-flex align-items-center justify-content-center rounded-4" style="width:50px;height:50px;background:rgba(var(--accent-rgb),0.1);color:var(--accent);">
                             <i class="bi bi-building fs-4"></i>
                         </div>
                         <div class="d-flex gap-1">
@@ -94,22 +81,24 @@
                     </div>
                     @endif
 
-                    <div class="p-3 bg-light rounded-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Productos</small>
-                            <span class="fw-bold">{{ \App\Models\AlmacenMovimiento::where('almacen_id', $a->id)->selectRaw('COUNT(DISTINCT producto_id) as total')->value('total') }}</span>
-                        </div>
-                        <div class="mt-2 small text-dark fw-bold">
-                            <i class="bi bi-box-seam me-1"></i> Productos con stock
+                    <div class="ui-stat" style="--delay:0s">
+                        <div class="ui-stat-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="ui-stat-label">Productos</div>
+                                <div class="ui-stat-sub"><i class="bi bi-box-seam me-1"></i>con stock</div>
+                            </div>
+                            <div class="ui-stat-value fs-4">{{ \App\Models\AlmacenMovimiento::where('almacen_id', $a->id)->selectRaw('COUNT(DISTINCT producto_id) as total')->value('total') }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         @empty
-        <div class="col-12 text-center py-5">
-            <i class="bi bi-building-x display-1 text-muted opacity-25"></i>
-            <p class="text-muted mt-3">No hay almacenes configurados en el sistema.</p>
+        <div class="col-12">
+            <div class="ui-empty-state">
+                <i class="bi bi-building-x"></i>
+                <p>No hay almacenes configurados en el sistema.</p>
+            </div>
         </div>
         @endforelse
     </div>

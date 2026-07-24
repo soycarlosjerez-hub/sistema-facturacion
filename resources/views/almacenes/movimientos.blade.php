@@ -4,23 +4,11 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%; transition: background-color 0.2s;
-    }
-    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    .status-badge {
-        padding: 0.4em 0.8em; border-radius: 2rem;
-        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
-    }
-    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
-</style>
-@endpush
+
+<｜｜DSML｜｜parameter name="replaceAll" string="false">false@endpush
 
 @section('content')
-<div class="ui-page">
+<div class="ui-page" style="--accent:#14b8a6;--accent-rgb:20,184,166;--accent-hover:#0d9488;">
     <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -50,7 +38,7 @@
 
     <div class="ui-card mb-4" style="--delay:.1s">
         <div class="ui-card-accent"></div>
-        <div class="card-body">
+        <div class="ui-card-body">
             <form method="GET" id="filter-form" class="row g-2 align-items-end">
                 <div class="col-lg-4">
                     <div class="ui-input-group">

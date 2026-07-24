@@ -3,23 +3,10 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%; transition: background-color 0.2s;
-    }
-    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    .status-badge {
-        padding: 0.4em 0.8em; border-radius: 2rem;
-        font-weight: 500; font-size: 0.75rem; letter-spacing: 0.5px;
-    }
-    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
-</style>
 @endpush
 
 @section('content')
-<div class="ui-page">
+<div class="ui-page" style="--accent:#14b8a6;--accent-rgb:20,184,166;--accent-hover:#0d9488;">
 
     <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
@@ -67,7 +54,7 @@
 
     <div class="ui-card mb-4" style="--delay:.1s">
         <div class="ui-card-accent"></div>
-        <div class="card-body">
+        <div class="ui-card-body">
             <form method="GET" class="row g-2 align-items-end">
                 <div class="col-lg-4">
                     <div class="ui-input-group">
@@ -102,7 +89,7 @@
         @endphp
         <div class="ui-card mb-4 overflow-hidden" style="--delay:.2s">
             <div class="ui-card-accent"></div>
-            <div class="card-body">
+            <div class="ui-card-body">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <div>
                         <h5 class="fw-bold mb-1">
@@ -116,15 +103,15 @@
                         @endif
                     </div>
                     <div class="d-flex gap-3 mt-2 mt-sm-0">
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fs-6 px-3 py-2">
+                        <span class="badge rounded-pill fs-6 px-3 py-2" style="background:rgba(var(--accent-rgb),0.1);color:var(--accent);">
                             <i class="bi bi-box me-1"></i>{{ $items->count() }} productos
                         </span>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light small text-uppercase text-muted">
+                    <table class="ui-table mb-0">
+                        <thead class="small text-uppercase text-muted">
                             <tr>
                                 <th class="py-3 ps-4">Código</th>
                                 <th class="py-3">Producto</th>
@@ -160,7 +147,7 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
-                                        <span class="badge {{ $badgeClass }} rounded-pill fs-6 px-3">{{ $stock }}</span>
+                                        <span class="badge {{ $badgeClass }} rounded-pill px-3 py-1 fs-6">{{ $stock }}</span>
                                     </td>
                                     <td class="text-end text-muted d-none d-md-table-cell">
                                         <small>RD$ {{ number_format($producto->precio_compra ?? 0, 2) }}</small>
@@ -180,14 +167,14 @@
                             @endif
                         </tbody>
                         @if($rowCount > 0)
-                        <tfoot class="table-light border-top">
+                        <tfoot class="border-top" style="background:rgba(var(--accent-rgb),0.05);">
                             <tr>
                                 <td colspan="2" class="ps-4 py-3 fw-bold">Totales</td>
                                 <td class="text-end py-3">
                                     <span class="fw-bold">{{ $totalUnidades }} unidades</span>
                                 </td>
                                 <td class="text-end d-none d-md-table-cell py-3"></td>
-                                <td class="text-end pe-4 py-3 fw-bold fs-6 text-primary">
+                                <td class="text-end pe-4 py-3 fw-bold fs-6" style="color:var(--accent);">
                                     RD$ {{ number_format($totalValor, 2) }}
                                 </td>
                             </tr>

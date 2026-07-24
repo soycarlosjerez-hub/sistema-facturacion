@@ -40,6 +40,11 @@ class Producto extends Model
         'tenant_id',
     ];
 
+    public function scopeActivos($query)
+    {
+        return $query->where('activo', true);
+    }
+
     protected $casts = [
         'precio'           => 'decimal:2',
         'precio_compra'    => 'decimal:2',

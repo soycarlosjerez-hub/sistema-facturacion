@@ -3,19 +3,10 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-    .btn-icon-hover {
-        width: 32px; height: 32px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 50%; transition: background-color 0.2s;
-    }
-    .btn-icon-hover:hover { background-color: rgba(0,0,0,0.05); }
-    body.dark-mode .btn-icon-hover:hover { background-color: rgba(255,255,255,0.1); }
-</style>
 @endpush
 
 @section('content')
-<div class="ui-page">
+<div class="ui-page" style="--accent:#14b8a6;--accent-rgb:20,184,166;--accent-hover:#0d9488;">
 
     <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
@@ -60,8 +51,8 @@
 
     <div class="ui-card" style="--delay:.1s">
         <div class="ui-card-accent"></div>
-        <div class="card-body">
-            <h5 class="fw-bold mb-4"><i class="bi bi-pencil-square me-2" style="color:#3b82f6;"></i> Detalles del movimiento</h5>
+        <div class="ui-card-body">
+            <h5 class="fw-bold mb-4"><i class="bi bi-pencil-square me-2" style="color:var(--accent);"></i> Detalles del movimiento</h5>
 
             <form action="{{ route('almacenes.movimientos.store') }}" method="POST" id="movimientoForm">
                 @csrf
@@ -167,13 +158,13 @@
                     @enderror
                 </div>
 
-                <div class="pt-4 text-end border-top border-light">
-                    <a href="{{ route('almacenes.movimientos') }}" class="ui-btn ui-btn-ghost rounded-pill px-4 fw-semibold me-2">
-                        Cancelar
-                    </a>
-                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-5 shadow-sm fw-bold" id="btn-submit">
-                        <i class="bi bi-check-lg me-2"></i>Guardar Movimiento
-                    </button>
+                <div class="ui-sticky-bar" style="position:static;margin:0 -1.25rem -1.25rem -1.25rem;width:auto;border-radius:0 0 1rem 1rem;">
+                    <div class="ui-sticky-bar-inner">
+                        <a href="{{ route('almacenes.movimientos') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+                        <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-5" id="btn-submit">
+                            <i class="bi bi-check-lg me-2"></i>Guardar Movimiento
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
