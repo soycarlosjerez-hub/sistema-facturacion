@@ -1485,9 +1485,418 @@ body:not(.dark-mode) {
     @media (max-width: 992px) {
         .pos-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
         .pos-right { border-left: none; border-top: 1px solid var(--pos-border); }
+        .pos-right { order: 2; }
+        .pos-left { order: 1; }
     }
 
-    /* ============ Modal Productos — Virtual Keyboard ============ */
+    /* ============ TABLET (≤768px) ============ */
+    @media (max-width: 768px) {
+        .pos-topbar {
+            padding: 10px 12px;
+            gap: 8px;
+        }
+        .pos-topbar .caja-tag span:not(.pulse-dot) { display: none; }
+        .pos-topbar .caja-tag { padding: 4px 10px; }
+        .pos-stat .label { display: none; }
+        .pos-stat .value { font-size: 0.9rem; }
+        #almacen-select { max-width: 120px; font-size: 0.72rem; }
+
+        .pos-body {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr auto;
+            padding: 8px;
+            gap: 8px;
+        }
+        .pos-left { padding: 8px; gap: 8px; }
+        .pos-right {
+            border-left: none;
+            border-top: 1px solid var(--pos-border);
+            min-height: 400px;
+        }
+        .pos-search {
+            padding: 14px 48px 14px 48px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+        .pos-search-icon { left: 14px; font-size: 1.2rem; }
+        .pos-search-clear { right: 10px; width: 28px; height: 28px; }
+        .pos-tabs { gap: 4px; }
+        .pos-tab { padding: 6px 10px; font-size: 0.72rem; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; padding: 2px; }
+        .pos-product-card { padding: 8px; border-radius: 10px; }
+        .pos-product-card .ppc-name { font-size: 0.75rem; min-height: 2.2em; }
+        .pos-product-card .ppc-price { font-size: 0.9rem; }
+        .pos-product-card .ppc-stock { font-size: 0.6rem; padding: 1px 5px; }
+
+        .pos-cart { padding: 2px; }
+        .cart-item { padding: 8px; gap: 8px; border-radius: 10px; }
+        .cart-item .ci-img { width: 44px; height: 44px; }
+        .cart-item .ci-name { font-size: 0.8rem; }
+        .cart-item .ci-qty button { width: 24px; height: 24px; font-size: 0.85rem; }
+        .cart-item .ci-qty .qty-val { min-width: 26px; font-size: 0.8rem; }
+        .cart-item .discount-input { width: 52px; font-size: 0.72rem; }
+        .cart-item .discount-toggle { padding: 1px 4px; font-size: 0.65rem; }
+
+        .pos-right { padding: 0; min-height: 350px; }
+        .pos-right .pr-section { padding: 10px 12px; }
+        .pos-right .pr-section-title { font-size: 0.62rem; margin-bottom: 6px; }
+        .cliente-select { padding: 8px 10px; font-size: 0.85rem; }
+        .comprobante-grid { gap: 4px; }
+        .comprobante-card { padding: 10px 4px; border-radius: 10px; }
+        .comprobante-card i { font-size: 1.25rem; }
+        .comprobante-card .ct-name { font-size: 0.7rem; }
+        .comprobante-card .ct-sub { font-size: 0.58rem; }
+        .ncf-select { padding: 6px 8px; font-size: 0.78rem; }
+        .ecf-hint { padding: 6px 8px; font-size: 0.68rem; border-radius: 6px; }
+
+        .totals-row { font-size: 0.78rem; padding: 4px 0; }
+        .descuento-input { width: 85px; font-size: 0.75rem; padding: 3px 6px; }
+        .input-group-sm .input-group-text { font-size: 0.65rem; }
+        .total-display { padding: 12px 8px; border-radius: 10px; }
+        .total-display .td-label { font-size: 0.62rem; }
+        .total-display .td-amount { font-size: 2rem; }
+
+        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 6px; }
+        .btn-pay { padding: 12px 6px; border-radius: 10px; font-size: 0.78rem; }
+        .btn-pay i { font-size: 1.3rem; }
+        .btn-pay .pay-shortcut { display: none; }
+        .btn-pay.full { grid-column: span 2; }
+
+        .cobrar-section { margin-bottom: 10px; }
+        .cobrar-total-card { padding: 12px 16px; border-radius: 12px; }
+        .cobrar-total-card h2 { font-size: 2.2rem; }
+        .metodo-btn { border-radius: 10px; padding: 12px 4px; min-height: 56px; font-size: 0.82rem; }
+        .metodo-btn i { font-size: 1.3rem; }
+        .input-premium { padding: 10px 12px; font-size: 1.1rem; border-radius: 10px; }
+        .pago-detalle label { font-size: 0.62rem; margin-bottom: 3px; }
+        .cambio-display { padding: 10px 16px; border-radius: 10px; font-size: 1.4rem; }
+        .propina-btn { padding: 8px 16px; font-size: 0.82rem; min-height: 40px; }
+        #propina-input { height: 40px; font-size: 1rem; border-radius: 10px; width: 85px; }
+        .btn-cobrar-touch { padding: 14px 16px; border-radius: 12px; font-size: 1.1rem; min-height: 50px; }
+        .quick-amount-btn { padding: 8px 4px; font-size: 0.78rem; border-radius: 8px; }
+        .keypad-btn { padding: 12px; font-size: 1.2rem; border-radius: 10px; }
+
+        .modal-prod-card { padding: 10px 8px; border-radius: 12px; }
+        .modal-prod-img { width: 70px; height: 70px; border-radius: 10px; }
+        .modal-prod-name { font-size: 0.82rem; }
+        .modal-prod-price { font-size: 0.9rem; }
+        .modal-prod-qty button { width: 32px; height: 32px; font-size: 1rem; }
+        .modal-prod-qty span { font-size: 0.9rem; min-width: 22px; }
+
+        .cash-modal-grid { grid-template-columns: 1fr; gap: 16px; }
+        .cash-total-display .ctd-amount { font-size: 1.8rem; }
+        .cash-recibido-input { padding: 12px 14px; font-size: 1.3rem; border-radius: 10px; }
+        .cambio-display { padding: 10px; border-radius: 10px; font-size: 1.5rem; }
+        .quick-amount-btn { padding: 8px 4px; font-size: 0.75rem; }
+        .keypad-btn { padding: 10px; font-size: 1.15rem; border-radius: 8px; }
+
+        .cobrar-premium .cobrar-header { padding: 16px 20px 12px; }
+        .cobrar-premium .icon-circle { width: 40px; height: 40px; font-size: 1.2rem; }
+        .cobrar-total-card { padding: 12px 16px; border-radius: 12px; }
+        .cobrar-total-card h2 { font-size: 2.2rem; }
+        .metodo-btn { min-height: 60px; }
+        .input-premium { padding: 10px 12px; font-size: 1.1rem; }
+        .btn-cobrar-touch { min-height: 52px; }
+
+        .shortcuts-panel { max-width: 95%; padding: 24px; border-radius: 16px; }
+        .shortcut-row .keys kbd { padding: 2px 6px; font-size: 0.7rem; }
+    }
+
+    /* ============ MÓVIL (≤576px) ============ */
+    @media (max-width: 576px) {
+        .pos-app { height: 100vh; }
+        .pos-topbar { padding: 8px 10px; gap: 6px; }
+        .pos-topbar .caja-tag { padding: 3px 8px; }
+        .pos-topbar .caja-tag .pulse-dot { width: 6px; height: 6px; }
+        .pos-stat { display: none; }
+        #almacen-select { max-width: 100px; }
+        .pos-keyhint { display: none; }
+
+        .pos-body { padding: 6px; gap: 6px; }
+        .pos-left { padding: 6px; gap: 6px; }
+        .pos-search { padding: 12px 40px 12px 40px; font-size: 1rem; border-radius: 10px; }
+        .pos-search-icon { left: 12px; font-size: 1.1rem; }
+        .pos-search-clear { right: 8px; width: 26px; height: 26px; }
+        .search-mode-toggle button { padding: 5px 8px; font-size: 0.7rem; }
+        .pos-tabs { gap: 3px; }
+        .pos-tab { padding: 5px 8px; font-size: 0.68rem; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; padding: 2px; }
+        .pos-product-card { padding: 6px; border-radius: 8px; }
+        .pos-product-card .ppc-img { border-radius: 8px; margin-bottom: 6px; }
+        .pos-product-card .ppc-name { font-size: 0.7rem; min-height: 2em; }
+        .pos-product-card .ppc-price { font-size: 0.82rem; }
+        .pos-product-card .ppc-stock { font-size: 0.55rem; padding: 1px 4px; }
+        .pos-product-card .ppc-stock.ok { color: #86efac; }
+        .pos-product-card .ppc-stock.low { color: #fde047; }
+        .pos-product-card .ppc-stock.crit { color: #fca5a5; }
+
+        .cart-item { padding: 6px; gap: 6px; border-radius: 8px; }
+        .cart-item .ci-img { width: 38px; height: 38px; border-radius: 8px; }
+        .cart-item .ci-name { font-size: 0.75rem; }
+        .cart-item .ci-qty button { width: 22px; height: 22px; font-size: 0.8rem; }
+        .cart-item .ci-qty .qty-val { min-width: 24px; font-size: 0.75rem; }
+        .cart-item .ci-subtotal { font-size: 0.85rem; }
+        .cart-item .discount-input-group { display: none; }
+
+        .pos-right { min-height: 300px; }
+        .pos-right .pr-section { padding: 8px 10px; }
+        .cliente-select { padding: 8px 8px; font-size: 0.8rem; }
+        .comprobante-grid { grid-template-columns: 1fr; gap: 4px; }
+        .comprobante-card { padding: 10px; text-align: left; display: flex; align-items: center; gap: 10px; }
+        .comprobante-card i { font-size: 1.5rem; margin-bottom: 0; }
+        .comprobante-card .ct-name { font-size: 0.8rem; }
+        .comprobante-card .ct-sub { font-size: 0.65rem; }
+        .ncf-select { width: 100%; margin-top: 4px; }
+        .ecf-hint { font-size: 0.65rem; }
+
+        .totals-row { font-size: 0.72rem; }
+        .descuento-input { width: 70px; font-size: 0.7rem; }
+        .total-display { padding: 10px 6px; border-radius: 8px; }
+        .total-display .td-label { font-size: 0.58rem; }
+        .total-display .td-amount { font-size: 1.8rem; }
+
+        .payment-buttons { grid-template-columns: 1fr; gap: 5px; }
+        .btn-pay { padding: 14px 10px; font-size: 0.85rem; border-radius: 12px; min-height: 48px; }
+        .btn-pay i { font-size: 1.5rem; }
+        .btn-pay.full { grid-column: auto; }
+
+        .pos-search { padding: 12px 40px; font-size: 1rem; }
+        .pos-search-icon { left: 12px; font-size: 1.1rem; }
+        .pos-search-clear { width: 26px; height: 26px; }
+        .search-mode-toggle { padding: 3px; gap: 1px; }
+        .search-mode-toggle button { padding: 4px 6px; font-size: 0.65rem; }
+
+        .cobrar-section { margin-bottom: 8px; }
+        .cobrar-total-card h2 { font-size: 2rem; }
+        .metodo-btn { border-radius: 10px; padding: 10px 4px; min-height: 52px; font-size: 0.8rem; }
+        .metodo-btn i { font-size: 1.2rem; }
+        .input-premium { padding: 10px 10px; font-size: 1.05rem; font-weight: 700; }
+        .pago-detalle label { font-size: 0.58rem; }
+        .cambio-display { font-size: 1.3rem; padding: 8px 12px; }
+        .propina-btn { padding: 8px 14px; font-size: 0.78rem; min-height: 38px; border-radius: 40px; }
+        #propina-input { height: 38px; width: 75px; font-size: 0.95rem; }
+        .btn-cobrar-touch { padding: 14px 12px; font-size: 1.05rem; border-radius: 12px; }
+        .quick-amount-btn { padding: 6px 3px; font-size: 0.72rem; border-radius: 8px; }
+        .keypad-btn { padding: 8px; font-size: 1.05rem; border-radius: 8px; }
+
+        .modal-prod-card { padding: 8px 6px; border-radius: 10px; }
+        .modal-prod-img { width: 60px; height: 60px; border-radius: 8px; }
+        .modal-prod-name { font-size: 0.78rem; }
+        .modal-prod-price { font-size: 0.85rem; }
+        .modal-prod-qty button { width: 28px; height: 28px; font-size: 0.95rem; }
+        .modal-prod-qty span { font-size: 0.85rem; min-width: 20px; }
+
+        .cash-modal-grid { grid-template-columns: 1fr; gap: 12px; }
+        .cash-total-display { padding: 12px; border-radius: 10px; }
+        .cash-total-display .ctd-amount { font-size: 1.6rem; }
+        .cash-recibido-input { padding: 10px 12px; font-size: 1.2rem; border-radius: 8px; }
+        .cambio-display { padding: 8px; font-size: 1.2rem; border-radius: 8px; }
+        .quick-amount-btn { padding: 6px 2px; font-size: 0.7rem; border-radius: 6px; }
+        .keypad-btn { padding: 8px; font-size: 1rem; border-radius: 8px; }
+
+        .cobrar-premium .cobrar-header { padding: 12px 16px 10px; }
+        .cobrar-premium .icon-circle { width: 36px; height: 36px; font-size: 1.1rem; }
+        .cobrar-total-card { padding: 10px 14px; border-radius: 10px; }
+        .cobrar-total-card h2 { font-size: 2rem; }
+        .metodo-btn { min-height: 52px; padding: 10px 4px; font-size: 0.78rem; border-radius: 8px; }
+        .metodo-btn i { font-size: 1.1rem; }
+        .input-premium { padding: 8px 10px; font-size: 1rem; border-radius: 8px; }
+        .pago-detalle label { font-size: 0.55rem; margin-bottom: 2px; }
+        .cambio-display { padding: 8px 10px; font-size: 1.2rem; border-radius: 8px; }
+        .propina-btn { padding: 6px 12px; font-size: 0.7rem; min-height: 34px; }
+        #propina-input { height: 360px; font-size: 0.9rem; width: 65px; }
+        .btn-cobrar-touch { padding: 12px 10px; font-size: 1rem; border-radius: 10px; min-height: 46px; }
+        .quick-amount-btn { padding: 6px 2px; font-size: 0.65rem; border-radius: 6px; }
+        .keypad-btn { padding: 6px; font-size: 0.9rem; border-radius: 6px; }
+
+        .tecla { height: 44px; font-size: 1rem; border-radius: 8px; }
+        .tecla-row { gap: 4px; margin-bottom: 4px; }
+        .tecla-shift { flex: 1.5; }
+        .tecla-backspace { flex: 1.2; }
+        .tecla-space { flex: 3.5; }
+        .tecla-enter { flex: 1.2; }
+        .tecla-shift.active { transform: scale(0.98); }
+
+        .cobrar-premium .cobrar-header { padding: 10px 14px 8px; }
+        .cobrar-premium .icon-circle { width: 32px; height: 32px; font-size: 1rem; }
+        .cobrar-total-card { padding: 8px 12px; border-radius: 8px; }
+        .cobrar-total-card h2 { font-size: 1.8rem; }
+        .metodo-btn { min-height: 48px; padding: 8px 3px; font-size: 0.72rem; border-radius: 8px; }
+        .input-premium { padding: 8px 8px; font-size: 0.95rem; border-radius: 8px; }
+        .btn-cobrar-touch { min-height: 44px; }
+
+        .shortcuts-panel { max-width: 100%; padding: 18px; border-radius: 14px; }
+        .shortcut-row .keys kbd { padding: 2px 5px; font-size: 0.62rem; min-width: 20px; }
+        .shortcut-row .desc { font-size: 0.72rem; }
+        .shortcut-group-title { font-size: 0.6rem; margin-bottom: 6px; }
+    }
+
+    /* ============ SAFE AREA INSETS (notched phones) ============ */
+    @supports (padding: max(0px)) {
+        .pos-topbar { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+        @media (max-width: 576px) {
+            .pos-topbar { padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right)); }
+        }
+        .pos-app { padding-bottom: env(safe-area-inset-bottom); }
+        .pos-right { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+        .pos-search-wrap { padding-bottom: env(safe-area-inset-bottom); }
+    }
+
+    /* ============ TOUCH-FRIENDLY GLOBAL ============ */
+    .pos-app * {
+        -webkit-tap-highlight-color: transparent;
+    }
+    button, .btn, .btn-pay, .btn-pay *, .metodo-btn, .tecla, .pos-tab, .comprobante-card,
+    .modal-prod-card, .cart-item .ci-qty button, .cart-item .ci-remove,
+    .pos-search-clear, .pos-tab, .tecla, .keypad-btn, .quick-amount-btn,
+    .method-btn, .cobrar-section button, .cash-recibido-input,
+    .cobrar-premium .cobrar-header button, .modal-prod-qty button,
+    .discount-toggle, .tecla, .cash-recibido-input {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Touch target minimum 44x44 */
+    @media (max-width: 767.98px) {
+        button, .btn, .btn-pay, .metodo-btn, .tecla, .pos-tab,
+        .comprobante-card, .cart-item .ci-qty button, .cart-item .ci-remove,
+        .pos-search-clear, .modal-prod-qty button, .keypad-btn,
+        .quick-amount-btn, .method-btn, .tecla, .discount-toggle {
+            min-height: 44px;
+        }
+        .pos-tab { padding: 10px 12px; }
+        .tecla { min-height: 48px; }
+        .keypad-btn { min-height: 52px; }
+        .btn-pay { min-height: 52px; }
+        .metodo-btn { min-height: 56px; }
+        .comprobante-card { min-height: 56px; }
+    }
+
+    /* ============ INPUT MODE FOR NUMERIC ============ */
+    input[type="number"][inputmode="numeric"],
+    input[type="text"][inputmode="numeric"] {
+        -webkit-appearance: textfield;
+        -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* ============ SCROLL SMOOTHNESS ============ */
+    .pos-products, .pos-cart, .search-results-dropdown,
+    .modal-productos-grid, .categorias-list, .clientes-resultados {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    /* ============ BOTTOM SHEET ANIMATION ============ */
+    .cobrar-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--pos-bg);
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+        z-index: 1060;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+        overflow: hidden;
+    }
+    .cobrar-sheet.open {
+        transform: translateY(0);
+    }
+    .cobrar-sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+        z-index: 1055;
+    }
+    .cobrar-sheet-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .cobrar-sheet-handle {
+        width: 40px;
+        height: 5px;
+        background: var(--pos-border);
+        border-radius: 3px;
+        margin: 10px auto 4px;
+        cursor: grab;
+    }
+    .cobrar-sheet-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--pos-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .cobrar-sheet-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--pos-text);
+    }
+    .cobrar-sheet-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--pos-card);
+        border: 1px solid var(--pos-border);
+        color: var(--pos-text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .cobrar-sheet-close:active { background: var(--pos-accent-soft); color: var(--pos-accent); }
+
+    .cobrar-sheet-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 16px 16px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .cobrar-sheet-footer {
+        padding: 12px 16px;
+        border-top: 1px solid var(--pos-border);
+        background: var(--pos-card);
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+    }
+
+    .cobrar-sheet.open {
+        animation: sheetSlideUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    @keyframes sheetSlideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    /* Swipe down to dismiss indicator */
+    .cobrar-sheet.swipe-down { transition: transform 0.15s ease-out; }
+
+    /* ============ KEYBOARD VIRTUAL RESPONSIVE ============ */
+    @media (max-width: 576px) {
+        .tecla { height: 44px; font-size: 1rem; border-radius: 8px; }
+        .tecla-row { gap: 4px; margin-bottom: 4px; }
+        .tecla-shift { flex: 1.5; }
+        .tecla-backspace { flex: 1.2; }
+        .tecla-space { flex: 3.5; }
+        .tecla-enter { flex: 1.2; }
+    }
     #productosModal .modal-content { background: var(--pos-bg); color: var(--pos-text); }
     #productosModal .modal-header { background: linear-gradient(135deg, var(--pos-accent), #1d4ed8); }
     #productosModal .form-control { background: var(--pos-card); border-color: var(--pos-border); color: var(--pos-text); }
@@ -1603,12 +2012,17 @@ body:not(.dark-mode) {
     <div class="pos-app" style="--delay:0s">
         <!-- ============ TOP BAR ============ -->
         <div class="pos-topbar" style="--delay:0s">
-            <div class="caja-tag">
-                <span class="pulse-dot"></span>
-                <span>{{ $sesion->caja->nombre }}</span>
-                @if($sesion->caja->codigo)
-                    <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
-                @endif
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-light rounded-pill d-lg-none" onclick="POS.toggleSidebar()" aria-label="Menú lateral" aria-expanded="false" aria-controls="mainSidebar" style="width: 36px; height: 36px; padding: 0;">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <div class="caja-tag">
+                    <span class="pulse-dot"></span>
+                    <span>{{ $sesion->caja->nombre }}</span>
+                    @if($sesion->caja->codigo)
+                        <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
+                    @endif
+                </div>
             </div>
 
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:rgba(255,255,255,0.06);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
@@ -1917,7 +2331,125 @@ body:not(.dark-mode) {
 </div>
 @endif
 
-<!-- ============ Premium Payment Modal ============ -->
+<!-- ============ Bottom Sheet Payment (Mobile) ============ -->
+<div class="cobrar-sheet-overlay" id="cobrarSheetOverlay" aria-hidden="true" onclick="POS.cerrarCobrar()"></div>
+
+<div class="cobrar-sheet" id="cobrarSheet" role="dialog" aria-modal="true" aria-labelledby="cobrarSheetTitle" aria-hidden="true">
+    <div class="cobrar-sheet-handle"></div>
+    
+    <div class="cobrar-sheet-header">
+        <h5 class="cobrar-sheet-title" id="cobrarSheetTitle">Cobrar Venta</h5>
+        <button type="button" class="cobrar-sheet-close" onclick="POS.cerrarCobrar()" aria-label="Cerrar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="cobrar-sheet-body">
+        <!-- Fila 1: Total grande -->
+        <div class="cobrar-section">
+            <div class="cobrar-total-card">
+                <h2 class="fw-bold mb-0" id="pago-total">RD$ 0.00</h2>
+            </div>
+        </div>
+
+        <!-- Fila 2: Métodos de pago -->
+        <div class="cobrar-section">
+            <div class="row g-2" id="pago-metodos">
+                <div class="col-3">
+                    <button type="button" class="method-btn efectivo active-metodo w-100" data-metodo="efectivo" onclick="seleccionarMetodoPago('efectivo')">
+                        <i class="bi bi-cash-stack"></i> Efectivo
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="method-btn tarjeta w-100" data-metodo="tarjeta" onclick="seleccionarMetodoPago('tarjeta')">
+                        <i class="bi bi-credit-card-2-front"></i> Tarjeta
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="method-btn transferencia w-100" data-metodo="transferencia" onclick="seleccionarMetodoPago('transferencia')">
+                        <i class="bi bi-bank2"></i> Transf.
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="method-btn mixto w-100" data-metodo="mixto" onclick="seleccionarMetodoPago('mixto')">
+                        <i class="bi bi-coin"></i> Mixto
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila 3: Efectivo (monto recibido + cambio) -->
+        <div id="pago-efectivo" class="cobrar-section">
+            <div class="pago-detalle">
+                <label>Monto Recibido</label>
+                <input type="number" id="monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="" inputmode="decimal">
+                
+                <!-- Botones de Denominaciones RD$ -->
+                <div class="row g-2 mt-2 mb-2">
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(50)">RD$50</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(100)">RD$100</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(200)">RD$200</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(500)">RD$500</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(1000)">RD$1,000</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(2000)">RD$2,000</button></div>
+                </div>
+                
+                <div id="cambio-info" class="mt-2 cambio-display positivo d-none">
+                    Cambio: <span class="fw-bold" id="cambio-monto">RD$ 0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mixto (tres campos) -->
+        <div id="pago-mixto" class="cobrar-section" style="display:none;">
+            <div class="pago-detalle">
+                <div class="mb-2">
+                    <label>Efectivo</label>
+                    <input type="number" id="mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                </div>
+                <div class="mb-2">
+                    <label>Tarjeta</label>
+                    <input type="number" id="mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                </div>
+                <div class="mb-2">
+                    <label>Transferencia</label>
+                    <input type="number" id="mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                </div>
+                <small class="text-muted" id="mixto-restante"></small>
+            </div>
+        </div>
+
+        <!-- Propina -->
+        <div class="cobrar-section">
+            <div class="pago-detalle">
+                <label>Propina</label>
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="number" id="propina-input" step="0.01" min="0" value="0" inputmode="decimal" oninput="actualizarTotalPago()">
+                    <button type="button" class="propina-btn" onclick="asignarPropina(0, this)">0%</button>
+                    <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
+                    <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
+                    <button type="button" class="propina-btn" onclick="asignarPropina(18, this)">18%</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón cobrar full-width -->
+        <div class="cobrar-section mt-1">
+            <button type="button" class="btn-cobrar-touch w-100" onclick="procesarPago()">
+                <span class="shine"></span>
+                <i class="bi bi-check2-circle me-1"></i> Cobrar
+            </button>
+        </div>
+    </div>
+
+    <div class="cobrar-sheet-footer">
+        <button type="button" class="btn btn-sm btn-link text-muted w-100" onclick="POS.cerrarCobrar()">
+            Cancelar
+        </button>
+    </div>
+</div>
+
+<!-- ============ Premium Payment Modal (Desktop) ============ -->
 <div class="modal fade cobrar-premium" id="pagoModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
         <div class="modal-content">

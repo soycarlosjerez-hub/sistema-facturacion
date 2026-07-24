@@ -13,6 +13,8 @@ class ContratoMantenimiento extends Model
 {
     use HasFactory, Auditable, TenantScope;
 
+    protected $table = 'contratos_mantenimiento';
+
     protected $fillable = [
         'codigo',
         'business_instance_id',
