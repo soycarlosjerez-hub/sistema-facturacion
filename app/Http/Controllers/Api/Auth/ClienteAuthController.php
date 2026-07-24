@@ -213,10 +213,10 @@ class ClienteAuthController extends Controller
         $cliente = Cliente::where('email', $request->email)->first();
         $token = Str::random(60);
 
-        \DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $cliente->email],
-            ['email' => $cliente->email, 'token' => Hash::make($token), 'created_at' => now()]
-        );
+        \DB::table('password_reset_tokens')->where('email', $cliente->email)->delete();
+        \DB::table('password_reset_tokens')->insert([
+            ['email' => $cliente->email, 'token' => Hash::make($token), 'created_at' => now()],
+        ]);
 
         $cliente->notify(new ClienteResetPassword($token, $cliente->email));
 
@@ -233,6 +233,7 @@ class ClienteAuthController extends Controller
 
         $record = \DB::table('password_reset_tokens')
             ->where('email', $request->email)
+            ->orderByDesc('created_at')
             ->first();
 
         if (!$record || !Hash::check($request->token, $record->token)) {
@@ -269,10 +270,18 @@ class ClienteAuthController extends Controller
             'nombre'             => $cliente->nombre,
             'email'              => $cliente->email,
             'telefono'           => $cliente->telefono,
+            'whatsapp'           => $cliente->whatsapp,
             'direccion'          => $cliente->direccion,
             'ciudad'             => $cliente->ciudad,
             'provincia'          => $cliente->provincia,
+            'rnc_cedula'         => $cliente->rnc_cedula,
+            'tipo_cliente'       => $cliente->tipo_cliente,
+            'tipo_documento'     => $cliente->tipo_documento,
+            'moneda'             => $cliente->moneda,
+            'activo'             => $cliente->activo,
             'email_verified'     => $cliente->hasVerifiedEmail(),
+            'limite_credito'     => $cliente->limite_credito,
+            'balance_pendiente'  => $cliente->balance_pendiente,
             'created_at'         => $cliente->created_at,
             'tenant_id'          => $cliente->tenant_id,
         ];

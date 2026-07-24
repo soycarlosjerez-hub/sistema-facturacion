@@ -54,7 +54,13 @@ class ClienteController extends Controller
             'sector_actividad'  => 'nullable|string|max:100',
         ]);
 
-        $validated['tenant_id'] = auth()->user()->business_instance_id;
+        $user = $request->user();
+        $validated['tenant_id'] = $user->tenant_id ?? ($user->business_instance_id ?? null);
+        
+        if (!$validated['tenant_id']) {
+            return response()->json(['message' => 'No se pudo determinar la instancia del negocio.'], 400);
+        }
+        
         $validated['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
         $validated['regimen_mensual'] = $request->boolean('regimen_mensual');
 
@@ -114,14 +120,43 @@ class ClienteController extends Controller
     {
         $this->ensureTenantAccess($cliente);
 
+        $blockingRecords = [];
+        $checks = [
+            ['table' => 'Conduces', 'relation' => 'conduces'],
+            ['table' => 'Órdenes de Reparación', 'relation' => 'ordenesReparacion'],
+            ['table' => 'Servicios Domótica', 'relation' => 'serviciosDomotica'],
+            ['table' => 'Vehículos', 'relation' => 'vehiculos'],
+            ['table' => 'Citas Lavadero', 'relation' => 'lavaderoCitas'],
+            ['table' => 'Citas Tatuaje', 'relation' => 'tattooAppointments'],
+        ];
+
+        foreach ($checks as $check) {
+            $relation = $check['relation'];
+            if (method_exists($cliente, $relation)) {
+                $count = $cliente->{$relation}()->count();
+                if ($count > 0) {
+                    $blockingRecords[] = "{$check['table']} ({$count})";
+                }
+            }
+        }
+
+        if (!empty($blockingRecords)) {
+            $lista = implode(', ', $blockingRecords);
+            return response()->json([
+                'message' => "No se puede eliminar el cliente. Tiene registros asociados a: {$lista}",
+            ], 422);
+        }
+
         $cliente->delete();
         return response()->json(['message' => 'Cliente eliminado.']);
     }
 
     private function ensureTenantAccess(Cliente $cliente): void
     {
-        $tenantId = auth()->user()->business_instance_id;
-        if ($cliente->tenant_id !== $tenantId) {
+        $user = auth()->user();
+        $tenantId = $user->tenant_id ?? ($user->business_instance_id ?? null);
+        
+        if (!$tenantId || $cliente->tenant_id !== $tenantId) {
             abort(404, 'Cliente no encontrado.');
         }
     }
