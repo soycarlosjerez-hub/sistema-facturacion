@@ -318,6 +318,36 @@ body.dark-mode .ui-user-avatar-green { background: rgba(34,211,238,.15); border-
                 <i class="bi bi-pencil"></i> Editar Contrato
             </a>
         @endif
+
+        @if($contrato->estado === 'activo')
+            @php
+                $yaFacturado = \App\Models\ClimatizacionFactura::where('origen', 'contrato_cuota')
+                    ->where('origen_id', $contrato->id)
+                    ->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->exists();
+            @endphp
+            @if($yaFacturado)
+                @php
+                    $factura = \App\Models\ClimatizacionFactura::where('origen', 'contrato_cuota')
+                        ->where('origen_id', $contrato->id)
+                        ->whereMonth('created_at', now()->month)
+                        ->whereYear('created_at', now()->year)
+                        ->first();
+                @endphp
+                <a href="{{ route('climatizacion.facturas.show', $factura) }}" class="ui-btn ui-btn-primary rounded-pill">
+                    <i class="bi bi-receipt me-1"></i> Ver Factura del Mes
+                </a>
+            @else
+                <form action="{{ route('climatizacion.facturas.desde.contrato', $contrato) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="ui-btn ui-btn-primary rounded-pill"
+                            onclick="return confirm('¿Generar factura de cuota mensual por RD$ {{ number_format($contrato->valor_mensual, 2) }}?');">
+                        <i class="bi bi-receipt-cutoff me-1"></i> Facturar Cuota
+                    </button>
+                </form>
+            @endif
+        @endif
     </div>
 </div>
 @endsection

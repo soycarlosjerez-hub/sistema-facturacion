@@ -389,6 +389,31 @@ body.dark-mode .timeline-content .step-label { color: #f1f5f9; }
                     </form>
                 @endif
 
+                {{-- Facturar (si está resuelta/cerrada y tiene costo) --}}
+                @if(in_array($orden->estado, ['resuelta', 'cerrada']) && ($orden->costo_final ?? 0) > 0)
+                    @php
+                        $yaFacturado = \App\Models\ClimatizacionFactura::where('origen', 'emergencia')
+                            ->where('origen_id', $orden->id)->exists();
+                    @endphp
+                    @if($yaFacturado)
+                        @php
+                            $factura = \App\Models\ClimatizacionFactura::where('origen', 'emergencia')
+                                ->where('origen_id', $orden->id)->first();
+                        @endphp
+                        <a href="{{ route('climatizacion.facturas.show', $factura) }}" class="ui-btn ui-btn-solid rounded-pill w-100">
+                            <i class="bi bi-receipt me-1"></i> Ver Factura
+                        </a>
+                    @else
+                        <form action="{{ route('climatizacion.facturas.desde.emergencia', $orden) }}" method="POST" class="d-inline w-100">
+                            @csrf
+                            <button type="submit" class="ui-btn ui-btn-solid rounded-pill w-100"
+                                    onclick="return confirm('¿Generar factura por RD$ {{ number_format($orden->costo_final, 2) }}?');">
+                                <i class="bi bi-receipt-cutoff me-1"></i> Facturar
+                            </button>
+                        </form>
+                    @endif
+                @endif
+
                 {{-- Editar (si no está cerrada) --}}
                 @if($orden->estado !== 'cerrada')
                     <a href="{{ route('climatizacion.ordenes-emergencia.edit', $orden) }}" class="ui-btn ui-btn-ghost rounded-pill">

@@ -1306,6 +1306,30 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
         Route::delete('/ordenes-emergencia/{orden}', [\App\Http\Controllers\OrdenEmergenciaController::class, 'destroy'])
             ->name('ordenes-emergencia.destroy');
     });
+
+    // Facturación Climatización
+    Route::middleware(['auth', 'permission:view_any_climatizacion::factura'])->group(function () {
+        Route::get('/facturas', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'index'])
+            ->name('facturas.index');
+    });
+    Route::middleware(['auth', 'permission:create_climatizacion::factura'])->group(function () {
+        Route::post('/facturas/mantenimiento/{mantenimiento}', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'crearDesdeMantenimiento'])
+            ->name('facturas.desde.mantenimiento');
+        Route::post('/facturas/contrato/{contrato}', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'generarDesdeContrato'])
+            ->name('facturas.desde.contrato');
+        Route::post('/facturas/emergencia/{orden}', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'generarDesdeEmergencia'])
+            ->name('facturas.desde.emergencia');
+        Route::post('/facturas/instalacion/{instalacion}', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'generarDesdeInstalacion'])
+            ->name('facturas.desde.instalacion');
+        Route::post('/facturas/{climatizacionFactura}/generar', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'generar'])
+            ->name('facturas.generar');
+    });
+    Route::get('/facturas/{climatizacionFactura}', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'show'])
+        ->name('facturas.show')
+        ->middleware(['auth', 'permission:view_any_climatizacion::factura']);
+    Route::put('/facturas/{climatizacionFactura}/anular', [\App\Http\Controllers\ClimatizacionFacturaController::class, 'anular'])
+        ->name('facturas.anular')
+        ->middleware(['auth', 'permission:update_climatizacion::factura']);
 });
 
 // UI System Demo

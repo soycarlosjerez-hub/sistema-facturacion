@@ -241,6 +241,31 @@ body.dark-mode .ui-detail-value { color: #cbd5e1; }
                 </form>
             @endif
         @endif
+
+        @if ($instalacion->estado === 'completada' && ($instalacion->total ?? 0) > 0)
+            @php
+                $yaFacturado = \App\Models\ClimatizacionFactura::where('origen', 'instalacion')
+                    ->where('origen_id', $instalacion->id)->exists();
+            @endphp
+            @if($yaFacturado)
+                @php
+                    $factura = \App\Models\ClimatizacionFactura::where('origen', 'instalacion')
+                        ->where('origen_id', $instalacion->id)->first();
+                @endphp
+                <a href="{{ route('climatizacion.facturas.show', $factura) }}" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-receipt me-1"></i> Ver Factura
+                </a>
+            @else
+                <form action="{{ route('climatizacion.facturas.desde.instalacion', $instalacion) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="ui-btn ui-btn-primary"
+                            onclick="return confirm('¿Generar factura por RD$ {{ number_format($instalacion->total, 2) }}?');">
+                        <i class="bi bi-receipt-cutoff me-1"></i> Facturar
+                    </button>
+                </form>
+            @endif
+        @endif
+
         <a href="{{ route('climatizacion.instalaciones.index') }}" class="ui-btn ui-btn-ghost">
             <i class="bi bi-arrow-left"></i> Volver
         </a>

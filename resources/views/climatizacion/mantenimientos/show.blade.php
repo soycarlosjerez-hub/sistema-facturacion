@@ -241,12 +241,42 @@
                             </form>
                         @endif
                     @else
-                        <div class="text-center py-2">
+                        <div class="text-center py-2 mb-2">
                             <span class="text-muted small">
                                 <i class="bi bi-check-circle-fill text-{{ $mantenimiento->estado === 'completado' ? 'success' : 'secondary' }} me-1"></i>
                                 Este mantenimiento está {{ strtolower(\App\Models\Mantenimiento::ESTADOS[$mantenimiento->estado]) }}.
                             </span>
                         </div>
+
+                        @php
+                            $yaFacturado = \App\Models\ClimatizacionFactura::where('origen', 'mantenimiento')
+                                ->where('origen_id', $mantenimiento->id)->exists();
+                        @endphp
+
+                        @if ($yaFacturado)
+                            @php
+                                $factura = \App\Models\ClimatizacionFactura::where('origen', 'mantenimiento')
+                                    ->where('origen_id', $mantenimiento->id)->first();
+                            @endphp
+                            <a href="{{ route('climatizacion.facturas.show', $factura) }}" class="ui-btn ui-btn-solid w-100 mb-2">
+                                <i class="bi bi-receipt"></i> Ver Factura Generada
+                            </a>
+                        @elseif ($mantenimiento->total > 0)
+                            <form action="{{ route('climatizacion.facturas.desde.mantenimiento', $mantenimiento) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="ui-btn ui-btn-solid w-100 mb-2" onclick="return confirm('¿Generar factura por RD$ {{ number_format($mantenimiento->total, 2) }}?')">
+                                    <i class="bi bi-receipt-cutoff"></i> Facturar
+                                </button>
+                            </form>
+                        @else
+                            <div class="text-center py-2">
+                                <span class="text-muted small">Sin montos para facturar</span>
+                            </div>
+                        @endif
+
+                        <a href="{{ route('climatizacion.facturas.index') }}" class="ui-btn ui-btn-ghost w-100">
+                            <i class="bi bi-list-ul"></i> Ver Todas las Facturas
+                        </a>
                     @endif
                 </div>
             </div>
