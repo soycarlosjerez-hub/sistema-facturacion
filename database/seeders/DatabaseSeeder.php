@@ -25,6 +25,9 @@ class DatabaseSeeder extends Seeder
         // Cuarto: Poblar usuarios de prueba/descanso (dependerán de los roles anteriores)
         $this->call(DemoUsersSeeder::class);          // 5. Crea usuarios demo (gerente, almacen, contador)
         
+        // Quinto: Poblar usuarios específicos de restaurante (mesero, cocinero, bartender, delivery, cajero)
+        $this->call(RestaurantUsersSeeder::class);    // 6. Crea usuarios por instancia restaurante
+        
         $this->call(TiposVentasSeeder::class);
         $this->call(CategoriaSeeder::class);
         $this->call(ProductosSeeder::class);

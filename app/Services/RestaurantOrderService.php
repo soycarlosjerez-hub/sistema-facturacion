@@ -484,7 +484,7 @@ class RestaurantOrderService
         }
 
         $user = Auth::user();
-        if (!$user->hasRole('admin') && $orden->total > 500) {
+        if (!$user->hasAnyRole(['admin', 'root', 'gerente', 'admin-business']) && $orden->total > 500) {
             return ['error' => 'Se requiere autorización de administrador para anular órdenes mayores a RD$500', 'code' => 422];
         }
 
@@ -540,7 +540,7 @@ class RestaurantOrderService
     public function aplicarDescuento(Mesa $mesa, string $tipo, float $valor, string $motivo): array
     {
         $user = Auth::user();
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin = $user->hasAnyRole(['admin', 'root', 'gerente', 'admin-business']);
 
         $orden = $mesa->ordenActiva;
         if (!$orden) {

@@ -815,6 +815,62 @@ class PermissionSeeder extends Seeder
                 'ncf.view',
 
                 'cuentas-bancarias.view',
+
+                'restaurante.view',
+                'restaurante.cajas',
+            ],
+
+            'mesero' => [
+                'dashboard.view',
+                'reportes.view',
+
+                'restaurante.view',
+                'restaurante.cobrar',
+                'restaurante.reservaciones',
+
+                'clientes.view',
+                'clientes.create',
+            ],
+
+            'cocinero' => [
+                'dashboard.view',
+
+                'restaurante.view',
+            ],
+
+            'bartender' => [
+                'dashboard.view',
+
+                'restaurante.view',
+                'restaurante.cobrar',
+                'restaurante.descuento',
+            ],
+
+            'delivery' => [
+                'dashboard.view',
+
+                'restaurante.view',
+                'restaurante.cobrar',
+
+                'clientes.view',
+                'clientes.create',
+            ],
+
+            'cajero' => [
+                'dashboard.view',
+                'reportes.view',
+
+                'restaurante.view',
+                'restaurante.cobrar',
+                'restaurante.cajas',
+
+                'clientes.view',
+                'clientes.create',
+                'cobros.create',
+
+                'cajas.view',
+                'cajas.open',
+                'cajas.close',
             ],
         ];
 
