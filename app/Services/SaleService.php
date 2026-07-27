@@ -267,7 +267,7 @@ class SaleService
         $clienteConsumidorFinal = Cliente::consumidorFinal($tenantId);
 
         $clientes   = Cliente::where('tenant_id', $tenantId)->orderBy('nombre')->get();
-        $tiposVenta = \App\Models\TipoVenta::where('tenant_id', $tenantId)->orderBy('nombre')->get();
+        $tiposVenta = \App\Models\TipoVenta::orderBy('nombre')->get();
         $tipoVentaDefault = $tiposVenta->firstWhere('nombre', 'Contado') ?? $tiposVenta->first();
         $almacenes = \App\Models\Almacen::where('tenant_id', $tenantId)->orderBy('nombre');
         if ($sucursalId = session('sucursal_id')) {
