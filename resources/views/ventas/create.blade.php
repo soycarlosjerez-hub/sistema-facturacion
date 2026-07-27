@@ -2826,6 +2826,7 @@ body:not(.dark-mode) {
     let modalCategoriaFiltro = '';
     let isSubmitting = false;
     let lastRemovedItem = null;
+    let creditoWarningInstance = null;
     let audioEnabled = localStorage.getItem('pos_audio_enabled') !== 'false';
 
     function playBeep(type) {
@@ -3191,7 +3192,10 @@ body:not(.dark-mode) {
             $('credito-total').textContent = fmt(total);
             $('credito-nuevo-saldo').textContent = fmt(nuevoTotal);
             $('credito-exceso').textContent = fmt(exceso);
-            new bootstrap.Modal($('creditoWarningModal')).show();
+            if (!creditoWarningInstance) {
+                creditoWarningInstance = new bootstrap.Modal(document.getElementById('creditoWarningModal'));
+            }
+            creditoWarningInstance.show();
             return false;
         }
         return true;
@@ -4159,7 +4163,9 @@ body:not(.dark-mode) {
 
         // Confirmar venta con crédito excedido
         $('btn-confirmar-credito')?.addEventListener('click', function() {
-            bootstrap.Modal.getInstance($('creditoWarningModal'))?.hide();
+            if (creditoWarningInstance) {
+                creditoWarningInstance.hide();
+            }
             isSubmitting = false;
             procesarPagoDirecto('fiado');
         });
