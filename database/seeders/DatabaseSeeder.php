@@ -27,7 +27,10 @@ class DatabaseSeeder extends Seeder
         
         // Quinto: Poblar usuarios específicos de restaurante (mesero, cocinero, bartender, delivery, cajero)
         $this->call(RestaurantUsersSeeder::class);    // 6. Crea usuarios por instancia restaurante
-        
+
+        // Sexto: Crear InstanceRoles y asignarlos a los usuarios de restaurante
+        $this->call(InstanceRolesSeeder::class);      // 7. Crea InstanceRoles con módulos visibles y asigna instance_role_id
+
         $this->call(TiposVentasSeeder::class);
         $this->call(CategoriaSeeder::class);
         $this->call(ProductosSeeder::class);

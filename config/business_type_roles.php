@@ -2,9 +2,9 @@
 
 return [
     'restaurante' => [
-        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'instance-admin'],
-        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'instance-admin'],
-        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'instance-admin'],
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
     ],
     'retail' => [
         'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'cajero', 'reponedor', 'instance-admin'],
@@ -32,8 +32,8 @@ return [
         'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'reponedor', 'instance-admin'],
     ],
     'while-pone-el-restaurante' => [
-        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'instance-admin'],
-        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'instance-admin'],
-        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'instance-admin'],
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
     ],
 ];
