@@ -1274,6 +1274,37 @@ let postPagoData = null;
 let totalPagoFinal = 0;
 let productosData = [];
 let categoriasData = [];
+let pendingRequests = {};
+let isOpeningFromReservation = false;
+
+function apiFetch(url, options = {}) {
+    const controller = new AbortController();
+    const key = options.key || url;
+    if (pendingRequests[key]) {
+        pendingRequests[key].abort();
+    }
+    pendingRequests[key] = controller;
+    options.signal = controller.signal;
+    if (!options.headers) options.headers = {};
+    options.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
+    options.headers['Accept'] = 'application/json';
+    return fetch(url, options)
+        .then(r => {
+            if (!r.ok) return r.json().then(d => { throw new Error(d.error || d.message || 'HTTP ' + r.status); });
+            return r.json();
+        })
+        .finally(() => {
+            if (pendingRequests[key] === controller) delete pendingRequests[key];
+        });
+}
+
+function debounce(fn, ms = 300) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), ms);
+    };
+}
 
 // Cargar catálogo completo al inicio (filtrado del lado del cliente)
 document.addEventListener('DOMContentLoaded', function () {
@@ -1288,6 +1319,17 @@ document.addEventListener('DOMContentLoaded', function () {
             renderizarFiltroCategorias();
         })
         .catch(err => console.error('Error cargando catálogo:', err));
+
+    document.getElementById('quick-menu-items').addEventListener('pointerdown', function (e) {
+        const btn = e.target.closest('.popular-btn');
+        if (!btn) return;
+        e.preventDefault();
+        const id = parseInt(btn.dataset.id);
+        const precio = parseFloat(btn.dataset.precio);
+        const stock = parseInt(btn.dataset.stock);
+        const nombre = btn.querySelector('.small')?.textContent || '';
+        agregarProductoQuick(id, nombre, precio, stock);
+    });
 });
 
 function renderizarFiltroCategorias() {
@@ -1304,11 +1346,7 @@ function renderizarFiltroCategorias() {
 document.addEventListener('DOMContentLoaded', renderCajaStatus);
 
 function renderCajaStatus() {
-    fetch('{{ route("restaurante.sesion-activa") }}')
-        .then(r => {
-            if (!r.ok) throw new Error('Error al obtener estado de caja');
-            return r.json();
-        })
+    apiFetch('{{ route("restaurante.sesion-activa") }}', { key: 'caja-status' })
         .then(data => {
             sesionCajaActiva = data.sesion;
             const bar = document.getElementById('caja-status-bar');
@@ -1365,12 +1403,11 @@ function abrirCaja() {
     const cajaId = document.getElementById('caja-select').value;
     const monto = document.getElementById('caja-monto-inicial').value;
 
-    fetch('{{ route("restaurante.abrir-caja") }}', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch('{{ route("restaurante.abrir-caja") }}', {
+        method: 'POST', key: 'abrir-caja',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ caja_id: cajaId, monto_inicial: monto })
     })
-    .then(r => r.json())
     .then(data => {
         if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         bootstrap.Modal.getInstance(document.getElementById('abrirCajaModal')).hide();
@@ -1382,14 +1419,13 @@ function crearCaja() {
     const nombre = document.getElementById('nueva-caja-nombre').value.trim();
     if (!nombre) { Swal.fire({icon:'warning', title:'Campo requerido', text:'Ingresa un nombre para la caja'}); return; }
 
-    fetch('{{ route("restaurante.crear-caja") }}', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch('{{ route("restaurante.crear-caja") }}', {
+        method: 'POST', key: 'crear-caja',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: nombre })
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         document.getElementById('nueva-caja-nombre').value = '';
         mostrarAbrirCaja();
     });
@@ -1399,10 +1435,9 @@ let cerrarCajaId = null;
 
 function mostrarCerrarCaja(cajaId) {
     cerrarCajaId = cajaId;
-    fetch(`{{ url("restaurante/caja/resumen") }}?caja_id=${cajaId}`)
-        .then(r => r.json())
+    apiFetch(`{{ url("restaurante/caja/resumen") }}?caja_id=${cajaId}`, { key: 'caja-resumen-' + cajaId })
         .then(data => {
-            if (data.error) { alert(data.error); return; }
+            if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
             document.getElementById('cerrar-caja-resumen').innerHTML = `
                 <div class="bg-light rounded-3 p-2">
                     <div class="d-flex justify-content-between"><span>Ventas:</span><span class="fw-bold">${data.total_ventas}</span></div>
@@ -1428,13 +1463,13 @@ function cerrarCaja() {
     const notas = document.getElementById('cierre-notas').value.trim();
 
     if (!montoDeclarado || parseFloat(montoDeclarado) < 0) {
-        alert('Ingresa el monto declarado');
+        Swal.fire({icon:'warning', title:'Campo requerido', text:'Ingresa el monto declarado'});
         return;
     }
 
-    fetch('{{ route("restaurante.caja.cerrar") }}', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch('{{ route("restaurante.caja.cerrar") }}', {
+        method: 'POST', key: 'cerrar-caja',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             caja_id: cerrarCajaId,
             monto_declarado: montoDeclarado,
@@ -1444,9 +1479,8 @@ function cerrarCaja() {
             notas: notas
         })
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         bootstrap.Modal.getInstance(document.getElementById('cerrarCajaModal')).hide();
         renderCajaStatus();
         Swal.fire({
@@ -1465,8 +1499,7 @@ function toggleQuickMenu() {
 }
 
 function cargarPopulares() {
-    fetch('/restaurante/productos/populares')
-        .then(r => r.json())
+    apiFetch('/restaurante/productos/populares', { key: 'populares' })
         .then(data => {
             const container = document.getElementById('quick-menu-items');
             if (!data || data.length === 0) {
@@ -1474,8 +1507,8 @@ function cargarPopulares() {
                 return;
             }
             container.innerHTML = data.map(p => `
-                <button class="btn btn-sm btn-outline-danger rounded-pill d-inline-flex align-items-center gap-1 flex-shrink-0"
-                    onpointerdown="agregarProductoQuick(${p.id}, '${escapeHtml(p.nombre)}', ${p.precio}, ${p.stock})"
+                <button class="btn btn-sm btn-outline-danger rounded-pill d-inline-flex align-items-center gap-1 flex-shrink-0 popular-btn"
+                    data-id="${p.id}" data-precio="${p.precio}" data-stock="${p.stock}"
                     title="${escapeHtml(p.nombre)} - RD$ ${p.precio.toFixed(2)} · Stock: ${p.stock}">
                     <span class="badge bg-danger rounded-circle p-1" style="width:18px;height:18px;font-size:10px;">${p.iniciales}</span>
                     <span class="small">${escapeHtml(p.nombre)}</span>
@@ -1514,14 +1547,13 @@ function agregarProductoQuick(productoId, nombre, precio, stock) {
 function enviarAgregarProductoQuick(productoId) {
     const curso = 'fuerte';
     const notas = '';
-    fetch(`/restaurante/mesa/${mesaActual}/agregar`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaActual}/agregar`, {
+        method: 'POST', key: 'agregar-quick',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ producto_id: productoId, cantidad: 1, curso: curso, notas: notas })
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         ordenActual = data.orden;
         renderOrden(data.orden);
     });
@@ -1535,11 +1567,7 @@ function seleccionarMesa(btn) {
 }
 
 function cargarMesa(mesaId) {
-    fetch(`/restaurante/mesa/${mesaId}`)
-        .then(r => {
-            if (!r.ok) return r.text().then(t => { throw new Error(t.includes('<!DOCTYPE') ? 'Error del servidor (página no encontrada)' : t.substring(0,200)); });
-            return r.json();
-        })
+    apiFetch(`/restaurante/mesa/${mesaId}`, { key: 'cargar-mesa-' + mesaId })
         .then(data => {
             const mesa = data.mesa;
             const orden = data.orden;
@@ -1672,28 +1700,33 @@ function mostrarBuscarClienteAbrir(mesaId) {
     document.getElementById('buscar-cliente').focus();
 }
 
-document.getElementById('buscar-cliente').addEventListener('input', function () {
+document.getElementById('buscar-cliente').addEventListener('input', debounce(function () {
     const q = this.value.trim();
     const container = document.getElementById('clientes-resultados');
     if (q.length < 2) {
         container.innerHTML = '<div class="text-muted small text-center py-2">Escribe al menos 2 caracteres...</div>';
         return;
     }
-    fetch(`/clientes/search?q=${encodeURIComponent(q)}`)
-        .then(r => r.json())
+    apiFetch(`/clientes/search?q=${encodeURIComponent(q)}`, { key: 'buscar-cliente' })
         .then(data => {
             if (!data || data.length === 0) {
                 container.innerHTML = '<div class="text-muted small text-center py-2">Sin resultados</div>';
                 return;
             }
             container.innerHTML = data.map(c =>
-                `<div class="list-group-item list-group-item-action px-3 py-2 border rounded-3 mb-1" style="cursor:pointer;" onclick="seleccionarCliente(${c.id}, '${escapeHtml(c.nombre)}')">
+                `<div class="list-group-item list-group-item-action px-3 py-2 border rounded-3 mb-1 cliente-result-item" style="cursor:pointer;" data-id="${c.id}" data-nombre="${escapeHtml(c.nombre).replace(/"/g, '&quot;')}">
                     <div class="fw-semibold small">${escapeHtml(c.nombre)}</div>
                     <small class="text-muted">${c.rnc || c.rnc_cedula || '—'}</small>
                 </div>`
             ).join('');
+            // Event delegation for client search results
+            document.getElementById('clientes-resultados').addEventListener('click', function (e) {
+                const item = e.target.closest('.cliente-result-item');
+                if (!item) return;
+                seleccionarCliente(parseInt(item.dataset.id), item.dataset.nombre);
+            });
         });
-    });
+    }, 300));
 
 function seleccionarCliente(id, nombre) {
     const mesaId = document.getElementById('clienteModal').dataset.mesaId;
@@ -1726,8 +1759,7 @@ function mostrarAbrirMesa(mesaId) {
     document.querySelectorAll('.tipo-orden-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.tipo-orden-btn[data-value="mesa"]').classList.add('active');
     if (deliveryCompanies.length === 0) {
-        fetch('/delivery-companies/listar-activas')
-            .then(r => r.json())
+        apiFetch('/delivery-companies/listar-activas', { key: 'delivery-companies' })
             .then(data => {
                 deliveryCompanies = data;
                 const sel = document.getElementById('delivery-company-select');
@@ -1755,6 +1787,29 @@ function confirmarAbrirMesa() {
         Swal.fire({icon:'error', title:'Selecciona empresa', text:'Debes elegir una empresa de delivery'});
         return;
     }
+    if (isOpeningFromReservation) {
+        const reservacionId = document.getElementById('tipoOrdenModal').dataset.reservacionId;
+        isOpeningFromReservation = false;
+        apiFetch(`/restaurante/mesa/${mesaAbrirId}/abrir`, {
+            method: 'POST', key: 'abrir-mesa-' + mesaAbrirId,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo_orden: ordenTipoSeleccionado, delivery_company_id: deliveryCompanyId || null })
+        })
+        .then(data => {
+            if (data.error) { Swal.fire({icon:'error', title:'No se pudo abrir', text: data.error}); return; }
+            apiFetch(`/restaurante/reservaciones/${reservacionId}/estado`, {
+                method: 'PATCH', key: 'reserva-estado-' + reservacionId,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: 'cumplida' })
+            }).catch(() => {});
+            cargarMesa(mesaAbrirId);
+            actualizarGridMesa(mesaAbrirId, 'ocupada');
+        })
+        .catch(err => {
+            Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
+        });
+        return;
+    }
     abrirMesa(mesaAbrirId, null, ordenTipoSeleccionado, deliveryCompanyId);
 }
 
@@ -1763,14 +1818,10 @@ function abrirMesa(mesaId, clienteId, tipoOrden, deliveryCompanyId) {
     if (clienteId) payload.cliente_id = clienteId;
     if (tipoOrden) payload.tipo_orden = tipoOrden;
     if (deliveryCompanyId) payload.delivery_company_id = deliveryCompanyId;
-    fetch(`/restaurante/mesa/${mesaId}/abrir`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaId}/abrir`, {
+        method: 'POST', key: 'abrir-mesa-' + mesaId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-    })
-    .then(r => {
-        if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error del servidor'); });
-        return r.json();
     })
     .then(data => {
         if (data.error) { Swal.fire({icon:'error', title:'No se pudo abrir', text: data.error}); return; }
@@ -1783,60 +1834,28 @@ function abrirMesa(mesaId, clienteId, tipoOrden, deliveryCompanyId) {
 }
 
 function confirmarReserva(mesaId, reservacionId) {
+    isOpeningFromReservation = true;
     mostrarAbrirMesa(mesaId);
     document.getElementById('tipoOrdenModal').dataset.reservacionId = reservacionId;
-    document.querySelector('#tipoOrdenModal .btn-primary').onclick = function() {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('tipoOrdenModal'));
-        modal.hide();
-        const deliveryCompanyId = ordenTipoSeleccionado === 'delivery'
-            ? document.getElementById('delivery-company-select').value
-            : null;
-        if (ordenTipoSeleccionado === 'delivery' && !deliveryCompanyId) {
-            Swal.fire({icon:'error', title:'Selecciona empresa', text:'Debes elegir una empresa de delivery'});
-            return;
-        }
-        fetch(`/restaurante/mesa/${mesaId}/abrir`, {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tipo_orden: ordenTipoSeleccionado,
-                delivery_company_id: deliveryCompanyId || null
-            })
-        })
-        .then(r => {
-            if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error del servidor'); });
-            return r.json();
-        })
-        .then(data => {
-            if (data.error) { Swal.fire({icon:'error', title:'No se pudo abrir', text: data.error}); return; }
-            fetch(`/restaurante/reservaciones/${reservacionId}/estado`, {
-                method: 'PATCH',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: 'cumplida' })
-            }).catch(() => {});
-            cargarMesa(mesaId);
-            actualizarGridMesa(mesaId, 'ocupada');
-            document.querySelector('#tipoOrdenModal .btn-primary').onclick = confirmarAbrirMesa;
-        })
-        .catch(err => {
-            Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
-            document.querySelector('#tipoOrdenModal .btn-primary').onclick = confirmarAbrirMesa;
-        });
-    };
 }
 
 function liberarMesa(mesaId) {
-    if (!confirm('¿Liberar esta mesa? La reservación será cancelada.')) return;
-    fetch(`/restaurante/mesa/${mesaId}/estado`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: 'disponible' })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
-        cargarMesa(mesaId);
-        actualizarGridMesa(mesaId, 'disponible');
+    Swal.fire({
+        icon: 'question', title: 'Liberar mesa',
+        text: '¿Liberar esta mesa? La reservación será cancelada.',
+        showCancelButton: true, confirmButtonText: 'Sí, liberar', cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        apiFetch(`/restaurante/mesa/${mesaId}/estado`, {
+            method: 'POST', key: 'liberar-' + mesaId,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: 'disponible' })
+        })
+        .then(data => {
+            if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+            cargarMesa(mesaId);
+            actualizarGridMesa(mesaId, 'disponible');
+        });
     });
 }
 
@@ -1967,7 +1986,7 @@ function escapeHtml(str) {
 
 function abrirSplitBill(n) {
     if (!ordenActual || !ordenActual.detalles || ordenActual.detalles.length === 0) {
-        alert('La orden no tiene items para dividir');
+        Swal.fire({icon:'warning', title:'Orden vacía', text:'La orden no tiene items para dividir'});
         return;
     }
     splitPersonas = n;
@@ -2101,7 +2120,7 @@ function confirmarSplitBill() {
     const { totales, itemsPorPersona } = calcularDatosSplit();
     
     const suma = totales.reduce((a, b) => a + b, 0);
-    if (suma <= 0) { alert('Asigna al menos un item a cada persona'); return; }
+    if (suma <= 0) { Swal.fire({icon:'warning', title:'Sin items', text:'Asigna al menos un item a cada persona'}); return; }
 
     bootstrap.Modal.getInstance(document.getElementById('splitBillModal')).hide();
     
@@ -2119,7 +2138,7 @@ function confirmarSplitBill() {
 }
 
 function mostrarDescuento() {
-    if (!ordenActual) { alert('No hay orden activa'); return; }
+    if (!ordenActual) { Swal.fire({icon:'warning', title:'Sin orden', text:'No hay orden activa'}); return; }
     document.getElementById('descuento-valor').value = '';
     document.getElementById('descuento-motivo').value = '';
     new bootstrap.Modal(document.getElementById('descuentoModal')).show();
@@ -2129,16 +2148,15 @@ function aplicarDescuento() {
     const tipo = document.getElementById('descuento-tipo').value;
     const valor = document.getElementById('descuento-valor').value;
     const motivo = document.getElementById('descuento-motivo').value.trim();
-    if (!valor || valor <= 0) { alert('Ingresa un valor válido'); return; }
-    if (!motivo) { alert('Ingresa el motivo del descuento'); return; }
-    fetch(`/restaurante/mesa/${mesaActual}/descuento`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    if (!valor || valor <= 0) { Swal.fire({icon:'warning', title:'Campo requerido', text:'Ingresa un valor válido'}); return; }
+    if (!motivo) { Swal.fire({icon:'warning', title:'Campo requerido', text:'Ingresa el motivo del descuento'}); return; }
+    apiFetch(`/restaurante/mesa/${mesaActual}/descuento`, {
+        method: 'POST', key: 'descuento-' + mesaActual,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tipo, valor, motivo })
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         bootstrap.Modal.getInstance(document.getElementById('descuentoModal')).hide();
         ordenActual = data.orden;
         renderOrden(data.orden);
@@ -2146,24 +2164,34 @@ function aplicarDescuento() {
 }
 
 function anularOrden() {
-    if (!ordenActual) { alert('No hay orden activa'); return; }
-    if (!confirm('¿Estás seguro de anular esta orden? Se devolverá el stock.')) return;
-    fetch(`/restaurante/mesa/${mesaActual}/anular`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ motivo: prompt('Motivo de anulación:', 'Anulación manual') || 'Anulación manual' })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.error) { alert(data.error); return; }
-        actualizarGridMesa(mesaActual, 'disponible');
-        document.getElementById('orden-items').innerHTML = '<div class="text-center text-muted mt-5"><i class="bi bi-hand-index fs-1 d-block mb-2"></i><p>Orden anulada</p></div>';
-        document.getElementById('orden-footer').classList.add('d-none');
-        document.getElementById('orden-actions').classList.add('d-none');
-        document.getElementById('productos-search-bar').classList.add('d-none');
-        document.getElementById('orden-titulo').textContent = 'Selecciona una mesa';
-        document.getElementById('orden-subtitulo').textContent = 'Haz clic en una mesa para ver su orden';
-        ordenActual = null;
+    if (!ordenActual) { Swal.fire({icon:'warning', title:'Sin orden', text:'No hay orden activa'}); return; }
+    Swal.fire({
+        icon: 'question', title: 'Anular orden',
+        text: '¿Estás seguro de anular esta orden? Se devolverá el stock.',
+        input: 'text', inputLabel: 'Motivo de anulación', inputValue: 'Anulación manual',
+        showCancelButton: true, confirmButtonText: 'Sí, anular', cancelButtonText: 'Cancelar',
+        inputValidator: v => !v ? 'El motivo es requerido' : null
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        apiFetch(`/restaurante/mesa/${mesaActual}/anular`, {
+            method: 'POST', key: 'anular-' + mesaActual,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ motivo: result.value })
+        })
+        .then(data => {
+            if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+            actualizarGridMesa(mesaActual, 'disponible');
+            document.getElementById('orden-items').innerHTML = '<div class="text-center text-muted mt-5"><i class="bi bi-hand-index fs-1 d-block mb-2"></i><p>Orden anulada</p></div>';
+            document.getElementById('orden-footer').classList.add('d-none');
+            document.getElementById('orden-actions').classList.add('d-none');
+            document.getElementById('productos-search-bar').classList.add('d-none');
+            document.getElementById('orden-titulo').textContent = 'Selecciona una mesa';
+            document.getElementById('orden-subtitulo').textContent = 'Haz clic en una mesa para ver su orden';
+            ordenActual = null;
+        })
+        .catch(err => {
+            Swal.fire({icon:'error', title:'Error', text: err.message || 'Error de conexión'});
+        });
     });
 }
 
@@ -2174,15 +2202,14 @@ function mostrarTrasladar() {
 
 function trasladarMesa() {
     const destino = document.getElementById('mesa-destino').value;
-    if (!destino) { alert('Selecciona una mesa destino'); return; }
-    fetch(`/restaurante/mesa/${mesaActual}/trasladar`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    if (!destino) { Swal.fire({icon:'warning', title:'Campo requerido', text:'Selecciona una mesa destino'}); return; }
+    apiFetch(`/restaurante/mesa/${mesaActual}/trasladar`, {
+        method: 'POST', key: 'trasladar-' + mesaActual,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ destino_id: destino })
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         bootstrap.Modal.getInstance(document.getElementById('trasladarModal')).hide();
         actualizarGridMesa(mesaActual, 'disponible');
         mesaActual = parseInt(destino);
@@ -2196,8 +2223,7 @@ function trasladarMesa() {
 function mostrarHistorial() {
     if (!mesaActual) return;
     document.getElementById('historial-content').innerHTML = '<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Cargando...</div>';
-    fetch(`/restaurante/mesa/${mesaActual}/historial`)
-        .then(r => r.json())
+    apiFetch(`/restaurante/mesa/${mesaActual}/historial`, { key: 'historial-' + mesaActual })
         .then(data => {
             document.getElementById('historial-content').innerHTML = data.html;
             new bootstrap.Modal(document.getElementById('historialModal')).show();
@@ -2213,11 +2239,10 @@ function quitarItem(detalleId) {
         cancelButtonText: 'Cancelar'
     }).then(result => {
         if (!result.isConfirmed) return;
-        fetch(`/restaurante/mesa/${mesaActual}/quitar/${detalleId}`, {
-            method: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        apiFetch(`/restaurante/mesa/${mesaActual}/quitar/${detalleId}`, {
+            method: 'DELETE', key: 'quitar-' + detalleId,
+            headers: { 'Content-Type': 'application/json' }
         })
-        .then(r => r.json())
         .then(data => {
             if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
             ordenActual = data.orden;
@@ -2265,12 +2290,11 @@ function cambiarCantidadItem(detalleId, delta, stock) {
 }
 
 function enviarCambiarCantidad(detalleId, cantidad) {
-    fetch(`/restaurante/mesa/${mesaActual}/actualizar/${detalleId}`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaActual}/actualizar/${detalleId}`, {
+        method: 'POST', key: 'actualizar-' + detalleId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cantidad: cantidad })
     })
-    .then(r => r.json())
     .then(data => {
         if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         ordenActual = data.orden;
@@ -2283,7 +2307,7 @@ function enviarCambiarCantidad(detalleId, cantidad) {
 }
 
 function mostrarPago() {
-    if (!ordenActual || ordenActual.total <= 0) { alert('La orden está vacía'); return; }
+    if (!ordenActual || ordenActual.total <= 0) { Swal.fire({icon:'warning', title:'Orden vacía', text:'La orden está vacía'}); return; }
     document.getElementById('pago-total').textContent = 'RD$ ' + Number(ordenActual.total).toFixed(2);
     document.getElementById('pago-mesa-label').textContent = 'Mesa #' + (mesaActual || '--');
     document.getElementById('propina-input').value = '0';
@@ -2396,14 +2420,13 @@ function procesarPago() {
         payload.monto_transferencia = document.getElementById('mixto-transferencia').value || 0;
     }
 
-    fetch(`/restaurante/mesa/${mesaActual}/cobrar`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaActual}/cobrar`, {
+        method: 'POST', key: 'cobrar-' + mesaActual,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         bootstrap.Modal.getInstance(document.getElementById('pagoModal')).hide();
         postPagoData = data.venta;
         mostrarPostPago(data.venta);
@@ -2436,12 +2459,11 @@ function facturarMesa() {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Facturando...';
 
-    fetch(`/restaurante/mesa/${mesaActual}/facturar`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaActual}/facturar`, {
+        method: 'POST', key: 'facturar-' + postPagoData.id,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ venta_id: postPagoData.id })
     })
-    .then(r => r.json())
     .then(data => {
         const status = document.getElementById('factura-status');
         status.classList.remove('d-none');
@@ -2468,12 +2490,11 @@ function imprimirTicket() {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Imprimiendo...';
 
-    fetch(`/restaurante/mesa/${mesaActual}/ticket/print`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaActual}/ticket/print`, {
+        method: 'POST', key: 'print-ticket-' + postPagoData.id,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ venta_id: postPagoData.id })
     })
-    .then(r => r.json())
     .then(data => {
         if (data.error) {
             Swal.fire({icon:'error', title:'Error de impresión', text: data.error});
@@ -2483,10 +2504,10 @@ function imprimirTicket() {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-printer me-1"></i> Imprimir';
     })
-    .catch(() => {
+    .catch(err => {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-printer me-1"></i> Imprimir';
-        Swal.fire({icon:'error', title:'Error', text:'No se pudo conectar con el servidor'});
+        Swal.fire({icon:'error', title:'Error', text: err.message || 'No se pudo conectar con el servidor'});
     });
 }
 
@@ -2495,12 +2516,11 @@ function reimprimirTicket(mesaId, ventaId) {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-    fetch(`/restaurante/mesa/${mesaId}/ticket/print`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaId}/ticket/print`, {
+        method: 'POST', key: 'print-ticket-' + ventaId,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ venta_id: ventaId })
     })
-    .then(r => r.json())
     .then(data => {
         if (data.error) {
             Swal.fire({icon:'error', title:'Error de impresión', text: data.error});
@@ -2510,10 +2530,10 @@ function reimprimirTicket(mesaId, ventaId) {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-printer"></i> Reimprimir';
     })
-    .catch(() => {
+    .catch(err => {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-printer"></i> Reimprimir';
-        Swal.fire({icon:'error', title:'Error', text:'No se pudo conectar con el servidor'});
+        Swal.fire({icon:'error', title:'Error', text: err.message || 'No se pudo conectar con el servidor'});
     });
 }
 
@@ -2527,8 +2547,7 @@ function mostrarWaitlist() {
 function cargarWaitlist() {
     const container = document.getElementById('waitlist-entries');
     container.innerHTML = '<div class="text-center text-muted py-3 small">Cargando...</div>';
-    fetch('{{ route("restaurante.waitlist.index") }}')
-        .then(r => r.json())
+    apiFetch('{{ route("restaurante.waitlist.index") }}', { key: 'waitlist' })
         .then(data => {
             const entries = data.entries || [];
             if (entries.length === 0) {
@@ -2563,15 +2582,14 @@ function agregarWaitlist(e) {
     const personas = document.getElementById('wl-personas').value;
     const telefono = document.getElementById('wl-telefono').value.trim();
     const notas = document.getElementById('wl-notas').value.trim();
-    if (!nombre) { alert('Nombre requerido'); return; }
-    fetch('{{ route("restaurante.waitlist.store") }}', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    if (!nombre) { Swal.fire({icon:'warning', title:'Campo requerido', text:'Nombre requerido'}); return; }
+    apiFetch('{{ route("restaurante.waitlist.store") }}', {
+        method: 'POST', key: 'waitlist-store',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cliente_nombre: nombre, personas, cliente_telefono: telefono, notas })
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.error) { alert(data.error); return; }
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         document.getElementById('wl-nombre').value = '';
         document.getElementById('wl-personas').value = '2';
         document.getElementById('wl-telefono').value = '';
@@ -2581,23 +2599,26 @@ function agregarWaitlist(e) {
 }
 
 function cambiarEstadoWaitlist(id, estado) {
-    fetch(`/restaurante/waitlist/${id}/estado`, {
-        method: 'PATCH',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/waitlist/${id}/estado`, {
+        method: 'PATCH', key: 'waitlist-estado-' + id,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado })
     })
-    .then(r => r.json())
     .then(data => { if (data.success) cargarWaitlist(); });
 }
 
 function eliminarWaitlist(id) {
-    if (!confirm('¿Eliminar esta entrada?')) return;
-    fetch(`/restaurante/waitlist/${id}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-    })
-    .then(r => r.json())
-    .then(data => { if (data.success) cargarWaitlist(); });
+    Swal.fire({
+        icon: 'question', title: 'Eliminar entrada',
+        text: '¿Eliminar esta entrada?',
+        showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        apiFetch(`/restaurante/waitlist/${id}`, {
+            method: 'DELETE', key: 'waitlist-del-' + id
+        })
+        .then(data => { if (data.success) cargarWaitlist(); });
+    });
 }
 
 function cerrarMesa() {
@@ -2614,14 +2635,10 @@ function cerrarMesa() {
         cancelButtonText: 'Cancelar'
     }).then(result => {
         if (!result.isConfirmed) return;
-        fetch(`/restaurante/mesa/${mesaActual}/anular`, {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+        apiFetch(`/restaurante/mesa/${mesaActual}/anular`, {
+            method: 'POST', key: 'cerrar-mesa-' + mesaActual,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ motivo: 'Cierre manual desde interfaz' })
-        })
-        .then(r => {
-            if (!r.ok) return r.json().then(d => { throw new Error(d.error || 'Error al cerrar'); });
-            return r.json();
         })
         .then(data => {
             if (data.error) { Swal.fire({icon:'error', title:'No se pudo cerrar', text: data.error}); return; }
@@ -2696,8 +2713,9 @@ function actualizarTimersReservas() {
         }
     });
 }
-setInterval(actualizarTimersReservas, 30000);
+const timerReservas = setInterval(actualizarTimersReservas, 30000);
 actualizarTimersReservas();
+window.addEventListener('beforeunload', () => clearInterval(timerReservas));
 
 // Atajos de teclado
 document.addEventListener('keydown', function (e) {
@@ -2726,6 +2744,59 @@ document.addEventListener('keydown', function (e) {
 
 // Mapa de mesas
 let mapaActivo = false;
+let mapaInitialized = false;
+
+function initMapaDrag() {
+    if (mapaInitialized) return;
+    mapaInitialized = true;
+    document.querySelectorAll('.mesa-mapa-btn').forEach(el => {
+        let offsetX, offsetY, startX, startY, wasDragged;
+        const onMouseMove = function (e) {
+            const dx = Math.abs(e.clientX - startX);
+            const dy = Math.abs(e.clientY - startY);
+            if (dx > 5 || dy > 5) wasDragged = true;
+            const parent = el.parentElement;
+            const rect = parent.getBoundingClientRect();
+            let newX = e.clientX - offsetX - rect.left + parent.scrollLeft;
+            let newY = e.clientY - offsetY - rect.top + parent.scrollTop;
+            newX = Math.max(0, Math.min(newX, rect.width - 150));
+            newY = Math.max(0, Math.min(newY, rect.height - 80));
+            el.style.left = newX + 'px';
+            el.style.top = newY + 'px';
+        };
+        const onMouseUp = function () {
+            el.style.cursor = 'grab';
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            if (!wasDragged) {
+                seleccionarMesaMapa(parseInt(el.dataset.mesaId));
+                return;
+            }
+            const x = parseInt(el.style.left);
+            const y = parseInt(el.style.top);
+            fetch(`/restaurante/mesa/${el.dataset.mesaId}/posicion`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pos_x: x, pos_y: y })
+            });
+        };
+        el.addEventListener('mousedown', function (e) {
+            if (e.target.tagName === 'BUTTON') return;
+            wasDragged = false;
+            offsetX = e.clientX - parseInt(this.style.left);
+            offsetY = e.clientY - parseInt(this.style.top);
+            startX = e.clientX;
+            startY = e.clientY;
+            el.style.cursor = 'grabbing';
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            e.preventDefault();
+        });
+        el.addEventListener('click', function (e) {
+            if (wasDragged) { e.stopPropagation(); e.preventDefault(); }
+        });
+    });
+}
 
 function toggleMapa() {
     mapaActivo = !mapaActivo;
@@ -2735,56 +2806,7 @@ function toggleMapa() {
     grid.classList.toggle('d-none', mapaActivo);
     mapa.classList.toggle('d-none', !mapaActivo);
     btn.innerHTML = mapaActivo ? '<i class="bi bi-grid"></i> Grid' : '<i class="bi bi-map"></i> Mapa';
-    if (mapaActivo) {
-        // Inicializar drag para cada mesa en el mapa
-        document.querySelectorAll('.mesa-mapa-btn').forEach(el => {
-            let offsetX, offsetY, startX, startY, wasDragged;
-            el.addEventListener('mousedown', function (e) {
-                if (e.target.tagName === 'BUTTON') return;
-                wasDragged = false;
-                offsetX = e.clientX - parseInt(this.style.left);
-                offsetY = e.clientY - parseInt(this.style.top);
-                startX = e.clientX;
-                startY = e.clientY;
-                el.style.cursor = 'grabbing';
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-                e.preventDefault();
-            });
-            function onMouseMove(e) {
-                const dx = Math.abs(e.clientX - startX);
-                const dy = Math.abs(e.clientY - startY);
-                if (dx > 5 || dy > 5) wasDragged = true;
-                const parent = el.parentElement;
-                const rect = parent.getBoundingClientRect();
-                let newX = e.clientX - offsetX - rect.left + parent.scrollLeft;
-                let newY = e.clientY - offsetY - rect.top + parent.scrollTop;
-                newX = Math.max(0, Math.min(newX, rect.width - 150));
-                newY = Math.max(0, Math.min(newY, rect.height - 80));
-                el.style.left = newX + 'px';
-                el.style.top = newY + 'px';
-            }
-            function onMouseUp() {
-                el.style.cursor = 'grab';
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-                if (!wasDragged) {
-                    seleccionarMesaMapa(parseInt(el.dataset.mesaId));
-                    return;
-                }
-                // Auto-guardar posición
-                const x = parseInt(el.style.left);
-                const y = parseInt(el.style.top);
-                fetch(`/restaurante/mesa/${el.dataset.mesaId}/posicion`, {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pos_x: x, pos_y: y })
-                });
-            }
-            el.addEventListener('click', function (e) {
-                if (wasDragged) { e.stopPropagation(); e.preventDefault(); }
-    });
-    });
+    if (mapaActivo) initMapaDrag();
 }
 
 function guardarMapa() {
@@ -2792,15 +2814,14 @@ function guardarMapa() {
     document.querySelectorAll('.mesa-mapa-btn').forEach(el => {
         mesas.push({ id: parseInt(el.dataset.mesaId), pos_x: parseInt(el.style.left), pos_y: parseInt(el.style.top) });
     });
-    fetch('{{ route("restaurante.mesas.posiciones") }}', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch('{{ route("restaurante.mesas.posiciones") }}', {
+        method: 'POST', key: 'guardar-mapa',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mesas })
     })
-    .then(r => r.json())
     .then(data => {
-        if (data.success) alert('Posiciones guardadas');
-    });
+        if (data.success) Swal.fire({icon:'success', title:'Guardado', text:'Posiciones guardadas', timer:1500, showConfirmButton:false});
+    }).catch(() => {});
 }
 
 function seleccionarMesaMapa(mesaId) {
@@ -2809,7 +2830,6 @@ function seleccionarMesaMapa(mesaId) {
     const el = document.querySelector(`.mesa-mapa-btn[data-mesa-id="${mesaId}"]`);
     if (el) el.classList.add('mesa-selected');
     cargarMesa(mesaId);
-}
 }
 
 // ─── Modal de productos con teclado virtual ───
@@ -3103,12 +3123,11 @@ function enviarAgregarDesdeModal(productoId, cantidad) {
     const notas = document.getElementById('modal-item-notas').value.trim();
     const curso = document.getElementById('modal-item-curso').value;
 
-    fetch(`/restaurante/mesa/${mesaActual}/agregar`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+    apiFetch(`/restaurante/mesa/${mesaActual}/agregar`, {
+        method: 'POST', key: 'agregar-modal',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ producto_id: productoId, cantidad: cantidad, notas: notas, curso: curso })
     })
-    .then(r => r.json())
     .then(data => {
         if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         ordenActual = data.orden;

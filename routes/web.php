@@ -865,11 +865,11 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/restaurante/categorias/{categoria}', [MesaCategoriaController::class, 'destroy'])->name('restaurante.categorias.destroy')->middleware('permission:restaurante.categorias');
 
     // Ubicaciones de mesas
-    Route::get('/restaurante/ubicaciones', [MesaUbicacionController::class, 'index'])->name('restaurante.ubicaciones.index')->middleware('permission:restaurante.categorias');
-    Route::get('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'show'])->name('restaurante.ubicaciones.show')->middleware('permission:restaurante.categorias');
-    Route::post('/restaurante/ubicaciones', [MesaUbicacionController::class, 'store'])->name('restaurante.ubicaciones.store')->middleware('permission:restaurante.categorias');
-    Route::put('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'update'])->name('restaurante.ubicaciones.update')->middleware('permission:restaurante.categorias');
-    Route::delete('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'destroy'])->name('restaurante.ubicaciones.destroy')->middleware('permission:restaurante.categorias');
+    Route::get('/restaurante/ubicaciones', [MesaUbicacionController::class, 'index'])->name('restaurante.ubicaciones.index')->middleware('permission:restaurante.ubicaciones');
+    Route::get('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'show'])->name('restaurante.ubicaciones.show')->middleware('permission:restaurante.ubicaciones');
+    Route::post('/restaurante/ubicaciones', [MesaUbicacionController::class, 'store'])->name('restaurante.ubicaciones.store')->middleware('permission:restaurante.ubicaciones');
+    Route::put('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'update'])->name('restaurante.ubicaciones.update')->middleware('permission:restaurante.ubicaciones');
+    Route::delete('/restaurante/ubicaciones/{mesaUbicacion}', [MesaUbicacionController::class, 'destroy'])->name('restaurante.ubicaciones.destroy')->middleware('permission:restaurante.ubicaciones');
 
     // Reservaciones
     Route::get('/restaurante/reservaciones', [ReservacionController::class, 'index'])->name('restaurante.reservaciones.index')->middleware('permission:restaurante.reservaciones');
