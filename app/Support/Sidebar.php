@@ -114,14 +114,13 @@ class Sidebar
                 'icon'   => 'bi-code-slash',
                 'label'  => 'Documentaci&oacute;n API',
             ];
-            $items[] = ['section' => 'Configuraci&oacute;n del Sistema'];
+            $items[] = ['section' => 'Configuraci&oacute;n'];
             $items[] = [
-                'route'       => 'configuracion.index',
-                'url'         => route('configuracion.index') . '#correo-smtp',
+                'route'       => 'owner.smtp-settings',
                 'icon'        => 'bi-envelope-at',
                 'label'       => 'Correo SMTP',
-                'is_route'    => 'configuracion.*',
-                'exact_route' => 'configuracion.index',
+                'is_route'    => 'owner.smtp-settings*',
+                'exact_route' => 'owner.smtp-settings',
             ];
             return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
         }

@@ -22,6 +22,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class OwnerController extends Controller
 {
@@ -1288,5 +1289,94 @@ class OwnerController extends Controller
         ];
 
         return view('owner.cuentas-bancarias.index', compact('cuentas', 'instances', 'stats'));
+    }
+
+    // ─── SMTP Configuration (Owner Only) ─────────────────────────────
+
+    public function smtpSettings()
+    {
+        $settings = [
+            'mail_mailer'       => SystemSetting::get('mail_mailer', 'smtp'),
+            'mail_host'         => SystemSetting::get('mail_host', ''),
+            'mail_port'         => SystemSetting::get('mail_port', '465'),
+            'mail_username'     => SystemSetting::get('mail_username', ''),
+            'mail_password'     => SystemSetting::get('mail_password', ''),
+            'mail_encryption'   => SystemSetting::get('mail_encryption', 'ssl'),
+            'mail_from_address' => SystemSetting::get('mail_from_address', ''),
+            'mail_from_name'    => SystemSetting::get('mail_from_name', ''),
+        ];
+
+        return view('owner.smtp-settings', compact('settings'));
+    }
+
+    public function smtpSettingsUpdate(Request $request)
+    {
+        $data = $request->validate([
+            'mail_mailer'       => 'nullable|string|in:smtp,log,mail,sendmail',
+            'mail_host'         => 'nullable|string|max:255',
+            'mail_port'         => 'nullable|string|max:10',
+            'mail_username'     => 'nullable|string|max:255',
+            'mail_password'     => 'nullable|string|max:255',
+            'mail_encryption'   => 'nullable|string|in:tls,ssl,null|max:10',
+            'mail_from_address' => 'nullable|email|max:255',
+            'mail_from_name'    => 'nullable|string|max:255',
+        ]);
+
+        $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name'];
+
+        foreach ($mailKeys as $key) {
+            if (array_key_exists($key, $data)) {
+                $value = $data[$key];
+                // Encrypt password
+                if ($key === 'mail_password' && !empty($value)) {
+                    $value = encrypt($value);
+                }
+                SystemSetting::updateOrCreate(
+                    ['key' => $key, 'tenant_id' => null],
+                    ['value' => $value]
+                );
+            }
+        }
+
+        Cache::forget('system_settings_all_global');
+
+        $this->logOwnerAction('SMTP_UPDATE', 'Configuración SMTP global actualizada');
+
+        return redirect()->route('owner.smtp-settings')
+            ->with('success', 'Configuración SMTP guardada correctamente.');
+    }
+
+    public function smtpSettingsTest(Request $request)
+    {
+        $request->validate([
+            'test_email' => 'required|email',
+        ]);
+
+        $testEmail = $request->input('test_email');
+
+        try {
+            // Temporarily override mail config
+            config([
+                'mail.default' => SystemSetting::get('mail_mailer', 'smtp'),
+                'mail.mailers.smtp.host' => SystemSetting::get('mail_host', ''),
+                'mail.mailers.smtp.port' => SystemSetting::get('mail_port', '465'),
+                'mail.mailers.smtp.username' => SystemSetting::get('mail_username', ''),
+                'mail.mailers.smtp.password' => decrypt(SystemSetting::get('mail_password', '')),
+                'mail.mailers.smtp.encryption' => SystemSetting::get('mail_encryption', 'ssl'),
+                'mail.from.address' => SystemSetting::get('mail_from_address', ''),
+                'mail.from.name' => SystemSetting::get('mail_from_name', ''),
+            ]);
+
+            \Illuminate\Support\Facades\Mail::raw('Este es un correo de prueba desde el sistema.', function ($message) use ($testEmail) {
+                $message->to($testEmail)
+                    ->subject('Prueba de Configuración SMTP');
+            });
+
+            return redirect()->route('owner.smtp-settings')
+                ->with('success', "Correo de prueba enviado exitosamente a {$testEmail}.");
+        } catch (\Throwable $e) {
+            return redirect()->route('owner.smtp-settings')
+                ->with('error', 'Error al enviar correo de prueba: ' . $e->getMessage());
+        }
     }
 }

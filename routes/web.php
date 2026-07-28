@@ -712,6 +712,10 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
 
     // Cuentas Bancarias (Owner)
     Route::get('/cuentas-bancarias',[\App\Http\Controllers\OwnerController::class,'cuentasBancarias'])->name('cuentas-bancarias.index');
+    // SMTP Configuration (Owner Only)
+    Route::get('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettings'])->name('smtp-settings');
+    Route::post('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsUpdate'])->name('smtp-settings.update');
+    Route::post('/smtp-settings/test', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsTest'])->name('smtp-settings.test');
     // API Request Logs
     Route::get('/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'index'])->name('api-requests');
     Route::get('/api/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'apiIndex'])->name('api.api-requests');
