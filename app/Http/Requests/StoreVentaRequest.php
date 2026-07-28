@@ -62,17 +62,9 @@ class StoreVentaRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $totals = $this->input('total', 0);
-            $subtotals = $this->input('subtotal', []);
             $precios = $this->input('precio', []);
             $cantidades = $this->input('cantidad', []);
-
-            if (is_array($subtotals) && count($subtotals) > 0) {
-                $sumaSubtotales = array_sum(array_map('floatval', $subtotals));
-                if (abs($sumaSubtotales - $totals) > 0.02) {
-                    $validator->errors()->add('total', "El total ({$totals}) no coincide con la suma de subtotales ({$sumaSubtotales}). Verifique los cálculos.");
-                }
-            }
+            $subtotals = $this->input('subtotal', []);
 
             if (is_array($precios) && is_array($cantidades)) {
                 $maxItems = min(count($precios), count($cantidades));
