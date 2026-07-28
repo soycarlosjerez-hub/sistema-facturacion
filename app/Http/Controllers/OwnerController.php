@@ -1327,10 +1327,22 @@ class OwnerController extends Controller
         foreach ($mailKeys as $key) {
             if (array_key_exists($key, $data)) {
                 $value = $data[$key];
+
+                // Skip password if left blank (keep existing)
+                if ($key === 'mail_password' && ($value === null || $value === '')) {
+                    continue;
+                }
+
                 // Encrypt password
                 if ($key === 'mail_password' && !empty($value)) {
                     $value = encrypt($value);
                 }
+
+                // Convert null to empty string (value column is NOT NULL)
+                if ($value === null) {
+                    $value = '';
+                }
+
                 SystemSetting::updateOrCreate(
                     ['key' => $key, 'tenant_id' => null],
                     ['value' => $value]
@@ -1355,13 +1367,21 @@ class OwnerController extends Controller
         $testEmail = $request->input('test_email');
 
         try {
+            // Safely decrypt password (may be plaintext if saved before encryption was added)
+            $rawPassword = SystemSetting::get('mail_password', '');
+            try {
+                $decryptedPassword = decrypt($rawPassword);
+            } catch (\Exception $e) {
+                $decryptedPassword = $rawPassword;
+            }
+
             // Temporarily override mail config
             config([
                 'mail.default' => SystemSetting::get('mail_mailer', 'smtp'),
                 'mail.mailers.smtp.host' => SystemSetting::get('mail_host', ''),
                 'mail.mailers.smtp.port' => SystemSetting::get('mail_port', '465'),
                 'mail.mailers.smtp.username' => SystemSetting::get('mail_username', ''),
-                'mail.mailers.smtp.password' => decrypt(SystemSetting::get('mail_password', '')),
+                'mail.mailers.smtp.password' => $decryptedPassword,
                 'mail.mailers.smtp.encryption' => SystemSetting::get('mail_encryption', 'ssl'),
                 'mail.from.address' => SystemSetting::get('mail_from_address', ''),
                 'mail.from.name' => SystemSetting::get('mail_from_name', ''),

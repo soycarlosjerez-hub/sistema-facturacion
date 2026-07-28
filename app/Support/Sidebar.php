@@ -114,7 +114,7 @@ class Sidebar
                 'icon'   => 'bi-code-slash',
                 'label'  => 'Documentaci&oacute;n API',
             ];
-            $items[] = ['section' => 'Configuraci&oacute;n'];
+            $items[] = ['section' => 'Configuración del Sistema'];
             $items[] = [
                 'route'       => 'owner.smtp-settings',
                 'icon'        => 'bi-envelope-at',
