@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 
 class VisitaProgramada extends Model
 {
-    use HasFactory, Auditable, TenantScope;
+    use HasFactory, Auditable, TenantScope, SoftDeletes;
 
     protected $fillable = [
         'contrato_mantenimiento_id',

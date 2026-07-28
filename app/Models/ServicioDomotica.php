@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 
@@ -14,6 +15,7 @@ class ServicioDomotica extends Model
     use HasFactory;
     use Auditable;
     use TenantScope;
+    use SoftDeletes;
 
     protected $table = 'servicios_domotica';
 
@@ -126,7 +128,7 @@ class ServicioDomotica extends Model
     public function calcularTotales(): void
     {
         $this->subtotal = $this->presupuesto;
-        $this->itbis = $this->subtotal * 0.18;
+        $this->itbis = round($this->subtotal * 0.18, 2);
         $this->total = $this->subtotal + $this->itbis - $this->descuento;
         $this->save();
     }

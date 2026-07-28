@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 
@@ -13,6 +14,7 @@ class InstalacionEquipoDomotico extends Model
     use HasFactory;
     use Auditable;
     use TenantScope;
+    use SoftDeletes;
 
     protected $table = 'instalacion_equipo_domotico';
 
@@ -39,14 +41,15 @@ class InstalacionEquipoDomotico extends Model
 
     public function producto(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Producto::class);
     }
 
     public function getEstadoLabelAttribute(): ?string
     {
         return match ($this->estado) {
-            'instaldo' => 'Instalado',
             'pendiente' => 'Pendiente',
+            'programado' => 'Programado',
+            'instalado' => 'Instalado',
             'fallido' => 'Fallido',
             'cancelado' => 'Cancelado',
             default => null,

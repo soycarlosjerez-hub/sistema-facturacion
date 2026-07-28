@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use Illuminate\Support\Facades\DB;
 
 class OrdenEmergencia extends Model
 {
-    use HasFactory, Auditable, TenantScope;
+    use HasFactory, Auditable, TenantScope, SoftDeletes;
 
     protected $table = 'ordenes_emergencia';
 
@@ -131,8 +133,20 @@ class OrdenEmergencia extends Model
     public function generarCodigo(): string
     {
         $year = date('Y');
-        $count = self::whereYear('created_at', $year)->count() + 1;
-        return sprintf('EMERG-%s-%05d', $year, $count);
+        $lockKey = "lock_orden_emergencia_{$year}";
+        
+        try {
+            DB::statement("GET_LOCK('{$lockKey}', 30)");
+            
+            $count = self::whereYear('created_at', $year)->count() + 1;
+            $codigo = sprintf('EMERG-%s-%05d', $year, $count);
+            
+            DB::statement("RELEASE_LOCK('{$lockKey}')");
+            
+            return $codigo;
+        } catch (\Exception $e) {
+            return sprintf('EMERG-%s-%05d', $year, time() % 100000);
+        }
     }
 
     public function calcularSLA(): void

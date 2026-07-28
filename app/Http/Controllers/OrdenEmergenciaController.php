@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\OrdenEmergencia;
 use App\Models\Cliente;
+use App\Services\OrdenEmergenciaService;
 use App\Exports\ClimatizacionOrdenesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreOrdenEmergenciaRequest;
+use App\Http\Requests\UpdateOrdenEmergenciaRequest;
 
 class OrdenEmergenciaController extends Controller
 {
+    public function __construct(private OrdenEmergenciaService $service) {}
+
     public function index(Request $request)
     {
         $query = OrdenEmergencia::query()
@@ -33,7 +38,7 @@ class OrdenEmergenciaController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = clone $query;
             $ordenes = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
 
             $rows = $ordenes->map(function ($o) {
@@ -70,8 +75,8 @@ class OrdenEmergenciaController extends Controller
 
             return response()->json([
                 'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
+                'recordsTotal' => $total->count(),
+                'recordsFiltered' => $total->count(),
                 'data' => $rows,
             ]);
         }
@@ -89,26 +94,10 @@ class OrdenEmergenciaController extends Controller
         return view('climatizacion.emergencias.create', compact('clientes'));
     }
 
-    public function store(Request $request)
+    public function store(StoreOrdenEmergenciaRequest $request)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'prioridad' => 'required|in:critica,alta,media,baja',
-            'tipo_falla' => 'required|in:sin_frio,sin_calor,fuga_gas,ruido_excesivo,cortocircuito,otro',
-            'direccion' => 'nullable|string|max:300',
-            'contacto_telefono' => 'nullable|string|max:30',
-            'descripcion' => 'required|string|min:10',
-            'tecnico_id' => 'nullable|exists:users,id',
-            'costo_estimado' => 'nullable|numeric|min:0',
-        ]);
-
-        $data['estado'] = 'reportada';
-        $data['created_by'] = auth()->id();
-        $data['costo_estimado'] = $data['costo_estimado'] ?? 0;
-
         try {
-            $orden = OrdenEmergencia::create($data);
-            $orden->calcularSLA();
+            $orden = $this->service->crear($request->validated(), auth()->id());
 
             return redirect()->route('climatizacion.emergencias.show', $orden)
                 ->with('success', 'Orden de emergencia creada correctamente.');
@@ -129,32 +118,10 @@ class OrdenEmergenciaController extends Controller
         return view('climatizacion.emergencias.edit', compact('orden', 'clientes'));
     }
 
-    public function update(Request $request, OrdenEmergencia $orden)
+    public function update(UpdateOrdenEmergenciaRequest $request, OrdenEmergencia $orden)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'prioridad' => 'required|in:critica,alta,media,baja',
-            'tipo_falla' => 'required|in:sin_frio,sin_calor,fuga_gas,ruido_excesivo,cortocircuito,otro',
-            'direccion' => 'nullable|string|max:300',
-            'contacto_telefono' => 'nullable|string|max:30',
-            'estado' => 'required|in:reportada,asignada,en_camino,en_lugar,resuelta,cerrada',
-            'descripcion' => 'required|string|min:10',
-            'tecnico_id' => 'nullable|exists:users,id',
-            'costo_estimado' => 'nullable|numeric|min:0',
-            'costo_final' => 'nullable|numeric|min:0',
-            'respondida_en' => 'nullable|date',
-            'resuelta_en' => 'nullable|date',
-        ]);
-
-        $data['costo_estimado'] = $data['costo_estimado'] ?? 0;
-        $data['costo_final'] = $data['costo_final'] ?? 0;
-
         try {
-            $orden->update($data);
-
-            if ($data['estado'] === 'resuelta' && !$orden->resuelta_en) {
-                $orden->update(['resuelta_en' => now()]);
-            }
+            $this->service->actualizar($orden->id, $request->validated());
 
             return redirect()->route('climatizacion.emergencias.show', $orden)
                 ->with('success', 'Orden de emergencia actualizada correctamente.');
@@ -165,44 +132,48 @@ class OrdenEmergenciaController extends Controller
 
     public function asignar(Request $request, OrdenEmergencia $orden)
     {
-        $data = $request->validate([
-            'tecnico_id' => 'required|exists:users,id',
-        ]);
-
         try {
-            $orden->update(array_merge($data, ['estado' => 'asignada']));
+            $this->service->asignar($orden->id, $request->input('tecnico_id'));
 
             return redirect()->route('climatizacion.emergencias.show', $orden)
                 ->with('success', 'Orden asignada correctamente.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error al asignar orden: ' . $e->getMessage());
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+    }
+
+    public function advance(Request $request, OrdenEmergencia $orden)
+    {
+        try {
+            $this->service->avanzarEstado($orden->id, $request->input('next_state'));
+
+            return redirect()->route('climatizacion.emergencias.show', $orden)
+                ->with('success', 'Estado avanzado correctamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
     }
 
     public function cerrar(OrdenEmergencia $orden)
     {
         try {
-            $orden->update(['estado' => 'cerrada', 'resuelta_en' => now()]);
+            $this->service->cerrar($orden->id);
 
             return redirect()->route('climatizacion.emergencias.index')
                 ->with('success', 'Orden cerrada correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al cerrar orden: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
     public function destroy(OrdenEmergencia $orden)
     {
-        if (!in_array($orden->estado, ['reportada'])) {
-            return back()->with('error', 'Solo se pueden eliminar órdenes en estado "Reportada".');
-        }
-
         try {
-            $orden->delete();
+            $this->service->eliminar($orden->id);
             return redirect()->route('climatizacion.emergencias.index')
                 ->with('success', 'Orden de emergencia eliminada correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar orden de emergencia: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 

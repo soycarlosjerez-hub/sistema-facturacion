@@ -12,24 +12,39 @@ class InstallationService
 {
     public function __construct() {}
 
+    protected const ALLOWED_STATES = [
+        'pendiente' => ['programado', 'cancelado'],
+        'programado' => ['en_curso', 'cancelado'],
+        'en_curso' => ['completado', 'cancelado'],
+        'completado' => [],
+        'cancelado' => [],
+    ];
+
     public function crearServicioDomotica(array $data, int $userId): ServicioDomotica
     {
         $data['user_id'] = $userId;
         $data['estado'] = 'pendiente';
 
         $year = date('Y');
-        $ultimo = ServicioDomotica::where('numero_proyecto', 'like', "SD-{$year}-%")
-            ->orderBy('id', 'desc')
-            ->first();
 
-        $num = $ultimo ? ((int) substr($ultimo->numero_proyecto, -6) + 1) : 1;
-        $data['numero_proyecto'] = sprintf('SD-%s-%06d', $year, $num);
+        try {
+            DB::statement("SELECT GET_LOCK('lock_sd_numbering_{$year}', 10)");
+            
+            $ultimo = ServicioDomotica::where('numero_proyecto', 'like', "SD-{$year}-%")
+                ->orderBy('id', 'desc')
+                ->first();
 
-        return DB::transaction(function () use ($data) {
-            $servicio = ServicioDomotica::create($data);
-            $servicio->calcularTotales();
-            return $servicio;
-        });
+            $num = $ultimo ? ((int) substr($ultimo->numero_proyecto, -6) + 1) : 1;
+            $data['numero_proyecto'] = sprintf('SD-%s-%06d', $year, $num);
+
+            return DB::transaction(function () use ($data) {
+                $servicio = ServicioDomotica::create($data);
+                $servicio->calcularTotales();
+                return $servicio;
+            });
+        } finally {
+            DB::statement("SELECT RELEASE_LOCK('lock_sd_numbering_{$year}')");
+        }
     }
 
     public function agregarEquipo(int $servicioId, int $productoId, int $cantidad, string $ubicacion): InstalacionEquipoDomotico
@@ -66,8 +81,18 @@ class InstallationService
     public function cambiarEstado(int $servicioId, string $nuevoEstado): ServicioDomotica
     {
         $servicio = ServicioDomotica::findOrFail($servicioId);
-        $servicio->update(['estado' => $nuevoEstado]);
-        return $servicio->fresh();
+
+        $allowed = self::ALLOWED_STATES[$servicio->estado] ?? [];
+        if (empty($allowed) || !in_array($nuevoEstado, $allowed)) {
+            throw new \InvalidArgumentException(
+                "Transición inválida de '{$servicio->estado}' a '{$nuevoEstado}'. Estados permitidos: " . implode(', ', $allowed ?: ['(ninguno)'])
+            );
+        }
+
+        return DB::transaction(function () use ($servicio, $nuevoEstado) {
+            $servicio->update(['estado' => $nuevoEstado]);
+            return $servicio->fresh();
+        });
     }
 
     public function completarServicio(int $servicioId): ServicioDomotica

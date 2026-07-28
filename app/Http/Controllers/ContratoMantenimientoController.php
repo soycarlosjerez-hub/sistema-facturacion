@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\ContratoMantenimiento;
 use App\Models\Cliente;
+use App\Services\ContratoMantenimientoService;
 use App\Exports\ClimatizacionContratosExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreContratoMantenimientoRequest;
+use App\Http\Requests\UpdateContratoMantenimientoRequest;
 
 class ContratoMantenimientoController extends Controller
 {
+    public function __construct(private ContratoMantenimientoService $service) {}
+
     public function index(Request $request)
     {
         $query = ContratoMantenimiento::query()
@@ -29,7 +34,7 @@ class ContratoMantenimientoController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = clone $query;
             $contratos = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
 
             $rows = $contratos->map(function ($c) {
@@ -62,8 +67,8 @@ class ContratoMantenimientoController extends Controller
 
             return response()->json([
                 'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
+                'recordsTotal' => $total->count(),
+                'recordsFiltered' => $total->count(),
                 'data' => $rows,
             ]);
         }
@@ -80,31 +85,10 @@ class ContratoMantenimientoController extends Controller
         return view('climatizacion.contratos.create', compact('clientes'));
     }
 
-    public function store(Request $request)
+    public function store(StoreContratoMantenimientoRequest $request)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'tipo_periodicidad' => 'required|in:mensual,trimestral,semestral,aunal',
-            'equipos_cubiertos' => 'nullable|array',
-            'vigencia_desde' => 'required|date',
-            'vigencia_hasta' => 'required|date|after_or_equal:vigencia_desde',
-            'valor_mensual' => 'required|numeric|min:0',
-            'incluye_visitas' => 'boolean',
-            'num_visitas_anuales' => 'nullable|integer|min:0',
-            'deducible' => 'nullable|numeric|min:0',
-            'cobertura_maxima' => 'nullable|numeric|min:0',
-        ]);
-
-        $data['estado'] = 'borrador';
-        $data['created_by'] = auth()->id();
-        $data['incluye_visitas'] = $request->has('incluye_visitas') ? true : false;
-        $data['num_visitas_anuales'] = $data['num_visitas_anuales'] ?? 0;
-        $data['visitas_realizadas'] = 0;
-        $data['deducible'] = $data['deducible'] ?? 0;
-        $data['cobertura_maxima'] = $data['cobertura_maxima'] ?? 0;
-
         try {
-            $contrato = ContratoMantenimiento::create($data);
+            $contrato = $this->service->crear($request->validated(), auth()->id());
 
             return redirect()->route('climatizacion.contratos.show', $contrato)
                 ->with('success', 'Contrato creado correctamente.');
@@ -125,28 +109,10 @@ class ContratoMantenimientoController extends Controller
         return view('climatizacion.contratos.edit', compact('contrato', 'clientes'));
     }
 
-    public function update(Request $request, ContratoMantenimiento $contrato)
+    public function update(UpdateContratoMantenimientoRequest $request, ContratoMantenimiento $contrato)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'tipo_periodicidad' => 'required|in:mensual,trimestral,semestral,aunal',
-            'equipos_cubiertos' => 'nullable|array',
-            'vigencia_desde' => 'required|date',
-            'vigencia_hasta' => 'required|date|after_or_equal:vigencia_desde',
-            'valor_mensual' => 'required|numeric|min:0',
-            'incluye_visitas' => 'boolean',
-            'num_visitas_anuales' => 'nullable|integer|min:0',
-            'deducible' => 'nullable|numeric|min:0',
-            'cobertura_maxima' => 'nullable|numeric|min:0',
-        ]);
-
-        $data['incluye_visitas'] = $request->has('incluye_visitas') ? true : false;
-        $data['num_visitas_anuales'] = $data['num_visitas_anuales'] ?? 0;
-        $data['deducible'] = $data['deducible'] ?? 0;
-        $data['cobertura_maxima'] = $data['cobertura_maxima'] ?? 0;
-
         try {
-            $contrato->update($data);
+            $this->service->actualizar($contrato->id, $request->validated());
 
             return redirect()->route('climatizacion.contratos.show', $contrato)
                 ->with('success', 'Contrato actualizado correctamente.');
@@ -158,37 +124,33 @@ class ContratoMantenimientoController extends Controller
     public function activar(ContratoMantenimiento $contrato)
     {
         try {
-            $contrato->update(['estado' => 'activo']);
+            $this->service->activar($contrato->id);
             return redirect()->route('climatizacion.contratos.show', $contrato)
                 ->with('success', 'Contrato activado correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al activar contrato: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
     public function cancelar(ContratoMantenimiento $contrato)
     {
         try {
-            $contrato->update(['estado' => 'cancelado']);
+            $this->service->cancelar($contrato->id);
             return redirect()->route('climatizacion.contratos.index')
                 ->with('success', 'Contrato cancelado correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al cancelar contrato: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
     public function destroy(ContratoMantenimiento $contrato)
     {
-        if ($contrato->estado === 'activo') {
-            return back()->with('error', 'No se puede eliminar un contrato activo. Cancelarlo primero.');
-        }
-
         try {
-            $contrato->delete();
+            $this->service->eliminar($contrato->id);
             return redirect()->route('climatizacion.contratos.index')
                 ->with('success', 'Contrato eliminado correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar contrato: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 

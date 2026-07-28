@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Mantenimiento;
 use App\Models\Cliente;
-use App\Models\ContratoMantenimiento;
+use App\Services\MantenimientoService;
 use App\Exports\ClimatizacionMantenimientosExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreMantenimientoRequest;
+use App\Http\Requests\UpdateMantenimientoRequest;
 
 class MantenimientoController extends Controller
 {
+    public function __construct(private MantenimientoService $service) {}
+
     public function index(Request $request)
     {
         $query = Mantenimiento::query()
@@ -34,7 +38,7 @@ class MantenimientoController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = clone $query;
             $mantenimientos = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
 
             $rows = $mantenimientos->map(function ($mtto) {
@@ -64,8 +68,8 @@ class MantenimientoController extends Controller
 
             return response()->json([
                 'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
+                'recordsTotal' => $total->count(),
+                'recordsFiltered' => $total->count(),
                 'data' => $rows,
             ]);
         }
@@ -78,36 +82,14 @@ class MantenimientoController extends Controller
     public function create()
     {
         $clientes = Cliente::orderBy('nombre')->get();
-        $contratos = ContratoMantenimiento::activos()->get();
+        $contratos = \App\Models\ContratoMantenimiento::activos()->get();
         return view('climatizacion.mantenimientos.create', compact('clientes', 'contratos'));
     }
 
-    public function store(Request $request)
+    public function store(StoreMantenimientoRequest $request)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'tecnico_id' => 'nullable|exists:users,id',
-            'tipo' => 'required|in:preventivo,correctivo',
-            'contrato_mantenimiento_id' => 'nullable|exists:contratos_mantenimiento,id',
-            'descripcion_falla' => 'nullable|string|max:2000',
-            'solucion_aplicada' => 'nullable|string|max:2000',
-            'repuestos_usados' => 'nullable|array',
-            'repuestos_usados.*.nombre' => 'required_with:repuestos_usados|string|max:100',
-            'repuestos_usados.*.cantidad' => 'nullable|integer|min:1',
-            'repuestos_usados.*.precio' => 'nullable|numeric|min:0',
-            'costo_repuestos' => 'nullable|numeric|min:0',
-            'mano_de_obra' => 'nullable|numeric|min:0',
-            'programada_para' => 'nullable|date',
-        ]);
-
-        $data['estado'] = 'pendiente';
-        $data['created_by'] = auth()->id();
-        $data['costo_repuestos'] = $data['costo_repuestos'] ?? 0;
-        $data['mano_de_obra'] = $data['mano_de_obra'] ?? 0;
-
         try {
-            $mtto = Mantenimiento::create($data);
-            $mtto->calcularTotal();
+            $mtto = $this->service->crear($request->validated(), auth()->id());
 
             return redirect()->route('climatizacion.mantenimientos.show', $mtto)
                 ->with('success', 'Mantenimiento creado correctamente.');
@@ -125,36 +107,14 @@ class MantenimientoController extends Controller
     public function edit(Mantenimiento $mantenimiento)
     {
         $clientes = Cliente::orderBy('nombre')->get();
-        $contratos = ContratoMantenimiento::activos()->get();
+        $contratos = \App\Models\ContratoMantenimiento::activos()->get();
         return view('climatizacion.mantenimientos.edit', compact('mantenimiento', 'clientes', 'contratos'));
     }
 
-    public function update(Request $request, Mantenimiento $mantenimiento)
+    public function update(UpdateMantenimientoRequest $request, Mantenimiento $mantenimiento)
     {
-        $data = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'tecnico_id' => 'nullable|exists:users,id',
-            'tipo' => 'required|in:preventivo,correctivo',
-            'estado' => 'required|in:pendiente,programada,en_curso,completado,cancelado',
-            'contrato_mantenimiento_id' => 'nullable|exists:contratos_mantenimiento,id',
-            'descripcion_falla' => 'nullable|string|max:2000',
-            'solucion_aplicada' => 'nullable|string|max:2000',
-            'repuestos_usados' => 'nullable|array',
-            'repuestos_usados.*.nombre' => 'required_with:repuestos_usados|string|max:100',
-            'repuestos_usados.*.cantidad' => 'nullable|integer|min:1',
-            'repuestos_usados.*.precio' => 'nullable|numeric|min:0',
-            'costo_repuestos' => 'nullable|numeric|min:0',
-            'mano_de_obra' => 'nullable|numeric|min:0',
-            'programada_para' => 'nullable|date',
-            'completada_en' => 'nullable|date',
-        ]);
-
-        $data['costo_repuestos'] = $data['costo_repuestos'] ?? 0;
-        $data['mano_de_obra'] = $data['mano_de_obra'] ?? 0;
-
         try {
-            $mantenimiento->update($data);
-            $mantenimiento->calcularTotal();
+            $this->service->actualizar($mantenimiento->id, $request->validated());
 
             return redirect()->route('climatizacion.mantenimientos.show', $mantenimiento)
                 ->with('success', 'Mantenimiento actualizado correctamente.');
@@ -165,43 +125,23 @@ class MantenimientoController extends Controller
 
     public function destroy(Mantenimiento $mantenimiento)
     {
-        if ($mantenimiento->estado === 'completado') {
-            return back()->with('error', 'No se puede eliminar un mantenimiento completado.');
-        }
-
         try {
-            $mantenimiento->delete();
+            $this->service->eliminar($mantenimiento->id);
             return redirect()->route('climatizacion.mantenimientos.index')
                 ->with('success', 'Mantenimiento eliminado correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar mantenimiento: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
     public function advance(Request $request, Mantenimiento $mantenimiento)
     {
-        $nextState = $request->input('next_state');
-        $allowedTransitions = [
-            'pendiente' => 'programada',
-            'programada' => 'en_curso',
-            'en_curso' => 'completado',
-        ];
-
-        if (!isset($allowedTransitions[$mantenimiento->estado]) || $allowedTransitions[$mantenimiento->estado] !== $nextState) {
-            return back()->with('error', 'Transición de estado no válida.');
-        }
-
-        $updateData = ['estado' => $nextState];
-        if ($nextState === 'completado') {
-            $updateData['completada_en'] = now();
-        }
-
         try {
-            $mantenimiento->update($updateData);
+            $this->service->avanzarEstado($mantenimiento->id, $request->input('next_state'));
             return redirect()->route('climatizacion.mantenimientos.show', $mantenimiento)
-                ->with('success', 'Estado avanzado a ' . Mantenimiento::ESTADOS[$nextState] . '.');
+                ->with('success', 'Estado avanzado a ' . Mantenimiento::ESTADOS[$request->next_state] . '.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al avanzar estado: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 

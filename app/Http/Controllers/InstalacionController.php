@@ -5,13 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Instalacion;
 use App\Models\Producto;
 use App\Models\Cliente;
-use App\Models\Sucursal;
+use App\Services\InstalacionService;
 use App\Exports\ClimatizacionInstalacionesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreInstalacionRequest;
+use App\Http\Requests\UpdateInstalacionRequest;
 
 class InstalacionController extends Controller
 {
+    public function __construct(private InstalacionService $service) {}
+
     public function index(Request $request)
     {
         $query = Instalacion::query()
@@ -35,7 +39,7 @@ class InstalacionController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = clone $query;
             $instalaciones = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
 
             $rows = $instalaciones->map(function ($inst) {
@@ -67,8 +71,8 @@ class InstalacionController extends Controller
 
             return response()->json([
                 'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
+                'recordsTotal' => $total->count(),
+                'recordsFiltered' => $total->count(),
                 'data' => $rows,
             ]);
         }
@@ -85,39 +89,11 @@ class InstalacionController extends Controller
         return view('climatizacion.instalaciones.create', compact('clientes', 'productos'));
     }
 
-    public function store(Request $request)
+    public function store(StoreInstalacionRequest $request)
     {
-        $data = $request->validate([
-            'cliente_id' => 'nullable|exists:clientes,id',
-            'sucursal_id' => 'nullable|exists:sucursales,id',
-            'instalador_id' => 'nullable|exists:users,id',
-            'direccion_instalacion' => 'nullable|string|max:300',
-            'tipo_inmueble' => 'required|in:casa,apartamento,local,industrial',
-            'programada_para' => 'nullable|date|after_or_equal:today',
-            'nota_interna' => 'nullable|string|max:2000',
-            'productos' => 'nullable|array',
-            'productos.*.producto_id' => 'exists:productos,id',
-            'productos.*.cantidad' => 'integer|min:1',
-            'productos.*.precio_unitario' => 'numeric|min:0',
-        ]);
-
-        $data['estado'] = 'pendiente';
-        $data['created_by'] = auth()->id();
-
         try {
-            $inst = Instalacion::create($data);
-
-            if ($request->filled('productos')) {
-                foreach ($request->productos as $prod) {
-                    $inst->productos()->attach($prod['producto_id'], [
-                        'cantidad' => $prod['cantidad'] ?? 1,
-                        'precio_unitario' => $prod['precio_unitario'] ?? 0,
-                    ]);
-                }
-            }
-
-            $inst->refresh();
-            $inst->calcularTotal();
+            $data = $request->validated();
+            $inst = $this->service->crear($data, auth()->id());
 
             return redirect()->route('climatizacion.instalaciones.show', $inst)
                 ->with('success', 'Instalación creada correctamente.');
@@ -139,38 +115,10 @@ class InstalacionController extends Controller
         return view('climatizacion.instalaciones.edit', compact('instalacion', 'clientes', 'productos'));
     }
 
-    public function update(Request $request, Instalacion $instalacion)
+    public function update(UpdateInstalacionRequest $request, Instalacion $instalacion)
     {
-        $data = $request->validate([
-            'cliente_id' => 'nullable|exists:clientes,id',
-            'sucursal_id' => 'nullable|exists:sucursales,id',
-            'instalador_id' => 'nullable|exists:users,id',
-            'estado' => 'required|in:pendiente,programada,en_progreso,completada,cancelada',
-            'direccion_instalacion' => 'nullable|string|max:300',
-            'tipo_inmueble' => 'required|in:casa,apartamento,local,industrial',
-            'programada_para' => 'nullable|date',
-            'completada_en' => 'nullable|date|after_or_equal:programada_para',
-            'nota_interna' => 'nullable|string|max:2000',
-            'productos' => 'nullable|array',
-            'productos.*.producto_id' => 'exists:productos,id',
-            'productos.*.cantidad' => 'integer|min:1',
-            'productos.*.precio_unitario' => 'numeric|min:0',
-        ]);
-
         try {
-            $instalacion->update($data);
-
-            if ($request->filled('productos')) {
-                $instalacion->productos()->detach();
-                foreach ($request->productos as $prod) {
-                    $instalacion->productos()->attach($prod['producto_id'], [
-                        'cantidad' => $prod['cantidad'] ?? 1,
-                        'precio_unitario' => $prod['precio_unitario'] ?? 0,
-                    ]);
-                }
-            }
-
-            $instalacion->calcularTotal();
+            $this->service->actualizar($instalacion->id, $request->validated());
 
             return redirect()->route('climatizacion.instalaciones.show', $instalacion)
                 ->with('success', 'Instalación actualizada correctamente.');
@@ -181,43 +129,23 @@ class InstalacionController extends Controller
 
     public function destroy(Instalacion $instalacion)
     {
-        if (in_array($instalacion->estado, ['completada'])) {
-            return back()->with('error', 'No se puede eliminar una instalación completada.');
-        }
-
         try {
-            $instalacion->delete();
+            $this->service->eliminar($instalacion->id);
             return redirect()->route('climatizacion.instalaciones.index')
                 ->with('success', 'Instalación eliminada correctamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar instalación: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
     public function advance(Request $request, Instalacion $instalacion)
     {
-        $nextState = $request->input('next_state');
-        $allowedTransitions = [
-            'pendiente' => 'programada',
-            'programada' => 'en_progreso',
-            'en_progreso' => 'completada',
-        ];
-
-        if (!isset($allowedTransitions[$instalacion->estado]) || $allowedTransitions[$instalacion->estado] !== $nextState) {
-            return back()->with('error', 'Transición de estado no válida.');
-        }
-
-        $updateData = ['estado' => $nextState];
-        if ($nextState === 'completada') {
-            $updateData['completada_en'] = now();
-        }
-
         try {
-            $instalacion->update($updateData);
+            $this->service->avanzarEstado($instalacion->id, $request->input('next_state'));
             return redirect()->route('climatizacion.instalaciones.show', $instalacion)
-                ->with('success', 'Estado avanzado a ' . Instalacion::ESTADOS[$nextState] . '.');
+                ->with('success', 'Estado avanzado a ' . Instalacion::ESTADOS[$request->next_state] . '.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al avanzar estado: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
