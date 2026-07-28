@@ -43,6 +43,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->reportable(function (\Throwable $e) {
             try {
+                // Apply global SMTP config from owner settings (never .env, never tenant-specific)
+                \App\Services\ErrorMailer::applyGlobalSmtp();
+
                 $request = request();
                 $userId = \Illuminate\Support\Facades\Auth::id();
                 $tenantId = $userId ? \App\Models\User::find($userId)?->business_instance_id : null;
@@ -65,7 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     'user_agent' => $request->userAgent(),
                 ]);
 
-                $alertEmail = config('app.error_alert_email', env('ERROR_ALERT_EMAIL'));
+                $alertEmail = \App\Services\ErrorMailer::getAlertEmail();
                 if ($alertEmail) {
                     $cacheKey = 'error_alert:' . md5(get_class($e) . $e->getMessage());
                     if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {

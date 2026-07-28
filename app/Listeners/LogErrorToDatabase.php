@@ -17,6 +17,9 @@ class LogErrorToDatabase
             return;
         }
 
+        // Apply global SMTP config from owner settings (never .env, never tenant-specific)
+        \App\Services\ErrorMailer::applyGlobalSmtp();
+
         $context = $event->context;
         $tenantId = $context['tenant_id'] ?? Auth::user()?->business_instance_id ?? null;
 
@@ -36,7 +39,7 @@ class LogErrorToDatabase
             'user_agent' => Request::userAgent(),
         ]);
 
-        $alertEmail = config('app.error_alert_email', env('ERROR_ALERT_EMAIL'));
+        $alertEmail = \App\Services\ErrorMailer::getAlertEmail();
         if ($alertEmail) {
             $cacheKey = 'error_alert_log:' . md5($event->level . $event->message);
             if (!Cache::has($cacheKey)) {

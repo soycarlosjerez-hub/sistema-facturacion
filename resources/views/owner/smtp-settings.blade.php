@@ -97,6 +97,20 @@ body.dark-mode .smtp-card .card-body { background: transparent; }
                             <label class="form-label">Nombre Desde (From Name)</label>
                             <input type="text" name="mail_from_name" class="form-control" value="{{ $settings['mail_from_name'] }}" placeholder="Sistema">
                         </div>
+                        <div class="col-12 mt-2">
+                            <div class="alert alert-warning border-0 shadow-sm mb-0" style="background: linear-gradient(135deg,#fef3c7,#fde68a); border-left: 4px solid #f59e0b;">
+                                <div class="d-flex align-items-start gap-2">
+                                    <i class="bi bi-exclamation-triangle-fill fs-5" style="color:#92400e"></i>
+                                    <div>
+                                        <strong class="d-block mb-1" style="color:#92400e">Correo de Alertas de Error</strong>
+                                        <span style="color:#78350f;font-size:.85rem">Destinatario de todos los correos de error/alerta del sistema. Este correo recibirá notificaciones de cualquier error que ocurra en CUALQUIERA de las instancias.</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <input type="email" name="error_alert_email" class="form-control" value="{{ $settings['error_alert_email'] }}" placeholder="alertas@miempresa.com">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="mt-4 d-flex gap-2">
                         <button type="submit" class="btn text-white px-4 py-2 rounded-4 fw-semibold" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">

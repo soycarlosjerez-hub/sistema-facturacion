@@ -1304,6 +1304,7 @@ class OwnerController extends Controller
             'mail_encryption'   => SystemSetting::get('mail_encryption', 'ssl'),
             'mail_from_address' => SystemSetting::get('mail_from_address', ''),
             'mail_from_name'    => SystemSetting::get('mail_from_name', ''),
+            'error_alert_email' => SystemSetting::get('error_alert_email', ''),
         ];
 
         return view('owner.smtp-settings', compact('settings'));
@@ -1320,6 +1321,7 @@ class OwnerController extends Controller
             'mail_encryption'   => 'nullable|string|in:tls,ssl,null|max:10',
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name'    => 'nullable|string|max:255',
+            'error_alert_email' => 'nullable|email|max:255',
         ]);
 
         $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name'];
@@ -1348,6 +1350,18 @@ class OwnerController extends Controller
                     ['value' => $value]
                 );
             }
+        }
+
+        // Save error_alert_email separately (not encrypted)
+        if (array_key_exists('error_alert_email', $data)) {
+            $value = $data['error_alert_email'];
+            if ($value === null) {
+                $value = '';
+            }
+            SystemSetting::updateOrCreate(
+                ['key' => 'error_alert_email', 'tenant_id' => null],
+                ['value' => $value]
+            );
         }
 
         Cache::forget('system_settings_all_global');
