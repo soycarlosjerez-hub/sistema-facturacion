@@ -9,7 +9,7 @@ class VentaDetalle extends Model
 {
     use TenantScope;
 
-    protected $fillable = ['venta_id', 'producto_id','almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
+    protected $fillable = ['venta_id', 'producto_id','almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
 
     protected $casts = [
         'cantidad' => 'decimal:2',

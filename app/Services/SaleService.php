@@ -46,8 +46,9 @@ class SaleService
         };
 
         $subtotalTotal = array_sum(array_map('floatval', $data['subtotal'] ?? []));
+        $descuentosLinea = 0;
+        $generalDescuento = max(0, (float) ($data['general_descuento'] ?? 0));
         if ($subtotalTotal > 0) {
-            $descuentosLinea = 0;
             foreach (($data['descuento'] ?? []) as $i => $desc) {
                 $desc = (float) ($desc ?? 0);
                 if ($desc <= 0) continue;
@@ -59,7 +60,6 @@ class SaleService
                     $descuentosLinea += $desc;
                 }
             }
-            $generalDescuento = max(0, (float) ($data['general_descuento'] ?? 0));
             $descuentosLinea += $generalDescuento;
             $pctDescuento = $subtotalTotal > 0 ? ($descuentosLinea / $subtotalTotal) * 100 : 0;
             $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
@@ -68,7 +68,44 @@ class SaleService
             }
         }
 
-        return DB::transaction(function () use ($data, $sesion, $metodo, $estado, $descuentosLinea) {
+        // Recalcular ITBIS proporcionalmente aplicando descuento general
+        $lineItbisData = [];
+        $baseImponibleTotal = 0;
+        foreach (($data['subtotal'] ?? []) as $i => $lineSub) {
+            $lineSub = (float) ($lineSub ?? 0);
+            $desc = (float) ($data['descuento'][$i] ?? 0);
+            $tipo = $data['descuento_tipo'][$i] ?? 'monto';
+            $descuentoAplicado = 0;
+            if ($desc > 0) {
+                if ($tipo === 'porcentaje') {
+                    $descuentoAplicado = $lineSub * min($desc, 100) / 100;
+                } else {
+                    $descuentoAplicado = $desc;
+                }
+            }
+            $subtotalConDesc = max(0, $lineSub - $descuentoAplicado);
+            $baseImponibleTotal += $subtotalConDesc;
+            $itbisPorcentaje = (float) ($data['itbis_porcentaje'][$i] ?? ($data['itbis_p'][$i] ?? 0));
+            $lineItbisData[] = [
+                'subtotalConDesc' => $subtotalConDesc,
+                'itbis_p'         => $itbisPorcentaje,
+            ];
+        }
+        $itbisRecalculado = 0;
+        if ($baseImponibleTotal > 0 && $generalDescuento > 0) {
+            foreach ($lineItbisData as $ld) {
+                $proporcion = $ld['subtotalConDesc'] / $baseImponibleTotal;
+                $descuentoProporcional = $generalDescuento * $proporcion;
+                $baseFinal = max(0, $ld['subtotalConDesc'] - $descuentoProporcional);
+                $itbisRecalculado += $baseFinal * ($ld['itbis_p'] / 100);
+            }
+        } else {
+            foreach ($lineItbisData as $ld) {
+                $itbisRecalculado += $ld['subtotalConDesc'] * ($ld['itbis_p'] / 100);
+            }
+        }
+
+        return DB::transaction(function () use ($data, $sesion, $metodo, $estado, $descuentosLinea, $generalDescuento, $itbisRecalculado) {
             $ncf = null;
             $ncfTipo = null;
             $ncfVencimiento = null;
@@ -90,17 +127,12 @@ class SaleService
             if ($ventaExistente) {
                 $venta = $ventaExistente;
                 $venta->increment('subtotal', $data['subtotal_final'] ?? array_sum(array_map('floatval', $data['subtotal'])));
-                $venta->increment('impuestos', $data['impuestos'] ?? 0);
+                $venta->increment('impuestos', $itbisRecalculado);
                 $venta->increment('total', $data['total']);
+                $venta->increment('descuento', $descuentosLinea);
                 $venta->update(['fecha' => now()]);
 
-                // Incrementar deuda del cliente al agregar productos a cuenta abierta
-                $clienteExistente = Cliente::where('id', $venta->cliente_id)
-                    ->where('tenant_id', Auth::user()->business_instance_id)
-                    ->first();
-                if ($clienteExistente && $clienteExistente->nombre !== 'Consumidor Final') {
-                    $clienteExistente->increment('balance_pendiente', $data['total']);
-                }
+                // NOTA: El balance del cliente se incrementa en procesarPago() para evitar doble incremento
             } else {
                 $tipoComprobante = $data['tipo_comprobante'] ?? 'ncf';
                 if ($tipoComprobante === 'ncf' && empty($data['ncf_tipo'])) {
@@ -120,8 +152,9 @@ class SaleService
                     'cliente_id'       => $data['cliente_id'],
                     'tipo_venta_id'    => $data['tipo_venta_id'],
                     'fecha'            => now(),
-                    'impuestos'        => $data['impuestos'] ?? 0,
+                    'impuestos'        => $itbisRecalculado,
                     'descuento'        => $descuentosLinea,
+                    'general_descuento' => $generalDescuento,
                     'subtotal'         => $data['subtotal_final'] ?? array_sum(array_map('floatval', $data['subtotal'])),
                     'total'            => $data['total'],
                     'estado'           => $estado,
@@ -460,10 +493,17 @@ class SaleService
         }
 
         if ($metodo === 'mixto') {
+            $mixtoEfectivo = (float) ($data['mixto_efectivo'] ?? 0);
+            $mixtoTarjeta = (float) ($data['mixto_tarjeta'] ?? 0);
+            $mixtoTransferencia = (float) ($data['mixto_transferencia'] ?? 0);
+            $mixtoSum = $mixtoEfectivo + $mixtoTarjeta + $mixtoTransferencia;
+            if (abs($mixtoSum - (float) ($data['total'] ?? 0)) > 0.02) {
+                throw new \Exception("La suma de los montos mixtos (RD$ " . number_format($mixtoSum, 2) . ") debe ser igual al total (RD$ " . number_format($data['total'], 2) . ").");
+            }
             $mixtos = [
-                'efectivo'      => (float) ($data['mixto_efectivo'] ?? 0),
-                'tarjeta'       => (float) ($data['mixto_tarjeta'] ?? 0),
-                'transferencia' => (float) ($data['mixto_transferencia'] ?? 0),
+                'efectivo'      => $mixtoEfectivo,
+                'tarjeta'       => $mixtoTarjeta,
+                'transferencia' => $mixtoTransferencia,
             ];
             foreach ($mixtos as $tipo => $monto) {
                 if ($monto > 0) {

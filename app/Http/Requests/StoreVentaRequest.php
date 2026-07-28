@@ -42,7 +42,10 @@ class StoreVentaRequest extends FormRequest
             'cargo_servicio'=> 'nullable|numeric|min:0',
             'general_descuento' => 'nullable|numeric|min:0',
             'metodo_pago'   => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',
-            'ncf_tipo'      => 'nullable|string|exists:ncf_sequences,prefijo',
+            'mixto_efectivo' => 'nullable|numeric|min:0',
+            'mixto_tarjeta'  => 'nullable|numeric|min:0',
+            'mixto_transferencia' => 'nullable|numeric|min:0',
+            'ncf_tipo'      => ['nullable', 'string', 'exists:ncf_sequences,prefijo', Rule::requiredIf(fn() => $this->tipo_comprobante === 'ncf')],
             'tipo_comprobante' => 'nullable|in:sin,ncf,ecf',
         ];
     }

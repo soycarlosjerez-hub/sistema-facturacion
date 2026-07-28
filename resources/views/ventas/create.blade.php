@@ -2138,6 +2138,13 @@ body:not(.dark-mode) {
                     </button>
                 </div>
 
+                <!-- Category filter (shown when search is active) -->
+                <div id="pos-category-filter" style="display:none; padding: 0 8px 6px;">
+                    <select id="main-categoria-filtro" class="form-select form-select-sm" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.8rem;" onchange="mainCategoriaFiltroChange()">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+
                 <!-- Products grid (empty until search) -->
                 <div id="products-viewport" class="pos-products" style="display: none;"></div>
 
@@ -2238,7 +2245,7 @@ body:not(.dark-mode) {
                         <span class="val" id="display-subtotal">RD$0.00</span>
                     </div>
                     <div class="totals-row">
-                        <span class="label">ITBIS (18%)</span>
+                        <span class="label">ITBIS</span>
                         <span class="val" id="display-itbis">RD$0.00</span>
                     </div>
                     <div class="totals-row align-items-center">
@@ -2824,6 +2831,7 @@ body:not(.dark-mode) {
     let searchQuery = '';
     let metodoPagoPendiente = null;
     let modalCategoriaFiltro = '';
+    let mainCategoriaFiltro = '';
     let isSubmitting = false;
     let lastRemovedItem = null;
     let creditoWarningInstance = null;
@@ -3370,6 +3378,22 @@ body:not(.dark-mode) {
         modalBuscarProductos();
     }
 
+    // ============ Main grid category filter ============
+    function renderizarFiltroCategoriasMain() {
+        const sel = $('main-categoria-filtro');
+        if (!sel) return;
+        let html = '<option value="">Todas las categorías</option>';
+        categorias.forEach(c => {
+            html += `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`;
+        });
+        sel.innerHTML = html;
+    }
+
+    function mainCategoriaFiltroChange() {
+        mainCategoriaFiltro = $('main-categoria-filtro').value;
+        if (searchQuery) triggerSearch();
+    }
+
     // ============ Modal Productos + Teclado Virtual ============
     const PALETA_COLORES_MODAL = [
         { bg: '#fee2e2', fg: '#dc2626' }, { bg: '#ffedd5', fg: '#ea580c' },
@@ -3700,7 +3724,9 @@ body:not(.dark-mode) {
     }
 
     function calculateTotals() {
+        const descuentoGeneral = parseFloat($('input-general-descuento').value) || 0;
         let subtotal = 0, itbis = 0, totalDescuentos = 0;
+        const lineData = [];
         cart.forEach(item => {
             const lineSub = item.precio * item.qty;
             const descuentoItem = parseFloat(item.descuento) || 0;
@@ -3710,9 +3736,23 @@ body:not(.dark-mode) {
             const subtotalConDesc = Math.max(0, lineSub - descuentoAplicado);
             subtotal += lineSub;
             totalDescuentos += descuentoAplicado;
-            itbis += subtotalConDesc * (item.itbis_p / 100);
+            lineData.push({ subtotalConDesc, itbis_p: item.itbis_p });
         });
-        const descuentoGeneral = parseFloat($('input-general-descuento').value) || 0;
+        // Recalcular ITBIS proporcionalmente aplicando descuento general
+        const baseImponibleTotal = subtotal - totalDescuentos;
+        if (baseImponibleTotal > 0 && descuentoGeneral > 0) {
+            itbis = 0;
+            lineData.forEach(ld => {
+                const proporcion = Math.min(1, ld.subtotalConDesc / baseImponibleTotal);
+                const descuentoProporcional = descuentoGeneral * proporcion;
+                const baseFinal = Math.max(0, ld.subtotalConDesc - descuentoProporcional);
+                itbis += baseFinal * (ld.itbis_p / 100);
+            });
+        } else {
+            lineData.forEach(ld => {
+                itbis += ld.subtotalConDesc * (ld.itbis_p / 100);
+            });
+        }
         const descuentoTotal = totalDescuentos + descuentoGeneral;
         const total = Math.max(0, subtotal - descuentoTotal + itbis);
         $('display-subtotal').innerText = fmt(subtotal);
@@ -3752,18 +3792,26 @@ body:not(.dark-mode) {
         searchQuery = query;
         const dropdown = $('search-results');
 
+        // Show/hide category filter
+        const catFilterDiv = $('pos-category-filter');
         if (query.length < 1) {
             dropdown.classList.remove('show');
             $('products-viewport').style.display = 'none';
             $('cart-viewport').style.display = 'block';
+            if (catFilterDiv) catFilterDiv.style.display = 'none';
             return;
         }
+        if (catFilterDiv) catFilterDiv.style.display = 'block';
 
-        // Mostrar dropdown de búsqueda
-        const filtered = filterProductos(productosPre.filter(p =>
+        // Apply category filter
+        let filteredProducts = productosPre.filter(p =>
             p.nl.includes(query) ||
             (p.cl && p.cl.includes(query))
-        )).slice(0, 12);
+        );
+        if (mainCategoriaFiltro) {
+            filteredProducts = filteredProducts.filter(p => String(p.categoria_id) === mainCategoriaFiltro);
+        }
+        const filtered = filterProductos(filteredProducts).slice(0, 12);
 
         if (filtered.length > 0) {
             dropdown.innerHTML = filtered.map(p => `
@@ -4026,6 +4074,7 @@ body:not(.dark-mode) {
 
     // ============ Atajos teclado ============
     function handleGlobalKeys(e) {
+        if (isSubmitting) return;
         const target = e.target;
         const inSearch = target.id === 'scan-input';
 
@@ -4046,6 +4095,7 @@ body:not(.dark-mode) {
     // ============ Init ============
     function init() {
         renderTabCounts();
+        renderizarFiltroCategoriasMain();
         renderCart();
         onClienteChange();
         loadDayStats();
@@ -4237,6 +4287,7 @@ body:not(.dark-mode) {
     window.modalLimpiarBusqueda = modalLimpiarBusqueda;
     window.tecladoIdioma = tecladoIdioma;
     window.categoriaFiltroChange = categoriaFiltroChange;
+    window.mainCategoriaFiltroChange = mainCategoriaFiltroChange;
 
     // Init on DOMContentLoaded
     if (document.readyState === 'loading') {
