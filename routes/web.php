@@ -1342,6 +1342,119 @@ require __DIR__ . '/auth.php';
 
 // TEMPORARY: Test error alert email - REMOVE AFTER TESTING
 Route::middleware(['auth'])->prefix('test')->name('test.')->group(function () {
+    Route::get('/diagnose-mail', function () {
+        $rawSettings = \App\Models\SystemSetting::where('key', 'like', '%mail%')->get()->pluck('value', 'key')->toArray();
+        
+        // Try to decrypt password
+        $decryptedPassword = null;
+        if (!empty($rawSettings['mail_password'])) {
+            try {
+                $decryptedPassword = \Illuminate\Support\Facades\Crypt::decryptString($rawSettings['mail_password']);
+            } catch (\Exception $e) {
+                $decryptedPassword = 'DECRYPTION FAILED: ' . $e->getMessage();
+            }
+        }
+        
+        return response()->json([
+            'raw_system_settings' => $rawSettings,
+            'decrypted_password' => $decryptedPassword,
+            'env_mailer' => env('MAIL_MAILER'),
+            'config_default' => config('mail.default'),
+            'config_smtp_host' => config('mail.mailers.smtp.host'),
+            'config_smtp_port' => config('mail.mailers.smtp.port'),
+            'config_smtp_username' => config('mail.mailers.smtp.username'),
+            'config_smtp_encryption' => config('mail.mailers.smtp.encryption'),
+            'config_from_address' => config('mail.from.address'),
+            'error_alert_email' => config('app.error_alert_email', env('ERROR_ALERT_EMAIL')),
+        ]);
+    })->name('diagnose-mail');
+    
+    Route::get('/force-system-settings', function () {
+        // Manually load and apply system_settings mail config
+        $settings = \App\Models\SystemSetting::pluck('value', 'key')->toArray();
+        
+        $mailer = $settings['mail_mailer'] ?? 'log';
+        $host = $settings['mail_host'] ?? null;
+        $port = $settings['mail_port'] ?? 587;
+        $username = $settings['mail_username'] ?? null;
+        $encryption = ($settings['mail_encryption'] ?? 'null') !== 'null' ? $settings['mail_encryption'] : null;
+        $fromAddress = $settings['mail_from_address'] ?? 'no-reply@facturacion.local';
+        $fromName = $settings['mail_from_name'] ?? config('app.name');
+        
+        // Decrypt password
+        $password = null;
+        if (!empty($settings['mail_password'])) {
+            try {
+                $password = \Illuminate\Support\Facades\Crypt::decryptString($settings['mail_password']);
+            } catch (\Exception $e) {
+                $password = 'DECRYPT_ERROR: ' . $e->getMessage();
+            }
+        }
+        
+        // Apply config
+        config(['mail.default' => $mailer]);
+        config(['mail.mailers.' . $mailer . '.host' => $host]);
+        config(['mail.mailers.' . $mailer . '.port' => (int)$port]);
+        config(['mail.mailers.' . $mailer . '.username' => $username]);
+        config(['mail.mailers.' . $mailer . '.password' => $password]);
+        config(['mail.mailers.' . $mailer . '.encryption' => $encryption]);
+        config(['mail.from.address' => $fromAddress]);
+        config(['mail.from.name' => $fromName]);
+        
+        $alertEmail = config('app.error_alert_email', env('ERROR_ALERT_EMAIL', 'jcjerez@gmail.com'));
+        
+        try {
+            $mail = new \App\Mail\ErrorAlertMail(
+                level: 'critical',
+                title: 'SYSTEM SETTINGS TEST',
+                errorMessage: 'Email enviado usando configuración de system_settings (base de datos).',
+                exceptionClass: 'Tests\\Feature\\SystemSettingsTest',
+                file: 'routes/web.php',
+                line: 1342,
+                ipAddress: request()->ip(),
+                userAgent: request()->userAgent(),
+                context: [
+                    'method' => 'system_settings_db',
+                    'mailer' => $mailer,
+                    'host' => $host,
+                    'port' => $port,
+                    'username' => $username,
+                    'encryption' => $encryption,
+                    'from' => $fromAddress,
+                ],
+                source: 'test',
+                createdAt: now()->format('Y-m-d H:i:s'),
+                tenantName: auth()->user()?->businessInstance->name ?? 'Test Instance'
+            );
+            
+            \Illuminate\Support\Facades\Mail::to($alertEmail)->send($mail);
+            return response()->json([
+                'success' => true,
+                'message' => 'Email enviado con system_settings',
+                'config_applied' => [
+                    'mailer' => $mailer,
+                    'host' => $host,
+                    'port' => $port,
+                    'username' => $username,
+                    'encryption' => $encryption,
+                    'from' => $fromAddress,
+                ],
+                'to' => $alertEmail,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'config_attempted' => [
+                    'mailer' => $mailer,
+                    'host' => $host,
+                    'port' => $port,
+                    'username' => $username,
+                ],
+            ], 500);
+        }
+    })->name('force-system-settings');
+    
     Route::get('/error-alert', function () {
         $mail = new \App\Mail\ErrorAlertMail(
             level: 'critical',
