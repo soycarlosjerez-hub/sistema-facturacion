@@ -118,8 +118,7 @@ class ErrorTestController extends Controller
 
             // Disparar el mail directamente
             \Mail::to($email)
-                ->onQueue('errors')
-                ->queue(
+                ->send(
                     new \App\Mail\ErrorAlertMail(
                         level: 'error',
                         title: 'PRUEBA_DE_TEST: Error Manual',

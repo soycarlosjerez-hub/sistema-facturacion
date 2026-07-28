@@ -75,8 +75,7 @@ return Application::configure(basePath: dirname(__DIR__))
                         \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300);
                         $tenantName = $errorLog->tenant->name ?? null;
                         \Illuminate\Support\Facades\Mail::to($alertEmail)
-                            ->onQueue('errors')
-                            ->queue(new \App\Mail\ErrorAlertMail(
+                            ->send(new \App\Mail\ErrorAlertMail(
                                 level: 'error',
                                 title: $errorLog->title,
                                 errorMessage: $errorLog->message,
