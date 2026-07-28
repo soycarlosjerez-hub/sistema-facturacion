@@ -1335,9 +1335,9 @@ class OwnerController extends Controller
                     continue;
                 }
 
-                // Encrypt password
+                // Encrypt password (same method as seeder and ErrorMailer)
                 if ($key === 'mail_password' && !empty($value)) {
-                    $value = encrypt($value);
+                    $value = \Illuminate\Support\Facades\Crypt::encryptString($value);
                 }
 
                 // Convert null to empty string (value column is NOT NULL)
