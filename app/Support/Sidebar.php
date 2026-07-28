@@ -114,6 +114,15 @@ class Sidebar
                 'icon'   => 'bi-code-slash',
                 'label'  => 'Documentaci&oacute;n API',
             ];
+            $items[] = ['section' => 'Configuraci&oacute;n del Sistema'];
+            $items[] = [
+                'route'       => 'configuracion.index',
+                'url'         => route('configuracion.index') . '#correo-smtp',
+                'icon'        => 'bi-envelope-at',
+                'label'       => 'Correo SMTP',
+                'is_route'    => 'configuracion.*',
+                'exact_route' => 'configuracion.index',
+            ];
             return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
         }
 
