@@ -99,6 +99,7 @@ class VentaController extends Controller
 
             return redirect()->route('ventas.show', $venta->id)->with('success', $msg);
         } catch (\Exception $e) {
+            report($e);
             if ($request->wantsJson()) {
                 return response()->json(['error' => $e->getMessage()], 422);
             }
