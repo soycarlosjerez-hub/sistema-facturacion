@@ -85,4 +85,9 @@ class ErrorAlertMail extends Mailable
             ],
         );
     }
+
+    public function middleware(): array
+    {
+        return [new \App\Mail\Middleware\ApplyGlobalSmtpConfig()];
+    }
 }

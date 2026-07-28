@@ -122,6 +122,13 @@ class Sidebar
                 'is_route'    => 'owner.smtp-settings*',
                 'exact_route' => 'owner.smtp-settings',
             ];
+            $items[] = [
+                'route'       => 'owner.error-test',
+                'icon'        => 'bi-flask',
+                'label'       => 'Probar Alertas',
+                'is_route'    => 'owner.error-test*',
+                'exact_route' => 'owner.error-test',
+            ];
             return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
         }
 

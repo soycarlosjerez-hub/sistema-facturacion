@@ -1384,9 +1384,13 @@ class OwnerController extends Controller
             // Safely decrypt password (may be plaintext if saved before encryption was added)
             $rawPassword = SystemSetting::get('mail_password', '');
             try {
-                $decryptedPassword = decrypt($rawPassword);
+                $decryptedPassword = \Illuminate\Support\Facades\Crypt::decryptString($rawPassword);
             } catch (\Exception $e) {
-                $decryptedPassword = $rawPassword;
+                try {
+                    $decryptedPassword = decrypt($rawPassword);
+                } catch (\Exception $e2) {
+                    $decryptedPassword = $rawPassword;
+                }
             }
 
             // Temporarily override mail config
