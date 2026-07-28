@@ -36,6 +36,9 @@ use App\Http\Controllers\Api\SystemSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function () {
+
+    // Rate limiting for API
+    Route::middleware('throttle:60,1')->group(function () {
     // Categories
     Route::apiResource('categories', CategoryController::class)
         ->names('api.categories')
@@ -273,4 +276,5 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
 
     Route::get('reports/inventory-low-stock', [ReportController::class, 'inventarioBajoStock'])
         ->name('api.reports.inventory-low-stock');
+    });
 });

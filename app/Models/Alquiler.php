@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class Alquiler extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable, TenantScope;
 
     protected $fillable = [
         'folio',

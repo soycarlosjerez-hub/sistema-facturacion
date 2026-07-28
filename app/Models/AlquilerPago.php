@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class AlquilerPago extends Model
 {
+    use Auditable, TenantScope;
+
     protected $table = 'alquileres_pagos';
 
     protected $fillable = [
@@ -13,6 +17,8 @@ class AlquilerPago extends Model
         'mes_cobrado', 'ano_cobrado', 'metodo_pago',
         'recibo_numero', 'notas', 'registrado_por',
     ];
+
+    public $tenantColumn = 'business_instance_id';
 
     protected $casts = [
         'fecha_pago' => 'date',

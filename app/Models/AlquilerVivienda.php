@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class AlquilerVivienda extends Model
 {
+    use Auditable, TenantScope;
+
     protected $table = 'alquileres_viviendas';
 
     protected $fillable = [
@@ -13,6 +17,8 @@ class AlquilerVivienda extends Model
         'tipo', 'habitaciones', 'banos', 'area_m2',
         'monto_alquiler', 'monto_deposito', 'estado', 'activo',
     ];
+
+    public $tenantColumn = 'business_instance_id';
 
     protected $casts = [
         'habitaciones' => 'integer',

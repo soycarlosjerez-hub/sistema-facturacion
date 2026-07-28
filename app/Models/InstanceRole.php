@@ -6,12 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class InstanceRole extends Model
 {
+    use Auditable, TenantScope;
+
     protected $fillable = [
         'business_instance_id', 'name', 'guard_name',
     ];
+
+    public $tenantColumn = 'business_instance_id';
 
     public function businessInstance(): BelongsTo
     {

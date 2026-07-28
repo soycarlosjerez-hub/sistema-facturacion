@@ -3,15 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class AlquilerInquilino extends Model
 {
+    use Auditable, TenantScope;
+
     protected $table = 'alquileres_inquilinos';
 
     protected $fillable = [
         'business_instance_id', 'nombre', 'cedula', 'telefono',
         'email', 'direccion', 'notas', 'activo',
     ];
+
+    public $tenantColumn = 'business_instance_id';
 
     protected $casts = [
         'activo' => 'boolean',

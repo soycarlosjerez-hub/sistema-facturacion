@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 
 class AlquilerContrato extends Model
 {
+    use Auditable, TenantScope;
+
     protected $table = 'alquileres_contratos';
 
     protected $fillable = [
@@ -13,6 +17,8 @@ class AlquilerContrato extends Model
         'fecha_inicio', 'fecha_fin', 'monto_alquiler', 'monto_deposito',
         'dia_pago', 'estado', 'deposito_pagado', 'notas',
     ];
+
+    public $tenantColumn = 'business_instance_id';
 
     protected $casts = [
         'fecha_inicio' => 'date',
