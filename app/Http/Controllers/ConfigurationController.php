@@ -23,6 +23,14 @@ class ConfigurationController extends Controller
     {
         $data = $request->except(['_token', 'tipo_negocio']);
 
+        // SMTP settings can only be modified by owner/root
+        if (!Auth::user()->hasRole('owner') && !Auth::user()->hasRole('root')) {
+            $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name'];
+            foreach ($mailKeys as $key) {
+                unset($data[$key]);
+            }
+        }
+
         // Validation removed: all fields are optional.
         // $validator = Validator::make($data, []);
         // if ($validator->fails()) {
@@ -30,9 +38,9 @@ class ConfigurationController extends Controller
         // }
 
         // Encrypt mail password, preserve existing if left blank
-        if (empty($data['mail_password'])) {
+        if (isset($data['mail_password']) && empty($data['mail_password'])) {
             unset($data['mail_password']);
-        } else {
+        } elseif (isset($data['mail_password']) && !empty($data['mail_password'])) {
             $data['mail_password'] = Crypt::encryptString($data['mail_password']);
         }
 

@@ -21,11 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'api-auth'         => \App\Http\Middleware\AuthenticateApiKey::class,
             'api.request.logger' => \App\Http\Middleware\ApiRequestLogger::class,
             'auth.cliente'       => \App\Http\Middleware\AuthenticateCliente::class,
+            'tenant.mail'      => \App\Http\Middleware\TenantMailConfig::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckInstanceBlocked::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSetupWizard::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\TenantMailConfig::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\TenantMailConfig::class);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -67,67 +70,22 @@ return Application::configure(basePath: dirname(__DIR__))
                     $cacheKey = 'error_alert:' . md5(get_class($e) . $e->getMessage());
                     if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
                         \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300);
-                        
-                        $originalMailer = config('mail.default');
-                        $originalConfig = [
-                            'host' => config('mail.mailers.smtp.host'),
-                            'port' => config('mail.mailers.smtp.port'),
-                            'username' => config('mail.mailers.smtp.username'),
-                            'password' => config('mail.mailers.smtp.password'),
-                            'encryption' => config('mail.mailers.smtp.encryption'),
-                        ];
-
-                        try {
-                            if ($tenantId) {
-                                $settings = \App\Models\SystemSetting::query()
-                                    ->where('tenant_id', $tenantId)
-                                    ->pluck('value', 'key')
-                                    ->toArray();
-
-                                if (!empty($settings['mail_host'])) {
-                                    $mailer = $settings['mail_mailer'] ?? 'smtp';
-                                    \Illuminate\Support\Facades\Config::set('mail.default', $mailer);
-                                    \Illuminate\Support\Facades\Config::set('mail.mailers.' . $mailer . '.host', $settings['mail_host']);
-                                    \Illuminate\Support\Facades\Config::set('mail.mailers.' . $mailer . '.port', (int)($settings['mail_port'] ?? 587));
-                                    \Illuminate\Support\Facades\Config::set('mail.mailers.' . $mailer . '.username', $settings['mail_username'] ?? null);
-                                    
-                                    if (!empty($settings['mail_password'])) {
-                                        try {
-                                            \Illuminate\Support\Facades\Config::set('mail.mailers.' . $mailer . '.password', \Illuminate\Support\Facades\Crypt::decryptString($settings['mail_password']));
-                                        } catch (\Throwable $decryptEx) {
-                                            \Illuminate\Support\Facades\Config::set('mail.mailers.' . $mailer . '.password', null);
-                                        }
-                                    }
-                                    
-                                    $enc = ($settings['mail_encryption'] ?? 'null') !== 'null' ? $settings['mail_encryption'] : null;
-                                    \Illuminate\Support\Facades\Config::set('mail.mailers.' . $mailer . '.encryption', $enc);
-                                }
-                            }
-
-                            $tenantName = $errorLog->tenant->name ?? null;
-                            \Illuminate\Support\Facades\Mail::to($alertEmail)
-                                ->queue((new \App\Mail\ErrorAlertMail(
-                                    level: 'error',
-                                    title: $errorLog->title,
-                                    errorMessage: $errorLog->message,
-                                    exceptionClass: get_class($e),
-                                    file: $e->getFile(),
-                                    line: $e->getLine(),
-                                    ipAddress: $request->ip(),
-                                    userAgent: $request->userAgent(),
-                                    context: $errorLog->context,
-                                    source: 'exception',
-                                    createdAt: $errorLog->created_at->format('Y-m-d H:i:s'),
-                                    tenantName: $tenantName,
-                                )))->onQueue('errors');
-                        } finally {
-                            \Illuminate\Support\Facades\Config::set('mail.default', $originalMailer);
-                            \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.host', $originalConfig['host']);
-                            \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.port', $originalConfig['port']);
-                            \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.username', $originalConfig['username']);
-                            \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.password', $originalConfig['password']);
-                            \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.encryption', $originalConfig['encryption']);
-                        }
+                        $tenantName = $errorLog->tenant->name ?? null;
+                        \Illuminate\Support\Facades\Mail::to($alertEmail)
+                            ->queue((new \App\Mail\ErrorAlertMail(
+                                level: 'error',
+                                title: $errorLog->title,
+                                errorMessage: $errorLog->message,
+                                exceptionClass: get_class($e),
+                                file: $e->getFile(),
+                                line: $e->getLine(),
+                                ipAddress: $request->ip(),
+                                userAgent: $request->userAgent(),
+                                context: $errorLog->context,
+                                source: 'exception',
+                                createdAt: $errorLog->created_at->format('Y-m-d H:i:s'),
+                                tenantName: $tenantName,
+                            )))->onQueue('errors');
                     }
                 }
             } catch (\Throwable $dbEx) {

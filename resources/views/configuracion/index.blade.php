@@ -151,12 +151,13 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
             </div>
         </div>
 
+        @if(auth()->user()->hasRole('owner') || auth()->user()->hasRole('root'))
         <div class="row g-4 mt-2">
             <div class="col-12">
                 <div id="correo-smtp" class="ui-card" style="--delay:.1s">
                     <div class="ui-card-accent"></div>
-                    <h5 class="ui-card-title"><i class="bi bi-envelope-at"></i>Correo Electrónico (SMTP)</h5>
-                    <p class="ui-card-subtitle">Configuración del servidor de correo saliente</p>
+                    <h5 class="ui-card-title"><i class="bi bi-envelope-at"></i>Servidor SMTP Global</h5>
+                    <p class="ui-card-subtitle">Configuración del servidor de correo saliente — aplicable a todas las instancias</p>
                     <div class="ui-card-body">
                         <div class="row g-3">
                             <div class="col-md-4">
@@ -205,7 +206,7 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
                         <hr class="my-3">
                         <div class="row align-items-center">
                             <div class="col-md-8">
-                                <p class="small text-muted mb-md-0">Guarda los cambios primero antes de probar. El correo de prueba usará la configuración SMTP guardada.</p>
+                                <p class="small text-muted mb-md-0">Esta configuración SMTP es global y se aplica a todas las instancias del sistema.</p>
                             </div>
                             <div class="col-md-4 text-md-end">
                                 <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-toggle="modal" data-bs-target="#testEmailModal">
@@ -217,6 +218,7 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
                 </div>
             </div>
         </div>
+        @endif
     </form>
 </div>
 
@@ -231,7 +233,7 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="small text-muted mb-3">Se enviará un correo de prueba usando la configuración SMTP actual.</p>
+                    <p class="small text-muted mb-3">Se enviará un correo de prueba usando la configuración SMTP global actual.</p>
                     <label class="ui-label small fw-bold">Correo Destinatario</label>
                     <input type="email" name="test_email" class="ui-input" required placeholder="correo@ejemplo.com">
                 </div>

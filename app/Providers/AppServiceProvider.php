@@ -51,18 +51,24 @@ class AppServiceProvider extends ServiceProvider
         // Dynamic mail config from system settings
         try {
             if (Schema::hasTable('system_settings')) {
-                $settings = Cache::rememberForever('system_settings_all', function () {
-                    return SystemSetting::pluck('value', 'key')->toArray();
+                $settings = Cache::rememberForever('system_settings_all_global', function () {
+                    return SystemSetting::whereNull('tenant_id')
+                        ->pluck('value', 'key')
+                        ->toArray();
                 });
 
                 if (!empty($settings['mail_host'])) {
+                    $mailer = $settings['mail_mailer'] ?? 'smtp';
+                    if ($mailer === 'log') {
+                        $mailer = 'smtp';
+                    }
                     config([
-                        'mail.default' => $settings['mail_mailer'] ?? 'log',
-                        'mail.mailers.smtp.host' => $settings['mail_host'],
-                        'mail.mailers.smtp.port' => (int)($settings['mail_port'] ?? 587),
-                        'mail.mailers.smtp.username' => $settings['mail_username'] ?? null,
-                        'mail.mailers.smtp.password' => isset($settings['mail_password']) && $settings['mail_password'] ? Crypt::decryptString($settings['mail_password']) : null,
-                        'mail.mailers.smtp.encryption' => ($settings['mail_encryption'] ?? 'null') !== 'null' ? $settings['mail_encryption'] : null,
+                        'mail.default' => $mailer,
+                        'mail.mailers.' . $mailer . '.host' => $settings['mail_host'],
+                        'mail.mailers.' . $mailer . '.port' => (int)($settings['mail_port'] ?? 587),
+                        'mail.mailers.' . $mailer . '.username' => $settings['mail_username'] ?? null,
+                        'mail.mailers.' . $mailer . '.password' => isset($settings['mail_password']) && $settings['mail_password'] ? Crypt::decryptString($settings['mail_password']) : null,
+                        'mail.mailers.' . $mailer . '.encryption' => ($settings['mail_encryption'] ?? 'null') !== 'null' ? $settings['mail_encryption'] : null,
                         'mail.from.address' => $settings['mail_from_address'] ?? 'no-reply@facturacion.local',
                         'mail.from.name' => $settings['mail_from_name'] ?? config('app.name'),
                     ]);

@@ -169,33 +169,5 @@ class BusinessInstance extends Model
 
     protected static function booted(): void
     {
-        static::created(function (self $instance) {
-            self::seedSmtpSettings($instance->id);
-        });
-    }
-
-    private static function seedSmtpSettings(int $tenantId): void
-    {
-        $mailPassword = env('MAIL_SMTP_PASSWORD', env('SMTP_PASSWORD', ''));
-
-        $settings = [
-            'mail_mailer'     => env('MAIL_MAILER', 'smtp'),
-            'mail_host'       => env('MAIL_HOST', '127.0.0.1'),
-            'mail_port'       => env('MAIL_PORT', '2525'),
-            'mail_username'   => env('MAIL_USERNAME', ''),
-            'mail_password'   => $mailPassword ? Crypt::encryptString($mailPassword) : '',
-            'mail_encryption' => env('MAIL_ENCRYPTION', ''),
-            'mail_from_address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-            'mail_from_name'    => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
-        ];
-
-        foreach ($settings as $key => $value) {
-            \App\Models\SystemSetting::updateOrCreate(
-                ['key' => $key, 'tenant_id' => $tenantId],
-                ['value' => $value ?? '']
-            );
-        }
-
-        \App\Models\SystemSetting::flush();
     }
 }
