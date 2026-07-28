@@ -716,6 +716,12 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettings'])->name('smtp-settings');
     Route::post('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsUpdate'])->name('smtp-settings.update');
     Route::post('/smtp-settings/test', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsTest'])->name('smtp-settings.test');
+    // Error Alerts Testing (Owner Only)
+    Route::get('/error-test', [\App\Http\Controllers\ErrorTestController::class, 'index'])->name('error-test');
+    Route::post('/error-test/smtp', [\App\Http\Controllers\ErrorTestController::class, 'testSmtp'])->name('error-test.smtp');
+    Route::post('/error-test/simulate', [\App\Http\Controllers\ErrorTestController::class, 'simulateException'])->name('error-test.simulate');
+    Route::post('/error-test/log', [\App\Http\Controllers\ErrorTestController::class, 'testLog'])->name('error-test.log');
+    Route::post('/error-test/db-trigger', [\App\Http\Controllers\ErrorTestController::class, 'triggerErrorFromDb'])->name('error-test.db-trigger');
     // API Request Logs
     Route::get('/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'index'])->name('api-requests');
     Route::get('/api/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'apiIndex'])->name('api.api-requests');
