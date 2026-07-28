@@ -41,8 +41,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->reportable(function (\Throwable $e) {
             try {
                 $request = request();
-                \App\Models\InstanceErrorLog::create([
-                    'tenant_id' => \Illuminate\Support\Facades\Auth::user()?->business_instance_id,
+                $userId = \Illuminate\Support\Facades\Auth::id();
+                $tenantId = $userId ? \App\Models\User::find($userId)?->business_instance_id : null;
+
+                $errorLog = \App\Models\InstanceErrorLog::create([
+                    'tenant_id' => $tenantId,
                     'level' => 'error',
                     'title' => mb_substr($e->getMessage() ?: get_class($e), 0, 255),
                     'message' => $e->getMessage() . "\n\n" . $e->getTraceAsString(),
@@ -52,12 +55,36 @@ return Application::configure(basePath: dirname(__DIR__))
                         'line' => $e->getLine(),
                     ],
                     'source' => 'exception',
-                    'user_id' => \Illuminate\Support\Facades\Auth::id(),
+                    'user_id' => $userId,
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                     'ip_address' => $request->ip(),
                     'user_agent' => $request->userAgent(),
                 ]);
+
+                $alertEmail = config('app.error_alert_email', env('ERROR_ALERT_EMAIL'));
+                if ($alertEmail) {
+                    $cacheKey = 'error_alert:' . md5(get_class($e) . $e->getMessage());
+                    if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300);
+                        $tenantName = $errorLog->tenant->name ?? null;
+                        \Illuminate\Support\Facades\Mail::to($alertEmail)
+                            ->queue((new \App\Mail\ErrorAlertMail(
+                                level: 'error',
+                                title: $errorLog->title,
+                                message: $errorLog->message,
+                                exceptionClass: get_class($e),
+                                file: $e->getFile(),
+                                line: $e->getLine(),
+                                ipAddress: $request->ip(),
+                                userAgent: $request->userAgent(),
+                                context: $errorLog->context,
+                                source: 'exception',
+                                createdAt: $errorLog->created_at->format('Y-m-d H:i:s'),
+                                tenantName: $tenantName,
+                            )))->onQueue('errors');
+                    }
+                }
             } catch (\Throwable $dbEx) {
                 // Si la tabla no existe aún o hay error de BD, ignorar
             }

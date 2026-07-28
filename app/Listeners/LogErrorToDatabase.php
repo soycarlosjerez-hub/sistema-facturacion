@@ -5,6 +5,8 @@ namespace App\Listeners;
 use App\Models\InstanceErrorLog;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\MessageLogged;
 
@@ -21,7 +23,7 @@ class LogErrorToDatabase
 
         $title = mb_substr($event->message, 0, 255);
 
-        InstanceErrorLog::create([
+        $errorLog = InstanceErrorLog::create([
             'tenant_id' => $tenantId,
             'level' => $event->level,
             'title' => $title,
@@ -34,6 +36,30 @@ class LogErrorToDatabase
             'ip_address' => Request::ip(),
             'user_agent' => Request::userAgent(),
         ]);
+
+        $alertEmail = config('app.error_alert_email', env('ERROR_ALERT_EMAIL'));
+        if ($alertEmail) {
+            $cacheKey = 'error_alert_log:' . md5($event->level . $event->message);
+            if (!Cache::has($cacheKey)) {
+                Cache::put($cacheKey, true, 300);
+                $tenantName = $errorLog->tenant->name ?? null;
+                Mail::to($alertEmail)
+                    ->queue(new \App\Mail\ErrorAlertMail(
+                        level: $event->level,
+                        title: $errorLog->title,
+                        message: $event->message,
+                        exceptionClass: $context['exception'] ?? null,
+                        file: $context['file'] ?? null,
+                        line: $context['line'] ?? null,
+                        ipAddress: Request::ip(),
+                        userAgent: Request::userAgent(),
+                        context: $errorLog->context,
+                        source: $errorLog->source,
+                        createdAt: $errorLog->created_at->format('Y-m-d H:i:s'),
+                        tenantName: $tenantName,
+                    ))->onQueue('errors');
+            }
+        }
     }
 
     protected function cleanContext(array $context): array
