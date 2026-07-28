@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\TicketGarantia::class, TicketGarantiaPolicy::class);
         Gate::policy(\App\Models\OrdenEmergencia::class, OrdenEmergenciaPolicy::class);
 
-        // Dynamic mail config from system settings
+        // Fallback: apply global SMTP config for console/scheduled tasks (HTTP requests use TenantMailConfig middleware)
         try {
             if (Schema::hasTable('system_settings')) {
                 $settings = Cache::rememberForever('system_settings_all_global', function () {
