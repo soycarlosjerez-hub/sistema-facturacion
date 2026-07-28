@@ -686,7 +686,9 @@ class Sidebar
             }
             if ($hasConf('configuracion-general') && $can('configuracion.view')) {
                 $items[] = ['route' => 'configuracion.index', 'icon' => 'bi-sliders', 'label' => 'Parámetros', 'is_route' => 'configuracion.*', 'exact_route' => 'configuracion.index'];
-                $items[] = ['route' => 'configuracion.index', 'url' => route('configuracion.index') . '#correo-smtp', 'icon' => 'bi-envelope-at', 'label' => 'Correo SMTP', 'is_route' => 'configuracion.index', 'exact_route' => 'configuracion.index'];
+                if ($user->hasRole('owner') || $user->hasRole('root')) {
+                    $items[] = ['route' => 'configuracion.index', 'url' => route('configuracion.index') . '#correo-smtp', 'icon' => 'bi-envelope-at', 'label' => 'Correo SMTP', 'is_route' => 'configuracion.index', 'exact_route' => 'configuracion.index'];
+                }
             }
         }
         return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));
