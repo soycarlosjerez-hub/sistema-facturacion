@@ -45,32 +45,36 @@
                     <i class="bi bi-building"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-1">
+                    <h4 class="ui-header-title">
                         {{ $instance->nombre }}
                         @if(!$instance->activo)
-                            <span class="badge bg-secondary rounded-pill px-3 ms-2" style="font-size:.6rem;">Inactiva</span>
+                            <span class="ui-badge ui-badge-neutral" style="font-size:.65rem;margin-left:.5rem;">Inactiva</span>
                         @elseif($instance->bloqueado)
-                            <span class="badge bg-danger rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-lock-fill me-1"></i>Bloqueada</span>
+                            <span class="ui-badge ui-badge-danger" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-lock-fill me-1"></i>Bloqueada</span>
                         @elseif($instance->estaAlDia())
-                            <span class="badge bg-success rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
+                            <span class="ui-badge ui-badge-success" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
                         @else
-                            <span class="badge bg-warning text-dark rounded-pill px-3 ms-2" style="font-size:.6rem;"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es) atrasado</span>
+                            <span class="ui-badge ui-badge-warning" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es) atrasado</span>
                         @endif
-                    </h2>
-                    <p class="mb-0 opacity-75">{{ $instance->businessType?->nombre ?? 'Sin tipo' }} &middot; {{ $instance->slug }}</p>
+                    </h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-tag me-1"></i>{{ $instance->businessType?->nombre ?? 'Sin tipo' }}
+                        <span class="divider">&middot;</span>
+                        <i class="bi bi-hash me-1"></i>{{ $instance->slug }}
+                    </div>
                 </div>
             </div>
             <div class="ui-header-actions">
-                <a href="{{ route('owner.instances.edit', $instance) }}" class="ui-btn ui-btn-edit">
+                <a href="{{ route('owner.instances.edit', $instance) }}" class="ui-btn ui-btn-primary">
                     <i class="bi bi-pencil me-1"></i>Editar
                 </a>
-                <a href="{{ route('owner.instances.config', $instance) }}" class="ui-btn ui-btn-view">
+                <a href="{{ route('owner.instances.config', $instance) }}" class="ui-btn ui-btn-primary">
                     <i class="bi bi-gear me-1"></i>Configuraci&oacute;n
                 </a>
                 <a href="{{ route('owner.instances.api-keys', $instance) }}" class="ui-btn ui-btn-solid" style="background:#f59e0b;border-color:#f59e0b;color:#000">
                     <i class="bi bi-key me-1"></i>API Keys
                 </a>
-                <a href="{{ route('owner.instances.index') }}" class="ui-btn ui-btn-primary">
+                <a href="{{ route('owner.instances.index') }}" class="ui-btn ui-btn-ghost">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>
@@ -79,62 +83,42 @@
 
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="ui-stat h-100" style="--delay:.1s">
-                <div class="ui-stat-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                            <i class="bi bi-people text-primary fs-5"></i>
-                        </div>
-                        <div>
-                            <small class="ui-stat-label d-block">Usuarios</small>
-                            <h3 class="ui-stat-value mb-0">{{ $instance->users->count() }}</h3>
-                        </div>
-                    </div>
+            <div class="ui-stat" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-people" style="font-size:1.5rem;color:var(--accent);"></i>
+                    <div class="ui-stat-label mt-2">Usuarios</div>
+                    <div class="ui-stat-value">{{ $instance->users->count() }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="ui-stat h-100" style="--delay:.15s">
-                <div class="ui-stat-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                            <i class="bi bi-tag fs-5 text-{{ $instance->businessType?->color ?? 'secondary' }}"></i>
-                        </div>
-                        <div>
-                            <small class="ui-stat-label d-block">Tipo</small>
-                            <h3 class="ui-stat-value mb-0" style="font-size:.9rem;">{{ $instance->businessType?->nombre ?? '—' }}</h3>
-                        </div>
-                    </div>
+            <div class="ui-stat" style="--delay:.15s">
+                <div class="ui-card-accent" style="background:{{ $instance->businessType?->color ?? '#64748b' }}"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-tag" style="font-size:1.5rem;color:{{ $instance->businessType?->color ?? '#64748b' }};"></i>
+                    <div class="ui-stat-label mt-2">Tipo</div>
+                    <div class="ui-stat-value" style="font-size:1rem;">{{ $instance->businessType?->nombre ?? '—' }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="ui-stat h-100" style="--delay:.2s">
-                <div class="ui-stat-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                            <i class="bi bi-currency-dollar text-success fs-5"></i>
-                        </div>
-                        <div>
-                            <small class="ui-stat-label d-block">Costo Mensual</small>
-                            <h3 class="ui-stat-value mb-0" style="font-size:.9rem;">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</h3>
-                        </div>
-                    </div>
+            <div class="ui-stat" style="--delay:.2s">
+                <div class="ui-card-accent" style="background:#22c55e"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-currency-dollar" style="font-size:1.5rem;color:#22c55e;"></i>
+                    <div class="ui-stat-label mt-2">Costo Mensual</div>
+                    <div class="ui-stat-value" style="font-size:1rem;">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="ui-stat h-100" style="--delay:.25s">
-                <div class="ui-stat-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-                            <i class="bi bi-calendar text-warning fs-5"></i>
-                        </div>
-                        <div>
-                            <small class="ui-stat-label d-block">Vencimiento</small>
-                            <h3 class="ui-stat-value mb-0" style="font-size:.85rem;">{{ $instance->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha' }}</h3>
-                        </div>
-                    </div>
+            <div class="ui-stat" style="--delay:.25s">
+                <div class="ui-card-accent" style="background:#f59e0b"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-calendar" style="font-size:1.5rem;color:#f59e0b;"></i>
+                    <div class="ui-stat-label mt-2">Vencimiento</div>
+                    <div class="ui-stat-value" style="font-size:.9rem;">{{ $instance->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha' }}</div>
                 </div>
             </div>
         </div>
