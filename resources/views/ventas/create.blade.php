@@ -2981,6 +2981,13 @@ body:not(.dark-mode) {
             mostrarPago(metodo);
         },
 
+        cerrarCobrar() {
+            const sheet = document.getElementById('cobrarSheet');
+            if (sheet) sheet.classList.remove('open');
+            const overlay = document.getElementById('cobrarSheetOverlay');
+            if (overlay) overlay.classList.remove('visible');
+        },
+
         toggleShortcutsHelp() {
             const overlay = $('shortcutsHelp');
             const isOpen = overlay.classList.contains('show');
@@ -3014,14 +3021,6 @@ body:not(.dark-mode) {
     function mostrarPago(metodo) {
         const total = parseFloat($('hidden-total').value) || 0;
         if (total <= 0) { showToast('Total inválido', 'danger'); return; }
-        $p('pago-total').innerText = fmt(total);
-        $p('propina-input').value = '0';
-        $p('monto-recibido').value = '';
-        $p('cambio-info').classList.add('d-none');
-        $p('mixto-efectivo').value = '';
-        $p('mixto-tarjeta').value = '';
-        $p('mixto-transferencia').value = '';
-        seleccionarMetodoPago(metodo);
         const isMobile = window.innerWidth < 992;
         if (isMobile) {
             const sheet = document.getElementById('cobrarSheet');
@@ -3030,6 +3029,14 @@ body:not(.dark-mode) {
         } else {
             new bootstrap.Modal(document.getElementById('pagoModal')).show();
         }
+        $p('pago-total').innerText = fmt(total);
+        $p('propina-input').value = '0';
+        $p('monto-recibido').value = '';
+        $p('cambio-info').classList.add('d-none');
+        $p('mixto-efectivo').value = '';
+        $p('mixto-tarjeta').value = '';
+        $p('mixto-transferencia').value = '';
+        seleccionarMetodoPago(metodo);
         setTimeout(() => $p('monto-recibido')?.focus(), 400);
     }
 
