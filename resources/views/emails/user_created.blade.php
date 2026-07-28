@@ -18,7 +18,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>¡Bienvenido a {{ config('app.name') }}!</h1>
+        <h1>¡Bienvenido a {{ $instanceName }}!</h1>
     </div>
     <div class="content">
         <p>Hola {{ $name }},</p>
@@ -29,10 +29,10 @@
         </div>
         <p>Le recomendamos cambiar la contraseña después de su primer acceso por motivos de seguridad.</p>
         <p>Si tiene alguna duda, no dude en ponerse en contacto con el equipo de soporte.</p>
-        <p>Saludos cordiales,<br/>El equipo de {{ config('app.name') }}</p>
+        <p>Saludos cordiales,<br/>El equipo de {{ $instanceName }}</p>
     </div>
     <div class="footer">
-        &copy; {{ date('Y') }} {{ config('app.name') }}. Todos los derechos reservados.
+        &copy; {{ date('Y') }} {{ $instanceName }}. Todos los derechos reservados.
     </div>
 </div>
 </body>

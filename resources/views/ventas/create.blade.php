@@ -98,7 +98,7 @@ body:not(.dark-mode) {
     }
     
     .pos-topbar {
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--pos-topbar);
         backdrop-filter: blur(12px);
         border-bottom: 1px solid var(--pos-border);
     }
@@ -122,7 +122,7 @@ body:not(.dark-mode) {
     }
     
     .pos-keyhint {
-        background: rgba(255,255,255,0.04);
+        background: var(--pos-card);
         border: 1px solid var(--pos-border);
     }
     
@@ -2025,7 +2025,7 @@ body:not(.dark-mode) {
                 </div>
             </div>
 
-            <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:rgba(255,255,255,0.06);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
+            <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
                 @foreach($almacenes as $alm)
                     <option value="{{ $alm->id }}" @if($loop->first) selected @endif>{{ $alm->nombre }}</option>
                 @endforeach

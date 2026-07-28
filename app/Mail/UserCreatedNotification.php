@@ -41,12 +41,14 @@ class UserCreatedNotification extends Mailable
      */
     public function content(): Content
     {
+        $this->user->load('businessInstance');
         return new Content(
             view: 'emails.user_created',
             with: [
                 'name' => $this->user->name,
                 'email' => $this->user->email,
                 'password' => $this->plainPassword,
+                'instanceName' => $this->user->businessInstance?->nombre ?? config('app.name'),
             ],
         );
     }
