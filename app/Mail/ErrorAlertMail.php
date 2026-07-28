@@ -69,6 +69,20 @@ class ErrorAlertMail extends Mailable
     {
         return new \Illuminate\Mail\Mailables\Content(
             view: 'emails.error-alert',
+            with: [
+                'level' => $this->level,
+                'title' => $this->title,
+                'message' => $this->message,
+                'exceptionClass' => $this->exceptionClass,
+                'file' => $this->file,
+                'line' => $this->line,
+                'ipAddress' => $this->ipAddress,
+                'userAgent' => $this->userAgent,
+                'context' => $this->context,
+                'source' => $this->source,
+                'createdAt' => $this->createdAt,
+                'tenantName' => $this->tenantName,
+            ],
         );
     }
 }

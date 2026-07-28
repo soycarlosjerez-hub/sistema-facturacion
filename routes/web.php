@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -1338,4 +1339,60 @@ Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function
 });
 
 require __DIR__ . '/auth.php';
+
+// TEMPORARY: Test error alert email - REMOVE AFTER TESTING
+Route::middleware(['auth'])->prefix('test')->name('test.')->group(function () {
+    Route::get('/error-alert', function () {
+        $mail = new \App\Mail\ErrorAlertMail(
+            level: 'critical',
+            title: 'TEST - Error de Prueba',
+            message: 'Este es un mensaje de prueba para verificar que el sistema de alertas por email funciona correctamente. Si recibes este correo, significa que la integración está operativa.',
+            exceptionClass: 'Tests\\Feature\\TestErrorAlert',
+            file: 'routes/web.php',
+            line: 1342,
+            ipAddress: request()->ip(),
+            userAgent: request()->userAgent(),
+            context: ['test_route' => true, 'note' => 'REMOVE THIS ROUTE AFTER TESTING'],
+            source: 'test',
+            createdAt: now()->format('Y-m-d H:i:s'),
+            tenantName: auth()->user()?->businessInstance->name ?? 'Test Instance'
+        );
+        
+        $alertEmail = config('app.error_alert_email', env('ERROR_ALERT_EMAIL', 'jcjerez@gmail.com'));
+        
+        try {
+            \Illuminate\Support\Facades\Mail::to($alertEmail)->send($mail);
+            return response()->json([
+                'success' => true,
+                'message' => 'Email enviado exitosamente a ' . $alertEmail,
+                'preview_url' => route('test.preview-error'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al enviar: ' . $e->getMessage(),
+                'mailer' => config('mail.mailers.log.transport'),
+            ], 500);
+        }
+    })->name('error-alert');
+    
+    Route::get('/preview-error', function () {
+        $mail = new \App\Mail\ErrorAlertMail(
+            level: 'critical',
+            title: 'PREVIEW - Error de Prueba',
+            message: 'Este es un mensaje de prueba para verificar que el sistema de alertas por email funciona correctamente. Si recibes este correo, significa que la integración está operativa.',
+            exceptionClass: 'Tests\\Feature\\TestErrorAlert',
+            file: 'routes/web.php',
+            line: 1342,
+            ipAddress: request()->ip(),
+            userAgent: request()->userAgent(),
+            context: ['test_route' => true, 'note' => 'REMOVE THIS ROUTE AFTER TESTING'],
+            source: 'test',
+            createdAt: now()->format('Y-m-d H:i:s'),
+            tenantName: auth()->user()?->businessInstance->name ?? 'Test Instance'
+        );
+        
+        return Mail::to('preview@test.local')->send($mail);
+    })->name('preview-error');
+});
 
