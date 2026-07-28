@@ -131,7 +131,7 @@ class ErrorTestController extends Controller
                     new \App\Mail\ErrorAlertMail(
                         level: 'error',
                         title: 'PRUEBA_DE_TEST: Error Manual',
-                        errorMessage: "Error manual ID: {$log->id}\nCreado para probar el sistema de alertas.",
+                        errorMessage: "Error manual ID: {$log}\nCreado para probar el sistema de alertas.",
                         exceptionClass: 'ManualTest',
                         file: 'error_test_page',
                         line: 1,
