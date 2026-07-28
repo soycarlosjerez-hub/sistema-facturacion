@@ -33,8 +33,8 @@
     --pos-card-light: rgba(255, 255, 255, 0.03);
     --pos-card-dark: rgba(255, 255, 255, 0.08);
     --pos-card-border: rgba(255, 255, 255, 0.1);
-    --pos-topbar-light: rgba(255, 255, 255, 0.08);
-    --pos-topbar-dark: rgba(255, 255, 255, 0.12);
+    --pos-topbar-light: rgba(255, 255, 255, 0.92);
+    --pos-topbar-dark: rgba(15, 23, 42, 0.85);
     --pos-search-light: rgba(255, 255, 255, 0.06);
     --pos-search-dark: rgba(255, 255, 255, 0.12);
     --pos-search-focus-light: rgba(59, 130, 246, 0.08);
@@ -612,6 +612,89 @@ body:not(.dark-mode) {
         50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
     }
 
+/* ============ Topbar Buttons Visibility Fix ============ */
+.pos-topbar .btn {
+    --tb-font-size: 0.82rem;
+    --tb-padding-x: 10px;
+    --tb-padding-y: 5px;
+    --tb-border-width: 1.5px;
+    font-size: var(--tb-font-size);
+    padding: var(--tb-padding-y) var(--tb-padding-x);
+    border-width: var(--tb-border-width);
+    transition: all 0.15s ease;
+}
+.pos-topbar .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+.pos-topbar .btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* Light mode topbar buttons */
+body:not(.dark-mode) .pos-topbar .btn-outline-light {
+    background: rgba(59,130,246,0.08);
+    border-color: rgba(59,130,246,0.35);
+    color: #3b82f6;
+}
+body:not(.dark-mode) .pos-topbar .btn-outline-light:hover {
+    background: rgba(59,130,246,0.18);
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+body:not(.dark-mode) .pos-topbar .btn-outline-secondary {
+    background: rgba(100,116,139,0.08);
+    border-color: rgba(100,116,139,0.4);
+    color: #475569;
+}
+body:not(.dark-mode) .pos-topbar .btn-outline-secondary:hover {
+    background: rgba(100,116,139,0.18);
+    border-color: #64748b;
+    color: #334155;
+}
+body:not(.dark-mode) .pos-topbar .btn-outline-danger {
+    background: rgba(239,68,68,0.08);
+    border-color: rgba(239,68,68,0.4);
+    color: #dc2626;
+}
+body:not(.dark-mode) .pos-topbar .btn-outline-danger:hover {
+    background: rgba(239,68,68,0.18);
+    border-color: #ef4444;
+    color: #b91c1c;
+}
+
+/* Dark mode topbar buttons */
+body.dark-mode .pos-topbar .btn-outline-light {
+    background: rgba(59,130,246,0.15);
+    border-color: rgba(59,130,246,0.4);
+    color: #93c5fd;
+}
+body.dark-mode .pos-topbar .btn-outline-light:hover {
+    background: rgba(59,130,246,0.3);
+    border-color: #3b82f6;
+    color: #bfdbfe;
+}
+body.dark-mode .pos-topbar .btn-outline-secondary {
+    background: rgba(148,163,184,0.1);
+    border-color: rgba(148,163,184,0.35);
+    color: #cbd5e1;
+}
+body.dark-mode .pos-topbar .btn-outline-secondary:hover {
+    background: rgba(148,163,184,0.2);
+    border-color: #94a3b8;
+    color: #e2e8f0;
+}
+body.dark-mode .pos-topbar .btn-outline-danger {
+    background: rgba(239,68,68,0.15);
+    border-color: rgba(239,68,68,0.4);
+    color: #fca5a5;
+}
+body.dark-mode .pos-topbar .btn-outline-danger:hover {
+    background: rgba(239,68,68,0.3);
+    border-color: #ef4444;
+    color: #fecaca;
+}
+
     .pos-stat {
         display: flex;
         flex-direction: column;
@@ -642,6 +725,12 @@ body:not(.dark-mode) {
     padding: 4px 10px;
     border-radius: 6px;
     border: 1px solid var(--pos-border);
+    transition: all 0.15s;
+}
+.pos-keyhint:hover {
+    background: var(--pos-accent-soft);
+    border-color: var(--pos-accent);
+    color: var(--pos-text);
 }
 .pos-keyhint kbd {
     background: rgba(var(--pos-text-rgb), 0.1);
@@ -650,6 +739,25 @@ body:not(.dark-mode) {
     font-family: monospace;
     font-size: 0.7rem;
     color: var(--pos-text);
+}
+
+/* Topbar select styling */
+.pos-topbar select.form-select-sm {
+    background: var(--pos-card) !important;
+    border-color: var(--pos-border) !important;
+    color: var(--pos-text) !important;
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    max-width: 160px;
+    transition: all 0.15s;
+}
+.pos-topbar select.form-select-sm:hover {
+    border-color: var(--pos-accent);
+}
+.pos-topbar select.form-select-sm:focus {
+    border-color: var(--pos-accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--pos-accent-rgb), 0.15) !important;
 }
 
 /* ============ Body grid ============ */
@@ -2026,9 +2134,11 @@ body:not(.dark-mode) {
             </div>
 
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
-                @foreach($almacenes as $alm)
+                @forelse($almacenes as $alm)
                     <option value="{{ $alm->id }}" @if($loop->first) selected @endif>{{ $alm->nombre }}</option>
-                @endforeach
+                @empty
+                    <option value="" disabled>Sin almacenes disponibles</option>
+                @endforelse
             </select>
 
             <div class="pos-stat">

@@ -310,6 +310,14 @@ class SaleService
         }
         $almacenes = $almacenes->get();
 
+        if ($almacenes->isEmpty()) {
+            $defaultAlmacen = \App\Models\Almacen::firstOrCreate(
+                ['tenant_id' => $tenantId, 'nombre' => 'General'],
+                ['ubicacion' => 'Principal']
+            );
+            $almacenes = collect([$defaultAlmacen]);
+        }
+
         $productos = Producto::where('tenant_id', $tenantId)
             ->orderBy('nombre')
             ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen', 'categoria_id')
