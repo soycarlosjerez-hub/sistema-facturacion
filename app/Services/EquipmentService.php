@@ -6,6 +6,7 @@ use App\Models\Equipo;
 use App\Models\OrdenReparacion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class EquipmentService
 {
@@ -97,13 +98,14 @@ class EquipmentService
     {
         $handle = fopen($filePath, 'r');
         $imported = 0;
+        $records = [];
 
         if ($handle) {
             fgetcsv($handle);
 
             while (($row = fgetcsv($handle)) !== false) {
                 if (count($row) >= 3) {
-                    Equipo::create([
+                    $records[] = [
                         'serial_imei' => trim($row[0]),
                         'marca' => trim($row[1]),
                         'modelo' => trim($row[2]),
@@ -111,12 +113,26 @@ class EquipmentService
                         'color' => isset($row[4]) ? trim($row[4]) : null,
                         'precio_venta' => isset($row[5]) ? (float)$row[5] : 0,
                         'estado' => 'disponible',
-                    ]);
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
                     $imported++;
                 }
             }
 
             fclose($handle);
+        }
+
+        if (!empty($records)) {
+            DB::transaction(function () use ($records) {
+                foreach ($records as $record) {
+                    try {
+                        Equipo::create($record);
+                    } catch (\Exception $e) {
+                        Log::warning('Error importing equipo: ' . $e->getMessage());
+                    }
+                }
+            });
         }
 
         return $imported;

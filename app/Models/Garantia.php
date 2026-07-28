@@ -31,7 +31,6 @@ class Garantia extends Model
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
-        'cobertura' => 'decimal:2',
     ];
 
     public function ordenReparacion(): BelongsTo
@@ -47,7 +46,7 @@ class Garantia extends Model
     public function scopeVigentes($query)
     {
         return $query->where('fecha_fin', '>=', today())
-            ->where('estado', 'activa');
+            ->where('estado', 'vigente');
     }
 
     public function scopePorTipo($query, $tipo)
@@ -63,8 +62,11 @@ class Garantia extends Model
     public function getEstadoLabelAttribute(): ?string
     {
         return match ($this->estado) {
-            'activa' => 'Activa',
+            'vigente' => 'Vigente',
             'expirada' => 'Expirada',
+            'reclamada' => 'En Reclamo',
+            'rechazada' => 'Rechazada',
+            'activa' => 'Activa',
             'cancelada' => 'Cancelada',
             'en_reclamo' => 'En Reclamo',
             default => null,

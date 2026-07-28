@@ -15,7 +15,7 @@ class WarrantyService
     public function crearGarantia(array $data): Garantia
     {
         return Garantia::create(array_merge($data, [
-            'estado' => 'activa',
+            'estado' => 'vigente',
         ]));
     }
 
@@ -42,7 +42,7 @@ class WarrantyService
             throw new \Exception('Esta garantía ya no está vigente.');
         }
 
-        $estado = $resultado === 'aprobado' ? 'en_reclamo' : 'rechazada';
+        $estado = $resultado === 'aprobado' ? 'reclamada' : 'rechazada';
 
         return DB::transaction(function () use ($garantia, $estado, $motivo) {
             $garantia->update([
@@ -51,7 +51,7 @@ class WarrantyService
                     . "\n\nRECLAMO: {$motivo} | Resultado: {$estado}",
             ]);
 
-            if ($garantia->orden_reparacion_id && $estado === 'en_reclamo') {
+            if ($garantia->orden_reparacion_id && $estado === 'reclamada') {
                 $orden = $garantia->ordenReparacion;
                 if ($orden) {
                     $orden->notas = ($orden->notas ?? '') . ' [GARANTÍA EN RECLAMO]';
@@ -66,7 +66,7 @@ class WarrantyService
     public function verificarGarantiaEquipo(int $equipoId): ?Garantia
     {
         return Garantia::where('equipo_id', $equipoId)
-            ->where('estado', 'activa')
+            ->where('estado', 'vigente')
             ->where('fecha_fin', '>=', today())
             ->orderBy('fecha_fin', 'desc')
             ->first();
@@ -75,7 +75,7 @@ class WarrantyService
     public function verificarGarantiaOrden(int $ordenId): ?Garantia
     {
         return Garantia::where('orden_reparacion_id', $ordenId)
-            ->where('estado', 'activa')
+            ->where('estado', 'vigente')
             ->where('fecha_fin', '>=', today())
             ->orderBy('fecha_fin', 'desc')
             ->first();
@@ -91,7 +91,7 @@ class WarrantyService
 
     public function getGarantiasPorVencer(int $dias = 30): \Illuminate\Database\Eloquent\Collection
     {
-        return Garantia::where('estado', 'activa')
+        return Garantia::where('estado', 'vigente')
             ->where('fecha_fin', '<=', now()->addDays($dias))
             ->where('fecha_fin', '>=', today())
             ->with(['equipo', 'ordenReparacion.cliente'])
@@ -104,9 +104,9 @@ class WarrantyService
         return [
             'total' => Garantia::count(),
             'vigentes' => Garantia::vigentes()->count(),
-            'expiradas' => Garantia::where('estado', 'activa')
+            'expiradas' => Garantia::where('estado', 'vigente')
                 ->where('fecha_fin', '<', today())->count(),
-            'en_reclamo' => Garantia::where('estado', 'en_reclamo')->count(),
+            'en_reclamo' => Garantia::where('estado', 'reclamada')->count(),
             'rechazadas' => Garantia::where('estado', 'rechazada')->count(),
             'tasa_rechazo' => 0,
         ];

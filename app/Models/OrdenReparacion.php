@@ -6,14 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use Illuminate\Support\Facades\DB;
 
 class OrdenReparacion extends Model
 {
     use HasFactory;
     use Auditable;
     use TenantScope;
+    use SoftDeletes;
 
     protected $table = 'ordenes_reparacion';
 
@@ -84,7 +87,7 @@ class OrdenReparacion extends Model
 
     public function scopePendientes($query)
     {
-        return $query->whereIn('estado', ['recibido', 'pendiente']);
+        return $query->whereIn('estado', ['recibido', 'pendiente', 'diagnosticando', 'esperando_piezas']);
     }
 
     public function scopeEnReparacion($query)
@@ -107,8 +110,10 @@ class OrdenReparacion extends Model
         return match ($this->estado) {
             'recibido' => 'Recibido',
             'pendiente' => 'Pendiente',
+            'diagnosticando' => 'Diagnosticando',
             'en_reparacion' => 'En Reparación',
             'esperando_piezas' => 'Esperando Piezas',
+            'listo_para_entrega' => 'Listo para Entrega',
             'terminado' => 'Terminado',
             'entregado' => 'Entregado',
             'cancelado' => 'Cancelado',
@@ -126,6 +131,10 @@ class OrdenReparacion extends Model
             'mantenimiento' => 'Mantenimiento',
             'personalizacion' => 'Personalización',
             'otro' => 'Otro',
+            'reparacion' => 'Reparación',
+            'instalacion' => 'Instalación',
+            'configuracion' => 'Configuración',
+            'diagnostico' => 'Diagnóstico',
             default => null,
         };
     }
@@ -145,16 +154,26 @@ class OrdenReparacion extends Model
     public function calcularTotales(): void
     {
         $this->subtotal = $this->costo_piezas + $this->mano_obra;
-        $this->itbis = $this->subtotal * 0.18;
-        $this->total = $this->subtotal + $this->itbis - $this->descuento;
-        $this->save();
+
+        $base_imponible = $this->subtotal - $this->descuento;
+        if ($base_imponible < 0) $base_imponible = 0;
+
+        $this->itbis = $base_imponible * 0.18;
+        $this->total = $base_imponible + $this->itbis;
     }
 
     public static function generarNumeroOrden(): string
     {
+        return DB::connection()->getDoctrineConnection()->fetchOne(
+            'SELECT GET_LOCK(? , 30)',
+            ['lock_orden_reparacion_' . date('Y')]
+        );
+
         $year = date('Y');
+
         $ultimo = self::where('numero_orden', 'like', "OR-{$year}-%")
             ->orderBy('id', 'desc')
+            ->lockForUpdate()
             ->first();
 
         if ($ultimo) {
@@ -163,6 +182,10 @@ class OrdenReparacion extends Model
             $num = 1;
         }
 
-        return sprintf('OR-%s-%06d', $year, $num);
+        $numero = sprintf('OR-%s-%06d', $year, $num);
+
+        DB::releaseLock('lock_orden_reparacion_' . date('Y'));
+
+        return $numero;
     }
 }

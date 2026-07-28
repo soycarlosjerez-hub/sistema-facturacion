@@ -32,13 +32,13 @@ class GarantiaController extends Controller
                     $query->vigentes();
                     break;
                 case 'por_vencer':
-                    $query->where('estado', 'activa')
+                    $query->where('estado', 'vigente')
                         ->where('fecha_fin', '<=', now()->addDays(30))
                         ->where('fecha_fin', '>=', today());
                     break;
                 case 'expiradas':
                     $query->where('fecha_fin', '<', today())
-                        ->where('estado', 'activa');
+                        ->where('estado', 'vigente');
                     break;
             }
         }
@@ -145,7 +145,7 @@ class GarantiaController extends Controller
 
         try {
             $garantia = Garantia::create(array_merge($data, [
-                'estado' => 'activa',
+                'estado' => 'vigente',
             ]));
 
             return redirect()->route('garantias.show', $garantia)
@@ -245,7 +245,7 @@ class GarantiaController extends Controller
             DB::beginTransaction();
 
             $garantia->update([
-                'estado' => 'en_reclamo',
+                'estado' => 'reclamada',
                 'terminos_condiciones' => ($garantia->terminos_condiciones ?? '')
                     . "\n\nRECLAMO: {$data['descripcion_reclamo']}",
             ]);
@@ -275,7 +275,7 @@ class GarantiaController extends Controller
     public function destroy(Garantia $garantia)
     {
         // No permitir eliminar garantías con reclamos activos
-        if ($garantia->estado === 'en_reclamo') {
+        if ($garantia->estado === 'reclamada') {
             return back()->with('error', 'No se puede eliminar una garantía con reclamo activo.');
         }
 
@@ -302,7 +302,7 @@ class GarantiaController extends Controller
      */
     public function getPorVencer()
     {
-        $porVencer = Garantia::where('estado', 'activa')
+        $porVencer = Garantia::where('estado', 'vigente')
             ->where('fecha_fin', '<=', now()->addDays(30))
             ->where('fecha_fin', '>=', today())
             ->with(['equipo', 'ordenReparacion.cliente'])
@@ -332,12 +332,12 @@ class GarantiaController extends Controller
         $html .= '<a href="' . route('garantias.show', $garantia) . '" class="btn btn-outline-info" title="Ver"><i class="bi bi-eye"></i></a>';
         $html .= '<a href="' . route('garantias.edit', $garantia) . '" class="btn btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
 
-        if ($garantia->esta_vigente && $garantia->estado === 'activa') {
+        if ($garantia->esta_vigente && $garantia->estado === 'vigente') {
             $html .= '<a href="' . route('garantias.extender', $garantia) . '" class="btn btn-outline-success" title="Extender"><i class="bi bi-calendar-plus"></i></a>';
             $html .= '<a href="' . route('garantias.reclamo', $garantia) . '" class="btn btn-outline-danger" title="Procesar Reclamo"><i class="bi bi-exclamation-triangle"></i></a>';
         }
 
-        if (!in_array($garantia->estado, ['en_reclamo', 'cancelada'])) {
+        if (!in_array($garantia->estado, ['reclamada', 'cancelada'])) {
             $html .= '<form action="' . route('garantias.destroy', $garantia) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta garantía?\');">';
             $html .= '@csrf @method("DELETE")';
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';

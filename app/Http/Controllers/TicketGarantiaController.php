@@ -106,6 +106,7 @@ class TicketGarantiaController extends Controller
         $data['created_by'] = auth()->id();
 
         try {
+            $data['codigo'] = (new TicketGarantia())->generarNuevoCodigo();
             $ticket = TicketGarantia::create($data);
 
             return redirect()->route('climatizacion.garantias.show', $ticket)

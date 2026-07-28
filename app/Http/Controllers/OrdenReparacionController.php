@@ -8,10 +8,13 @@ use App\Models\Equipo;
 use App\Models\Tecnico;
 use App\Models\DetallePiezaReparacion;
 use App\Models\Producto;
+use App\Services\RepairOrderService;
 use Illuminate\Http\Request;
 
 class OrdenReparacionController extends Controller
 {
+    public function __construct(private RepairOrderService $service) {}
+
     public function index(Request $request)
     {
         $query = OrdenReparacion::query()
@@ -82,8 +85,10 @@ class OrdenReparacionController extends Controller
         $estados = [
             'recibido' => 'Recibido',
             'pendiente' => 'Pendiente',
+            'diagnosticando' => 'Diagnosticando',
             'en_reparacion' => 'En Reparación',
             'esperando_piezas' => 'Esperando Piezas',
+            'listo_para_entrega' => 'Listo para Entrega',
             'terminado' => 'Terminado',
             'entregado' => 'Entregado',
             'cancelado' => 'Cancelado',
@@ -108,7 +113,7 @@ class OrdenReparacionController extends Controller
     {
         $data = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'tipo_servicio' => 'required|in:hardware,software,desbloqueo,recuperacion_datos,mantenimiento,personalizacion,otro',
+            'tipo_servicio' => 'required|in:hardware,software,desbloqueo,recuperacion_datos,mantenimiento,personalizacion,otro,reparacion,instalacion,configuracion,diagnostico',
             'equipo_id' => 'nullable|exists:equipos,id',
             'tecnico_id' => 'nullable|exists:tecnicos,id',
             'problema_reportado' => 'required|string',
@@ -117,7 +122,7 @@ class OrdenReparacionController extends Controller
             'costo_piezas' => 'nullable|numeric|min:0',
             'mano_obra' => 'nullable|numeric|min:0',
             'descuento' => 'nullable|numeric|min:0',
-            'metodo_pago' => 'nullable|in:efectivo,transferencia,tarjeta,NCF',
+            'metodo_pago' => 'nullable|string|max:50',
             'garantia_extendida' => 'boolean',
             'notas' => 'nullable|string|max:2000',
         ]);
@@ -126,15 +131,7 @@ class OrdenReparacionController extends Controller
         $data['fecha_recibo'] = $data['fecha_recibo'] ?? now();
 
         try {
-            $orden = OrdenReparacion::create($data);
-
-            if ($orden->equipo_id) {
-                $orden->equipo->update(['estado' => 'en_reparacion']);
-            }
-
-            if ($data['costo_piezas'] > 0 || $data['mano_obra'] > 0) {
-                $orden->calcularTotales();
-            }
+            $orden = $this->service->crearOrden($data, auth()->id());
 
             return redirect()->route('tecnicas.show', $orden)
                 ->with('success', 'Orden de reparación creada correctamente.');
@@ -162,7 +159,7 @@ class OrdenReparacionController extends Controller
     {
         $data = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'tipo_servicio' => 'required|in:hardware,software,desbloqueo,recuperacion_datos,mantenimiento,personalizacion,otro',
+            'tipo_servicio' => 'required|in:hardware,software,desbloqueo,recuperacion_datos,mantenimiento,personalizacion,otro,reparacion,instalacion,configuracion,diagnostico',
             'equipo_id' => 'nullable|exists:equipos,id',
             'tecnico_id' => 'nullable|exists:tecnicos,id',
             'problema_reportado' => 'required|string',
@@ -172,7 +169,7 @@ class OrdenReparacionController extends Controller
             'costo_piezas' => 'nullable|numeric|min:0',
             'mano_obra' => 'nullable|numeric|min:0',
             'descuento' => 'nullable|numeric|min:0',
-            'metodo_pago' => 'nullable|in:efectivo,transferencia,tarjeta,NCF',
+            'metodo_pago' => 'nullable|string|max:50',
             'garantia_extendida' => 'boolean',
             'notas' => 'nullable|string|max:2000',
         ]);
@@ -180,12 +177,7 @@ class OrdenReparacionController extends Controller
         $data['garantia_extendida'] = $request->has('garantia_extendida') ? true : false;
 
         try {
-            if (isset($data['costo_piezas']) || isset($data['mano_obra']) || isset($data['descuento'])) {
-                $orden->fill($data);
-                $orden->calcularTotales();
-            } else {
-                $orden->update($data);
-            }
+            $orden = $this->service->actualizarOrden($orden->id, $data);
 
             return redirect()->route('tecnicas.show', $orden)
                 ->with('success', 'Orden actualizada correctamente.');
@@ -197,14 +189,18 @@ class OrdenReparacionController extends Controller
     public function cambiarEstado(Request $request, OrdenReparacion $orden)
     {
         $data = $request->validate([
-            'estado' => 'required|in:recibido,pendiente,en_reparacion,esperando_piezas,terminado,entregado,cancelado',
+            'estado' => 'required|in:recibido,pendiente,diagnosticando,en_reparacion,esperando_piezas,listo_para_entrega,terminado,entregado,cancelado',
         ]);
 
         try {
-            $orden->update(['estado' => $data['estado']]);
-
-            if ($data['estado'] === 'entregado' && $orden->equipo_id) {
-                $orden->equipo->update(['estado' => 'disponible']);
+            if ($data['estado'] === 'entregado') {
+                $this->service->entregarOrden($orden->id);
+            } else {
+                $orden = $this->service->cambiarEstado($orden->id, $data['estado']);
+                
+                if ($data['estado'] === 'cancelado' && $orden->equipo_id) {
+                    $orden->equipo->update(['estado' => 'disponible']);
+                }
             }
 
             return back()->with('success', "Estado cambiado a '{$orden->estado_label}'.");
@@ -216,14 +212,7 @@ class OrdenReparacionController extends Controller
     public function entregar(OrdenReparacion $orden)
     {
         try {
-            $orden->update([
-                'estado' => 'entregado',
-                'fecha_entrega_real' => now(),
-            ]);
-
-            if ($orden->equipo_id) {
-                $orden->equipo->update(['estado' => 'disponible']);
-            }
+            $this->service->entregarOrden($orden->id);
 
             return redirect()->route('tecnicas.show', $orden)
                 ->with('success', 'Orden entregada correctamente.');
@@ -239,28 +228,7 @@ class OrdenReparacionController extends Controller
         ]);
 
         try {
-            foreach ($orden->detallesPiezas as $detalle) {
-                $producto = $detalle->producto;
-                if ($producto && $producto->stock !== null) {
-                    \DB::table('almacen_movimientos')->insert([
-                        'producto_id' => $producto->id,
-                        'tipo' => 'entrada',
-                        'cantidad' => $detalle->cantidad,
-                        'nota' => "Devuelta por cancelación Orden #{$orden->numero_orden}",
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-            }
-
-            $orden->update([
-                'estado' => 'cancelado',
-                'notas' => ($orden->notas ?? '') . ' [CANCELADA: ' . ($data['motivo'] ?? 'Sin motivo') . ']',
-            ]);
-
-            if ($orden->equipo_id) {
-                $orden->equipo->update(['estado' => 'disponible']);
-            }
+            $this->service->cancelarOrden($orden->id, $data['motivo'] ?? '');
 
             return redirect()->route('tecnicas.show', $orden)
                 ->with('success', 'Orden cancelada correctamente.');
@@ -277,30 +245,7 @@ class OrdenReparacionController extends Controller
         ]);
 
         try {
-            $producto = Producto::findOrFail($data['producto_id']);
-
-            \DB::table('detalle_pieza_reparacion')->insert([
-                'orden_reparacion_id' => $orden->id,
-                'producto_id' => $producto->id,
-                'cantidad' => $data['cantidad'],
-                'costo_unitario' => $producto->precio_compra ?? 0,
-                'precio_venta' => $producto->precio ?? 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            if ($producto->stock !== null && $producto->stock >= $data['cantidad']) {
-                \DB::table('almacen_movimientos')->insert([
-                    'producto_id' => $producto->id,
-                    'tipo' => 'salida',
-                    'cantidad' => $data['cantidad'],
-                    'nota' => "Orden #{$orden->numero_orden}",
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            $orden->calcularTotales();
+            $this->service->agregarPieza($orden->id, $data['producto_id'], $data['cantidad']);
 
             return back()->with('success', 'Pieza agregada correctamente.');
         } catch (\Exception $e) {
@@ -311,20 +256,7 @@ class OrdenReparacionController extends Controller
     public function quitarPieza(Request $request, OrdenReparacion $orden, DetallePiezaReparacion $detalle)
     {
         try {
-            $producto = $detalle->producto;
-            if ($producto && $producto->stock !== null) {
-                \DB::table('almacen_movimientos')->insert([
-                    'producto_id' => $producto->id,
-                    'tipo' => 'entrada',
-                    'cantidad' => $detalle->cantidad,
-                    'nota' => "Devuelta desde Orden #{$orden->numero_orden}",
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            $detalle->delete();
-            $orden->calcularTotales();
+            $this->service->eliminarPieza($orden->id, $detalle->id);
 
             return back()->with('success', 'Pieza retirada correctamente.');
         } catch (\Exception $e) {
@@ -334,7 +266,7 @@ class OrdenReparacionController extends Controller
 
     public function destroy(OrdenReparacion $orden)
     {
-        if (!in_array($orden->estado, ['cancelado', 'recibido', 'pendiente'])) {
+        if (!in_array($orden->estado, ['cancelado', 'recibido', 'pendiente', 'diagnosticando'])) {
             return back()->with('error', 'Solo se pueden eliminar órdenes canceladas o sin procesar.');
         }
 
@@ -351,9 +283,9 @@ class OrdenReparacionController extends Controller
     {
         $stats = [
             'total' => OrdenReparacion::count(),
-            'pendientes' => OrdenReparacion::whereIn('estado', ['recibido', 'pendiente'])->count(),
+            'pendientes' => OrdenReparacion::whereIn('estado', ['recibido', 'pendiente', 'diagnosticando'])->count(),
             'en_reparacion' => OrdenReparacion::where('estado', 'en_reparacion')->count(),
-            'listos' => OrdenReparacion::where('estado', 'terminado')->count(),
+            'listos' => OrdenReparacion::whereIn('estado', ['terminado', 'listo_para_entrega'])->count(),
             'entregadas' => OrdenReparacion::where('estado', 'entregado')->count(),
             'canceladas' => OrdenReparacion::where('estado', 'cancelado')->count(),
             'ingresos_mes' => OrdenReparacion::whereMonth('created_at', now()->month)->sum('total'),

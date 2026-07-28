@@ -352,7 +352,6 @@ class EquipoController extends Controller
         $html .= '<a href="' . route('equipos.show', $equipo) . '" class="btn btn-outline-info" title="Ver"><i class="bi bi-eye"></i></a>';
         $html .= '<a href="' . route('equipos.edit', $equipo) . '" class="btn btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
 
-        // Reservar toggle
         if (in_array($equipo->estado, ['disponible', 'reservado'])) {
             $html .= '<a href="' . route('equipos.toggle-reservar', $equipo) . '" class="btn btn-outline-'
                 . ($equipo->estado === 'reservado' ? 'secondary' : 'info') . '" title="'
@@ -360,12 +359,7 @@ class EquipoController extends Controller
                 . '<i class="bi bi-' . ($equipo->estado === 'reservado' ? 'bookmark-x' : 'bookmark') . '"></i></a>';
         }
 
-        // Delete (only if no active repair orders)
-        $ordenesActivas = $equipo->ordenesReparacion()
-            ->whereNotIn('estado', ['entregado', 'cancelado'])
-            ->count();
-
-        if ($ordenesActivas === 0) {
+        if (! $equipo->ordenesReparacion()->whereNotIn('estado', ['entregado', 'cancelado'])->exists()) {
             $html .= '<form action="' . route('equipos.destroy', $equipo) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar este equipo?\');">';
             $html .= '@csrf @method("DELETE")';
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';

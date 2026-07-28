@@ -120,24 +120,26 @@ class DashboardTecnologiaController extends Controller
 
     private function getRevenueByMonth(Carbon $startDate): array
     {
+        $groups = OrdenReparacion::where('estado', 'entregado')
+            ->where('created_at', '>=', $startDate)
+            ->where('created_at', '<=', now())
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, SUM(total) as total')
+            ->groupBy('year', 'month')
+            ->pluck('total', function ($item) {
+                return sprintf('%04d-%02d', $item->year, $item->month);
+            })
+            ->toArray();
+
         $months = [];
         $current = clone $startDate;
-
         while ($current <= now()) {
             $key = $current->format('Y-m');
-            $amount = OrdenReparacion::whereYear('created_at', $current->year)
-                ->whereMonth('created_at', $current->month)
-                ->where('estado', 'entregado')
-                ->sum('total');
-
             $months[] = [
                 'label' => $current->format('M Y'),
-                'value' => round((float) $amount, 2),
+                'value' => round((float) ($groups[$key] ?? 0), 2),
             ];
-
             $current->addMonth();
         }
-
         return $months;
     }
 }

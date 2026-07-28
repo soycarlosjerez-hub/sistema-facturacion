@@ -40,8 +40,8 @@ class RepairOrderService
                     'tipo' => 'servicio',
                     'fecha_inicio' => now(),
                     'fecha_fin' => now()->addDays(90),
-                    'cobertura' => 0,
-                    'estado' => 'activa',
+                    'cobertura' => 100.00,
+                    'estado' => 'vigente',
                 ]);
             }
 

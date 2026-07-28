@@ -18,7 +18,6 @@ class TicketGarantia extends Model
 
     protected $fillable = [
         'codigo',
-        'business_instance_id',
         'producto_id',
         'cliente_id',
         'instalacion_id',
@@ -34,6 +33,17 @@ class TicketGarantia extends Model
         'cerrado_en',
         'created_by',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($ticket) {
+            if (empty($ticket->codigo)) {
+                $ticket->codigo = $ticket->generarNuevoCodigo();
+            }
+        });
+    }
 
     protected $casts = [
         'fecha_compra'              => 'date',
@@ -104,10 +114,23 @@ class TicketGarantia extends Model
         return max(0, now()->diffInDays($this->fecha_vencimiento_garantia, false));
     }
 
-    public function generarCodigo(): string
+    public function generarNuevoCodigo(): string
     {
         $year = date('Y');
-        $count = self::whereYear('created_at', $year)->count() + 1;
-        return sprintf('TG-%s-%05d', $year, $count);
+        
+        $lockKey = "lock_ticket_garantia_{$year}";
+        
+        try {
+            \DB::statement("GET_LOCK('{$lockKey}', 30)");
+            
+            $count = self::whereYear('created_at', $year)->count() + 1;
+            $code = sprintf('TG-%s-%05d', $year, $count);
+            
+            \DB::statement("RELEASE_LOCK('{$lockKey}')");
+            
+            return $code;
+        } catch (\Exception $e) {
+            return sprintf('TG-%s-%05d', $year, time() % 100000);
+        }
     }
 }
