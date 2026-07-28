@@ -19,8 +19,29 @@ NC='\033[0m'
 RECIPIENT=""
 FORCE=false
 DRY_RUN=false
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PROJECT_DIR="$(dirname "$BASE_DIR")"
+# Detectar directorio del proyecto buscando artisan
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
+
+# Subir en el árbol hasta encontrar artisan
+while [ "$PROJECT_DIR" != "/" ]; do
+    if [ -f "$PROJECT_DIR/artisan" ]; then
+        break
+    fi
+    PROJECT_DIR="$(dirname "$PROJECT_DIR")"
+done
+
+# Si no encontró artisan, asumir que el script está dentro del proyecto
+if [ ! -f "$PROJECT_DIR/artisan" ]; then
+    PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+fi
+
+if [ ! -f "$PROJECT_DIR/artisan" ]; then
+    echo -e "${RED}Error: No se pudo encontrar el directorio del proyecto (artisan no encontrado)${NC}"
+    echo "  Script ubicado en: $SCRIPT_DIR"
+    echo "  Buscando en: $PROJECT_DIR"
+    exit 1
+fi
 
 # Parsear argumentos
 while [[ $# -gt 0 ]]; do
