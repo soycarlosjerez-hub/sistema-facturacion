@@ -834,6 +834,7 @@ class OwnerController extends Controller
 
         $name = $user->name;
         $this->logOwnerAction('USER_DELETE', "Usuario '{$name}' eliminado de instancia '{$instance->nombre}'", ['user_id' => $user->id, 'email' => $user->email], null, $instance);
+        \App\Models\AuditLog::where('user_id', $user->id)->delete();
         $user->delete();
 
         return redirect()->route('owner.instances.show', $instance)
