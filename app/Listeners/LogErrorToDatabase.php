@@ -46,6 +46,7 @@ class LogErrorToDatabase
                 Cache::put($cacheKey, true, 300);
                 $tenantName = $errorLog->tenant->name ?? null;
                 Mail::to($alertEmail)
+                    ->onQueue('errors')
                     ->queue(new \App\Mail\ErrorAlertMail(
                         level: $event->level,
                         title: $errorLog->title,
@@ -59,7 +60,7 @@ class LogErrorToDatabase
                         source: $errorLog->source,
                         createdAt: $errorLog->created_at->format('Y-m-d H:i:s'),
                         tenantName: $tenantName,
-                    ))->onQueue('errors');
+                    ));
             }
         }
     }

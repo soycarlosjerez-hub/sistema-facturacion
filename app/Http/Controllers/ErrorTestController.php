@@ -117,22 +117,24 @@ class ErrorTestController extends Controller
             ]);
 
             // Disparar el mail directamente
-            \Mail::to($email)->queue(
-                new \App\Mail\ErrorAlertMail(
-                    level: 'error',
-                    title: 'PRUEBA_DE_TEST: Error Manual',
-                    errorMessage: "Error manual ID: {$log->id}\nCreado para probar el sistema de alertas.",
-                    exceptionClass: 'ManualTest',
-                    file: 'error_test_page',
-                    line: 1,
-                    ipAddress: $request->ip(),
-                    userAgent: $request->userAgent(),
-                    context: ['test' => true, 'manual_trigger' => true],
-                    source: 'error_test_page',
-                    createdAt: now()->format('Y-m-d H:i:s'),
-                    tenantName: null,
-                )
-            )->onQueue('errors');
+            \Mail::to($email)
+                ->onQueue('errors')
+                ->queue(
+                    new \App\Mail\ErrorAlertMail(
+                        level: 'error',
+                        title: 'PRUEBA_DE_TEST: Error Manual',
+                        errorMessage: "Error manual ID: {$log->id}\nCreado para probar el sistema de alertas.",
+                        exceptionClass: 'ManualTest',
+                        file: 'error_test_page',
+                        line: 1,
+                        ipAddress: $request->ip(),
+                        userAgent: $request->userAgent(),
+                        context: ['test' => true, 'manual_trigger' => true],
+                        source: 'error_test_page',
+                        createdAt: now()->format('Y-m-d H:i:s'),
+                        tenantName: null,
+                    )
+                );
 
             return redirect()->route('owner.error-test')->with('success', "Error de prueba creado (ID: {$log}). Revisa tu correo {$email}.");
         } catch (Exception $e) {
