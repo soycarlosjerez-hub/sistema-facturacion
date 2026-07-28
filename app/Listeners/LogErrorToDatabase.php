@@ -41,7 +41,13 @@ class LogErrorToDatabase
 
         $alertEmail = \App\Services\ErrorMailer::getAlertEmail();
         if ($alertEmail) {
-            $cacheKey = 'error_alert_log:' . md5($event->level . $event->message);
+            $cacheKey = 'error_alert_log:' . md5(
+                $event->level .
+                $event->message .
+                ($context['file'] ?? '') .
+                ($context['line'] ?? '') .
+                Request::ip()
+            );
             if (!Cache::has($cacheKey)) {
                 Cache::put($cacheKey, true, 300);
                 $tenantName = $errorLog->tenant->name ?? null;

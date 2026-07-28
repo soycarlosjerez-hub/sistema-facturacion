@@ -6,8 +6,11 @@ use App\Models\SystemSetting;
 use App\Services\ErrorMailer;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\MessageLogged;
 use Throwable;
 
 class ErrorTestController extends Controller
@@ -81,7 +84,13 @@ class ErrorTestController extends Controller
         try {
             ErrorMailer::applyGlobalSmtp();
 
-            Log::channel('single')->error('PRUEBA_DE_TEST: Este es un mensaje de error generado manualmente desde la página de prueba. Si recibes el correo, el sistema de alertas funciona.');
+            $testMessage = 'PRUEBA_DE_TEST: Este es un mensaje de error generado manualmente desde la página de prueba. Si recibes el correo, el sistema de alertas funciona.';
+
+            Cache::forget('error_alert_log:' . md5('PRUEBA_DE_TEST'));
+
+            Log::channel('single')->error($testMessage);
+
+            Event::dispatch(new MessageLogged('error', $testMessage, []));
 
             return redirect()->route('owner.error-test')->with('success', "Mensaje de log de prueba enviado. Espera unos segundos y revisa tu correo.");
         } catch (Exception $e) {

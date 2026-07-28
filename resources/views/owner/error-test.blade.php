@@ -92,20 +92,12 @@ body.dark-mode .log-level.warning { background: #78350f; color: #fde68a; }
     </div>
     <div class="col-md-4">
         <div class="test-card card">
-            <div class="card-header" style="background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff;">
-                <i class="bi bi-activity me-1"></i> Queue Worker
+            <div class="card-header" style="background: linear-gradient(135deg,#059669,#10b981); color:#fff;">
+                <i class="bi bi-envelope-check me-1"></i> Envío Sincrónico
             </div>
             <div class="card-body">
-                @php
-                    $queueRunning = false;
-                    try {
-                        $jobs = DB::table('jobs')->where('queue', 'errors')->count();
-                    } catch (\Exception $e) {
-                        $jobs = 0;
-                    }
-                @endphp
-                <div><span class="status-dot {{ $jobs == 0 ? 'ok' : 'warn' }}"></span><strong>{{ $jobs == 0 ? 'Sin jobs pendientes' : $jobs . ' job(s) en cola' }}</strong></div>
-                <small class="text-muted">Ejecuta: <code>php artisan queue:work --queue=errors</code></small>
+                <div><span class="status-dot ok"></span><strong>Activado</strong></div>
+                <small class="text-muted">Los correos se envían directamente sin colas</small>
             </div>
         </div>
     </div>
@@ -237,8 +229,7 @@ body.dark-mode .log-level.warning { background: #78350f; color: #fde68a; }
             </div>
             <div class="card-footer text-end small text-muted">
                 <i class="bi bi-info-circle me-1"></i>
-                Los errores se env&iacute;an por cola. Aseg&uacute;rate de tener el worker corriendo:
-                <code class="d-block mt-1 p-2 rounded-2" style="background:#1e293b;color:#e2e8f0;">php artisan queue:work --queue=errors --sleep=3 --tries=3</code>
+                Los correos de error se envían de forma sincrónica. No requiere worker de queue.
             </div>
         </div>
     </div>
