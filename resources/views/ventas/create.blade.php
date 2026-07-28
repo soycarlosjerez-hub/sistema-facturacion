@@ -2605,7 +2605,7 @@ body:not(.dark-mode) {
                 <div id="factura-status" class="mt-2 small"></div>
             </div>
             <div class="modal-footer border-0 justify-content-center" style="background:var(--pos-bg);">
-                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal" onclick="POS.vaciarCarrito()">
+                <button type="button" class="btn btn-success rounded-pill px-4" onclick="POS.nuevaVenta()">
                     <i class="bi bi-plus-circle me-1"></i> Nueva Venta
                 </button>
             </div>
@@ -3001,12 +3001,18 @@ body:not(.dark-mode) {
             const isOpen = overlay.classList.contains('show');
             overlay.classList.toggle('show');
             if (!isOpen) {
-                // trap focus inside panel
                 setTimeout(() => {
                     const closeBtn = overlay.querySelector('.close-shortcuts');
                     if (closeBtn) closeBtn.focus();
                 }, 100);
             }
+        },
+
+        nuevaVenta() {
+            isSubmitting = false;
+            const modal = bootstrap.Modal.getInstance($('postPagoModal'));
+            if (modal) modal.hide();
+            $('scan-input').focus();
         }
     };
     window.POS = POS;
@@ -3178,17 +3184,19 @@ body:not(.dark-mode) {
         })
         .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
         .then(data => {
+            cart.length = 0;
+            renderCart();
             playBeep('success');
             ultimaVentaId = data.venta_id;
             resetearCliente();
             mostrarPostPago(data);
         })
         .catch(err => {
+            isSubmitting = false;
             playBeep('error');
             showToast(err?.message || err?.error || 'Error al procesar venta', 'danger');
         })
         .finally(() => {
-            isSubmitting = false;
             btn.disabled = false;
             btn.innerHTML = '<span class="shine"></span><i class="bi bi-check2-circle me-1"></i> Cobrar';
         });
@@ -3277,17 +3285,19 @@ body:not(.dark-mode) {
         })
         .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)))
         .then(data => {
+            cart.length = 0;
+            renderCart();
             playBeep('success');
             ultimaVentaId = data.venta_id;
             resetearCliente();
             mostrarPostPago(data);
         })
         .catch(err => {
+            isSubmitting = false;
             playBeep('error');
             showToast(err?.message || err?.error || 'Error al procesar venta', 'danger');
         })
         .finally(() => {
-            isSubmitting = false;
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = btnOrigHtml;
@@ -4063,6 +4073,7 @@ body:not(.dark-mode) {
                 break;
             case 'submit':
                 e.preventDefault();
+                if (isSubmitting) return;
                 POS.submitForm(target.dataset.metodo);
                 break;
             case 'select-comprobante':
