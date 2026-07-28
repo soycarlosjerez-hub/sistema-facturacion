@@ -2,9 +2,12 @@
 
 namespace App\Mail;
 
+use App\Mail\Middleware\ApplyGlobalSmtpConfig;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class UserCreatedNotification extends Mailable
@@ -24,16 +27,35 @@ class UserCreatedNotification extends Mailable
     }
 
     /**
-     * Build the message.
+     * Get the message envelope.
      */
-    public function build()
+    public function envelope(): Envelope
     {
-        return $this->subject('Bienvenido a ' . config('app.name'))
-                    ->view('emails.user_created')
-                    ->with([
-                        'name' => $this->user->name,
-                        'email' => $this->user->email,
-                        'password' => $this->plainPassword,
-                    ]);
+        return new Envelope(
+            subject: 'Bienvenido a ' . config('app.name'),
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            view: 'emails.user_created',
+            with: [
+                'name' => $this->user->name,
+                'email' => $this->user->email,
+                'password' => $this->plainPassword,
+            ],
+        );
+    }
+
+    /**
+     * Get the middleware applied to the mailable.
+     */
+    public function middleware(): array
+    {
+        return [new ApplyGlobalSmtpConfig()];
     }
 }

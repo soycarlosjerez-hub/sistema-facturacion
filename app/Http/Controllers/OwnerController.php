@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserCreatedNotification;
 use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
@@ -15,14 +16,15 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\UserBusinessService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 
 class OwnerController extends Controller
 {
@@ -753,6 +755,17 @@ class OwnerController extends Controller
 
         $user->assignRole('admin-business');
 
+        try {
+            Mail::to($user->email)->send(new UserCreatedNotification($user, $data['password']));
+        } catch (\Exception $e) {
+            Log::error('Failed to send user created email', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'instance_id' => $instance->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         $this->logOwnerAction('USER_CREATE', "Usuario '{$user->name}' creado para instancia '{$instance->nombre}'", null, ['user_id' => $user->id], $instance);
 
         return redirect()->route('owner.instances.show', $instance)
@@ -784,11 +797,26 @@ class OwnerController extends Controller
         $user->email = $data['email'];
         $user->instance_role_id = $data['instance_role_id'] ?? null;
 
+        $passwordChanged = false;
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);
+            $passwordChanged = true;
         }
 
         $user->save();
+
+        if ($passwordChanged) {
+            try {
+                Mail::to($user->email)->send(new UserCreatedNotification($user, $data['password']));
+            } catch (\Exception $e) {
+                Log::error('Failed to send password change email', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'instance_id' => $instance->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Usuario actualizado correctamente.');
