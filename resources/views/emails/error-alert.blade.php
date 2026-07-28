@@ -106,7 +106,7 @@
         @endif
 
         <div style="text-align: center; margin-top: 25px;">
-            <a href="{{ url('/errors') }}" class="btn-view">Ver Panel de Errores</a>
+            <a href="{{ url('/owner/errors') }}" class="btn-view">Ver Panel de Errores</a>
         </div>
     </div>
     <div class="footer">
