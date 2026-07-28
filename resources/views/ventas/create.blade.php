@@ -1704,7 +1704,7 @@ body:not(.dark-mode) {
         .pago-detalle label { font-size: 0.55rem; margin-bottom: 2px; }
         .cambio-display { padding: 8px 10px; font-size: 1.2rem; border-radius: 8px; }
         .propina-btn { padding: 6px 12px; font-size: 0.7rem; min-height: 34px; }
-        #propina-input { height: 360px; font-size: 0.9rem; width: 65px; }
+        #propina-input { height: auto; font-size: 0.9rem; width: 65px; }
         .btn-cobrar-touch { padding: 12px 10px; font-size: 1rem; border-radius: 10px; min-height: 46px; }
         .quick-amount-btn { padding: 6px 2px; font-size: 0.65rem; border-radius: 6px; }
         .keypad-btn { padding: 6px; font-size: 0.9rem; border-radius: 6px; }
@@ -2466,13 +2466,13 @@ body:not(.dark-mode) {
                 <!-- Fila 1: Total grande -->
                 <div class="cobrar-section">
                     <div class="cobrar-total-card">
-                        <h2 class="fw-bold mb-0" id="pago-total">RD$ 0.00</h2>
+                        <h2 class="fw-bold mb-0" id="md-pago-total">RD$ 0.00</h2>
                     </div>
                 </div>
 
                 <!-- Fila 2: Métodos de pago grandes -->
                 <div class="cobrar-section">
-                    <div class="row g-2" id="pago-metodos">
+                    <div class="row g-2" id="md-pago-metodos">
                         <div class="col-3">
                             <button type="button" class="metodo-btn efectivo active-metodo w-100" data-metodo="efectivo" onclick="seleccionarMetodoPago('efectivo')">
                                 <i class="bi bi-cash-stack"></i> Efectivo
@@ -2497,11 +2497,11 @@ body:not(.dark-mode) {
                 </div>
 
                 <!-- Fila 3: Efectivo (monto recibido + cambio) -->
-                <div id="pago-efectivo" class="cobrar-section">
+                <div id="md-pago-efectivo" class="cobrar-section">
                     <div class="pago-detalle">
                         <label>Monto Recibido</label>
-                        <input type="number" id="monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="" inputmode="decimal">
-                        
+                        <input type="number" id="md-monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="" inputmode="decimal">
+
                         <!-- Botones de Denominaciones RD$ -->
                         <div class="row g-2 mt-2 mb-2">
                             <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(50)">RD$50</button></div>
@@ -2511,29 +2511,29 @@ body:not(.dark-mode) {
                             <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(1000)">RD$1,000</button></div>
                             <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(2000)">RD$2,000</button></div>
                         </div>
-                        
-                        <div id="cambio-info" class="mt-2 cambio-display positivo d-none">
-                            Cambio: <span class="fw-bold" id="cambio-monto">RD$ 0.00</span>
+
+                        <div id="md-cambio-info" class="mt-2 cambio-display positivo d-none">
+                            Cambio: <span class="fw-bold" id="md-cambio-monto">RD$ 0.00</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Fila 4: Mixto (tres campos) -->
-                <div id="pago-mixto" class="cobrar-section" style="display:none;">
+                <div id="md-pago-mixto" class="cobrar-section" style="display:none;">
                     <div class="pago-detalle">
                         <div class="mb-2">
                             <label>Efectivo</label>
-                            <input type="number" id="mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                            <input type="number" id="md-mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
                         </div>
                         <div class="mb-2">
                             <label>Tarjeta</label>
-                            <input type="number" id="mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                            <input type="number" id="md-mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
                         </div>
                         <div class="mb-2">
                             <label>Transferencia</label>
-                            <input type="number" id="mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                            <input type="number" id="md-mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
                         </div>
-                        <small class="text-muted" id="mixto-restante"></small>
+                        <small class="text-muted" id="md-mixto-restante"></small>
                     </div>
                 </div>
 
@@ -2542,7 +2542,7 @@ body:not(.dark-mode) {
                     <div class="pago-detalle">
                         <label>Propina</label>
                         <div class="d-flex gap-2 align-items-center">
-                            <input type="number" id="propina-input" step="0.01" min="0" value="0" inputmode="decimal" oninput="actualizarTotalPago()">
+                            <input type="number" id="md-propina-input" step="0.01" min="0" value="0" inputmode="decimal" oninput="actualizarTotalPago()">
                             <button type="button" class="propina-btn" onclick="asignarPropina(0, this)">0%</button>
                             <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
                             <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
@@ -3000,38 +3000,55 @@ body:not(.dark-mode) {
     let metodoPagoActual = 'efectivo';
     let ultimaVentaId = null;
 
+    function $p(id) {
+        const prefix = getModalPrefix();
+        const el = document.getElementById(prefix + id);
+        return el || document.getElementById(id);
+    }
+
+    function getModalPrefix() {
+        const bsSheet = document.getElementById('cobrarSheet');
+        return (bsSheet && bsSheet.classList.contains('open')) ? '' : 'md-';
+    }
+
     function mostrarPago(metodo) {
         const total = parseFloat($('hidden-total').value) || 0;
         if (total <= 0) { showToast('Total inválido', 'danger'); return; }
-        $('pago-total').innerText = fmt(total);
-        // Reset
-        $('propina-input').value = '0';
-        $('monto-recibido').value = '';
-        document.getElementById('cambio-info').classList.add('d-none');
-        $('mixto-efectivo').value = '';
-        $('mixto-tarjeta').value = '';
-        $('mixto-transferencia').value = '';
-        // Select method
+        $p('pago-total').innerText = fmt(total);
+        $p('propina-input').value = '0';
+        $p('monto-recibido').value = '';
+        $p('cambio-info').classList.add('d-none');
+        $p('mixto-efectivo').value = '';
+        $p('mixto-tarjeta').value = '';
+        $p('mixto-transferencia').value = '';
         seleccionarMetodoPago(metodo);
-        new bootstrap.Modal($('pagoModal')).show();
-        setTimeout(() => $('monto-recibido')?.focus(), 400);
+        const isMobile = window.innerWidth < 992;
+        if (isMobile) {
+            const sheet = document.getElementById('cobrarSheet');
+            sheet.classList.add('open');
+            document.getElementById('cobrarSheetOverlay').classList.add('visible');
+        } else {
+            new bootstrap.Modal(document.getElementById('pagoModal')).show();
+        }
+        setTimeout(() => $p('monto-recibido')?.focus(), 400);
     }
 
     function seleccionarMetodoPago(metodo) {
         metodoPagoActual = metodo;
-        document.querySelectorAll('#pago-metodos .metodo-btn').forEach(b => b.classList.remove('active-metodo'));
-        document.querySelector(`#pago-metodos .metodo-btn[data-metodo="${metodo}"]`)?.classList.add('active-metodo');
-        document.getElementById('pago-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
-        document.getElementById('pago-mixto').style.display = metodo === 'mixto' ? 'block' : 'none';
+        const prefix = getModalPrefix();
+        document.querySelectorAll('#' + prefix + 'pago-metodos .metodo-btn').forEach(b => b.classList.remove('active-metodo'));
+        document.querySelector('#' + prefix + 'pago-metodos .metodo-btn[data-metodo="' + metodo + '"]')?.classList.add('active-metodo');
+        $p('pago-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
+        $p('pago-mixto').style.display = metodo === 'mixto' ? 'block' : 'none';
         if (metodo === 'efectivo') {
-            document.getElementById('cambio-info').classList.add('d-none');
-            setTimeout(() => $('monto-recibido')?.focus(), 200);
+            $p('cambio-info').classList.add('d-none');
+            setTimeout(() => $p('monto-recibido')?.focus(), 200);
         }
         actualizarTotalPago();
     }
 
     function addRecibido(monto) {
-        const input = document.getElementById('monto-recibido');
+        const input = $p('monto-recibido');
         const actual = parseFloat(input.value) || 0;
         input.value = (actual + monto).toFixed(2);
         actualizarTotalPago();
@@ -3039,15 +3056,15 @@ body:not(.dark-mode) {
 
     function actualizarTotalPago() {
         const totalBase = parseFloat($('hidden-total').value) || 0;
-        const propina = parseFloat($('propina-input').value) || 0;
+        const propina = parseFloat($p('propina-input').value) || 0;
         const totalFinal = totalBase + propina;
-        $('pago-total').innerText = fmt(totalFinal);
+        $p('pago-total').innerText = fmt(totalFinal);
 
         if (metodoPagoActual === 'efectivo') {
-            const recibido = parseFloat($('monto-recibido').value) || 0;
+            const recibido = parseFloat($p('monto-recibido').value) || 0;
             const cambio = recibido - totalFinal;
-            const cambioInfo = document.getElementById('cambio-info');
-            const cambioMonto = document.getElementById('cambio-monto');
+            const cambioInfo = $p('cambio-info');
+            const cambioMonto = $p('cambio-monto');
             if (recibido > 0 && cambio >= 0) {
                 cambioInfo.classList.remove('d-none');
                 cambioMonto.textContent = fmt(cambio);
@@ -3055,12 +3072,12 @@ body:not(.dark-mode) {
                 cambioInfo.classList.add('d-none');
             }
         } else if (metodoPagoActual === 'mixto') {
-            const eff = parseFloat($('mixto-efectivo').value) || 0;
-            const card = parseFloat($('mixto-tarjeta').value) || 0;
-            const trans = parseFloat($('mixto-transferencia').value) || 0;
+            const eff = parseFloat($p('mixto-efectivo').value) || 0;
+            const card = parseFloat($p('mixto-tarjeta').value) || 0;
+            const trans = parseFloat($p('mixto-transferencia').value) || 0;
             const suma = eff + card + trans;
             const restante = totalFinal - suma;
-            const label = document.getElementById('mixto-restante');
+            const label = $p('mixto-restante');
             if (restante > 0.01) {
                 label.innerHTML = `<span class="text-warning fw-bold">Faltan ${fmt(restante)}</span>`;
             } else if (restante < -0.01) {
@@ -3074,7 +3091,7 @@ body:not(.dark-mode) {
 
     function asignarPropina(porcentaje, btn) {
         const total = parseFloat($('hidden-total').value) || 0;
-        $('propina-input').value = (total * porcentaje / 100).toFixed(2);
+        $p('propina-input').value = (total * porcentaje / 100).toFixed(2);
         actualizarTotalPago();
         document.querySelectorAll('.propina-btn').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
@@ -3083,18 +3100,18 @@ body:not(.dark-mode) {
     function procesarPago() {
         if (isSubmitting) return;
         const total = parseFloat($('hidden-total').value) || 0;
-        const propina = parseFloat($('propina-input').value) || 0;
+        const propina = parseFloat($p('propina-input').value) || 0;
 
         if (metodoPagoActual === 'efectivo') {
-            const recibido = parseFloat($('monto-recibido').value) || 0;
+            const recibido = parseFloat($p('monto-recibido').value) || 0;
             if (recibido < total + propina) {
                 showToast('Monto recibido es menor al total', 'danger');
                 return;
             }
         } else if (metodoPagoActual === 'mixto') {
-            const eff = parseFloat($('mixto-efectivo').value) || 0;
-            const card = parseFloat($('mixto-tarjeta').value) || 0;
-            const trans = parseFloat($('mixto-transferencia').value) || 0;
+            const eff = parseFloat($p('mixto-efectivo').value) || 0;
+            const card = parseFloat($p('mixto-tarjeta').value) || 0;
+            const trans = parseFloat($p('mixto-transferencia').value) || 0;
             const suma = eff + card + trans;
             if (Math.abs(suma - (total + propina)) > 0.01) {
                 showToast('Los montos mixtos no cubren el total', 'warning');
@@ -3116,6 +3133,7 @@ body:not(.dark-mode) {
         const formData = new FormData(form);
         formData.set('metodo_pago', metodoPagoActual);
         formData.set('propina', propina.toFixed(2));
+        formData.set('general_descuento', (parseFloat(document.querySelector('input[name=\"general_descuento\"]')?.value) || 0).toFixed(2));
 
         // Inject almacen_id for each cart item when stock validation is active
         if (validaStock) {
@@ -3124,11 +3142,19 @@ body:not(.dark-mode) {
 
         // Add mixto amounts if applicable
         if (metodoPagoActual === 'mixto') {
-            formData.set('mixto_efectivo', (parseFloat($('mixto-efectivo').value) || 0).toFixed(2));
-            formData.set('mixto_tarjeta', (parseFloat($('mixto-tarjeta').value) || 0).toFixed(2));
-            formData.set('mixto_transferencia', (parseFloat($('mixto-transferencia').value) || 0).toFixed(2));
+            formData.set('mixto_efectivo', (parseFloat($p('mixto-efectivo').value) || 0).toFixed(2));
+            formData.set('mixto_tarjeta', (parseFloat($p('mixto-tarjeta').value) || 0).toFixed(2));
+            formData.set('mixto_transferencia', (parseFloat($p('mixto-transferencia').value) || 0).toFixed(2));
         }
-        bootstrap.Modal.getInstance($('pagoModal'))?.hide();
+        const pagoModal = document.getElementById('pagoModal');
+        const bsSheet = document.getElementById('cobrarSheet');
+        if (pagoModal && pagoModal.classList.contains('show')) {
+            bootstrap.Modal.getInstance(pagoModal)?.hide();
+        }
+        if (bsSheet && bsSheet.classList.contains('open')) {
+            bsSheet.classList.remove('open');
+            document.getElementById('cobrarSheetOverlay')?.classList.remove('visible');
+        }
 
         fetch(form.action, {
             method: 'POST',
@@ -3223,6 +3249,7 @@ body:not(.dark-mode) {
         const formData = new FormData(form);
         formData.set('metodo_pago', metodo);
         formData.set('propina', '0');
+        formData.set('general_descuento', (parseFloat(document.querySelector('input[name="general_descuento"]')?.value) || 0).toFixed(2));
         // Inject almacen_id for each cart item when stock validation is active
         if (validaStock) {
             cart.forEach(() => formData.append('almacen_id', almacenId));
@@ -3282,10 +3309,11 @@ body:not(.dark-mode) {
         const btn = $('btn-facturar');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Facturando...';
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || document.querySelector('input[name="_token"]')?.value;
         fetch(`/ventas/facturar/${id}`, {
             method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ _token: document.querySelector('input[name="_token"]')?.value })
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token },
+            body: '{}'
         })
         .then(r => { if (!r.ok) return r.json().then(e => Promise.reject(e.error || 'Error')); return r.json(); })
         .then(res => {
@@ -3302,19 +3330,22 @@ body:not(.dark-mode) {
 
     function imprimirTicket() {
         if (!ultimaVentaId) return;
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || document.querySelector('input[name="_token"]')?.value;
         fetch(`/ventas/imprimir/${ultimaVentaId}`, {
             method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ _token: document.querySelector('input[name="_token"]')?.value })
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token },
+            body: '{}'
         })
         .then(r => r.ok ? r.json() : Promise.reject())
         .then(res => showToast('Impresión enviada', 'success'))
         .catch(() => showToast('Error al imprimir', 'danger'));
     }
 
-    // Event listeners for premium payment modal
+    // Event listener for payment monto-recibido (works for both modals via delegation)
     document.addEventListener('input', function(e) {
-        if (e.target.id === 'monto-recibido') actualizarTotalPago();
+        if (e.target.closest('#cobrarSheet, #pagoModal')) {
+            if (e.target.matches('#monto-recibido, #md-monto-recibido')) actualizarTotalPago();
+        }
     });
 
     function renderizarFiltroCategoriasModal() {
@@ -3697,6 +3728,7 @@ body:not(.dark-mode) {
     function filterProductos(list) {
         if (!validaStock) {
             if (activeFilter === 'popular') return list.sort((a,b) => b.ventas_count - a.ventas_count);
+            if (activeFilter === 'low') return [];
             return list;
         }
         switch (activeFilter) {
@@ -3971,7 +4003,7 @@ body:not(.dark-mode) {
                 if (!isNaN(index)) {
                     cart[index].descuento_tipo = cart[index].descuento_tipo === 'porcentaje' ? 'monto' : 'porcentaje';
                     renderCart();
-                    A11y && A11y.announce(`Tipo de descuento: ${cart[index].descuento_tipo}`);
+                    console.log(`Tipo de descuento: ${cart[index].descuento_tipo}`);
                 }
                 break;
             case 'submit':
@@ -4049,6 +4081,15 @@ body:not(.dark-mode) {
         const prodModalEl = $('productosModal');
         if (prodModalEl) {
             prodModalEl.addEventListener('hidden.bs.modal', function () {
+                const inst = bootstrap.Modal.getInstance(this);
+                if (inst) inst.dispose();
+            });
+        }
+
+        // Dispose postPagoModal on hide to prevent memory leaks
+        const postModalEl = $('postPagoModal');
+        if (postModalEl) {
+            postModalEl.addEventListener('hidden.bs.modal', function () {
                 const inst = bootstrap.Modal.getInstance(this);
                 if (inst) inst.dispose();
             });
@@ -4134,7 +4175,7 @@ body:not(.dark-mode) {
                 }
                 item.descuento = Math.max(0, value);
                 renderCart();
-                A11y && A11y.announce(`Descuento actualizado: ${item.descuento}`);
+                console.log(`Descuento actualizado: ${item.descuento}`);
             }
         });
 

@@ -59,6 +59,8 @@ class SaleService
                     $descuentosLinea += $desc;
                 }
             }
+            $generalDescuento = max(0, (float) ($data['general_descuento'] ?? 0));
+            $descuentosLinea += $generalDescuento;
             $pctDescuento = $subtotalTotal > 0 ? ($descuentosLinea / $subtotalTotal) * 100 : 0;
             $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
             if ($pctDescuento > 50 && !auth()->user()->hasRole($rolesAutorizados)) {
@@ -66,7 +68,7 @@ class SaleService
             }
         }
 
-        return DB::transaction(function () use ($data, $sesion, $metodo, $estado) {
+        return DB::transaction(function () use ($data, $sesion, $metodo, $estado, $descuentosLinea) {
             $ncf = null;
             $ncfTipo = null;
             $ncfVencimiento = null;
@@ -119,7 +121,7 @@ class SaleService
                     'tipo_venta_id'    => $data['tipo_venta_id'],
                     'fecha'            => now(),
                     'impuestos'        => $data['impuestos'] ?? 0,
-                    'descuento'        => is_array($data['descuento'] ?? null) ? ((isset($data['descuento'][0]) ? (float)$data['descuento'][0] : 0)) : ((float)($data['descuento'] ?? 0)),
+                    'descuento'        => $descuentosLinea,
                     'subtotal'         => $data['subtotal_final'] ?? array_sum(array_map('floatval', $data['subtotal'])),
                     'total'            => $data['total'],
                     'estado'           => $estado,
@@ -351,8 +353,11 @@ class SaleService
 
     public function checkStock(int $productoId, int $almacenId): int
     {
-        $producto = Producto::where('id', $productoId)->value('stock') ?? 0;
-        return (int) $producto;
+        $stock = AlmacenMovimiento::where('producto_id', $productoId)
+            ->where('almacen_id', $almacenId)
+            ->selectRaw('SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
+            ->value('stock') ?? 0;
+        return (int) $stock;
     }
 
     private function procesarEcf(Venta $venta): void

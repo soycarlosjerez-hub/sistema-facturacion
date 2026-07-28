@@ -42,7 +42,7 @@ class StoreVentaRequest extends FormRequest
             'cargo_servicio'=> 'nullable|numeric|min:0',
             'general_descuento' => 'nullable|numeric|min:0',
             'metodo_pago'   => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',
-            'ncf_tipo'      => 'nullable|string|exists:ncf_sequences,tipo_comprobante',
+            'ncf_tipo'      => 'nullable|string|exists:ncf_sequences,prefijo',
             'tipo_comprobante' => 'nullable|in:sin,ncf,ecf',
         ];
     }
