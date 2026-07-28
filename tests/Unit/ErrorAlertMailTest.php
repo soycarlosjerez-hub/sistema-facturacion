@@ -13,7 +13,7 @@ class ErrorAlertMailTest extends TestCase
         $mail = new ErrorAlertMail(
             level: 'critical',
             title: 'Test Critical Error',
-            message: 'This is a test critical error message',
+            errorMessage: 'This is a test critical error message',
             exceptionClass: 'App\Exceptions\TestException',
             file: 'tests/TestException.php',
             line: 42,
@@ -34,7 +34,7 @@ class ErrorAlertMailTest extends TestCase
         $mail = new ErrorAlertMail(
             level: 'error',
             title: 'Test Error',
-            message: 'This is a test error message',
+            errorMessage: 'This is a test error message',
         );
 
         $envelope = $mail->envelope();
@@ -46,7 +46,7 @@ class ErrorAlertMailTest extends TestCase
         $mail = new ErrorAlertMail(
             level: 'warning',
             title: 'Test Warning',
-            message: 'This is a test warning message',
+            errorMessage: 'This is a test warning message',
         );
 
         $envelope = $mail->envelope();
@@ -58,7 +58,7 @@ class ErrorAlertMailTest extends TestCase
         $mail = new ErrorAlertMail(
             level: 'error',
             title: 'Test Error',
-            message: 'Test message',
+            errorMessage: 'Test message',
         );
 
         $this->assertEquals('emails.error-alert', $mail->content()->view);
@@ -70,7 +70,7 @@ class ErrorAlertMailTest extends TestCase
         $mail = new ErrorAlertMail(
             level: 'critical',
             title: 'Critical Title',
-            message: 'Critical Message',
+            errorMessage: 'Critical Message',
             exceptionClass: 'App\Exceptions\TestException',
             file: 'tests/File.php',
             line: 100,
@@ -84,7 +84,7 @@ class ErrorAlertMailTest extends TestCase
 
         $this->assertEquals('critical', $mail->level);
         $this->assertEquals('Critical Title', $mail->title);
-        $this->assertEquals('Critical Message', $mail->message);
+        $this->assertEquals('Critical Message', $mail->errorMessage);
         $this->assertEquals('App\Exceptions\TestException', $mail->exceptionClass);
         $this->assertEquals('tests/File.php', $mail->file);
         $this->assertEquals(100, $mail->line);

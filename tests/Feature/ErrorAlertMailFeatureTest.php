@@ -15,7 +15,7 @@ class ErrorAlertMailFeatureTest extends TestCase
         $mail = new ErrorAlertMail(
             level: 'critical',
             title: 'Feature Test Error',
-            message: 'Testing error alert via feature test',
+            errorMessage: 'Testing error alert via feature test',
             exceptionClass: 'Tests\Feature\ErrorAlertMailFeatureTest',
             file: 'tests/Feature/ErrorAlertMailFeatureTest.php',
             line: 15,

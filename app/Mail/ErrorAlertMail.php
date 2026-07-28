@@ -12,7 +12,7 @@ class ErrorAlertMail extends Mailable
 
     public $level;
     public $title;
-    public $message;
+    public $errorMessage;
     public $exceptionClass;
     public $file;
     public $line;
@@ -26,7 +26,7 @@ class ErrorAlertMail extends Mailable
     public function __construct(
         string $level,
         string $title,
-        string $message,
+        string $errorMessage,
         ?string $exceptionClass = null,
         ?string $file = null,
         ?int $line = null,
@@ -39,7 +39,7 @@ class ErrorAlertMail extends Mailable
     ) {
         $this->level = $level;
         $this->title = $title;
-        $this->message = $message;
+        $this->errorMessage = $errorMessage;
         $this->exceptionClass = $exceptionClass;
         $this->file = $file;
         $this->line = $line;
@@ -72,7 +72,7 @@ class ErrorAlertMail extends Mailable
             with: [
                 'level' => $this->level,
                 'title' => $this->title,
-                'message' => $this->message,
+                'errorMessage' => $this->errorMessage,
                 'exceptionClass' => $this->exceptionClass,
                 'file' => $this->file,
                 'line' => $this->line,

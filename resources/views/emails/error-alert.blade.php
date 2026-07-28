@@ -52,7 +52,7 @@
 
         <div class="section">
             <div class="section-title">Mensaje</div>
-            <div class="code-block">{{ Str::limit($message, 500) }}</div>
+            <div class="code-block">{{ Str::limit($errorMessage, 500) }}</div>
         </div>
 
         @if($exceptionClass)

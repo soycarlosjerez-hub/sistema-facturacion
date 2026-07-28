@@ -1346,7 +1346,7 @@ Route::middleware(['auth'])->prefix('test')->name('test.')->group(function () {
         $mail = new \App\Mail\ErrorAlertMail(
             level: 'critical',
             title: 'TEST - Error de Prueba',
-            message: 'Este es un mensaje de prueba para verificar que el sistema de alertas por email funciona correctamente. Si recibes este correo, significa que la integración está operativa.',
+            errorMessage: 'Este es un mensaje de prueba para verificar que el sistema de alertas por email funciona correctamente. Si recibes este correo, significa que la integración está operativa.',
             exceptionClass: 'Tests\\Feature\\TestErrorAlert',
             file: 'routes/web.php',
             line: 1342,
@@ -1371,7 +1371,7 @@ Route::middleware(['auth'])->prefix('test')->name('test.')->group(function () {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar: ' . $e->getMessage(),
-                'mailer' => config('mail.mailers.log.transport'),
+                'mailer' => config('mail.default'),
             ], 500);
         }
     })->name('error-alert');
@@ -1380,7 +1380,7 @@ Route::middleware(['auth'])->prefix('test')->name('test.')->group(function () {
         $mail = new \App\Mail\ErrorAlertMail(
             level: 'critical',
             title: 'PREVIEW - Error de Prueba',
-            message: 'Este es un mensaje de prueba para verificar que el sistema de alertas por email funciona correctamente. Si recibes este correo, significa que la integración está operativa.',
+            errorMessage: 'Este es un mensaje de prueba para verificar que el sistema de alertas por email funciona correctamente. Si recibes este correo, significa que la integración está operativa.',
             exceptionClass: 'Tests\\Feature\\TestErrorAlert',
             file: 'routes/web.php',
             line: 1342,

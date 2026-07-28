@@ -47,7 +47,7 @@ class LogErrorToDatabase
                     ->queue(new \App\Mail\ErrorAlertMail(
                         level: $event->level,
                         title: $errorLog->title,
-                        message: $event->message,
+                        errorMessage: $event->message,
                         exceptionClass: $context['exception'] ?? null,
                         file: $context['file'] ?? null,
                         line: $context['line'] ?? null,
