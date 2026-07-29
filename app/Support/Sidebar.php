@@ -120,6 +120,8 @@ class Sidebar
                 'route'  => 'api.documentation',
                 'icon'   => 'bi-code-slash',
                 'label'  => 'Documentaci&oacute;n API',
+                'is_route' => 'api.documentation*',
+                'exact_route' => 'api.documentation',
             ];
             $items[] = ['section' => 'Configuración del Sistema'];
             $items[] = [
