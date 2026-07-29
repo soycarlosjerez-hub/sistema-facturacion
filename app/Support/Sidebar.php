@@ -119,7 +119,7 @@ class Sidebar
             $items[] = [
                 'route'  => 'api.documentation',
                 'icon'   => 'bi-code-slash',
-                'label'  => 'Documentaci&oacute;n API',
+                'label'  => 'Documentación API',
                 'is_route' => 'api.documentation*',
                 'exact_route' => 'api.documentation',
             ];
@@ -656,7 +656,7 @@ class Sidebar
             $items[] = [
                 'route'  => 'api.documentation',
                 'icon'   => 'bi-code-slash',
-                'label'  => 'Documentaci&oacute;n API',
+                'label'  => 'Documentación API',
             ];
         }
 
