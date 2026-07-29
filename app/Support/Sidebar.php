@@ -101,6 +101,13 @@ class Sidebar
                 'is_route' => 'owner.online.*',
                 'exact_route' => 'owner.online.index',
             ];
+            $items[] = [
+                'route' => 'owner.activity.history',
+                'icon'  => 'bi-clock-history',
+                'label' => 'Actividad',
+                'is_route' => 'owner.activity.history*',
+                'exact_route' => 'owner.activity.history',
+            ];
             $items[] = ['section' => 'API'];
             $items[] = [
                 'url'       => route('owner.api-requests'),

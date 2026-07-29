@@ -14,6 +14,7 @@ use App\Models\Modulo;
 use App\Models\PagoInstancia;
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Models\UserActivityLog;
 use App\Services\UserBusinessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -1138,6 +1139,14 @@ class OwnerController extends Controller
             ->groupBy('business_instance_id')
             ->pluck('total', 'business_instance_id');
 
+        if ($request->ajax() || $request->header('Accept') === 'application/json') {
+            $html = view('owner._online_users_partial', compact('onlineUsers', 'byInstance', 'instancias', 'totalByInstance'))->render();
+            return response()->json([
+                'online_count' => $onlineUsers->count(),
+                'html' => $html,
+            ]);
+        }
+
         return view('owner.online', compact('onlineUsers', 'byInstance', 'instancias', 'totalByInstance'));
     }
 
@@ -1445,5 +1454,78 @@ class OwnerController extends Controller
             return redirect()->route('owner.smtp-settings')
                 ->with('error', 'Error al enviar correo de prueba: ' . $e->getMessage());
         }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Historial de Actividad de Usuarios
+    // ─────────────────────────────────────────────────────────
+
+    public function activityHistory(Request $request)
+    {
+        $query = UserActivityLog::with('user.businessInstance', 'user.sucursal')
+            ->when($request->filled('start_date') && $request->filled('end_date'), function ($q) use ($request) {
+                $q->whereBetween('logged_at', [$request->start_date, $request->end_date . ' 23:59:59']);
+            })
+            ->when($request->filled('action'), function ($q) use ($request) {
+                $q->where('action', $request->action);
+            })
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $q->whereHas('user', function ($q2) use ($request) {
+                    $q2->where('name', 'like', "%{$request->search}%")
+                        ->orWhere('email', 'like', "%{$request->search}%");
+                });
+            })
+            ->latest('logged_at');
+
+        $logs = $query->paginate(50)->withQueryString();
+
+        $todayStats = [
+            'logins_today' => UserActivityLog::today()->where('action', 'login')->count(),
+            'logouts_today' => UserActivityLog::today()->where('action', 'logout')->count(),
+            'views_today' => UserActivityLog::today()->where('action', 'page_view')->count(),
+            'unique_active' => UserActivityLog::today()
+                ->where('action', 'login')
+                ->distinct('user_id')
+                ->count('user_id'),
+        ];
+
+        return view('owner.activity-history', compact('logs', 'todayStats'));
+    }
+
+    public function activityHistoryJson(Request $request)
+    {
+        $request->validate([
+            'limit' => 'sometimes|integer|min:1|max:100',
+            'action' => 'sometimes|in:login,logout,page_view',
+            'since' => 'sometimes|date',
+        ]);
+
+        $limit = $request->input('limit', 20);
+
+        $query = UserActivityLog::with('user:name,email,business_instance_id,sucursal_id,instanceRole')
+            ->when($request->filled('action'), function ($q) use ($request) {
+                $q->where('action', $request->action);
+            })
+            ->when($request->filled('since'), function ($q) use ($request) {
+                $q->where('logged_at', '>=', $request->since);
+            })
+            ->latest('logged_at')
+            ->limit($limit);
+
+        $logs = $query->get()->map(function ($log) {
+            return [
+                'id' => $log->id,
+                'user_name' => $log->user->name,
+                'user_email' => $log->user->email,
+                'action' => $log->action,
+                'ip_address' => $log->ip_address,
+                'logged_at' => $log->logged_at->format('Y-m-d H:i:s'),
+                'logged_at_human' => $log->logged_at->diffForHumans(),
+                'instance' => $log->user->businessInstance?->nombre ?? 'N/A',
+                'sucursel' => $log->user->sucursal?->nombre ?? 'N/A',
+            ];
+        });
+
+        return response()->json(['data' => $logs]);
     }
 }

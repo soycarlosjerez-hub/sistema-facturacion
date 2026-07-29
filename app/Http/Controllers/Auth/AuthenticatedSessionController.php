@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Models\UserActivityLog;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -29,6 +30,15 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = auth()->user();
+        if ($user) {
+            UserActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'login',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'logged_at' => now(),
+            ]);
+        }
         if ($user) {
             // 1. Detect and set the active sucursal in the session
             if ($user->sucursal_id) {
@@ -67,6 +77,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        if ($user) {
+            UserActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'logout',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'logged_at' => now(),
+            ]);
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

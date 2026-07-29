@@ -698,6 +698,9 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     // Online users
     Route::get('/online', [\App\Http\Controllers\OwnerController::class, 'onlineUsers'])->name('online.index');
     Route::get('/instances/{instance}/online', [\App\Http\Controllers\OwnerController::class, 'instanceOnlineUsers'])->name('instances.online');
+    // Activity History
+    Route::get('/activity-history', [\App\Http\Controllers\OwnerController::class, 'activityHistory'])->name('activity.history');
+    Route::get('/activity-history/json', [\App\Http\Controllers\OwnerController::class, 'activityHistoryJson'])->name('activity.history.json');
 
     // API Tokens
     Route::post('/instances/{instance}/tokens', [\App\Http\Controllers\OwnerController::class, 'instanceTokensStore'])->name('instances.tokens.store');
