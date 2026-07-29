@@ -701,6 +701,7 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     // Activity History
     Route::get('/activity-history', [\App\Http\Controllers\OwnerController::class, 'activityHistory'])->name('activity.history');
     Route::get('/activity-history/json', [\App\Http\Controllers\OwnerController::class, 'activityHistoryJson'])->name('activity.history.json');
+    Route::post('/activity-history/clear', [\App\Http\Controllers\OwnerController::class, 'clearHistory'])->name('activity.history.clear');
 
     // API Tokens
     Route::post('/instances/{instance}/tokens', [\App\Http\Controllers\OwnerController::class, 'instanceTokensStore'])->name('instances.tokens.store');

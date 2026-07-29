@@ -1528,4 +1528,17 @@ class OwnerController extends Controller
 
         return response()->json(['data' => $logs]);
     }
+
+    public function clearHistory(Request $request)
+    {
+        $request->validate(['days' => 'sometimes|integer|min:1|max:365']);
+        $days = $request->input('days', 30);
+
+        $count = UserActivityLog::where('logged_at', '<', now()->subDays($days))->delete();
+
+        $this->logOwnerAction('ACTIVITY_CLEAR', "Historial de actividad limpiado: {$count} registros eliminados (anteriores a {$days} días).");
+
+        return redirect()->route('owner.activity.history')
+            ->with('success', "Se eliminaron {$count} registros anteriores a {$days} días.");
+    }
 }

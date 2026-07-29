@@ -63,7 +63,7 @@
             </div>
             <div class="ui-header-actions">
                 <span class="refresh-badge">
-                    <i class="bi bi-arrow-clockwise me-1"></i>Actualizaci&oacute;n autom&aacute;tica
+                    <i class="bi bi-arrow-clockwise me-1"></i>Actualización automática
                 </span>
                 <a href="{{ route('owner.dashboard') }}" class="ui-btn ui-btn-primary">
                     <i class="bi bi-arrow-left me-2"></i>Dashboard

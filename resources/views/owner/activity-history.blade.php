@@ -59,9 +59,9 @@
 
 @php
     $actionConfig = [
-        'login' => ['icon' => 'bi-box-arrow-in-right', 'color' => 'success', 'bg' => 'rgba(34,197,94,.1)', 'label' => 'Inicio Sesi&oacute;n'],
-        'logout' => ['icon' => 'bi-box-arrow-right', 'color' => 'danger', 'bg' => 'rgba(239,68,68,.1)', 'label' => 'Cierre Sesi&oacute;n'],
-        'page_view' => ['icon' => 'bi-eye', 'color' => 'primary', 'bg' => 'rgba(59,130,246,.1)', 'label' => 'Vista P&aacute;gina'],
+        'login' => ['icon' => 'bi-box-arrow-in-right', 'color' => 'success', 'bg' => 'rgba(34,197,94,.1)', 'label' => 'Inicio Sesión'],
+        'logout' => ['icon' => 'bi-box-arrow-right', 'color' => 'danger', 'bg' => 'rgba(239,68,68,.1)', 'label' => 'Cierre Sesión'],
+        'page_view' => ['icon' => 'bi-eye', 'color' => 'primary', 'bg' => 'rgba(59,130,246,.1)', 'label' => 'Vista Página'],
     ];
 @endphp
 
@@ -89,6 +89,12 @@
                 <a href="{{ route('owner.dashboard') }}" class="ui-btn ui-btn-primary rounded-pill">
                     <i class="bi bi-arrow-left me-2"></i>Dashboard
                 </a>
+                <form method="POST" action="{{ route('owner.activity.history.clear') }}" id="clearHistoryForm" class="d-inline">
+                    @csrf
+                    <button type="button" onclick="UI.confirm.submit('#clearHistoryForm', { title: '¿Limpiar historial?', text: 'Se eliminarán los registros con más de 30 días. Esta acción no se puede deshacer.', icon: 'warning', confirmText: 'Sí, limpiar' })" class="ui-btn ui-btn-danger rounded-pill">
+                        <i class="bi bi-trash me-2"></i>Limpiar Historial
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -136,7 +142,7 @@
                             <i class="bi bi-eye"></i>
                         </div>
                         <div>
-                            <small class="ui-stat-label d-block">P&aacute;ginas Vistas</small>
+                            <small class="ui-stat-label d-block">Páginas Vistas</small>
                             <h4 class="ui-stat-value mb-0 text-primary">{{ $todayStats['views_today'] }}</h4>
                         </div>
                     </div>
@@ -199,7 +205,7 @@
                 <thead style="background: rgba(15,23,42,.03);">
                     <tr style="font-size: .7rem; text-transform: uppercase; letter-spacing: .05em;">
                         <th class="ps-4 py-3 text-muted fw-bold">Usuario</th>
-                        <th class="py-3 text-muted fw-bold">Acci&oacute;n</th>
+                        <th class="py-3 text-muted fw-bold">Acción</th>
                         <th class="py-3 text-muted fw-bold">Instancia</th>
                         <th class="py-3 text-muted fw-bold">Sucursal</th>
                         <th class="py-3 text-muted fw-bold">IP / Hora</th>
