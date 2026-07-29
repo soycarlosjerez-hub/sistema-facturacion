@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('total', 12, 2)->default(0);
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index('numero');
             $table->index('estado');
