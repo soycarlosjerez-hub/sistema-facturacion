@@ -39,17 +39,18 @@ class RestaurantOrderService
         $mesas = Mesa::deSucursal()->with(['ordenActiva', 'reservacion', 'ubicacion'])->orderBy('numero')->get();
         $mesasAgrupadas = $mesas->groupBy(fn($m) => $m->ubicacion?->nombre ?? '__sin_ubicacion__');
         $cajas = Caja::where('activo', true)->orderBy('nombre')->get();
-        $sesionActiva = SesionCaja::with('caja')
+        $sesionesActivas = SesionCaja::with('caja')
             ->where('user_id', Auth::id())
             ->where('estado', 'abierta')
             ->latest('fecha_apertura')
-            ->first();
+            ->get();
+        $primeraSesion = $sesionesActivas->first();
 
         $servicioPorcentaje = (float) SystemSetting::get('servicio_porcentaje', 0);
         $servicioMinPersonas = (int) SystemSetting::get('servicio_min_personas', 8);
         $restauranteValidaStock = $this->restauranteValidaStock();
 
-        return compact('mesas', 'mesasAgrupadas', 'cajas', 'sesionActiva', 'servicioPorcentaje', 'servicioMinPersonas', 'restauranteValidaStock');
+        return compact('mesas', 'mesasAgrupadas', 'cajas', 'sesionesActivas', 'primeraSesion', 'servicioPorcentaje', 'servicioMinPersonas', 'restauranteValidaStock');
     }
 
     public function autoOcuparMesasReservadas(): void
