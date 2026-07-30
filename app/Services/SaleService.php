@@ -288,16 +288,19 @@ class SaleService
     {
         $tenantId = Auth::user()->business_instance_id;
         
-        $sesion = SesionCaja::with('caja')
+        $sesionesActivas = SesionCaja::with('caja')
             ->where('user_id', Auth::id())
             ->where('estado', 'abierta')
             ->where('tenant_id', $tenantId)
             ->latest('fecha_apertura')
-            ->first();
+            ->get();
 
-        if (!$sesion) {
-            return ['sesion' => null];
+        if ($sesionesActivas->isEmpty()) {
+            return ['sesiones' => collect(), 'sesion' => null];
         }
+
+        // Default to first (most recently opened) session
+        $sesion = $sesionesActivas->first();
 
         $clienteConsumidorFinal = Cliente::consumidorFinal($tenantId);
 

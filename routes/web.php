@@ -135,6 +135,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('permission:cajas.close')->group(function () {
         Route::post('/cajas/{caja}/cerrar', [CajaController::class, 'cerrar'])->name('cajas.cerrar');
+        Route::post('/sesiones-caja/{sesion}/cerrar', [CajaController::class, 'cerrarPorSesion'])->name('sesiones.cerrar');
     });
 
     Route::middleware('permission:cajas.view')->group(function () {

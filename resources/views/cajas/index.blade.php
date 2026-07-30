@@ -330,26 +330,33 @@
         </div>
     @endif
 
-    @if($sesionActivaUsuario)
-        <div class="alert rounded-4 shadow-sm border-0 mb-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(90deg, rgba(34,197,94,0.1), rgba(56,189,248,0.1)); border-left: 4px solid #22c55e !important;">
+    @forelse($sesionesActivasUsuario as $sesionActivaUsuario)
+        <div class="alert rounded-4 shadow-sm border-0 mb-3 d-flex align-items-center justify-content-between" style="background: linear-gradient(90deg, rgba(34,197,94,0.1), rgba(56,189,248,0.1)); border-left: 4px solid #22c55e !important;">
             <div class="d-flex align-items-center gap-2">
                 <div class="bg-success bg-opacity-25 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                     <i class="bi bi-cash-stack fs-5"></i>
                 </div>
                 <div>
-                    <div class="small text-muted">Sesión activa</div>
+                    <div class="small text-muted">Sesión activa #{{ $loop->iteration }}</div>
                     <strong>{{ $sesionActivaUsuario->caja?->nombre ?? 'Caja no disponible' }}</strong>
                     @if($sesionActivaUsuario->caja?->codigo)
                         <span class="badge bg-dark ms-1">{{ $sesionActivaUsuario->caja?->codigo }}</span>
                     @endif
                     <span class="text-muted small ms-2">desde {{ $sesionActivaUsuario->fecha_apertura->format('h:i A') }}</span>
+                    <span class="text-muted small ms-1">· Fondo: <strong>RD$ {{ number_format($sesionActivaUsuario->monto_inicial, 0) }}</strong></span>
                 </div>
             </div>
-            <a href="{{ route('ventas.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold">
-                <i class="bi bi-cart-plus me-1"></i>Ir al POS
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('ventas.create') }}" class="btn btn-primary rounded-pill px-4 fw-bold">
+                    <i class="bi bi-cart-plus me-1"></i>Ir al POS
+                </a>
+                <a href="{{ route('cajas.cierre', ['caja' => $sesionActivaUsuario->caja_id, 'sesion' => $sesionActivaUsuario->id]) }}" class="btn btn-warning rounded-pill px-3 fw-bold">
+                    <i class="bi bi-lock me-1"></i>Cerrar
+                </a>
+            </div>
         </div>
-    @endif
+    @empty
+    @endforelse
 
     <!-- Stats Row -->
     <div class="row g-3 mb-4">
@@ -474,7 +481,101 @@
                             </div>
                         @endif
 
-                        @if($sesionActiva)
+                        @php
+                            $sesionesActivasCaja = $caja->sesiones->where('estado', 'abierta');
+                            $tieneMiSesion = $sesionesActivasCaja->contains('user_id', auth()->id());
+                        @endphp
+                        
+                        @if($sesionesActivasCaja->isNotEmpty())
+                            @foreach($sesionesActivasCaja as $sesionActiva)
+                                @php
+                                    $isMySession = $sesionActiva->user_id == auth()->id();
+                                @endphp
+                                <div class="p-2 rounded-3 mb-2" style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e;">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="small fw-bold text-success mb-1">
+                                                <i class="bi bi-person-circle me-1"></i>{{ $sesionActiva->user?->name ?? 'Desconocido' }}
+                                                @if(!$isMySession && $esAdmin)
+                                                    <span class="badge bg-danger ms-1">OTRO USUARIO</span>
+                                                @endif
+                                            </div>
+                                            <div class="small text-muted">
+                                                <i class="bi bi-clock me-1"></i>{{ $sesionActiva->fecha_apertura->format('h:i A') }}
+                                                · Fondo: <strong>RD$ {{ number_format($sesionActiva->monto_inicial, 0) }}</strong>
+                                            </div>
+                                        </div>
+                                        @if($isMySession)
+                                            <div class="d-flex gap-1">
+                                                <a href="{{ route('ventas.create') }}" class="btn btn-sm btn-outline-primary rounded-pill" title="Ir al POS">
+                                                    <i class="bi bi-cart-plus"></i>
+                                                </a>
+                                                <a href="{{ route('cajas.cierre', ['caja' => $caja->id, 'sesion' => $sesionActiva->id]) }}" class="btn btn-sm btn-outline-warning rounded-pill" title="Cerrar esta sesión">
+                                                    <i class="bi bi-lock"></i>
+                                                </a>
+                                            </div>
+                                        @elseif($esAdmin)
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#modalCerrarSesion{{ $sesionActiva->id }}" title="Cerrar sesión (Admin)">
+                                                <i class="bi bi-shield-lock"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                @if($esAdmin)
+                                <div class="modal fade" id="modalCerrarSesion{{ $sesionActiva->id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-4">
+                                            <form action="{{ route('sesiones.cerrar', $sesionActiva->id) }}" method="POST">
+                                                @csrf
+                                                <div class="modal-header border-0 pb-0 text-white" style="background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);">
+                                                    <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock-fill me-2"></i>Cerrar Sesión (Admin)</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body p-4">
+                                                    <div class="alert alert-warning rounded-3 mb-3">
+                                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                                        <strong>Atención:</strong> Estás cerrando la sesión de <strong>{{ $sesionActiva->user?->name }}</strong> en <strong>{{ $caja->nombre }}</strong>.
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold text-muted small">Efectivo contado <span class="text-danger">*</span></label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-light">RD$</span>
+                                                            <input type="number" name="monto_declarado" class="form-control" required step="0.01">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold text-muted small">Cobros tarjeta <span class="text-danger">*</span></label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-light">RD$</span>
+                                                            <input type="number" name="cobros_tarjeta" class="form-control" required step="0.01" value="0">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold text-muted small">Cobros transferencia <span class="text-danger">*</span></label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-light">RD$</span>
+                                                            <input type="number" name="cobros_transferencia" class="form-control" required step="0.01" value="0">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label fw-bold text-muted small">Notas</label>
+                                                        <textarea name="notas" class="form-control" rows="2" placeholder="Motivo del cierre administrativo..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0 p-4 pt-0">
+                                                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                                                        <i class="bi bi-shield-lock me-1"></i>Cerrar Sesión
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                            @endforeach
+                        @elseif($sesionActiva)
                             <div class="p-2 rounded-3 mb-3" style="background: rgba(34,197,94,0.08); border-left: 3px solid #22c55e;">
                                 <div class="small fw-bold text-success mb-1">
                                     <i class="bi bi-person-circle me-1"></i>{{ $sesionActiva->user?->name ?? 'Desconocido' }}
@@ -486,44 +587,19 @@
                             </div>
                         @endif
 
-                        <div class="d-flex align-items-center gap-2 mb-1 text-muted small">
-                            <i class="bi bi-graph-up text-primary"></i>
-                            <span>Ventas históricas: <strong>RD$ {{ number_format($caja->ventas_historico, 0) }}</strong></span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2 mb-1 text-muted small">
-                            <i class="bi bi-clock-history text-info"></i>
-                            <span>Total de turnos: <strong>{{ $caja->total_sesiones }}</strong></span>
-                        </div>
-                        @if($caja->ultima_sesion)
-                            <div class="d-flex align-items-center gap-2 mb-1 text-muted small">
-                                <i class="bi bi-calendar"></i>
-                                <span>Última: <strong>{{ $caja->ultima_sesion->created_at->diffForHumans() }}</strong></span>
-                            </div>
-                        @endif
-
                         <!-- Actions according to status -->
                         <div class="mt-3">
-                            @if($caja->estado == 'abierta' && $isMySession)
+                            @if($caja->estado == 'abierta' && $sesionesActivasCaja->isNotEmpty() && $isMySession)
                                 <div class="d-grid gap-2">
                                     <a href="{{ route('ventas.create') }}" class="btn btn-primary rounded-pill fw-bold">
                                         <i class="bi bi-cart-plus me-1"></i>IR AL POS
                                     </a>
-                                    <a href="{{ route('cajas.cierre', $caja->id) }}" class="btn btn-warning rounded-pill fw-bold">
-                                        <i class="bi bi-lock me-1"></i>CERRAR TURNO
-                                    </a>
                                 </div>
-                            @elseif($caja->estado == 'abierta' && $esAdmin)
-                                <div class="d-grid gap-2">
-                                    @if($sesionActiva)
-                                        <div class="text-center mb-1">
-                                            <small class="text-muted">Abierta por: <strong class="text-danger">{{ $sesionActiva->user?->name ?? 'Desconocido' }}</strong></small>
-                                        </div>
-                                    @endif
-                                    <a href="{{ route('cajas.cierre', $caja->id) }}" class="btn btn-danger rounded-pill fw-bold">
-                                        <i class="bi bi-shield-lock me-1"></i>CERRAR TURNO (Admin)
-                                    </a>
+                            @elseif($caja->estado == 'abierta' && $sesionesActivasCaja->isNotEmpty() && !$isMySession && $esAdmin)
+                                <div class="text-center">
+                                    <small class="text-muted">Sesiones activas mostradas arriba</small>
                                 </div>
-                            @elseif($caja->estado == 'abierta')
+                            @elseif($caja->estado == 'abierta' && !$esAdmin)
                                 <button class="btn btn-secondary w-100 rounded-pill" disabled>
                                     <i class="bi bi-lock-fill me-1"></i>EN USO POR OTRO CAJERO
                                 </button>

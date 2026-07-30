@@ -60,7 +60,7 @@ class VentaController extends Controller
     {
         $data = $this->saleService->getCreationData();
 
-        if ($data['sesion'] === null) {
+        if (empty($data['sesiones'])) {
             return redirect()->route('cajas.index')
                 ->with('error', 'Necesitas abrir una caja antes de vender.');
         }
@@ -70,10 +70,19 @@ class VentaController extends Controller
 
     public function store(StoreVentaRequest $request)
     {
-        $sesion = SesionCaja::where('user_id', Auth::id())
-            ->where('estado', 'abierta')
-            ->latest('fecha_apertura')
-            ->first();
+        $sesionId = $request->input('sesion_caja_id');
+        
+        if ($sesionId) {
+            $sesion = SesionCaja::where('id', $sesionId)
+                ->where('user_id', Auth::id())
+                ->where('estado', 'abierta')
+                ->first();
+        } else {
+            $sesion = SesionCaja::where('user_id', Auth::id())
+                ->where('estado', 'abierta')
+                ->latest('fecha_apertura')
+                ->first();
+        }
 
         if (!$sesion) {
             if ($request->wantsJson()) {

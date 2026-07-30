@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Caja;
+use App\Models\SesionCaja;
 use App\Models\Sucursal;
 use App\Services\CajaService;
 use Illuminate\Http\Request;
@@ -21,16 +22,16 @@ class CajaController extends Controller
 
     public function show(Caja $caja)
     {
-        $sesionActiva = $caja->sesionActiva();
+        $sesionesActivas = $caja->sesiones()->where('estado', 'abierta')->get();
         $stats = null;
-        if ($sesionActiva) {
+        if ($sesionesActivas->isNotEmpty()) {
             try {
-                $stats = $this->cajaService->resumenCierre($caja);
+                $stats = $this->cajaService->resumenCierre($sesionesActivas->first());
             } catch (\Exception $e) {
                 $stats = null;
             }
         }
-        return view('cajas.show', compact('caja', 'sesionActiva', 'stats'));
+        return view('cajas.show', compact('caja', 'sesionesActivas', 'stats'));
     }
 
     public function create()
@@ -123,9 +124,9 @@ class CajaController extends Controller
             ->with('success', $result['message']);
     }
 
-    public function resumenCierre(Caja $caja)
+    public function resumenCierre(Caja $caja, ?SesionCaja $sesion = null)
     {
-        return view('cajas.cierre', $this->cajaService->resumenCierre($caja));
+        return view('cajas.cierre', $this->cajaService->resumenCierre($sesion));
     }
 
     public function cerrar(Request $request, Caja $caja)
@@ -139,7 +140,42 @@ class CajaController extends Controller
             'notas'                => 'nullable|string|max:500',
         ]);
 
-        $result = $this->cajaService->cerrar($caja, $request->all());
+        $sesion = SesionCaja::where('caja_id', $caja->id)
+            ->where('estado', 'abierta')
+            ->when(!in_array(auth()->user()->role, ['admin', 'owner']), function ($q) {
+                $q->where('user_id', auth()->id());
+            })
+            ->firstOrFail();
+
+        $result = $this->cajaService->cerrar($sesion, $request->all());
+
+        return redirect()->route('cajas.index')
+            ->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function cerrarPorSesion(Request $request, SesionCaja $sesion)
+    {
+        $request->validate([
+            'monto_declarado'      => 'required|numeric|min:0',
+            'cobros_efectivo'      => 'required|numeric|min:0',
+            'cobros_tarjeta'       => 'required|numeric|min:0',
+            'cobros_transferencia' => 'required|numeric|min:0',
+            'total_esperado'       => 'required|numeric',
+            'notas'                => 'nullable|string|max:500',
+        ]);
+
+        // Check permissions: admin can close any, regular users only their own
+        if (!in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])) {
+            if ($sesion->user_id !== auth()->id()) {
+                abort(403, 'No puedes cerrar una sesión que no es tuya.');
+            }
+        }
+
+        if ($sesion->estado !== 'abierta') {
+            return back()->with('error', 'Esta sesión ya está cerrada.');
+        }
+
+        $result = $this->cajaService->cerrar($sesion, $request->all());
 
         return redirect()->route('cajas.index')
             ->with($result['success'] ? 'success' : 'error', $result['message']);

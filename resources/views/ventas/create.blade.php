@@ -2116,6 +2116,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
 <form id="pos-form" action="{{ route('ventas.store') }}" method="POST" autocomplete="off">
     @csrf
+    <input type="hidden" name="sesion_caja_id" id="selected-sesion-id" value="{{ $sesion->id ?? '' }}">
 
     <div class="pos-app" style="--delay:0s">
         <!-- ============ TOP BAR ============ -->
@@ -2124,13 +2125,52 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 <button type="button" class="btn btn-sm btn-light rounded-pill d-lg-none" onclick="POS.toggleSidebar()" aria-label="Menú lateral" aria-expanded="false" aria-controls="mainSidebar" style="width: 36px; height: 36px; padding: 0;">
                     <i class="bi bi-list fs-5"></i>
                 </button>
-                <div class="caja-tag">
-                    <span class="pulse-dot"></span>
-                    <span>{{ $sesion->caja->nombre }}</span>
-                    @if($sesion->caja->codigo)
-                        <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
-                    @endif
-                </div>
+                @if(isset($sesiones) && $sesiones->count() > 1)
+                    <div class="dropdown">
+                        <button class="caja-tag dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
+                            <span class="pulse-dot"></span>
+                            <span>{{ $sesion->caja->nombre }}</span>
+                            @if($sesion->caja->codigo)
+                                <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
+                            @endif
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0" style="min-width: 260px;">
+                            @foreach($sesiones as $s)
+                            <li>
+                                <a class="dropdown-item small pos-session-link" href="#" data-sesion-id="{{ $s->id }}" data-caja-nombre="{{ $s->caja->nombre }}" data-caja-codigo="{{ $s->caja->codigo ?? '' }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-cash-register me-1"></i>
+                                            <strong>{{ $s->caja->nombre }}</strong>
+                                            @if($s->caja->codigo)
+                                                <span class="badge bg-dark ms-1">{{ $s->caja->codigo }}</span>
+                                            @endif
+                                        </div>
+                                        <span class="text-muted" style="font-size:0.7rem;">{{ $s->fecha_apertura->format('h:i A') }}</span>
+                                    </div>
+                                </a>
+                            </li>
+                            @endforeach
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <div class="px-3 py-2" style="background:#f8fafc;border-radius:0 0 8px 8px;">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Selecciona una caja para asignarle las ventas
+                                    </small>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                @else
+                    <div class="caja-tag">
+                        <span class="pulse-dot"></span>
+                        <span>{{ $sesion->caja->nombre }}</span>
+                        @if($sesion->caja->codigo)
+                            <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
@@ -2181,7 +2221,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 </button>
             @endif
 
-            <a href="{{ route('cajas.cierre', $sesion->caja->id) }}" class="btn btn-sm btn-outline-danger rounded-pill" title="Cerrar caja y turno">
+            <a href="{{ route('cajas.cierre', ['caja' => $sesion->caja_id, 'sesion' => $sesion->id]) }}" class="btn btn-sm btn-outline-danger rounded-pill" title="Cerrar caja y turno">
                 <i class="bi bi-power"></i>
             </a>
         </div>
@@ -3125,6 +3165,44 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             $('scan-input').focus();
         }
     };
+    
+    // Session switcher
+    document.addEventListener('DOMContentLoaded', function() {
+        const links = document.querySelectorAll('.pos-session-link');
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sesionId = this.getAttribute('data-sesion-id');
+                const cajaNombre = this.getAttribute('data-caja-nombre');
+                const cajaCodigo = this.getAttribute('data-caja-codigo');
+                
+                // Update hidden input
+                const hiddenInput = document.getElementById('selected-sesion-id');
+                if (hiddenInput) {
+                    hiddenInput.value = sesionId;
+                }
+                
+                // Update the tag display
+                const tag = document.querySelector('.pos-topbar .caja-tag');
+                if (tag) {
+                    tag.innerHTML = '<span class="pulse-dot"></span><span>' + cajaNombre + '</span>';
+                    if (cajaCodigo) {
+                        tag.innerHTML += '<span style="opacity: 0.7; font-size: 0.75rem;">' + cajaCodigo + '</span>';
+                    }
+                }
+                
+                // Close dropdown
+                const dropdownToggle = document.querySelector('.pos-topbar .dropdown-toggle');
+                if (dropdownToggle) {
+                    const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+                    if (dropdown) dropdown.hide();
+                }
+                
+                showToast('Cambio a: ' + cajaNombre, 'success', 2000);
+            });
+        });
+    });
+    
     window.POS = POS;
 
     // ============ Payment Modal Functions ============

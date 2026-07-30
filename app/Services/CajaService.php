@@ -22,18 +22,19 @@ class CajaService
         }
         $cajas = $query->get();
 
-        $sesionActivaUsuario = SesionCaja::with('caja', 'user')
+        $sesionesActivasUsuario = SesionCaja::with('caja', 'user')
             ->where('user_id', auth()->id())
             ->where('estado', 'abierta')
             ->latest('fecha_apertura')
-            ->first();
+            ->get();
 
         $stats = [
-            'total'     => $cajas->count(),
-            'abiertas'  => $cajas->where('estado', 'abierta')->count(),
-            'cerradas'  => $cajas->where('estado', 'cerrada')->count(),
-            'activas'   => $cajas->where('activo', true)->count(),
-            'inactivas' => $cajas->where('activo', false)->count(),
+            'total'         => $cajas->count(),
+            'abiertas'      => $cajas->where('estado', 'abierta')->count(),
+            'cerradas'      => $cajas->where('estado', 'cerrada')->count(),
+            'activas'       => $cajas->where('activo', true)->count(),
+            'inactivas'     => $cajas->where('activo', false)->count(),
+            'sesiones_activas_usuario' => $sesionesActivasUsuario->count(),
         ];
 
         // Bulk load session counts and ventas historico to eliminate N+1
@@ -56,7 +57,7 @@ class CajaService
             return $caja;
         });
 
-        return compact('cajasConStats', 'sesionActivaUsuario', 'stats');
+        return compact('cajasConStats', 'sesionesActivasUsuario', 'stats');
     }
 
     public function create(array $data): Caja
@@ -113,21 +114,6 @@ class CajaService
             return ['success' => false, 'message' => 'Esta caja está inactiva.'];
         }
 
-        if ($caja->estado == 'abierta') {
-            $sesionOtra = $caja->sesionActiva();
-            if ($sesionOtra && $sesionOtra->user_id !== auth()->id()) {
-                return ['success' => false, 'message' => 'La caja ya está siendo usada por otro cajero.'];
-            }
-            return ['success' => false, 'message' => 'La caja ya está abierta.'];
-        }
-
-        $sesionActiva = SesionCaja::where('user_id', auth()->id())
-            ->where('estado', 'abierta')->first();
-
-        if ($sesionActiva) {
-            return ['success' => false, 'message' => 'Ya tienes otra caja abierta ("' . $sesionActiva->caja->nombre . '"). Ciérrala antes de abrir una nueva.'];
-        }
-
         SesionCaja::create([
             'tenant_id'      => auth()->user()->business_instance_id,
             'caja_id'        => $caja->id,
@@ -142,18 +128,21 @@ class CajaService
         return ['success' => true, 'message' => 'Caja "' . $caja->nombre . '" abierta.', 'redirect' => route('cajas.index')];
     }
 
-    public function resumenCierre(Caja $caja): array
+    public function resumenCierre(?SesionCaja $sesion = null): array
     {
-        $query = SesionCaja::where('caja_id', $caja->id)
-            ->where('estado', 'abierta');
+        if (!$sesion) {
+            $query = SesionCaja::where('estado', 'abierta');
 
-        if (in_array(auth()->user()->role, ['admin', 'owner'])) {
-            $query->withoutGlobalScope('tenant');
-        } else {
-            $query->where('user_id', auth()->id());
+            if (in_array(auth()->user()->role, ['admin', 'owner'])) {
+                $query->withoutGlobalScope('tenant');
+            } else {
+                $query->where('user_id', auth()->id());
+            }
+
+            $sesion = $query->firstOrFail();
         }
 
-        $sesion = $query->firstOrFail();
+        $caja = $sesion->caja;
 
         $pagosEfectivo = 0;
         $pagosTarjeta = 0;
@@ -189,19 +178,8 @@ class CajaService
         ];
     }
 
-    public function cerrar(Caja $caja, array $data): array
+    public function cerrar(SesionCaja $sesion, array $data): array
     {
-        $query = SesionCaja::where('caja_id', $caja->id)
-            ->where('estado', 'abierta');
-
-        if (in_array(auth()->user()->role, ['admin', 'owner'])) {
-            $query->withoutGlobalScope('tenant');
-        } else {
-            $query->where('user_id', auth()->id());
-        }
-
-        $sesion = $query->firstOrFail();
-
         $montoDeclarado = (float) ($data['monto_declarado'] ?? 0);
         $cobrosEfectivo = (float) ($data['cobros_efectivo'] ?? 0);
         $cobrosTarjeta = (float) ($data['cobros_tarjeta'] ?? 0);
@@ -222,7 +200,14 @@ class CajaService
             'notas'                => $data['notas'] ?? null,
         ]);
 
-        $caja->update(['estado' => 'cerrada']);
+        // Check if this was the last open session for this caja
+        $otraSesionAbierta = SesionCaja::where('caja_id', $sesion->caja_id)
+            ->where('estado', 'abierta')
+            ->exists();
+
+        if (!$otraSesionAbierta) {
+            $sesion->caja->update(['estado' => 'cerrada']);
+        }
 
         return [
             'success'   => true,

@@ -79,26 +79,26 @@ class AppServiceProvider extends ServiceProvider
         }
 
         View::composer('layouts.app', function ($view) {
-            $sesionCajaGlobal = null;
+            $sesionesCajaGlobales = collect([]);
             $sucursales = collect([]);
             $sucursalActiva = null;
             if (auth()->check()) {
-                $sesionCajaGlobal = \App\Models\SesionCaja::with('caja')
+                $sesionesCajaGlobales = \App\Models\SesionCaja::with('caja')
                     ->where('user_id', auth()->id())
                     ->where('estado', 'abierta')
                     ->latest('fecha_apertura')
-                    ->first();
+                    ->get();
                 $sucursales = \App\Models\Sucursal::orderBy('nombre')->get();
                 $sucursalActiva = \App\Models\Sucursal::find(session('sucursal_id'));
             }
             $view->with([
-                'systemName'      => SystemSetting::empresaNombre(),
-                'systemSlogan'    => SystemSetting::empresaSlogan(),
-                'systemMoneda'    => SystemSetting::monedaSimbolo(),
-                'systemItbis'     => SystemSetting::itbisDefault(),
-                'sesionCajaGlobal'=> $sesionCajaGlobal,
-                'sucursales'      => $sucursales,
-                'sucursalActiva'  => $sucursalActiva,
+                'systemName'         => SystemSetting::empresaNombre(),
+                'systemSlogan'       => SystemSetting::empresaSlogan(),
+                'systemMoneda'       => SystemSetting::monedaSimbolo(),
+                'systemItbis'        => SystemSetting::itbisDefault(),
+                'sesionesCajaGlobales' => $sesionesCajaGlobales,
+                'sucursales'         => $sucursales,
+                'sucursalActiva'     => $sucursalActiva,
             ]);
         });
 

@@ -587,12 +587,42 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         <div id="globalSearchResults" class="global-search-results" style="display:none;position:absolute;top:100%;right:0;width:340px;max-height:450px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.15);z-index:99999;margin-top:6px;"></div>
                     </div>
 
-                    @if($sesionCajaGlobal)
-                        <a href="{{ route('ventas.create') }}" class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 px-lg-3 text-decoration-none d-inline-flex d-md-inline-flex align-items-center gap-1" title="Caja activa: {{ $sesionCajaGlobal->caja->nombre }}">
-                            <i class="bi bi-cash-stack"></i>
-                            <span class="fw-bold d-none d-sm-inline">{{ $sesionCajaGlobal->caja->codigo ?? $sesionCajaGlobal->caja->nombre }}</span>
-                            <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
-                        </a>
+                    @if($sesionesCajaGlobales->isNotEmpty())
+                        <div class="dropdown d-none d-md-inline-block">
+                            <button class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 px-lg-3 border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
+                                <i class="bi bi-cash-stack"></i>
+                                <span class="fw-bold d-none d-sm-inline">{{ $sesionesCajaGlobales->first()?->caja->codigo ?? $sesionesCajaGlobales->first()?->caja->nombre }}</span>
+                                <span class="badge bg-success text-white ms-1" style="font-size:0.6rem;">{{ $sesionesCajaGlobales->count() }}</span>
+                                <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0" style="min-width: 250px;">
+                                @foreach($sesionesCajaGlobales as $sesion)
+                                <li>
+                                    <a class="dropdown-item small" href="{{ route('ventas.create') }}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="bi bi-cash-register me-1"></i>
+                                                <strong>{{ $sesion->caja->nombre }}</strong>
+                                                @if($sesion->caja->codigo)
+                                                    <span class="badge bg-dark ms-1" style="font-size:0.6rem;">{{ $sesion->caja->codigo }}</span>
+                                                @endif
+                                            </div>
+                                            <span class="text-muted" style="font-size:0.7rem;">{{ $sesion->fecha_apertura->format('h:i A') }}</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                @endforeach
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <div class="px-3 py-2" style="background:#f8fafc;border-radius:0 0 8px 8px;">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Haz clic en una caja para ir al POS
+                                        </small>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     @endif
 
                     @if($sucursales->count() > 0)

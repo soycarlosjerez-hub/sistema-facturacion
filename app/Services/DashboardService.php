@@ -133,25 +133,36 @@ class DashboardService
     public function getCashRegisterStatus(): array
     {
         $tenantId = $this->tenantId();
-        $sesionCajaActiva = SesionCaja::where('user_id', auth()->id())
+        $sesionesActivas = SesionCaja::where('user_id', auth()->id())
             ->where('estado', 'abierta')
             ->with('caja')
             ->latest()
-            ->first();
+            ->get();
 
         $hoy = Carbon::today();
 
+        // First session is considered the primary one
+        $primeraSesion = $sesionesActivas->first();
+
+        // Aggregate totals across ALL active sessions
+        $totalVentasCaja = 0;
+        $totalCobrosCaja = 0;
+        $totalMontoInicial = 0;
+        foreach ($sesionesActivas as $sesion) {
+            $totalVentasCaja += Venta::where('tenant_id', $tenantId)->where('user_id', auth()->id())->where('sesion_caja_id', $sesion->id)->whereDate('created_at', $hoy)->sum('total');
+            $totalCobrosCaja += Pago::where('sesion_caja_id', $sesion->id)->whereDate('created_at', $hoy)->sum('monto');
+            $totalMontoInicial += $sesion->monto_inicial;
+        }
+
         return [
-            'abierta' => (bool) $sesionCajaActiva,
-            'caja' => $sesionCajaActiva?->caja?->nombre,
-            'abierta_en' => $sesionCajaActiva?->created_at,
-            'monto_inicial' => $sesionCajaActiva?->monto_inicial ?? 0,
-            'ventas_caja' => $sesionCajaActiva
-                ? Venta::where('tenant_id', $tenantId)->where('user_id', auth()->id())->whereDate('created_at', $hoy)->sum('total')
-                : 0,
-            'cobros_caja' => $sesionCajaActiva
-                ? Pago::where('sesion_caja_id', $sesionCajaActiva->id)->whereDate('created_at', $hoy)->sum('monto')
-                : 0,
+            'abierta' => (bool) $sesionesActivas->isNotEmpty(),
+            'caja' => $primeraSesion?->caja?->nombre,
+            'abierta_en' => $primeraSesion?->created_at,
+            'monto_inicial' => $totalMontoInicial,
+            'sesiones_activas' => $sesionesActivas->count(),
+            'sesiones' => $sesionesActivas,
+            'ventas_caja' => $totalVentasCaja,
+            'cobros_caja' => $totalCobrosCaja,
         ];
     }
 

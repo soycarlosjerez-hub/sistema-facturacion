@@ -34,7 +34,7 @@
 
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4">
-                    <form action="{{ route('cajas.cerrar', $caja->id) }}" method="POST">
+                    <form action="{{ route('sesiones.cerrar', $sesion->id) }}" method="POST">
                         @csrf
                         
                         <div class="row g-4 mb-4">
