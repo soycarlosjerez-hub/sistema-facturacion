@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ErpPipo — Iniciar Sesión</title>
+    <title>Erpipo — Iniciar Sesión</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%233b82f6'/><text x='50' y='68' font-size='55' font-weight='bold' text-anchor='middle' fill='white'>EP</text></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -421,7 +421,7 @@
                         <text x="18" y="25" font-size="18" font-weight="800" text-anchor="middle" fill="white" font-family="system-ui">EP</text>
                     </svg>
                 </div>
-                <h1 class="brand-name">ErpPipo</h1>
+                <h1 class="brand-name">Erpipo</h1>
                 <p class="brand-subtitle">Sistema de Gestión Empresarial</p>
             </div>
 
