@@ -497,7 +497,7 @@
 
             <!-- Footer -->
             <div class="login-footer">
-                <p>&copy; {{ date('Y') }} ErpPipo — Todos los derechos reservados</p>
+                <p>&copy; {{ date('Y') }} Erpipo — Todos los derechos reservados</p>
             </div>
         </div>
     </div>

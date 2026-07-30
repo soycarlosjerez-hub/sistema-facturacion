@@ -308,7 +308,7 @@ class PermissionSeeder extends Seeder
                 'owner.users.view',
                 'owner.users.manage',
                 
-                // System configuration (to change "Colmado Premium", etc.)
+                // System configuration (to change company name, etc.)
                 'configuracion.view',
                 'configuracion.edit',
                 
