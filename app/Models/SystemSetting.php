@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SystemSetting extends Model
 {
-    protected $fillable = ['key', 'value', 'description', 'tenant_id'];
+    protected $fillable = ['clave', 'grupo', 'valor', 'tipo', 'descripcion', 'tenant_id'];
 
     public const CACHE_TTL = 3600;
 
@@ -40,13 +40,13 @@ class SystemSetting extends Model
         $tenantId = static::tenantId();
         $cacheKey = $tenantId ? 'system_settings_all_' . $tenantId : 'system_settings_all_global';
         return Cache::remember($cacheKey, static::CACHE_TTL, function () use ($tenantId) {
-            $query = static::query()->select('key', 'value');
+            $query = static::query()->select('clave', 'valor');
             if ($tenantId) {
                 $query->where('tenant_id', $tenantId);
             } else {
                 $query->whereNull('tenant_id');
             }
-            return $query->pluck('value', 'key')->all();
+            return $query->pluck('valor', 'clave')->all();
         });
     }
 

@@ -23,7 +23,7 @@ class TenantMailConfig
         try {
             $globalSettings = \App\Models\SystemSetting::query()
                 ->whereNull('tenant_id')
-                ->pluck('value', 'key')
+                ->pluck('valor', 'clave')
                 ->toArray();
 
             if (!empty($globalSettings['mail_host'])) {
@@ -67,7 +67,7 @@ class TenantMailConfig
         try {
             $tenantSettings = \App\Models\SystemSetting::query()
                 ->where('tenant_id', $tenantId)
-                ->pluck('value', 'key')
+                ->pluck('valor', 'clave')
                 ->toArray();
 
             if (!empty($tenantSettings['mail_host'])) {

@@ -16,94 +16,94 @@ class SystemSettingsSeeder extends Seeder
     {
         $settings = [
             [
-                'key' => 'empresa_nombre',
-                'value' => 'Erpipo',
-                'description' => 'Nombre comercial del establecimiento'
+                'clave' => 'empresa_nombre',
+                'valor' => 'Erpipo',
+                'descripcion' => 'Nombre comercial del establecimiento'
             ],
             [
-                'key' => 'empresa_rnc',
-                'value' => '131-00000-1',
-                'description' => 'Registro Nacional de Contribuyente'
+                'clave' => 'empresa_rnc',
+                'valor' => '131-00000-1',
+                'descripcion' => 'Registro Nacional de Contribuyente'
             ],
             [
-                'key' => 'empresa_telefono',
-                'value' => '809-000-0000',
-                'description' => 'Teléfono de contacto principal'
+                'clave' => 'empresa_telefono',
+                'valor' => '809-000-0000',
+                'descripcion' => 'Teléfono de contacto principal'
             ],
             [
-                'key' => 'empresa_direccion',
-                'value' => 'Santo Domingo, República Dominicana',
-                'description' => 'Dirección física del negocio'
+                'clave' => 'empresa_direccion',
+                'valor' => 'Santo Domingo, República Dominicana',
+                'descripcion' => 'Dirección física del negocio'
             ],
             [
-                'key' => 'impuesto_itbis',
-                'value' => '18',
-                'description' => 'Porcentaje de ITBIS por defecto'
+                'clave' => 'impuesto_itbis',
+                'valor' => '18',
+                'descripcion' => 'Porcentaje de ITBIS por defecto'
             ],
             [
-                'key' => 'moneda_simbolo',
-                'value' => 'RD$',
-                'description' => 'Símbolo de la moneda local'
+                'clave' => 'moneda_simbolo',
+                'valor' => 'RD$',
+                'descripcion' => 'Símbolo de la moneda local'
             ],
             [
-                'key' => 'sistema_slogan',
-                'value' => 'Calidad y Servicio a tu Alcance',
-                'description' => 'Eslogan que aparecerá en facturas'
+                'clave' => 'sistema_slogan',
+                'valor' => 'Calidad y Servicio a tu Alcance',
+                'descripcion' => 'Eslogan que aparecerá en facturas'
             ],
         ];
 
         $mailSettings = [
             [
-                'key' => 'mail_mailer',
-                'value' => 'smtp',
-                'description' => 'Controlador de correo (smtp, log, sendmail)'
+                'clave' => 'mail_mailer',
+                'valor' => 'smtp',
+                'descripcion' => 'Controlador de correo (smtp, log, sendmail)'
             ],
             [
-                'key' => 'mail_host',
-                'value' => 'mail.armada.do',
-                'description' => 'Servidor SMTP (ej. smtp.gmail.com)'
+                'clave' => 'mail_host',
+                'valor' => 'mail.armada.do',
+                'descripcion' => 'Servidor SMTP (ej. smtp.gmail.com)'
             ],
             [
-                'key' => 'mail_port',
-                'value' => '465',
-                'description' => 'Puerto SMTP (587 TLS, 465 SSL)'
+                'clave' => 'mail_port',
+                'valor' => '465',
+                'descripcion' => 'Puerto SMTP (587 TLS, 465 SSL)'
             ],
             [
-                'key' => 'mail_username',
-                'value' => 'no-reply@armada.do',
-                'description' => 'Usuario de autenticación SMTP'
+                'clave' => 'mail_username',
+                'valor' => 'no-reply@armada.do',
+                'descripcion' => 'Usuario de autenticación SMTP'
             ],
             [
-                'key' => 'mail_password',
-                'value' => Crypt::encryptString('Dn%q#U0tV,65FqSU'),
-                'description' => 'Contraseña SMTP (encriptada)'
+                'clave' => 'mail_password',
+                'valor' => Crypt::encryptString('Dn%q#U0tV,65FqSU'),
+                'descripcion' => 'Contraseña SMTP (encriptada)'
             ],
             [
-                'key' => 'mail_encryption',
-                'value' => 'ssl',
-                'description' => 'Cifrado SMTP (tls, ssl, null)'
+                'clave' => 'mail_encryption',
+                'valor' => 'ssl',
+                'descripcion' => 'Cifrado SMTP (tls, ssl, null)'
             ],
             [
-                'key' => 'mail_from_address',
-                'value' => 'no-reply@armada.do',
-                'description' => 'Dirección remitente por defecto'
+                'clave' => 'mail_from_address',
+                'valor' => 'no-reply@armada.do',
+                'descripcion' => 'Dirección remitente por defecto'
             ],
             [
-                'key' => 'mail_from_name',
-                'value' => 'Sistema de Facturación',
-                'description' => 'Nombre del remitente por defecto'
+                'clave' => 'mail_from_name',
+                'valor' => 'Sistema de Facturación',
+                'descripcion' => 'Nombre del remitente por defecto'
             ],
         ];
 
         foreach (array_merge($settings, $mailSettings) as $setting) {
-            SystemSetting::updateOrCreate(['key' => $setting['key']], $setting);
+            SystemSetting::updateOrCreate(['clave' => $setting['clave']], $setting);
         }
 
         $instancias = BusinessInstance::all();
         foreach ($instancias as $instancia) {
             foreach ($mailSettings as $setting) {
                 SystemSetting::updateOrCreate(
-                    ['key' => $setting['key'], 'tenant_id' => $instancia->id],
+                    ['clave' => $setting['clave'], 'tenant_id' => $instancia->id],
                     array_merge($setting, ['tenant_id' => $instancia->id])
                 );
             }

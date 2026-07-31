@@ -14,7 +14,7 @@ class CleanupSmtpSettingsCommand extends Command
     {
         $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name'];
 
-        $affectedRows = SystemSetting::whereIn('key', $mailKeys)
+        $affectedRows = SystemSetting::whereIn('clave', $mailKeys)
             ->whereNotNull('tenant_id')
             ->count();
 
@@ -29,20 +29,20 @@ class CleanupSmtpSettingsCommand extends Command
             $this->warn('=== DRY RUN ===');
             $this->line("Se eliminarían {$affectedRows} setting(s) SMTP de instancias:\n");
             
-            $settings = SystemSetting::whereIn('key', $mailKeys)
+            $settings = SystemSetting::whereIn('clave', $mailKeys)
                 ->whereNotNull('tenant_id')
-                ->select('key', 'tenant_id')
+                ->select('clave', 'tenant_id')
                 ->get();
             
             $byInstance = $settings->groupBy('tenant_id');
             foreach ($byInstance as $tenantId => $keys) {
-                $this->line("  Instancia {$tenantId}: " . implode(', ', $keys->pluck('key')->toArray()));
+                $this->line("  Instancia {$tenantId}: " . implode(', ', $keys->pluck('clave')->toArray()));
             }
             $this->line("\nEjecuta sin --dry-run para aplicar los cambios.");
             return Command::SUCCESS;
         }
 
-        $deleted = SystemSetting::whereIn('key', $mailKeys)
+        $deleted = SystemSetting::whereIn('clave', $mailKeys)
             ->whereNotNull('tenant_id')
             ->delete();
 

@@ -19,7 +19,7 @@ class ErrorMailer
         try {
             $settings = SystemSetting::query()
                 ->whereNull('tenant_id')
-                ->pluck('value', 'key')
+                ->pluck('valor', 'clave')
                 ->toArray();
 
             if (empty($settings['mail_host'])) {

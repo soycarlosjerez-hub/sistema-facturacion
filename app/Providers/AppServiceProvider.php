@@ -53,7 +53,7 @@ class AppServiceProvider extends ServiceProvider
             if (Schema::hasTable('system_settings')) {
                 $settings = Cache::rememberForever('system_settings_all_global', function () {
                     return SystemSetting::whereNull('tenant_id')
-                        ->pluck('value', 'key')
+                        ->pluck('valor', 'clave')
                         ->toArray();
                 });
 

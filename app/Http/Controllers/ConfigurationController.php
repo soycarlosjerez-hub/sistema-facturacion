@@ -50,10 +50,10 @@ class ConfigurationController extends Controller
         });
 
         $tenantId = SystemSetting::tenantId();
-        foreach ($filteredData as $key => $value) {
+        foreach ($filteredData as $clave => $valor) {
             SystemSetting::updateOrCreate(
-                ['key' => $key, 'tenant_id' => $tenantId],
-                ['value' => $value]
+                ['clave' => $clave, 'tenant_id' => $tenantId],
+                ['valor' => $valor]
             );
         }
 

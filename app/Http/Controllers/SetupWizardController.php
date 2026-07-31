@@ -256,8 +256,8 @@ class SetupWizardController extends Controller
                     continue;
                 }
                 SystemSetting::updateOrCreate(
-                    ['key' => $key, 'tenant_id' => $tenantId],
-                    ['value' => $value ?? '']
+                    ['clave' => $key, 'tenant_id' => $tenantId],
+                    ['valor' => $value ?? '']
                 );
             }
             return true; 

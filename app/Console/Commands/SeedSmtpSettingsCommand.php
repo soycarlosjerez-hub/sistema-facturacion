@@ -48,10 +48,10 @@ class SeedSmtpSettingsCommand extends Command
                 'mail_from_name'    => 'Sistema de Facturación',
             ];
 
-            foreach ($settings as $key => $value) {
+            foreach ($settings as $clave => $valor) {
                 SystemSetting::updateOrCreate(
-                    ['key' => $key, 'tenant_id' => $instance->id],
-                    ['value' => $value]
+                    ['clave' => $clave, 'tenant_id' => $instance->id],
+                    ['valor' => $valor]
                 );
             }
 
