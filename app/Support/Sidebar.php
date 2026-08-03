@@ -567,7 +567,7 @@ class Sidebar
         }
 
         // Reportes
-        $hasReportes = $mod('reportes-ventas') || $mod('reportes-compras') || $mod('reportes-stock') || $mod('reportes-utilidades') || $mod('reportes-caja') || $mod('reportes-restaurante') || $mod('reportes-retenciones') || $mod('reportes-fiscales') || $mod('reportes-resumen') || $mod('reportes-gastos');
+        $hasReportes = $mod('reportes-ventas') || $mod('reportes-compras') || $mod('reportes-stock') || $mod('reportes-utilidades') || $mod('reportes-caja') || $mod('reportes-restaurante') || $mod('reportes-gastos');
         if ($hasReportes && $can('reportes.view')) {
             $items[] = ['section' => 'Reportes'];
             $items[] = [
@@ -601,6 +601,36 @@ class Sidebar
                 $items[] = ['route' => 'reportes.propinas', 'icon' => 'bi-cash-coin', 'label' => 'Propinas', 'is_route' => 'reportes.propinas*', 'exact_route' => 'reportes.propinas'];
                 $items[] = ['route' => 'reportes.delivery-comisiones', 'icon' => 'bi-truck', 'label' => 'Delivery Comisiones', 'is_route' => 'reportes.delivery-comisiones*', 'exact_route' => 'reportes.delivery-comisiones'];
             }
+        }
+
+        // Contabilidad — todo relacionado con contabilidad y DGII
+        $tieneContabilidad = $mod('ncf') || $mod('ecf') || $mod('secuencias-ecf') || $mod('certificados-digitales') || $mod('libros-ventas') || $mod('libros-compras') || $mod('reportes-retenciones') || $mod('reportes-fiscales') || $mod('reportes-resumen') || $mod('formulario-14-14');
+        if ($tieneContabilidad) {
+            $items[] = ['section' => 'Contabilidad'];
+
+            // NCF y e-CF (Documentos Fiscales)
+            if ($mod('ncf') && $can('ncf.view')) {
+                $items[] = ['route' => 'ncf.index', 'icon' => 'bi-receipt-cutoff', 'label' => 'Comprobantes (NCF)', 'is_route' => 'ncf.*', 'exact_route' => 'ncf.index'];
+            }
+            if ($mod('ecf') && $can('ecf.view')) {
+                $items[] = ['route' => 'ecf.index', 'icon' => 'bi-shield-check', 'label' => 'e-CF (DGII)', 'is_route' => 'ecf.*', 'exact_route' => 'ecf.index'];
+            }
+            if ($mod('secuencias-ecf') && $can('ecf.manage')) {
+                $items[] = ['route' => 'secuencias-ecf.index', 'icon' => 'bi-hash', 'label' => 'Secuencias e-CF', 'is_route' => 'secuencias-ecf.*', 'exact_route' => 'secuencias-ecf.index'];
+            }
+            if ($mod('certificados-digitales') && $can('ecf.certificados')) {
+                $items[] = ['route' => 'certificados-digitales.index', 'icon' => 'bi-key', 'label' => 'Certificados Digitales', 'is_route' => 'certificados-digitales.*', 'exact_route' => 'certificados-digitales.index'];
+            }
+
+            // Libros Fiscales
+            if ($mod('libros-ventas') && $can('reportes.view')) {
+                $items[] = ['route' => 'libros.ventas.index', 'icon' => 'bi-book', 'label' => 'Libro de Ventas', 'is_route' => 'libros.ventas*', 'exact_route' => 'libros.ventas.index'];
+            }
+            if ($mod('libros-compras') && $can('reportes.view')) {
+                $items[] = ['route' => 'libros.compras.index', 'icon' => 'bi-book-half', 'label' => 'Libro de Compras', 'is_route' => 'libros.compras*', 'exact_route' => 'libros.compras.index'];
+            }
+
+            // Reportes Fiscales
             if ($mod('reportes-retenciones')) {
                 $items[] = ['route' => 'reportes.retenciones', 'icon' => 'bi-percent', 'label' => 'Retenciones', 'is_route' => 'reportes.retenciones*', 'exact_route' => 'reportes.retenciones'];
             }
@@ -610,23 +640,11 @@ class Sidebar
             if ($mod('reportes-resumen')) {
                 $items[] = ['route' => 'reportes.resumen', 'icon' => 'bi-bar-chart-line', 'label' => 'Resumen Anual', 'is_route' => 'reportes.resumen*', 'exact_route' => 'reportes.resumen'];
             }
-        }
 
-        // Libros Fiscales
-        if ($mod('libros-ventas') || $mod('libros-compras')) {
-            $items[] = ['section' => 'Libros Fiscales'];
-            if ($mod('libros-ventas') && $can('reportes.view')) {
-                $items[] = ['route' => 'libros.ventas.index', 'icon' => 'bi-book', 'label' => 'Libro de Ventas', 'is_route' => 'libros.ventas*', 'exact_route' => 'libros.ventas.index'];
+            // Formularios
+            if ($mod('formulario-14-14') && $can('reportes.view')) {
+                $items[] = ['route' => 'formulario.14-14.index', 'icon' => 'bi-file-earmark-text', 'label' => 'Formulario 14-14', 'is_route' => 'formulario.14-14*', 'exact_route' => 'formulario.14-14.index'];
             }
-            if ($mod('libros-compras') && $can('reportes.view')) {
-                $items[] = ['route' => 'libros.compras.index', 'icon' => 'bi-book-half', 'label' => 'Libro de Compras', 'is_route' => 'libros.compras*', 'exact_route' => 'libros.compras.index'];
-            }
-        }
-
-        // Formularios Fiscales
-        if ($mod('formulario-14-14') && $can('reportes.view')) {
-            $items[] = ['section' => 'Formularios Fiscales'];
-            $items[] = ['route' => 'formulario.14-14.index', 'icon' => 'bi-file-earmark-text', 'label' => 'Formulario 14-14', 'is_route' => 'formulario.14-14*', 'exact_route' => 'formulario.14-14.index'];
         }
 
         // Sistema — cuando hay InstanceRole, requiere el módulo asignado
@@ -663,8 +681,6 @@ class Sidebar
         // Configuración — cuando hay InstanceRole, requiere el módulo asignado
         $hasConf = fn(string $k) => $user->instance_role_id ? $mod($k) : true;
         if (
-            ($hasConf('ncf') && $can('ncf.view')) ||
-            ($hasConf('ecf') && $can('ecf.view')) ||
             ($hasConf('payment-processors') && $can('payment-processors.view')) ||
             ($hasConf('cuentas-bancarias') && $can('cuentas-bancarias.view')) ||
             ($hasConf('delivery-companies') && $can('delivery-companies.view')) ||
@@ -684,18 +700,6 @@ class Sidebar
                 ];
             }
 
-            if ($hasConf('ncf') && $can('ncf.view')) {
-                $items[] = ['route' => 'ncf.index', 'icon' => 'bi-receipt-cutoff', 'label' => 'Comprobantes (NCF)', 'is_route' => 'ncf.*', 'exact_route' => 'ncf.index'];
-            }
-            if ($hasConf('ecf') && $can('ecf.view')) {
-                $items[] = ['route' => 'ecf.index', 'icon' => 'bi-shield-check', 'label' => 'e-CF (DGII)', 'is_route' => 'ecf.*', 'exact_route' => 'ecf.index'];
-            }
-            if ($hasConf('secuencias-ecf') && $can('ecf.manage')) {
-                $items[] = ['route' => 'secuencias-ecf.index', 'icon' => 'bi-hash', 'label' => 'Secuencias e-CF', 'is_route' => 'secuencias-ecf.*', 'exact_route' => 'secuencias-ecf.index'];
-            }
-            if ($hasConf('certificados-digitales') && $can('ecf.certificados')) {
-                $items[] = ['route' => 'certificados-digitales.index', 'icon' => 'bi-key', 'label' => 'Certificados Digitales', 'is_route' => 'certificados-digitales.*', 'exact_route' => 'certificados-digitales.index'];
-            }
             if ($hasConf('payment-processors') && $can('payment-processors.view')) {
                 $items[] = ['route' => 'payment-processors.index', 'icon' => 'bi-credit-card', 'label' => 'Métodos de Pago', 'is_route' => 'payment-processors.*', 'exact_route' => 'payment-processors.index'];
             }
