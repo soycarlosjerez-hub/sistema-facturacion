@@ -380,21 +380,61 @@ class Cliente extends Authenticatable
 
     public function scopeDeletable($query)
     {
-        return $query->whereDoesntHave('conduces')
-            ->whereDoesntHave('ordenesReparacion')
-            ->whereDoesntHave('serviciosDomotica')
-            ->whereDoesntHave('vehiculos')
-            ->whereDoesntHave('lavaderoCitas')
-            ->whereDoesntHave('tattooAppointments');
+        $relations = static::getModularRelationsStatic();
+        foreach ($relations as $relation) {
+            $query->whereDoesntHave($relation);
+        }
+        return $query;
     }
 
     public function canBeDeleted(): bool
     {
-        return !($this->conduces()->exists()
-            || $this->ordenesReparacion()->exists()
-            || $this->serviciosDomotica()->exists()
-            || $this->vehiculos()->exists()
-            || $this->lavaderoCitas()->exists()
-            || $this->tattooAppointments()->exists());
+        $relations = $this->getModularRelations();
+        foreach ($relations as $relation) {
+            if ($this->$relation()->exists()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Retorna las relaciones relevantes segun el business_type del usuario actual.
+     * Version estatica para uso en scopes (donde no hay instancia del modelo).
+     */
+    protected static function getModularRelationsStatic(): array
+    {
+        $user = auth()->user();
+        if (!$user || !$user->business_type_id) {
+            return [];
+        }
+
+        $businessType = $user->businessType;
+        if (!$businessType) {
+            return [];
+        }
+
+        return match ($businessType->slug) {
+            'tecnologia' => ['conduces', 'vehiculos', 'ordenesReparacion', 'serviciosDomotica'],
+            'lavadero' => ['vehiculos', 'lavaderoCitas'],
+            'tattoo' => ['tattooAppointments'],
+            'climatizacion' => ['serviciosDomotica', 'contratosMantenimiento', 'instalaciones', 'mantenimientos', 'ticketsGarantia', 'ordenesEmergencia'],
+            'restaurante' => ['reservaciones'],
+            'mayorista' => ['conduces', 'vehiculos'],
+            'mixto' => ['conduces', 'vehiculos', 'ordenesReparacion', 'serviciosDomotica'],
+            'retail' => ['conduces', 'vehiculos'],
+            'servicios' => [],
+            default => [],
+        };
+    }
+
+    /**
+     * Retorna las relaciones relevantes segun el business_type del usuario actual.
+     * Evita consultar tablas de otros tipos de negocio que pueden no existir o
+     * no tener la columna deleted_at necesaria para SoftDeletes.
+     */
+    protected function getModularRelations(): array
+    {
+        return static::getModularRelationsStatic();
     }
 }
