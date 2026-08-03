@@ -14,6 +14,7 @@ use App\Models\Producto;
 use App\Models\SesionCaja;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
 class OrdenService
@@ -145,6 +146,10 @@ class OrdenService
             if ($this->restauranteValidaStock()) {
                 $producto->decrement('stock', $cantidad);
 
+                if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
+                    Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
+                }
+
                 foreach ($producto->ingredientes as $ingrediente) {
                     $ingrediente->decrement('stock', $ingrediente->pivot->cantidad * $cantidad);
                 }
@@ -219,6 +224,9 @@ class OrdenService
 
             if ($producto && $this->restauranteValidaStock()) {
                 $producto->decrement('stock', $diferencia);
+                if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
+                    Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
+                }
                 foreach ($producto->ingredientes as $ingrediente) {
                     $ingrediente->decrement('stock', $ingrediente->pivot->cantidad * $diferencia);
                 }
@@ -310,11 +318,14 @@ class OrdenService
         ];
 
         $actual = $orden->estado;
-        if (!isset($transiciones[$actual]) || !in_array($nuevoEstado, $transiciones[$actual])) {
+        if (!isset($transiciones[$actual]) || !in_array($nuevoEstado, $transitions[$actual])) {
             return ['error' => "No se puede cambiar de '$actual' a '$nuevoEstado'", 'code' => 422];
         }
 
         $orden->update(['estado' => $nuevoEstado]);
+
+        Event::dispatch(new \App\Events\OrderStatusChanged($orden, $actual, $nuevoEstado));
+
         return ['success' => true, 'orden' => $orden->fresh()->load('detalles.producto', 'cliente')];
     }
 }

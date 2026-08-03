@@ -393,6 +393,31 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         body.dark-mode .dropdown-item.active { background: #38bdf8; color: #0f172a; }
         body.dark-mode .dropdown-divider { border-color: #1e293b; }
 
+        /* Notification Dropdown */
+        .notif-dropdown .notif-item {
+            display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px;
+            cursor: pointer; transition: background 0.15s; text-decoration: none; color: inherit;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .notif-dropdown .notif-item:hover { background: #f8fafc; }
+        .notif-dropdown .notif-item.unread { background: #eff6ff; }
+        .notif-dropdown .notif-item.unread:hover { background: #dbeafe; }
+        .notif-dropdown .notif-icon {
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; font-size: 0.85rem;
+        }
+        .notif-dropdown .notif-body { flex: 1; min-width: 0; }
+        .notif-dropdown .notif-title { font-size: 0.8rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-dropdown .notif-message { font-size: 0.75rem; color: #64748b; margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-dropdown .notif-time { font-size: 0.65rem; color: #94a3b8; margin-top: 2px; }
+        .spin-loading { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        body.dark-mode .notif-dropdown .notif-item { border-bottom-color: #1e293b; }
+        body.dark-mode .notif-dropdown .notif-item:hover { background: #1e293b; }
+        body.dark-mode .notif-dropdown .notif-item.unread { background: #0c1529; }
+        body.dark-mode .notif-dropdown .notif-item.unread:hover { background: #0f1d32; }
+        body.dark-mode .notif-dropdown .notif-message { color: #94a3b8; }
+
         body.dark-mode .list-group-item { background: #0f172a; border-color: #1e293b; color: #cbd5e1; }
         body.dark-mode .list-group-item.active { background: #38bdf8; border-color: #38bdf8; color: #0f172a; }
 
@@ -689,6 +714,36 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                     <span class="badge bg-light text-dark border d-none d-xl-inline-block">
                         <i class="bi bi-calendar3 me-1"></i>{{ date('d M, Y') }}
                     </span>
+
+                    {{-- Notification Bell --}}
+                    <div class="dropdown d-none d-sm-inline-block">
+                        <button class="btn btn-link text-decoration-none p-1 position-relative dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationDropdownBtn">
+                            <i class="bi bi-bell fs-5" id="bellIcon"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notifBadge" style="font-size: 0.6rem;">
+                                0
+                            </span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0 notif-dropdown" style="min-width: 350px; max-width: 400px;" id="notifDropdownMenu">
+                            <li class="px-3 py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong><i class="bi bi-bell me-2"></i>Notificaciones</strong>
+                                    <small class="text-muted" id="notifCount">0 nuevas</small>
+                                </div>
+                            </li>
+                            <li style="max-height: 300px; overflow-y: auto;" id="notifList">
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-arrow-repeat spin-loading"></i>
+                                    <small>Cargando...</small>
+                                </div>
+                            </li>
+                            <li class="border-top">
+                                <a class="dropdown-item text-center small text-primary" href="{{ route('notifications.index') }}">
+                                    <i class="bi bi-eye me-1"></i>Ver todas las notificaciones
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
                     <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 px-lg-3 d-none d-sm-inline-flex align-items-center gap-1">
                         <i class="bi bi-shield-check"></i>
                         <span class="d-none d-md-inline">{{ ucfirst(Auth::user()?->roles?->first()?->name ?? Auth::user()?->role ?? 'Sin rol') }}</span>
@@ -1005,6 +1060,109 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
     @stack('scripts')
+
+    <!-- Notification Widget -->
+    <script>
+    (function() {
+        'use strict';
+        const notifList = document.getElementById('notifList');
+        const notifBadge = document.getElementById('notifBadge');
+        const notifCount = document.getElementById('notifCount');
+        const bellIcon = document.getElementById('bellIcon');
+        if (!notifList) return;
+
+        let unreadCount = 0;
+        let pollingInterval = null;
+
+        function renderNotification(n) {
+            const iconBg = n.color || '#3b82f6';
+            const icon = n.icon || 'bi-bell';
+            const actionUrl = n.data?.action_url || n.action_url || '#';
+            const readClass = n.read || n.read_at ? '' : 'unread';
+            const time = n.created_at || '';
+            return '<a href="' + actionUrl + '" class="notif-item ' + readClass + '" data-id="' + n.id + '">' +
+                '<div class="notif-icon" style="background:' + iconBg + '20;color:' + iconBg + ';"><i class="bi ' + icon + '"></i></div>' +
+                '<div class="notif-body">' +
+                    '<p class="notif-title">' + (n.title || 'Notificación') + '</p>' +
+                    '<p class="notif-message">' + (n.body || '') + '</p>' +
+                    '<span class="notif-time">' + time + '</span>' +
+                '</div>' +
+            '</a>';
+        }
+
+        async function fetchNotifications() {
+            try {
+                const res = await fetch('/api/notifications/recent/5');
+                const data = await res.json();
+                const notifs = data.notifications || [];
+
+                unreadCount = notifs.filter(n => !n.read).length;
+
+                if (unreadCount > 0) {
+                    notifBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    notifBadge.classList.remove('d-none');
+                    bellIcon.classList.add('bi-bell-fill');
+                    bellIcon.classList.remove('bi-bell');
+                } else {
+                    notifBadge.classList.add('d-none');
+                    bellIcon.classList.add('bi-bell');
+                    bellIcon.classList.remove('bi-bell-fill');
+                }
+
+                notifCount.textContent = unreadCount + ' nuevas';
+
+                if (notifs.length === 0) {
+                    notifList.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-bell-slash fs-4 d-block mb-2"></i><small>No hay notificaciones</small></div>';
+                    return;
+                }
+
+                notifList.innerHTML = notifs.map(renderNotification).join('');
+
+                // Click handlers
+                notifList.querySelectorAll('.notif-item').forEach(function(item) {
+                    item.addEventListener('click', function(e) {
+                        const id = this.getAttribute('data-id');
+                        if (!id) return;
+                        fetch('/api/notifications/' + id + '/read', {
+                            method: 'PUT',
+                            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                        }).then(() => {
+                            this.classList.remove('unread');
+                        });
+                    });
+                });
+            } catch (err) {
+                console.error('Error loading notifications:', err);
+            }
+        }
+
+        // Initial load
+        fetchNotifications();
+
+        // Poll every 30 seconds
+        pollingInterval = setInterval(fetchNotifications, 30000);
+
+        // Stop polling when tab is hidden
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                clearInterval(pollingInterval);
+            } else {
+                fetchNotifications();
+                pollingInterval = setInterval(fetchNotifications, 30000);
+            }
+        });
+
+        // Clear interval on page unload
+        window.addEventListener('beforeunload', function() {
+            clearInterval(pollingInterval);
+        });
+    })();
+    </script>
+
+    <script>
+    (function() {
+        'use strict';
+        const input = document.getElementById('globalSearchInput');
 </body>
 
 </html>

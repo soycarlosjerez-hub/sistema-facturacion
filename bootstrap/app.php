@@ -48,7 +48,23 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 $request = request();
                 $userId = \Illuminate\Support\Facades\Auth::id();
-                $tenantId = $userId ? \App\Models\User::find($userId)?->business_instance_id : null;
+                
+                // Obtener datos del usuario
+                $user = null;
+                $userName = null;
+                $userEmail = null;
+                $userRole = null;
+                $userBusinessInstanceId = null;
+                if ($userId) {
+                    $user = \App\Models\User::find($userId);
+                    $userName = $user?->name;
+                    $userEmail = $user?->email;
+                    $userRole = $user?->roles?->first()?->name ?? 'Sin rol';
+                    $userBusinessInstanceId = $user?->business_instance_id;
+                }
+
+                $tenantId = $userBusinessInstanceId;
+                $tenant = $tenantId ? \App\Models\BusinessInstance::find($tenantId) : null;
 
                 $errorLog = \App\Models\InstanceErrorLog::create([
                     'tenant_id' => $tenantId,
@@ -59,13 +75,26 @@ return Application::configure(basePath: dirname(__DIR__))
                         'exception' => get_class($e),
                         'file' => $e->getFile(),
                         'line' => $e->getLine(),
+                        'http_method' => $request?->method(),
+                        'url' => $request?->fullUrl(),
+                        'referer' => $request?->headers->get('referer'),
+                        'user_id' => $userId,
+                        'user_name' => $userName,
+                        'user_email' => $userEmail,
+                        'user_role' => $userRole,
+                        'tenant_id' => $tenantId,
+                        'tenant_name' => $tenant?->name,
+                        'session_id' => $request?->session()?->getId(),
+                        'ip_address' => $request?->ip(),
+                        'user_agent' => $request?->userAgent(),
+                        'inputs' => $request?->except(['password', 'password_confirmation', '_token']),
                     ],
                     'source' => 'exception',
                     'user_id' => $userId,
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
+                    'ip_address' => $request?->ip(),
+                    'user_agent' => $request?->userAgent(),
                 ]);
 
                 $alertEmail = \App\Services\ErrorMailer::getAlertEmail();
@@ -73,7 +102,6 @@ return Application::configure(basePath: dirname(__DIR__))
                     $cacheKey = 'error_alert:' . md5(get_class($e) . $e->getMessage());
                     if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
                         \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300);
-                        $tenantName = $errorLog->tenant->name ?? null;
                         \Illuminate\Support\Facades\Mail::to($alertEmail)
                             ->send(new \App\Mail\ErrorAlertMail(
                                 level: 'error',
@@ -82,12 +110,22 @@ return Application::configure(basePath: dirname(__DIR__))
                                 exceptionClass: get_class($e),
                                 file: $e->getFile(),
                                 line: $e->getLine(),
-                                ipAddress: $request->ip(),
-                                userAgent: $request->userAgent(),
+                                ipAddress: $request?->ip(),
+                                userAgent: $request?->userAgent(),
                                 context: $errorLog->context,
                                 source: 'exception',
                                 createdAt: $errorLog->created_at->format('Y-m-d H:i:s'),
-                                tenantName: $tenantName,
+                                tenantName: $tenant?->name,
+                                tenantId: $tenantId,
+                                userId: $userId,
+                                userName: $userName,
+                                userEmail: $userEmail,
+                                userRole: $userRole,
+                                httpMethod: $request?->method(),
+                                url: $request?->fullUrl(),
+                                referer: $request?->headers->get('referer'),
+                                sessionId: $request?->session()?->getId(),
+                                inputs: $request?->except(['password', 'password_confirmation', '_token']),
                             ));
                     }
                 }

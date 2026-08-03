@@ -18,6 +18,7 @@ use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
 
@@ -236,7 +237,11 @@ class RestaurantOrderService
             }
     
             $producto->decrement('stock', $cantidad);
-            
+
+            if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
+                Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
+            }
+
             foreach ($producto->ingredientes as $ingrediente) {
                 $cantidadADeducir = $ingrediente->pivot->cantidad * $cantidad;
                 $ingrediente->decrement('stock', $cantidadADeducir);
@@ -460,6 +465,8 @@ class RestaurantOrderService
 
             $orden->load('detalles.producto', 'cliente');
 
+            Event::dispatch(new \App\Events\SaleCreated($orden));
+
             return [
                 'success' => true,
                 'venta'   => [
@@ -523,6 +530,8 @@ class RestaurantOrderService
             $orden->update(['estado' => 'anulada', 'notas' => $motivo, 'total' => 0, 'subtotal' => 0, 'impuestos' => 0]);
             $mesa->update(['estado' => 'disponible']);
             DB::commit();
+
+            Event::dispatch(new \App\Events\SaleCancelled($orden, $motivo));
 
             return [
                 'success' => true,

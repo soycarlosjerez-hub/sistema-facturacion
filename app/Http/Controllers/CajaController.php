@@ -7,6 +7,7 @@ use App\Models\SesionCaja;
 use App\Models\Sucursal;
 use App\Services\CajaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Rule;
 
 class CajaController extends Controller
@@ -120,6 +121,8 @@ class CajaController extends Controller
             return back()->with('error', $result['message']);
         }
 
+        Event::dispatch(new \App\Events\ShiftOpened($result['sesion']));
+
         return redirect()->to($result['redirect'] ?? route('cajas.index'))
             ->with('success', $result['message']);
     }
@@ -149,6 +152,8 @@ class CajaController extends Controller
 
         $result = $this->cajaService->cerrar($sesion, $request->all());
 
+        Event::dispatch(new \App\Events\ShiftClosed($sesion));
+
         return redirect()->route('cajas.index')
             ->with($result['success'] ? 'success' : 'error', $result['message']);
     }
@@ -176,6 +181,8 @@ class CajaController extends Controller
         }
 
         $result = $this->cajaService->cerrar($sesion, $request->all());
+
+        Event::dispatch(new \App\Events\ShiftClosed($sesion));
 
         return redirect()->route('cajas.index')
             ->with($result['success'] ? 'success' : 'error', $result['message']);

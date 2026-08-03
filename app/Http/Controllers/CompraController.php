@@ -13,6 +13,7 @@ use App\Models\TipoCompra;
 use App\Services\Ecf\EcfService;
 use App\Services\PurchaseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 
 class CompraController extends Controller
 {
@@ -81,6 +82,7 @@ class CompraController extends Controller
     {
         try {
             $compra = $this->purchaseService->createPurchase($request->validated(), $request->validated('productos'));
+            Event::dispatch(new \App\Events\PurchaseCreated($compra));
             $message = $this->purchaseService->buildSuccessMessage($compra, 'registrada');
 
             return redirect()->route('compras.show', $compra)->with('success', $message);

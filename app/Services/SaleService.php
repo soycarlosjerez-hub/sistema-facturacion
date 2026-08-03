@@ -16,6 +16,7 @@ use App\Services\NcfService;
 use App\Services\RetentionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
 class SaleService
@@ -179,6 +180,8 @@ class SaleService
                 $this->retentionService->guardarRetencionesVenta($venta, $retenciones);
             }
 
+            Event::dispatch(new \App\Events\SaleCreated($venta));
+
             return $venta;
         });
     }
@@ -281,6 +284,8 @@ class SaleService
                 'venta_id' => $venta->id, 'total' => $venta->total,
                 'motivo' => $motivo, 'user_id' => Auth::id(),
             ]);
+
+            Event::dispatch(new \App\Events\SaleCancelled($venta, $motivo));
         });
     }
 
@@ -487,6 +492,10 @@ class SaleService
                 ]);
 
                 $producto->decrement('stock', $cantidad);
+
+                if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
+                    Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
+                }
             }
 
             $producto->increment('ventas_count', $cantidad);
@@ -539,7 +548,7 @@ class SaleService
             return;
         }
 
-        Pago::create([
+        $pago = Pago::create([
             'tenant_id'      => Auth::user()->business_instance_id,
             'venta_id'       => $venta->id,
             'caja_id'        => $sesion->caja_id,
@@ -556,5 +565,7 @@ class SaleService
             'transferencia' => $sesion->increment('ventas_transferencia', $data['total']),
             default         => null,
         };
+
+        Event::dispatch(new \App\Events\PaymentReceived($pago));
     }
 }

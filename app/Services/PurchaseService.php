@@ -10,6 +10,7 @@ use App\Models\Proveedor;
 use App\Support\RetencionCalculator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 class PurchaseService
 {
@@ -128,6 +129,9 @@ class PurchaseService
         DB::transaction(function () use ($compra, $detalle) {
             if ($detalle->producto) {
                 $detalle->producto->decrement('stock', $detalle->cantidad);
+                if ($detalle->producto->stock <= ($detalle->producto->stock_minimo ?? 5)) {
+                    Event::dispatch(new \App\Events\StockCritical($detalle->producto, $detalle->producto->stock));
+                }
             }
             $detalle->delete();
             $this->recalculateTotals($compra);

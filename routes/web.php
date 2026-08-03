@@ -1353,5 +1353,29 @@ Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function
     Route::get('/', fn() => view('ui-demo.index'))->name('index');
 });
 
+// ============================================
+// NOTIFICATIONS SYSTEM
+// ============================================
+Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+});
+
+Route::middleware(['auth'])->group(function () {
+    // API endpoints for notifications
+    Route::get('/api/notifications', [\App\Http\Controllers\NotificationController::class, 'apiIndex'])->name('api.notifications.index');
+    Route::get('/api/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'apiUnreadCount'])->name('api.notifications.unread-count');
+    Route::get('/api/notifications/unread-by-category', [\App\Http\Controllers\NotificationController::class, 'apiUnreadByCategory'])->name('api.notifications.unread-by-category');
+    Route::get('/api/notifications/recent/{limit?}', [\App\Http\Controllers\NotificationController::class, 'apiRecent'])->name('api.notifications.recent');
+    
+    Route::put('/api/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'apiMarkAsRead'])->name('api.notifications.mark-read');
+    Route::post('/api/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'apiMarkAllAsRead'])->name('api.notifications.mark-all-read');
+    Route::delete('/api/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'apiDelete'])->name('api.notifications.delete');
+    Route::post('/api/notifications/clean-old', [\App\Http\Controllers\NotificationController::class, 'apiCleanOld'])->name('api.notifications.clean-old');
+    
+    // Preferences
+    Route::get('/api/notifications/preferences', [\App\Http\Controllers\NotificationController::class, 'apiPreferences'])->name('api.notifications.preferences');
+    Route::put('/api/notifications/preferences', [\App\Http\Controllers\NotificationController::class, 'apiUpdatePreferences'])->name('api.notifications.preferences.update');
+});
+
 require __DIR__ . '/auth.php';
 

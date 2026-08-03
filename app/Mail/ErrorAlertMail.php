@@ -22,6 +22,16 @@ class ErrorAlertMail extends Mailable
     public $source;
     public $createdAt;
     public $tenantName;
+    public $tenantId;
+    public $userId;
+    public $userName;
+    public $userEmail;
+    public $userRole;
+    public $httpMethod;
+    public $url;
+    public $referer;
+    public $sessionId;
+    public $inputs;
 
     public function __construct(
         string $level,
@@ -35,7 +45,17 @@ class ErrorAlertMail extends Mailable
         array $context = [],
         ?string $source = null,
         ?string $createdAt = null,
-        ?string $tenantName = null
+        ?string $tenantName = null,
+        ?int $tenantId = null,
+        ?int $userId = null,
+        ?string $userName = null,
+        ?string $userEmail = null,
+        ?string $userRole = null,
+        ?string $httpMethod = null,
+        ?string $url = null,
+        ?string $referer = null,
+        ?string $sessionId = null,
+        ?array $inputs = null
     ) {
         $this->level = $level;
         $this->title = $title;
@@ -49,6 +69,16 @@ class ErrorAlertMail extends Mailable
         $this->source = $source;
         $this->createdAt = $createdAt;
         $this->tenantName = $tenantName;
+        $this->tenantId = $tenantId;
+        $this->userId = $userId;
+        $this->userName = $userName;
+        $this->userEmail = $userEmail;
+        $this->userRole = $userRole;
+        $this->httpMethod = $httpMethod;
+        $this->url = $url;
+        $this->referer = $referer;
+        $this->sessionId = $sessionId;
+        $this->inputs = $inputs;
     }
 
     public function envelope(): \Illuminate\Mail\Mailables\Envelope
@@ -82,6 +112,16 @@ class ErrorAlertMail extends Mailable
                 'source' => $this->source,
                 'createdAt' => $this->createdAt,
                 'tenantName' => $this->tenantName,
+                'tenantId' => $this->tenantId,
+                'userId' => $this->userId,
+                'userName' => $this->userName,
+                'userEmail' => $this->userEmail,
+                'userRole' => $this->userRole,
+                'httpMethod' => $this->httpMethod,
+                'url' => $this->url,
+                'referer' => $this->referer,
+                'sessionId' => $this->sessionId,
+                'inputs' => $this->inputs,
             ],
         );
     }
