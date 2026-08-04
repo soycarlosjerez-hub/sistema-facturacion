@@ -584,7 +584,7 @@ body:not(.dark-mode) {
     border-bottom: 1px solid var(--pos-border);
     flex-shrink: 0;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     animation: uiSlideUp .5s ease both;
     animation-delay: var(--delay, 0s);
 }
