@@ -38,20 +38,24 @@ class LibroVentasController extends Controller
 
         $ventas = $query->orderBy('created_at')->paginate(50)->appends($request->all());
 
-        // Totales agrupados por tipo de NCF
+        $resumen = Venta::selectRaw('
+                COUNT(*) as total,
+                SUM(total) as gran_total,
+                SUM(subtotal) as gran_subtotal,
+                SUM(impuestos) as gran_itbis
+            ')
+            ->whereBetween('created_at', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->first();
+
+        $resumenGeneral = $resumen;
+
         $totales = Venta::selectRaw('ncf_tipo, COUNT(*) as cantidad, SUM(total) as total_ventas, SUM(subtotal) as subtotal, SUM(impuestos) as itbis_total')
             ->whereBetween('created_at', [$desde, $hasta])
             ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->groupBy('ncf_tipo')
             ->get();
 
-        // Resumen general
-        $resumenGeneral = Venta::selectRaw('COUNT(*) as total, SUM(total) as gran_total, SUM(subtotal) as gran_subtotal, SUM(impuestos) as gran_itbis')
-            ->whereBetween('created_at', [$desde, $hasta])
-            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
-            ->first();
-
-        // Ventas por método de pago
         $pagosMetodo = Venta::join('pagos', 'ventas.id', '=', 'pagos.venta_id')
             ->whereBetween('ventas.created_at', [$desde, $hasta])
             ->when($sucursalId, fn($q) => $q->where('ventas.sucursal_id', $sucursalId))

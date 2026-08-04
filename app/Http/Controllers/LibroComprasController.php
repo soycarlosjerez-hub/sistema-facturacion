@@ -35,25 +35,30 @@ class LibroComprasController extends Controller
 
         $compras = $query->orderBy('fecha')->paginate(50)->appends($request->all());
 
-        // Totales por proveedor
-        $totalesProveedor = Compra::selectRaw('proveedor_id, COUNT(*) as cantidad, SUM(subtotal) as subtotal, SUM(itbis_total) as itbis, SUM(retencion_itbis) as itbis_retenido, SUM(retencion_isr) as isr_retenido, SUM(total) as total_compras')
-            ->whereBetween('fecha', [$desde, $hasta])
-            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
-            ->groupBy('proveedor_id')
-            ->with('proveedor:id,nombre,rnc')
-            ->get();
-
-        // Resumen general
-        $resumenGeneral = Compra::selectRaw('COUNT(*) as total, SUM(subtotal) as gran_subtotal, SUM(itbis_total) as gran_itbis, SUM(retencion_itbis) as gran_itbis_retenido, SUM(retencion_isr) as gran_isr_retenido, SUM(total) as gran_total')
+        $resumen = Compra::selectRaw('
+                COUNT(*) as total,
+                SUM(subtotal) as gran_subtotal,
+                SUM(itbis_total) as gran_itbis,
+                SUM(retencion_itbis) as gran_itbis_retenido,
+                SUM(retencion_isr) as gran_isr_retenido,
+                SUM(total) as gran_total
+            ')
             ->whereBetween('fecha', [$desde, $hasta])
             ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->first();
 
-        // Retenciones por tipo
+        $resumenGeneral = $resumen;
+
         $retencionesResumen = [
-            'itbis' => Compra::whereBetween('fecha', [$desde, $hasta])->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))->sum('retencion_itbis'),
-            'isr' => Compra::whereBetween('fecha', [$desde, $hasta])->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))->sum('retencion_isr'),
+            'itbis' => (float) $resumen->gran_itbis_retenido,
+            'isr' => (float) $resumen->gran_isr_retenido,
         ];
+
+        $totalesProveedor = Compra::selectRaw('proveedor_id, COUNT(*) as cantidad, SUM(subtotal) as subtotal, SUM(itbis_total) as itbis, SUM(retencion_itbis) as itbis_retenido, SUM(retencion_isr) as isr_retenido, SUM(total) as total_compras')
+            ->whereBetween('fecha', [$desde, $hasta])
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->groupBy('proveedor_id')
+            ->get();
 
         return view('libros.compras.index', compact(
             'compras', 'totalesProveedor', 'resumenGeneral', 'retencionesResumen',

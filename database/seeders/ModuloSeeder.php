@@ -104,9 +104,13 @@ class ModuloSeeder extends Seeder
             ['key' => 'libros-ventas', 'label' => 'Libro de Ventas', 'icon' => 'bi-book', 'categoria' => 'reportes', 'orden' => 59,
              'sidebar_route' => 'libros.ventas.index', 'sidebar_is_route' => 'libros.ventas*', 'sidebar_exact_route' => 'libros.ventas.index', 'sidebar_permission' => 'reportes.view'],
              ['key' => 'libros-compras', 'label' => 'Libro de Compras', 'icon' => 'bi-book-half', 'categoria' => 'reportes', 'orden' => 60,
-              'sidebar_route' => 'libros.compras.index', 'sidebar_is_route' => 'libros.compras*', 'sidebar_exact_route' => 'libros.compras.index', 'sidebar_permission' => 'reportes.view'],
+               'sidebar_route' => 'libros.compras.index', 'sidebar_is_route' => 'libros.compras*', 'sidebar_exact_route' => 'libros.compras.index', 'sidebar_permission' => 'reportes.view'],
 
-             // Formularios Fiscales
+             // Libro de Retenciones Consolidado
+             ['key' => 'libros-retenciones', 'label' => 'Libro de Retenciones', 'icon' => 'bi-percent', 'categoria' => 'reportes', 'orden' => 61,
+              'sidebar_route' => 'libros-retenciones.index', 'sidebar_is_route' => 'libros-retenciones*', 'sidebar_exact_route' => 'libros-retenciones.index', 'sidebar_permission' => 'reportes.view'],
+
+              // Formularios Fiscales
              ['key' => 'formulario-14-14', 'label' => 'Formulario 14-14', 'icon' => 'bi-file-earmark-text', 'categoria' => 'reportes', 'orden' => 61,
               'sidebar_route' => 'formulario.14-14.index', 'sidebar_is_route' => 'formulario.14-14*', 'sidebar_exact_route' => 'formulario.14-14.index', 'sidebar_permission' => 'reportes.view'],
 

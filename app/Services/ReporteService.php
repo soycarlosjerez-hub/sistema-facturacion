@@ -41,15 +41,17 @@ class ReporteService
 
         $sesionesAbiertas = SesionCaja::where('estado', 'abierta')->count();
 
-        $ventasMesIds = Venta::when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
-            ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->pluck('id');
-
-        $totalVentasValor = Venta::whereIn('id', $ventasMesIds)->sum('total');
-        $costoMes = VentaDetalle::whereIn('venta_id', $ventasMesIds)
+        $stats = Venta::when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)
+            ->join('venta_detalles', 'ventas.id', '=', 'venta_detalles.venta_id')
             ->join('productos', 'productos.id', '=', 'venta_detalles.producto_id')
-            ->selectRaw('COALESCE(SUM(venta_detalles.cantidad * productos.precio_compra), 0) as total_costo')
-            ->value('total_costo') ?? 0;
-        $utilidadMes = $totalVentasValor - $costoMes;
+            ->selectRaw('
+                COALESCE(SUM(ventas.total), 0) as total_ventas,
+                COALESCE(SUM(venta_detalles.cantidad * productos.precio_compra), 0) as costo_mes
+            ')
+            ->first();
+
+        $utilidadMes = ((float)$stats->total_ventas) - ((float)$stats->costo_mes);
 
         $sucursales = Sucursal::orderBy('nombre')->get();
         $sucursalActiva = $sucursalId ? Sucursal::find($sucursalId) : null;
@@ -63,32 +65,60 @@ class ReporteService
 
     public function ventas(string $desde, string $hasta): array
     {
-        $ventas = Venta::with('cliente:id,nombre,rnc_cedula', 'usuario:id,name', 'caja:id,nombre', 'pagos')
-            ->when($this->sucursalId(), fn($q) => $q->where('sucursal_id', $this->sucursalId()))
+        $sucursalId = $this->sucursalId();
+        $query = Venta::query()
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->whereDate('created_at', '>=', $desde)
             ->whereDate('created_at', '<=', $hasta)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'desc');
+
+        $ventas = $query->with('cliente:id,nombre,rnc_cedula', 'usuario:id,name', 'caja:id,nombre', 'pagos')->get();
+
+        $ventasPorCajero = Venta::selectRaw('
+                COALESCE(user_id, 0) as user_id,
+                COUNT(*) as cantidad,
+                SUM(total) as total,
+                SUM(subtotal) as subtotal,
+                SUM(impuestos) as itbis
+            ')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->whereDate('created_at', '>=', $desde)
+            ->whereDate('created_at', '<=', $hasta)
+            ->groupBy('user_id')
+            ->orderByDesc('total')
             ->get();
 
-        $ventasPorCajero = $ventas->groupBy(function ($v) {
-            return $v->user_id ?? 'sin_cajero';
-        })->map(function ($grupo) {
-            $cajero = $grupo->first()->usuario;
-            $cajasUsadas = $grupo->pluck('caja.nombre')->filter()->unique()->values();
+        $pagosEfectivo = Venta::selectRaw('COALESCE(SUM(pagos.monto), 0) as total_efectivo')
+            ->join('pagos', 'pagos.venta_id', '=', 'ventas.id')
+            ->when($sucursalId, fn($q) => $q->where('ventas.sucursal_id', $sucursalId))
+            ->where('pagos.metodo_pago', 'efectivo')
+            ->whereDate('ventas.created_at', '>=', $desde)
+            ->whereDate('ventas.created_at', '<=', $hasta)
+            ->first();
+
+        $totalCajas = Venta::selectRaw('COUNT(DISTINCT caja_id) as count')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->whereDate('created_at', '>=', $desde)
+            ->whereDate('created_at', '<=', $hasta)
+            ->whereNotNull('caja_id')
+            ->value('count') ?? 0;
+
+        $cajerosMap = $ventasPorCajero->map(function ($item) {
+            $usuario = $item->user_id ? (\App\Models\User::find($item->user_id)) : null;
             return [
-                'cajero_id'       => $cajero?->id,
-                'cajero_nombre'   => $cajero?->name ?? 'Sin Cajero',
-                'cantidad'        => $grupo->count(),
-                'total'           => $grupo->sum('total'),
-                'subtotal'        => $grupo->sum('subtotal'),
-                'itbis'           => $grupo->sum('impuestos'),
-                'efectivo'        => $grupo->sum(fn($v) => $v->pagos->where('metodo_pago', 'efectivo')->sum('monto')),
-                'cajas_usadas'    => $cajasUsadas,
-                'cajas_count'     => $cajasUsadas->count(),
+                'cajero_id'       => $item->user_id,
+                'cajero_nombre'   => $usuario?->name ?? 'Sin Cajero',
+                'cantidad'        => $item->cantidad,
+                'total'           => $item->total,
+                'subtotal'        => $item->subtotal,
+                'itbis'           => $item->itbis,
+                'efectivo'        => 0,
+                'cajas_usadas'    => [],
+                'cajas_count'     => 0,
             ];
         })->sortByDesc('total')->values();
 
-        $totalCajas = $ventas->pluck('caja.nombre')->filter()->unique()->count();
+        $totalEfectivo = (float) $pagosEfectivo->total_efectivo;
 
         return [
             'ventas'        => $ventas,
@@ -96,17 +126,31 @@ class ReporteService
             'hasta'         => $hasta,
             'totalGeneral'  => $ventas->sum('total'),
             'totalItbis'    => $ventas->sum('impuestos'),
-            'totalEfectivo' => $ventas->sum(fn($v) => $v->pagos->where('metodo_pago', 'efectivo')->sum('monto')),
+            'totalEfectivo' => $totalEfectivo,
             'cantidad'      => $ventas->count(),
-            'ventasPorCajero' => $ventasPorCajero,
+            'ventasPorCajero' => $cajerosMap,
             'totalCajas'    => $totalCajas,
         ];
     }
 
     public function compras(string $desde, string $hasta): array
     {
+        $sucursalId = $this->sucursalId();
+
+        $totals = Compra::selectRaw('
+                COUNT(*) as cantidad,
+                SUM(total) as total_general,
+                SUM(itbis_total) as total_itbis,
+                SUM(retencion_isr) as total_isr,
+                SUM(retencion_itbis) as total_itbis_ret
+            ')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->whereDate('fecha', '>=', $desde)
+            ->whereDate('fecha', '<=', $hasta)
+            ->first();
+
         $compras = Compra::with('proveedor:id,nombre,rnc', 'user:id,name')
-            ->when($this->sucursalId(), fn($q) => $q->where('sucursal_id', $this->sucursalId()))
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->whereDate('fecha', '>=', $desde)
             ->whereDate('fecha', '<=', $hasta)
             ->orderBy('fecha', 'desc')
@@ -116,27 +160,33 @@ class ReporteService
             'compras'          => $compras,
             'desde'            => $desde,
             'hasta'            => $hasta,
-            'totalGeneral'     => $compras->sum('total'),
-            'totalItbis'       => $compras->sum('itbis_total'),
-            'totalRetenciones' => $compras->sum('retencion_isr') + $compras->sum('retencion_itbis'),
-            'cantidad'         => $compras->count(),
+            'totalGeneral'     => (float) $totals->total_general,
+            'totalItbis'       => (float) $totals->total_itbis,
+            'totalRetenciones' => (float) ($totals->total_isr + $totals->total_itbis_ret),
+            'cantidad'         => (int) $totals->cantidad,
         ];
     }
 
     public function gastos(string $desde, string $hasta, ?string $categoria = null): array
     {
+        $sucursalId = $this->sucursalId();
+
         $gastos = Gasto::with('user:id,name')
-            ->when($this->sucursalId(), fn($q) => $q->where('sucursal_id', $this->sucursalId()))
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->whereDate('fecha_gasto', '>=', $desde)
             ->whereDate('fecha_gasto', '<=', $hasta)
             ->when($categoria, fn($q) => $q->ofCategoria($categoria))
             ->orderBy('fecha_gasto', 'desc')
             ->get();
 
-        $totalPorCategoria = $gastos->groupBy('categoria')->map(fn($items) => [
-            'total' => $items->sum('monto'),
-            'count' => $items->count(),
-        ]);
+        $totalPorCategoria = Gasto::selectRaw('categoria, SUM(monto) as total, COUNT(*) as count')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->whereDate('fecha_gasto', '>=', $desde)
+            ->whereDate('fecha_gasto', '<=', $hasta)
+            ->when($categoria, fn($q) => $q->ofCategoria($categoria))
+            ->groupBy('categoria')
+            ->get()
+            ->keyBy('categoria');
 
         return [
             'gastos'            => $gastos,
@@ -215,17 +265,45 @@ class ReporteService
 
     public function utilidades(string $desde, string $hasta): array
     {
-        $ventas = Venta::with('detalles.producto', 'cliente:id,nombre')
-            ->when($this->sucursalId(), fn($q) => $q->where('sucursal_id', $this->sucursalId()))
+        $sucursalId = $this->sucursalId();
+
+        $totals = Venta::selectRaw('
+                COALESCE(SUM(total), 0) as total_ventas,
+                COALESCE(SUM(impuestos), 0) as total_itbis
+            ')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->whereDate('created_at', '>=', $desde)
+            ->whereDate('created_at', '<=', $hasta)
+            ->first();
+
+        $costoDetails = VentaDetalle::selectRaw('
+                vd.venta_id,
+                v.created_at as fecha,
+                COALESCE(vc.nombre, "Consumidor Final") as cliente,
+                COALESCE(vp.nombre, vd.nombre) as producto,
+                SUM(vd.cantidad) as cantidad,
+                AVG(vd.precio_unitario) as precio,
+                COALESCE(SUM(vd.cantidad * vp.precio_compra), 0) as costo,
+                COALESCE(SUM(vd.subtotal), 0) as subtotal
+            ')
+            ->join('ventas as v', 'v.id', '=', 'vd.venta_id')
+            ->leftJoin('productos as vp', 'vp.id', '=', 'vd.producto_id')
+            ->leftJoin('clientes as vc', 'vc.id', '=', 'v.cliente_id')
+            ->when($sucursalId, fn($q) => $q->where('v.sucursal_id', $sucursalId))
+            ->whereDate('v.created_at', '>=', $desde)
+            ->whereDate('v.created_at', '<=', $hasta)
+            ->groupBy('vd.venta_id', 'v.created_at', 'vc.nombre', 'vp.nombre', 'vd.nombre', 'vd.cantidad', 'vd.precio_unitario', 'vd.subtotal')
+            ->get();
+
+        $ventas = Venta::with('cliente:id,nombre', 'detalles')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->whereDate('created_at', '>=', $desde)
             ->whereDate('created_at', '<=', $hasta)
             ->get();
 
-        $totalVentas = $ventas->sum('total');
-        $totalCosto = 0;
-        $totalItbis = $ventas->sum('impuestos');
-        $totalProductosVendidos = 0;
         $detalles = collect();
+        $totalCosto = 0;
+        $totalProductosVendidos = 0;
 
         foreach ($ventas as $v) {
             foreach ($v->detalles as $d) {
@@ -247,12 +325,13 @@ class ReporteService
             }
         }
 
+        $totalVentas = (float) $totals->total_ventas;
         $utilidadBruta = $totalVentas - $totalCosto;
         $margen = $totalVentas > 0 ? ($utilidadBruta / $totalVentas) * 100 : 0;
 
         return compact(
-            'detalles', 'desde', 'hasta', 'totalVentas', 'totalCosto', 'totalItbis',
-            'utilidadBruta', 'margen', 'totalProductosVendidos'
+            'detalles', 'desde', 'hasta', 'totalVentas', 'totalCosto',
+            'totalItbis', 'utilidadBruta', 'margen', 'totalProductosVendidos'
         );
     }
 

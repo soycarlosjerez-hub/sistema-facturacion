@@ -51,6 +51,7 @@ use App\Http\Controllers\LavadorController;
 use App\Http\Controllers\CuentaBancariaController;
 use App\Http\Controllers\LibroVentasController;
 use App\Http\Controllers\LibroComprasController;
+use App\Http\Controllers\LibroRetencionesController;
 use App\Http\Controllers\Formulario1414Controller;
 use App\Http\Middleware\RoleMiddleware;
 
@@ -538,6 +539,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/formulario-14-14', [Formulario1414Controller::class, 'index'])->name('formulario.14-14.index');
         Route::get('/formulario-14-14/pdf', [Formulario1414Controller::class, 'exportPdf'])->name('formulario.14-14.pdf');
         Route::get('/formulario-14-14/csv', [Formulario1414Controller::class, 'exportCsv'])->name('formulario.14-14.csv');
+
+        // Libro de Retenciones Consolidado
+        Route::get('/libros-retenciones', [LibroRetencionesController::class, 'index'])->name('libros-retenciones.index');
+        Route::get('/libros-retenciones/excel', [LibroRetencionesController::class, 'exportExcel'])->name('libros-retenciones.excel');
+        Route::get('/libros-retenciones/pdf', [LibroRetencionesController::class, 'exportPdf'])->name('libros-retenciones.pdf');
     });
 
         // Fiscales (606/607) - existing
