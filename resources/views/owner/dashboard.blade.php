@@ -176,6 +176,7 @@
                     <tr>
                         <th class="ps-4">Instancia</th>
                         <th>Tipo</th>
+                        <th>Propietario</th>
                         <th>Costo Mensual</th>
                         <th>Meses Atrasados</th>
                         <th>Deuda Estimada</th>
@@ -190,6 +191,21 @@
                             <a href="{{ route('owner.instances.show', $instance) }}" class="text-decoration-none">{{ $instance->nombre }}</a>
                         </td>
                         <td><span class="ui-badge ui-badge-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>
+                        <td>
+                            @if($instance->owner_nombre)
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;background:rgba(139,92,246,.15);color:#8b5cf6;font-size:13px;font-weight:600;">
+                                        {{ strtoupper(substr($instance->owner_nombre, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <div class="small fw-semibold">{{ $instance->owner_nombre }}</div>
+                                        <div class="text-muted" style="font-size:11px;">{{ $instance->owner_email }}</div>
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td>{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</td>
                         <td><span class="ui-badge ui-badge-danger rounded-pill">{{ $instance->mesesAtrasados() }} mes(es)</span></td>
                         <td class="fw-bold text-danger">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->deudaEstimada(), 2) }}</td>
@@ -229,6 +245,7 @@
                     <tr>
                         <th class="ps-4">Nombre</th>
                         <th>Tipo</th>
+                        <th>Propietario</th>
                         <th class="text-center">Estado Pago</th>
                         <th class="text-center">Bloqueo</th>
                         <th>Vencimiento</th>
@@ -243,6 +260,21 @@
                             <a href="{{ route('owner.instances.show', $instance) }}" class="text-decoration-none">{{ $instance->nombre }}</a>
                         </td>
                         <td><span class="ui-badge ui-badge-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>
+                        <td>
+                            @if($instance->owner_nombre)
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;background:rgba(139,92,246,.15);color:#8b5cf6;font-size:13px;font-weight:600;">
+                                        {{ strtoupper(substr($instance->owner_nombre, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <div class="small fw-semibold">{{ $instance->owner_nombre }}</div>
+                                        <div class="text-muted" style="font-size:11px;">{{ $instance->owner_email }}</div>
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td class="text-center">
                             @if(!$instance->activo)
                                 <span class="ui-badge ui-badge-neutral rounded-pill">Inactiva</span>
@@ -281,7 +313,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No hay instancias registradas.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No hay instancias registradas.</td>
                     </tr>
                     @endforelse
                 </tbody>
