@@ -169,7 +169,7 @@ class DgiiTokenManager
         return 'SIM-TOKEN-' . strtoupper(bin2hex(random_bytes(16))) . '-' . $ambiente;
     }
 
-    public function attachTokenToRequest(\Illuminate\Http\Client\Factory|mixed $http, string $ambiente = null): mixed
+    public function attachTokenToRequest($http, string $ambiente = null)
     {
         $token = $this->getToken($ambiente);
 

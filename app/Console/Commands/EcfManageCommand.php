@@ -48,7 +48,8 @@ class EcfManageCommand extends Command
             $resultado = $service->enviarInformeDiario($fecha);
 
             $this->line(" Documentos: {$resultado['documentos_count']}");
-            $this->line(" Track ID: {$resultado['track_id'] ?? 'N/A'}");
+            $trackId = $resultado['track_id'] ?? 'N/A';
+            $this->line(" Track ID: {$trackId}");
             $this->line(" Mensaje: {$resultado['mensaje']}");
 
             return $resultado['success'] ? Command::SUCCESS : Command::FAILURE;
