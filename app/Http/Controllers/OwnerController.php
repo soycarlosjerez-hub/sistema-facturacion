@@ -914,7 +914,7 @@ class OwnerController extends Controller
         // Remover de categorías originales
         $modulos = $modulos->map(function ($items) use ($modsContabilidad) {
             return $items->reject(fn($m) => in_array($m->key, $modsContabilidad));
-        })->reject(fn($items) => $items->isEmpty())->values(true);
+        })->filter(fn($items) => $items->isNotEmpty());
         if ($contabilidadMods->isNotEmpty()) {
             $modulos->put('contabilidad', $contabilidadMods);
         }
@@ -924,10 +924,13 @@ class OwnerController extends Controller
 
         // Ordenar categorías: contabilidad antes de sistema/reportes
         $orden = ['core','operaciones','clientes','organizacion','lavadero','restaurante','alquileres','tattoo','climatizacion','tecnologia','contabilidad','reportes','sistema','configuracion'];
-        $modulos = $modulos->sortBy(function ($items, $cat) use ($orden) {
-            $pos = array_search($cat, $orden);
-            return $pos === false ? 999 : $pos;
-        });
+        $modulos = $modulos->sortKeys(function ($a, $b) use ($orden) {
+            $pa = array_search($a, $orden);
+            $pb = array_search($b, $orden);
+            $pa = $pa === false ? 999 : $pa;
+            $pb = $pb === false ? 999 : $pb;
+            return $pa <=> $pb;
+        }, SORT_NATURAL);
 
         return view('owner.instances.roles.edit', compact('instance', 'role', 'modulos', 'totalModulos', 'selectedModulos'));
     }
