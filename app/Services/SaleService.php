@@ -49,7 +49,8 @@ class SaleService
 
         // --- Cálculo autoritativo server-side (F0.2/F0.3) ---
         $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
-        $puedeSobreescribirPrecio = auth()->user()->hasRole($rolesAutorizados);
+        $puedeSobreescribirPrecio = in_array(auth()->user()->role, $rolesAutorizados)
+            || auth()->user()->hasRole($rolesAutorizados);
 
         $productoIds = $data['producto_id'] ?? [];
         $cantidades  = $data['cantidad'] ?? [];
@@ -404,6 +405,9 @@ class SaleService
 
         $categoriasJs = Categoria::where('tenant_id', $tenantId)->orderBy('nombre')->get(['id', 'nombre'])->toArray();
 
+        $puedeModificarPrecio = in_array(Auth::user()->role, ['admin', 'admin-business', 'root', 'gerente'])
+            || Auth::user()->hasAnyRole(['admin', 'admin-business', 'root', 'gerente']);
+
         $clientesJs = $clientes->map(fn($c) => [
             'id'         => (int) $c->id,
             'nombre'     => $c->nombre,
@@ -419,7 +423,7 @@ class SaleService
         return compact(
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
-            'productosJs', 'clientesJs', 'categoriasJs', 'validaStock'
+            'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio'
         );
     }
 

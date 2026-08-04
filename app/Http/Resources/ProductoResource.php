@@ -37,7 +37,7 @@ class ProductoResource extends JsonResource
 
     protected static function formatIngredientes($ingredientes)
     {
-        if (!$ingredientes) {
+        if (!$ingredientes || $ingredientes instanceof \Illuminate\Http\Resources\MissingValue) {
             return [];
         }
         return $ingredientes->map(fn ($i) => [

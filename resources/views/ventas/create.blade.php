@@ -2893,6 +2893,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     const urlCuentaAbierta = {!! json_encode(url('/ventas/cuenta-abierta')) !!};
     const turnoInicio = new Date({!! json_encode($sesion->fecha_apertura->toIso8601String()) !!});
     const validaStock = {!! json_encode($validaStock ?? true) !!};
+    const puedeModificarPrecio = {!! json_encode($puedeModificarPrecio ?? false) !!};
 
     // ============ Estado ============
     const cart = [];
@@ -4269,6 +4270,16 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
         // Descuento
         $('input-general-descuento').addEventListener('input', calculateTotals);
+        $('input-general-descuento').addEventListener('change', function() {
+            if (puedeModificarPrecio) return;
+            const subtotal = parseFloat($('hidden-subtotal').value) || 0;
+            const descuento = parseFloat(this.value) || 0;
+            if (subtotal > 0 && (descuento / subtotal) * 100 > 50) {
+                showToast('Descuentos superiores al 50% requieren autorización de administrador.', 'warning');
+                this.value = 0;
+                calculateTotals();
+            }
+        });
 
         // Cliente - cambiar a botón que abre modal
         const clienteSelect = $('cliente_id');
@@ -4301,11 +4312,19 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             if (!target) return;
             const index = parseInt(target.dataset.index);
             if (!isNaN(index)) {
-                const value = parseFloat(target.value) || 0;
+                let value = parseFloat(target.value) || 0;
                 const item = cart[index];
                 const lineTotal = item.precio * item.qty;
+                if (item.descuento_tipo === 'porcentaje') {
+                    value = Math.min(100, value);
+                }
                 if (lineTotal > 0) {
                     const descuentoAplicado = item.descuento_tipo === 'porcentaje' ? value : (value / lineTotal * 100);
+                    if (descuentoAplicado > 50 && !puedeModificarPrecio) {
+                        showToast('Descuentos superiores al 50% requieren autorización de administrador.', 'warning');
+                        target.value = item.descuento || 0;
+                        return;
+                    }
                     if (descuentoAplicado > 50) {
                         if (!confirm('Descuento superior al 50%. ¿Confirmar?')) {
                             target.value = item.descuento || 0;

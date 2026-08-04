@@ -39,6 +39,32 @@ class VentaControllerTest extends TestCase
         return $session;
     }
 
+    private function createVendedorConPermisoVentas(array $session): User
+    {
+        $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'vendedor', 'guard_name' => 'web']);
+        \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'ventas.create', 'guard_name' => 'web']);
+        $role->givePermissionTo('ventas.create');
+
+        $vendedor = User::factory()->create([
+            'business_instance_id' => $session['businessInstance']->id,
+            'role' => 'vendedor',
+        ]);
+        $vendedor->assignRole($role);
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        return $vendedor;
+    }
+
+    private function abrirSesionPara(User $user, array $session): void
+    {
+        \App\Models\SesionCaja::factory()->create([
+            'tenant_id' => $session['businessInstance']->id,
+            'caja_id' => $session['caja']->id,
+            'user_id' => $user->id,
+        ]);
+    }
+
     public function test_index_displays_sales_list(): void
     {
         $session = $this->setupSession();
@@ -248,7 +274,7 @@ class VentaControllerTest extends TestCase
             'role' => 'empleado',
         ]);
 
-        $venta = Venta::factory()->create([
+        $venta = Venta::factory()->completada()->create([
             'tenant_id' => $session['businessInstance']->id,
             'user_id' => $session['user']->id,
             'cliente_id' => $session['consumidorFinal']->id,
@@ -270,7 +296,7 @@ class VentaControllerTest extends TestCase
     {
         $session = $this->setupSession();
         
-        $venta = Venta::factory()->create([
+        $venta = Venta::factory()->completada()->create([
             'tenant_id' => $session['businessInstance']->id,
             'user_id' => $session['user']->id,
             'cliente_id' => $session['consumidorFinal']->id,
@@ -495,5 +521,149 @@ class VentaControllerTest extends TestCase
             ->get(route('ventas.index'));
 
         $response->assertOk();
+    }
+
+    public function test_store_persists_line_discount_fields(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [2],
+            'precio' => [100],
+            'subtotal' => [200],
+            'descuento' => [10],
+            'descuento_tipo' => ['porcentaje'],
+            'itbis_porcentaje' => [18],
+            'almacen_id' => [$almacen->id],
+            'total' => 212.40,
+            'impuestos' => 32.40,
+            'subtotal_final' => 200,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->post(route('ventas.store'), $payload)
+            ->assertStatus(302);
+
+        $this->assertDatabaseHas('venta_detalles', [
+            'descuento' => '10.00',
+            'descuento_tipo' => 'porcentaje',
+            'itbis_porcentaje' => '18.00',
+        ]);
+
+        $venta = Venta::where('user_id', $session['user']->id)->first();
+        $this->assertNotNull($venta);
+        $this->assertSame('200.00', $venta->subtotal);
+        $this->assertSame('20.00', $venta->descuento);
+        $this->assertSame('32.40', $venta->impuestos);
+        $this->assertSame('212.40', $venta->total);
+    }
+
+    public function test_store_allows_price_override_for_admin(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 50.00, 'itbis_porcentaje' => 0]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [250],
+            'subtotal' => [250],
+            'almacen_id' => [$almacen->id],
+            'total' => 250,
+            'impuestos' => 0,
+            'subtotal_final' => 250,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->post(route('ventas.store'), $payload)
+            ->assertStatus(302);
+
+        $this->assertDatabaseHas('venta_detalles', [
+            'precio_unitario' => '250.00',
+        ]);
+
+        $venta = Venta::where('user_id', $session['user']->id)->first();
+        $this->assertNotNull($venta);
+        $this->assertSame('250.00', $venta->total);
+    }
+
+    public function test_store_rejects_price_override_for_vendedor(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 50.00, 'itbis_porcentaje' => 0]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $vendedor = $this->createVendedorConPermisoVentas($session);
+        $this->abrirSesionPara($vendedor, $session);
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [250],
+            'subtotal' => [250],
+            'almacen_id' => [$almacen->id],
+            'total' => 250,
+            'impuestos' => 0,
+            'subtotal_final' => 250,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($vendedor)
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertUnprocessable();
+        $response->assertJsonPath('error', 'No autorizado para modificar el precio de "' . $producto->nombre . '".');
+
+        $this->assertDatabaseCount('ventas', 0);
+    }
+
+    public function test_store_rejects_discount_above_50_for_vendedor(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 0]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $vendedor = $this->createVendedorConPermisoVentas($session);
+        $this->abrirSesionPara($vendedor, $session);
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'descuento' => [60],
+            'descuento_tipo' => ['porcentaje'],
+            'almacen_id' => [$almacen->id],
+            'total' => 40,
+            'impuestos' => 0,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($vendedor)
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertUnprocessable();
+        $response->assertJsonPath('error', 'Descuentos superiores al 50% requieren autorización de administrador.');
+
+        $this->assertDatabaseCount('ventas', 0);
     }
 }
