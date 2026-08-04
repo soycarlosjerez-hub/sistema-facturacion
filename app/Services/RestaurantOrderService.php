@@ -78,10 +78,14 @@ class RestaurantOrderService
                     ]);
                 }
 
-                $sesion = SesionCaja::where('user_id', Auth::id())
-                    ->where('estado', 'abierta')
-                    ->latest('fecha_apertura')
-                    ->first();
+                $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+                    || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+                $sesionBuilder = SesionCaja::where('estado', 'abierta');
+                if (!$isElevated) {
+                    $sesionBuilder->where('user_id', Auth::id());
+                }
+                $sesion = $sesionBuilder->latest('fecha_apertura')->first();
 
                 Venta::create([
                     'user_id'        => Auth::id(),
@@ -126,10 +130,14 @@ class RestaurantOrderService
             }
         }
 
-        $sesion = SesionCaja::where('user_id', Auth::id())
-            ->where('estado', 'abierta')
-            ->latest('fecha_apertura')
-            ->first();
+        $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+        $sesionBuilder = SesionCaja::where('estado', 'abierta');
+        if (!$isElevated) {
+            $sesionBuilder->where('user_id', Auth::id());
+        }
+        $sesion = $sesionBuilder->latest('fecha_apertura')->first();
 
         if (!$sesion) {
             return ['error' => 'No tienes una sesión de caja abierta', 'code' => 422];
@@ -362,10 +370,14 @@ class RestaurantOrderService
             return ['error' => 'La mesa no tiene una orden abierta', 'code' => 422];
         }
 
-        $sesion = SesionCaja::where('user_id', Auth::id())
-            ->where('estado', 'abierta')
-            ->latest('fecha_apertura')
-            ->first();
+        $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+        $sesionBuilder = SesionCaja::where('estado', 'abierta');
+        if (!$isElevated) {
+            $sesionBuilder->where('user_id', Auth::id());
+        }
+        $sesion = $sesionBuilder->latest('fecha_apertura')->first();
 
         if (!$sesion) {
             return ['error' => 'No tienes una sesión de caja abierta', 'code' => 422];
@@ -613,7 +625,14 @@ class RestaurantOrderService
         if (!$caja->activo) return ['error' => 'Esta caja está inactiva', 'code' => 422];
         if ($caja->estado === 'abierta') return ['error' => 'La caja ya está abierta', 'code' => 422];
 
-        $sesionActiva = SesionCaja::where('user_id', Auth::id())->where('estado', 'abierta')->first();
+        $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+        $sesionBuilder = SesionCaja::where('estado', 'abierta');
+        if (!$isElevated) {
+            $sesionBuilder->where('user_id', Auth::id());
+        }
+        $sesionActiva = $sesionBuilder->first();
         if ($sesionActiva) {
             return ['error' => 'Ya tienes una sesión abierta en ' . $sesionActiva->caja->nombre, 'code' => 422];
         }

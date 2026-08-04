@@ -54,10 +54,14 @@ class GastoService
         $data['sucursal_id'] = session('sucursal_id');
         $data['tenant_id'] = Auth::user()->business_instance_id ?? null;
 
-        $sesionActiva = SesionCaja::where('user_id', Auth::id())
-            ->where('estado', 'abierta')
-            ->latest()
-            ->first();
+        $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+        $sesionBuilder = SesionCaja::where('estado', 'abierta');
+        if (!$isElevated) {
+            $sesionBuilder->where('user_id', Auth::id());
+        }
+        $sesionActiva = $sesionBuilder->latest()->first();
         if ($sesionActiva) {
             $data['caja_id'] = $sesionActiva->caja_id;
             $data['sesion_caja_id'] = $sesionActiva->id;

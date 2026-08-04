@@ -39,10 +39,14 @@ class PagoController extends Controller
             $metodo = $request->metodo_pago;
             $nota = trim(($request->nota ? $request->nota . ' - ' : '') . 'Método: ' . ucfirst($metodo));
 
-            $sesion = SesionCaja::where('user_id', Auth::id())
-                ->where('estado', 'abierta')
-                ->latest('fecha_apertura')
-                ->first();
+            $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+                || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+            $sesionBuilder = SesionCaja::where('estado', 'abierta');
+            if (!$isElevated) {
+                $sesionBuilder->where('user_id', Auth::id());
+            }
+            $sesion = $sesionBuilder->latest('fecha_apertura')->first();
 
             $pago = Pago::create([
                 'tenant_id'      => Auth::user()->business_instance_id,

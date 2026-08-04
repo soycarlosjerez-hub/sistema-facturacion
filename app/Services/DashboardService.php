@@ -133,11 +133,15 @@ class DashboardService
     public function getCashRegisterStatus(): array
     {
         $tenantId = $this->tenantId();
-        $sesionesActivas = SesionCaja::where('user_id', auth()->id())
-            ->where('estado', 'abierta')
-            ->with('caja')
-            ->latest()
-            ->get();
+        $isElevated = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || auth()->user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+        $sesionesActivas = SesionCaja::where('estado', 'abierta')
+            ->with('caja');
+        if (!$isElevated) {
+            $sesionesActivas->where('user_id', auth()->id());
+        }
+        $sesionesActivas = $sesionesActivas->latest()->get();
 
         $hoy = Carbon::today();
 

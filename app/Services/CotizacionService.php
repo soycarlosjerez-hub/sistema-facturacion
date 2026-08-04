@@ -188,7 +188,14 @@ class CotizacionService
             }
 
             $almacenId = Almacen::first()?->id ?? 1;
-            $sesion = SesionCaja::where('user_id', Auth::id())->where('estado', 'abierta')->latest('id')->first();
+            $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+                || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+            $sesion = SesionCaja::where('estado', 'abierta');
+            if (!$isElevated) {
+                $sesion->where('user_id', Auth::id());
+            }
+            $sesion = $sesion->latest('id')->first();
 
             $venta = Venta::create([
                 'cliente_id'      => $cotizacion->cliente_id,

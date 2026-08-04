@@ -72,16 +72,22 @@ class VentaController extends Controller
     {
         $sesionId = $request->input('sesion_caja_id');
         
+        $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
         if ($sesionId) {
             $sesion = SesionCaja::where('id', $sesionId)
-                ->where('user_id', Auth::id())
-                ->where('estado', 'abierta')
-                ->first();
+                ->where('estado', 'abierta');
+            if (!$isElevated) {
+                $sesion->where('user_id', Auth::id());
+            }
+            $sesion = $sesion->first();
         } else {
-            $sesion = SesionCaja::where('user_id', Auth::id())
-                ->where('estado', 'abierta')
-                ->latest('fecha_apertura')
-                ->first();
+            $sesion = SesionCaja::where('estado', 'abierta');
+            if (!$isElevated) {
+                $sesion->where('user_id', Auth::id());
+            }
+            $sesion = $sesion->latest('fecha_apertura')->first();
         }
 
         if (!$sesion) {

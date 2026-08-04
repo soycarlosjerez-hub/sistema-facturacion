@@ -115,9 +115,14 @@ class LavaderoController extends Controller
             $itbis = $subtotal * 0.18;
             $total = $subtotal + $itbis;
 
-            $sesionActiva = SesionCaja::where('user_id', auth()->id())
-                ->where('estado', 'abierta')
-                ->first();
+            $isElevated = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])
+                || auth()->user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
+            $sesionBuilder = SesionCaja::where('estado', 'abierta');
+            if (!$isElevated) {
+                $sesionBuilder->where('user_id', auth()->id());
+            }
+            $sesionActiva = $sesionBuilder->first();
 
             $venta = Venta::create([
                 'user_id' => auth()->id(),

@@ -293,12 +293,18 @@ class SaleService
     {
         $tenantId = Auth::user()->business_instance_id;
         
+        $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
         $sesionesActivas = SesionCaja::with('caja')
-            ->where('user_id', Auth::id())
             ->where('estado', 'abierta')
-            ->where('tenant_id', $tenantId)
-            ->latest('fecha_apertura')
-            ->get();
+            ->where('tenant_id', $tenantId);
+
+        if (!$isElevated) {
+            $sesionesActivas->where('user_id', Auth::id());
+        }
+
+        $sesionesActivas = $sesionesActivas->latest('fecha_apertura')->get();
 
         if ($sesionesActivas->isEmpty()) {
             return ['sesiones' => collect(), 'sesion' => null];

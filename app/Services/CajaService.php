@@ -22,11 +22,17 @@ class CajaService
         }
         $cajas = $query->get();
 
+        $isElevated = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])
+            || auth()->user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+
         $sesionesActivasUsuario = SesionCaja::with('caja', 'user')
-            ->where('user_id', auth()->id())
-            ->where('estado', 'abierta')
-            ->latest('fecha_apertura')
-            ->get();
+            ->where('estado', 'abierta');
+
+        if (!$isElevated) {
+            $sesionesActivasUsuario->where('user_id', auth()->id());
+        }
+
+        $sesionesActivasUsuario = $sesionesActivasUsuario->latest('fecha_apertura')->get();
 
         $stats = [
             'total'         => $cajas->count(),
