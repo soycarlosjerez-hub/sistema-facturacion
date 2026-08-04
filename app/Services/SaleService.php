@@ -297,8 +297,7 @@ class SaleService
             || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
 
         $sesionesActivas = SesionCaja::with('caja')
-            ->where('estado', 'abierta')
-            ->where('tenant_id', $tenantId);
+            ->where('estado', 'abierta');
 
         if (!$isElevated) {
             $sesionesActivas->where('user_id', Auth::id());
