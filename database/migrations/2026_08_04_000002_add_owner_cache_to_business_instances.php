@@ -9,9 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('business_instances', function (Blueprint $table) {
-            $table->string('owner_email', 255)->nullable()->after('owner_user_id');
-            $table->string('owner_nombre', 255)->nullable()->after('owner_email');
-            $table->index('owner_email');
+            $table->string('owner_email', 100)->nullable()->after('owner_user_id');
+            $table->string('owner_nombre', 100)->nullable()->after('owner_email');
         });
     }
 

@@ -710,6 +710,11 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/activity-history/json', [\App\Http\Controllers\OwnerController::class, 'activityHistoryJson'])->name('activity.history.json');
     Route::post('/activity-history/clear', [\App\Http\Controllers\OwnerController::class, 'clearHistory'])->name('activity.history.clear');
 
+    // Audit Logs
+    Route::get('/audit-logs', [\App\Http\Controllers\OwnerController::class, 'auditLogsIndex'])->name('audit-logs.index');
+    Route::get('/audit-logs/{auditLog}', [\App\Http\Controllers\OwnerController::class, 'auditLogsShow'])->name('audit-logs.show');
+    Route::post('/audit-logs/clear', [\App\Http\Controllers\OwnerController::class, 'clearAuditLogs'])->name('audit-logs.clear');
+
     // API Tokens
     Route::post('/instances/{instance}/tokens', [\App\Http\Controllers\OwnerController::class, 'instanceTokensStore'])->name('instances.tokens.store');
     Route::delete('/instances/{instance}/tokens/{token}', [\App\Http\Controllers\OwnerController::class, 'instanceTokensDestroy'])->name('instances.tokens.destroy');

@@ -35,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         Schema::defaultStringLength(191);
 
+        BusinessInstance::observe(\App\Observers\BusinessInstanceObserver::class);
+
         Gate::define('admin', function ($user) {
             return $user->role === 'admin';
         });

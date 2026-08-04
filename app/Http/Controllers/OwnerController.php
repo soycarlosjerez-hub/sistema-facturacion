@@ -1722,4 +1722,73 @@ class OwnerController extends Controller
         return redirect()->route('owner.owners.index')
             ->with('success', "Dueño de plataforma '{$name}' eliminado correctamente.");
     }
+
+    // ──────────────────────────────────────────────
+    // AUDITORÍA — Registro de acciones del Owner
+    // ──────────────────────────────────────────────
+
+    public function auditLogsIndex(Request $request)
+    {
+        $query = \App\Models\AuditLog::with('user')
+            ->where(function ($q) {
+                // Owner ve TODO o solo sus propias acciones
+                $q->whereNull('tenant_id')
+                  ->orWhere('tenant_id', auth()->user()->businessInstance_id);
+            })
+            ->latest();
+
+        if ($request->filled('action')) {
+            $query->ofAction($request->action);
+        }
+        if ($request->filled('model')) {
+            $query->where('model_type', 'like', '%' . $request->model);
+        }
+        if ($request->filled('user_id')) {
+            $query->ofUser($request->user_id);
+        }
+        if ($request->filled('desde')) {
+            $query->whereDate('created_at', '>=', $request->desde);
+        }
+        if ($request->filled('hasta')) {
+            $query->whereDate('created_at', '<=', $request->hasta);
+        }
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where('description', 'like', "%{$s}%")
+                  ->orWhere('action', 'like', "%{$s}%");
+        }
+
+        $logs = $query->paginate(50);
+        $actions = \App\Models\AuditLog::distinct('action')->pluck('action');
+        $models = \App\Models\AuditLog::distinct('model_type')->pluck('model_type')
+                   ->map(fn($m) => class_basename($m));
+        $users = User::whereHas('roles', fn($q) => $q->whereIn('name', ['owner', 'admin-business', 'admin']))
+                     ->get(['id', 'name']);
+
+        return view('owner.audit-logs.index', compact('logs', 'actions', 'models', 'users'));
+    }
+
+    public function auditLogsShow(\App\Models\AuditLog $auditLog)
+    {
+        $auditLog->load('user');
+        return view('owner.audit-logs.show', compact('auditLog'));
+    }
+
+    public function clearAuditLogs(Request $request)
+    {
+        $days = $request->input('days', 30);
+        $cutOff = now()->subDays($days);
+
+        $count = \App\Models\AuditLog::where('created_at', '<', $cutOff)
+            ->where(function ($q) {
+                $q->whereNull('tenant_id')
+                  ->orWhere('tenant_id', auth()->user()->businessInstance_id);
+            })
+            ->delete();
+
+        $this->logOwnerAction('AUDIT_LOG_CLEAR', "Historial de auditoría limpiado: {$count} registros eliminados (anteriores a {$days} días).");
+
+        return redirect()->route('owner.audit-logs.index')
+            ->with('success', "{$count} registros antiguos eliminados correctamente.");
+    }
 }

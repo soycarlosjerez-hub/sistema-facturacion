@@ -23,6 +23,8 @@ class BusinessInstance extends Model
         'direccion',
         'business_type_id',
         'owner_user_id',
+        'owner_email',
+        'owner_nombre',
         'configuracion',
         'activo',
         'fecha_vencimiento',
