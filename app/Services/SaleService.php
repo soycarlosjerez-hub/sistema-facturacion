@@ -507,6 +507,9 @@ class SaleService
             $precio = $precios[$i] ?? 0;
             $subtotal = $subtotales[$i] ?? 0;
             $almacenId = isset($almacenes[$i]) ? (int)$almacenes[$i] : $fallbackAlmacen->id;
+            $descuento = (float) ($data['descuento'][$i] ?? 0);
+            $descuentoTipo = $data['descuento_tipo'][$i] ?? 'monto';
+            $itbisPorcentaje = (float) ($data['itbis_porcentaje'][$i] ?? 0);
 
             $producto = Producto::findOrFail($productoId);
 
@@ -518,13 +521,16 @@ class SaleService
             }
 
             VentaDetalle::create([
-                'venta_id'        => $venta->id,
-                'producto_id'     => $productoId,
-                'cantidad'        => $cantidad,
-                'precio_unitario' => $precio,
-                'subtotal'        => $subtotal,
-                'almacen_id'      => $almacenId,
-                'tenant_id'       => $tenantId,
+                'venta_id'         => $venta->id,
+                'producto_id'      => $productoId,
+                'cantidad'         => $cantidad,
+                'precio_unitario'  => $precio,
+                'subtotal'         => $subtotal,
+                'descuento'        => $descuento,
+                'descuento_tipo'   => $descuentoTipo,
+                'itbis_porcentaje' => $itbisPorcentaje,
+                'almacen_id'       => $almacenId,
+                'tenant_id'        => $tenantId,
             ]);
 
             if ($this->validaStock()) {

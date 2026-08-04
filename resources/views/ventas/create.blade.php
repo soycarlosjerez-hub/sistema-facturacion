@@ -3563,7 +3563,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             const outCls = (validaStock && p.stock <= 0) ? ' out-of-stock' : '';
             let imgHtml;
             if (p.imagen_url) {
-                imgHtml = `<img class="modal-prod-img" src="${p.imagen_url}" alt="" onerror="this.onerror=null;this.remove();this.nextElementSibling.style.display='flex';">`;
+                imgHtml = `<img class="modal-prod-img" src="${escapeHtml(p.imagen_url)}" alt="" onerror="this.onerror=null;this.remove();this.nextElementSibling.style.display='flex';">`;
                 imgHtml += `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};display:none;">${initial}</div>`;
             } else {
                 imgHtml = `<div class="modal-prod-img-placeholder" style="background:${c.bg};color:${c.fg};">${initial}</div>`;
@@ -3751,7 +3751,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 const itbis = subtotalConDesc * (item.itbis_p / 100);
                 return `
                 <div class="cart-item ${anim === 'add' && index === cart.length-1 ? 'adding' : ''}" data-index="${index}">
-                    <img src="${item.imagen_url}" class="ci-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+                    <img src="${escapeHtml(item.imagen_url)}" class="ci-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
                     <div class="ci-info">
                         <div class="ci-name">${escapeHtml(item.nombre)}</div>
                         <div class="ci-meta">
@@ -3898,7 +3898,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         if (filtered.length > 0) {
             dropdown.innerHTML = filtered.map(p => `
                 <div class="res-item" data-action="add" data-id="${p.id}">
-                    <img src="${p.imagen_url}" class="res-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+                    <img src="${escapeHtml(p.imagen_url)}" class="res-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
                     <div class="res-info">
                         <div class="res-name">${escapeHtml(p.nombre)}</div>
                         <div class="res-meta">${escapeHtml(p.codigo_barras || 'Sin código')} · ${escapeHtml(p.unidad_medida)}</div>
@@ -3933,7 +3933,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             const stockLbl = p.stock === 0 ? 'Agotado' : p.stock + ' disp.';
             return `
             <button type="button" class="pos-product-card ${p.stock === 0 ? 'out-of-stock' : ''}" data-action="add" data-id="${p.id}">
-                <img src="${p.imagen_url}" class="ppc-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+                <img src="${escapeHtml(p.imagen_url)}" class="ppc-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
                 <div class="ppc-name">${escapeHtml(p.nombre)}</div>
                 <div class="ppc-price">${fmt(p.precio)}</div>
                 <span class="ppc-stock ${stockCls}">${stockLbl}</span>

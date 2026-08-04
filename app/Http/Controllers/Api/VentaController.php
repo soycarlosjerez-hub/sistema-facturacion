@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\VentaResource;
+use App\Models\Almacen;
+use App\Models\AlmacenMovimiento;
 use App\Models\Cliente;
+use App\Models\Producto;
 use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class VentaController extends Controller
@@ -110,18 +114,153 @@ class VentaController extends Controller
             'detalles.*.cantidad' => 'required|numeric|min:0.01',
             'detalles.*.precio_unitario' => 'required|numeric|min:0',
             'detalles.*.descuento' => 'nullable|numeric|min:0',
+            'detalles.*.descuento_tipo' => 'nullable|in:monto,porcentaje',
             'detalles.*.impuesto' => 'nullable|numeric|min:0',
+            'detalles.*.almacen_id' => 'nullable|exists:almacenes,id',
         ]);
 
         $clienteData = $this->resolverCliente($request);
         $validated = array_merge($validated, $clienteData);
-        $validated['tenant_id'] = Auth::user()->business_instance_id;
 
-        $venta = Venta::create($validated);
+        $user = Auth::user();
+        $tenantId = $user->business_instance_id;
+        $validated['tenant_id'] = $tenantId;
 
-        foreach ($validated['detalles'] as $detalle) {
-            $venta->detalles()->create(array_merge($detalle, ['venta_id' => $venta->id]));
+        // --- Cálculo autoritativo server-side (F2.5) ---
+        $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
+        $puedeSobreescribirPrecio = $user->hasRole($rolesAutorizados)
+            || in_array($user->role ?? '', $rolesAutorizados);
+
+        $config = $user->businessInstance->configuracion ?? [];
+        $validaStock = ($config['restaurante_valida_stock'] ?? '1') === '1';
+
+        $lineas = [];
+        $subtotalTotal = 0.0;
+        $descuentosLinea = 0.0;
+
+        foreach ($validated['detalles'] as $i => $detalle) {
+            $producto = Producto::find($detalle['producto_id']);
+            if (!$producto) {
+                return response()->json(['message' => "El producto #{$detalle['producto_id']} no existe."], 422);
+            }
+
+            $cantidad = max(0.01, (float) $detalle['cantidad']);
+            $precioBD = (float) $producto->precio;
+            $precioCli = (float) ($detalle['precio_unitario'] ?? $precioBD);
+
+            if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+                return response()->json([
+                    'message' => "No autorizado para modificar el precio de \"{$producto->nombre}\".",
+                ], 422);
+            }
+
+            $precioBase = (abs($precioCli - $precioBD) > 0.02 && $puedeSobreescribirPrecio)
+                ? $precioCli
+                : $precioBD;
+
+            $almacenId = (int) ($detalle['almacen_id'] ?? 0);
+            if (!$almacenId) {
+                $almacen = Almacen::where('tenant_id', $tenantId)->first();
+                if (!$almacen) {
+                    $almacen = Almacen::create([
+                        'tenant_id' => $tenantId,
+                        'nombre'    => 'General',
+                        'ubicacion' => 'Principal',
+                    ]);
+                }
+                $almacenId = $almacen->id;
+            }
+
+            if ($validaStock) {
+                $stockAlmacen = (int) (AlmacenMovimiento::where('producto_id', $producto->id)
+                    ->where('almacen_id', $almacenId)
+                    ->selectRaw('SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
+                    ->value('stock') ?? 0);
+
+                if ($stockAlmacen < $cantidad || $producto->stock < $cantidad) {
+                    return response()->json([
+                        'message' => "Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$stockAlmacen}, Stock global: {$producto->stock})",
+                    ], 422);
+                }
+            }
+
+            $subtotalLinea = round($precioBase * $cantidad, 2);
+            $descuento = (float) ($detalle['descuento'] ?? 0);
+            $descuentoTipo = $detalle['descuento_tipo'] ?? 'monto';
+            $descuentoAplicado = $descuentoTipo === 'porcentaje'
+                ? $subtotalLinea * min($descuento, 100) / 100
+                : $descuento;
+
+            $subtotalTotal += $subtotalLinea;
+            $descuentosLinea += $descuentoAplicado;
+
+            $lineas[] = [
+                'producto_id'      => $producto->id,
+                'cantidad'         => $cantidad,
+                'precio_unitario'  => $precioBase,
+                'subtotal'         => $subtotalLinea,
+                'descuento'        => $descuento,
+                'descuento_tipo'   => $descuentoTipo,
+                'itbis_porcentaje' => (float) ($producto->itbis_porcentaje ?? 0),
+                'almacen_id'       => $almacenId,
+            ];
         }
+
+        $generalDescuento = max(0, (float) ($validated['descuento'] ?? 0));
+        $descuentoTotal = $descuentosLinea + $generalDescuento;
+
+        if ($subtotalTotal > 0) {
+            $pctDescuento = ($descuentoTotal / $subtotalTotal) * 100;
+            if ($pctDescuento > 50 && !$puedeSobreescribirPrecio) {
+                return response()->json([
+                    'message' => 'Descuentos superiores al 50% requieren autorización de administrador.',
+                ], 422);
+            }
+        }
+
+        // ITBIS sobre base bruta autoritativa (descuento aplicado por línea y general proporcional)
+        $itbisTotal = 0.0;
+        foreach ($lineas as $line) {
+            $descAplicado = $line['descuento_tipo'] === 'porcentaje'
+                ? $line['subtotal'] * min($line['descuento'], 100) / 100
+                : $line['descuento'];
+            $baseFinal = max(0, $line['subtotal'] - $descAplicado);
+            if ($generalDescuento > 0 && $subtotalTotal > 0) {
+                $baseFinal = max(0, $baseFinal - ($generalDescuento * ($baseFinal / $subtotalTotal)));
+            }
+            $itbisTotal += $baseFinal * ($line['itbis_porcentaje'] / 100);
+        }
+        $itbisTotal = round($itbisTotal, 2);
+
+        $validated['subtotal']  = round($subtotalTotal, 2);
+        $validated['impuestos'] = $itbisTotal;
+        $validated['descuento'] = round($descuentoTotal, 2);
+        $validated['total']     = round($subtotalTotal - $descuentoTotal + $itbisTotal, 2);
+        $validated['detalles']  = $lineas;
+
+        $venta = DB::transaction(function () use ($validated, $tenantId, $user, $validaStock) {
+            $venta = Venta::create($validated);
+
+            foreach ($validated['detalles'] as $detalle) {
+                $venta->detalles()->create(array_merge($detalle, ['venta_id' => $venta->id, 'tenant_id' => $tenantId]));
+
+                if ($validaStock) {
+                    AlmacenMovimiento::create([
+                        'tenant_id'   => $tenantId,
+                        'producto_id' => $detalle['producto_id'],
+                        'almacen_id'  => $detalle['almacen_id'],
+                        'tipo'        => 'salida',
+                        'cantidad'    => $detalle['cantidad'],
+                        'nota'        => 'Venta #' . $venta->id . ' (API)',
+                        'user_id'     => $user->id,
+                    ]);
+
+                    Producto::where('id', $detalle['producto_id'])->decrement('stock', $detalle['cantidad']);
+                }
+            }
+
+            return $venta;
+        });
 
         return new VentaResource($venta->load(['usuario', 'cliente', 'sucursal', 'caja', 'detalles.producto', 'pagos']));
     }
