@@ -182,7 +182,7 @@
     @if($role->users()->count() == 0)
     <form action="{{ route('owner.instances.roles.destroy', [$instance, $role]) }}" method="POST" onsubmit="return confirm('¿Eliminar el rol &quot;{{ $role->name }}&quot;? Esta acción no se puede deshacer.')">
         @csrf @method('DELETE')
-        <button type="submit" class="ui-btn ui-btn-danger rounded-pill px-4">
+        <button type="submit" class="ui-btn ui-btn-danger rounded-pill px-4 mt-3">
             <i class="bi bi-trash me-1"></i>Eliminar Rol
         </button>
     </form>
@@ -192,7 +192,6 @@
     </div>
     @endif
 </div>
-</div>
 
 <div class="ui-sticky-bar">
     <div class="ui-sticky-bar-inner">
@@ -201,11 +200,15 @@
             <span class="fw-semibold d-none d-sm-inline">Editando Rol: {{ $role->name }}</span>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ route('owner.instances.roles', $instance) }}" class="ui-btn ui-btn-ghost btn-sm">
+                <i class="bi bi-x-lg me-1"></i>Cancelar
+            </a>
             <button type="submit" form="roleForm" class="ui-btn ui-btn-solid rounded-pill px-4 fw-bold shadow-sm">
                 <i class="bi bi-save me-1"></i>Guardar Cambios
             </button>
         </div>
     </div>
+</div>
 </div>
 
 <script>

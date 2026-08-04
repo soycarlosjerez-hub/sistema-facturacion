@@ -201,4 +201,53 @@
         font-size: 0.75rem;
         color: #475569;
     }
+
+    /* Dark mode overrides for instance role views */
+    body.dark-mode .perm-module-card {
+        background: rgba(30,41,59,.95);
+        border-color: rgba(255,255,255,.08);
+    }
+    body.dark-mode .perm-module-card:hover {
+        border-color: var(--accent-color, #38bdf8);
+        box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+    body.dark-mode .perm-module-card .module-header {
+        border-bottom-color: rgba(255,255,255,.08);
+    }
+    body.dark-mode .perm-module-card .module-title {
+        color: var(--accent-color, #38bdf8);
+    }
+    body.dark-mode .perm-toggle:hover {
+        background: rgba(56,189,248,.08);
+    }
+    body.dark-mode .perm-toggle.is-checked {
+        background: rgba(34,197,94,.12);
+        border-color: rgba(34,197,94,.3);
+    }
+    body.dark-mode .perm-toggle.is-checked .perm-name {
+        color: #4ade80;
+    }
+    body.dark-mode .perm-toggle .perm-name {
+        color: #cbd5e1;
+    }
+    body.dark-mode .perm-toggle .text-muted {
+        color: #64748b !important;
+    }
+    body.dark-mode .role-action-btn {
+        background: rgba(255,255,255,.05);
+        color: #94a3b8;
+    }
+    body.dark-mode .protected-badge {
+        background: rgba(245,158,11,.15);
+        color: #fbbf24;
+    }
+    body.dark-mode .matrix-table th {
+        background: rgba(30,41,59,.95);
+    }
+    body.dark-mode .matrix-table .module-row td {
+        background: rgba(15,23,42,.3);
+    }
+    body.dark-mode .matrix-table .perm-name-cell {
+        color: #cbd5e1;
+    }
 </style>

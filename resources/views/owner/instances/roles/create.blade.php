@@ -170,13 +170,16 @@
     </form>
 </div>
 
-<div id="stickySaveBar" class="ui-sticky-bar">
+<div class="ui-sticky-bar">
     <div class="ui-sticky-bar-inner">
         <div class="d-flex align-items-center gap-2" id="saveBarLeft">
             <i class="bi bi-info-circle text-primary"></i>
             <span class="fw-semibold d-none d-sm-inline">Nuevo Rol de Instancia</span>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ route('owner.instances.roles', $instance) }}" class="ui-btn ui-btn-ghost btn-sm">
+                <i class="bi bi-x-lg me-1"></i>Cancelar
+            </a>
             <button type="submit" form="roleForm" class="ui-btn ui-btn-solid ui-btn-pill px-4 fw-bold">
                 <i class="bi bi-check-lg me-1"></i>Crear Rol
             </button>

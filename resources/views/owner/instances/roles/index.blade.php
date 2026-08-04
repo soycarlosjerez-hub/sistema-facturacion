@@ -56,14 +56,14 @@
                         </small>
                     </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('owner.instances.roles.edit', [$instance, $role]) }}" class="ui-action ui-action-edit">
-                        <i class="bi bi-pencil me-1"></i>Editar M&oacute;dulos
+                <div class="d-flex gap-1 align-items-center">
+                    <a href="{{ route('owner.instances.roles.edit', [$instance, $role]) }}" class="ui-action ui-action-edit" title="Editar módulos">
+                        <i class="bi bi-pencil"></i>
                     </a>
                     @if($role->users_count === 0)
-                    <form method="POST" action="{{ route('owner.instances.roles.destroy', [$instance, $role]) }}" onsubmit="return confirm('¿Eliminar el rol {{ $role->name }}?')">
+                    <form method="POST" action="{{ route('owner.instances.roles.destroy', [$instance, $role]) }}" class="d-inline">
                         @csrf @method('DELETE')
-                        <button type="submit" class="ui-action ui-action-delete">
+                        <button type="submit" class="ui-action ui-action-delete" onclick="event.preventDefault();UI.confirm.delete('{{ route('owner.instances.roles.destroy', [$instance, $role]) }}', '{{ addslashes($role->name) }}')" title="Eliminar rol">
                             <i class="bi bi-trash"></i>
                         </button>
                     </form>
