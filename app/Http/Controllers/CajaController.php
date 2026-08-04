@@ -121,7 +121,9 @@ class CajaController extends Controller
             return back()->with('error', $result['message']);
         }
 
-        Event::dispatch(new \App\Events\ShiftOpened($result['sesion']));
+        if (!empty($result['sesion'])) {
+            Event::dispatch(new \App\Events\ShiftOpened($result['sesion']));
+        }
 
         return redirect()->to($result['redirect'] ?? route('cajas.index'))
             ->with('success', $result['message']);

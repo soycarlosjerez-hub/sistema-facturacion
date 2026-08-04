@@ -309,8 +309,9 @@ class SaleService
             return ['sesiones' => collect(), 'sesion' => null];
         }
 
-        // Default to first (most recently opened) session
-        $sesion = $sesiones->first();
+        // Default a la sesión solicitada (?sesion_id=) o a la más reciente
+        $sesionIdSolicitada = (int) request()->query('sesion_id', 0);
+        $sesion = $sesiones->firstWhere('id', $sesionIdSolicitada) ?? $sesiones->first();
 
         $clienteConsumidorFinal = Cliente::consumidorFinal($tenantId);
 

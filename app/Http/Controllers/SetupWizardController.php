@@ -106,9 +106,13 @@ class SetupWizardController extends Controller
         }
 
         try {
-            app(CajaService::class)->abrir($caja->id, $user->id);
+            $result = app(CajaService::class)->abrir($caja, 0);
         } catch (\Exception $e) {
             return redirect()->route('cajas.index')->with('error', $e->getMessage());
+        }
+
+        if (!$result['success']) {
+            return redirect()->route('cajas.index')->with('error', $result['message']);
         }
 
         return redirect()->route('ventas.create');

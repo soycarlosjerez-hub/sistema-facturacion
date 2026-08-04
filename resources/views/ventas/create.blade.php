@@ -2135,21 +2135,28 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                             @endif
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0" style="min-width: 260px;">
-                            @foreach($sesiones as $s)
-                            <li>
-                                <a class="dropdown-item small pos-session-link" href="#" data-sesion-id="{{ $s->id }}" data-caja-nombre="{{ $s->caja->nombre }}" data-caja-codigo="{{ $s->caja->codigo ?? '' }}">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <i class="bi bi-cash-register me-1"></i>
-                                            <strong>{{ $s->caja->nombre }}</strong>
-                                            @if($s->caja->codigo)
-                                                <span class="badge bg-dark ms-1">{{ $s->caja->codigo }}</span>
-                                            @endif
+                            @foreach($sesiones->groupBy('caja_id') as $sesionesCaja)
+                                @php
+                                    $cajaItem = $sesionesCaja->first()->caja;
+                                    $sesionItem = $sesionesCaja->first();
+                                @endphp
+                                <li>
+                                    <a class="dropdown-item small pos-session-link" href="{{ route('ventas.create', ['sesion_id' => $sesionItem->id]) }}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="bi bi-cash-register me-1"></i>
+                                                <strong>{{ $cajaItem->nombre }}</strong>
+                                                @if($cajaItem->codigo)
+                                                    <span class="badge bg-dark ms-1">{{ $cajaItem->codigo }}</span>
+                                                @endif
+                                                @if($sesionesCaja->count() > 1)
+                                                    <span class="badge bg-warning text-dark ms-1">sesiones: {{ $sesionesCaja->count() }}</span>
+                                                @endif
+                                            </div>
+                                            <span class="text-muted" style="font-size:0.7rem;">{{ $sesionItem->fecha_apertura->format('h:i A') }}</span>
                                         </div>
-                                        <span class="text-muted" style="font-size:0.7rem;">{{ $s->fecha_apertura->format('h:i A') }}</span>
-                                    </div>
-                                </a>
-                            </li>
+                                    </a>
+                                </li>
                             @endforeach
                             <li><hr class="dropdown-divider"></li>
                             <li>
@@ -3166,39 +3173,16 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         }
     };
     
-    // Session switcher
+    // Session switcher: los enlaces navegan con ?sesion_id= (recarga la página con esa sesión por defecto)
     document.addEventListener('DOMContentLoaded', function() {
-        const links = document.querySelectorAll('.pos-session-link');
-        links.forEach(link => {
+        document.querySelectorAll('.pos-session-link').forEach(link => {
             link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const sesionId = this.getAttribute('data-sesion-id');
-                const cajaNombre = this.getAttribute('data-caja-nombre');
-                const cajaCodigo = this.getAttribute('data-caja-codigo');
-                
-                // Update hidden input
-                const hiddenInput = document.getElementById('selected-sesion-id');
-                if (hiddenInput) {
-                    hiddenInput.value = sesionId;
+                // Si hay productos en el carrito, confirmar antes de cambiar de caja
+                const carritoVacio = !document.querySelector('#pos-form tbody tr[data-index]');
+                if (!carritoVacio && !confirm('¿Cambiar de caja? Se perderán los productos agregados en el carrito.')) {
+                    e.preventDefault();
+                    return;
                 }
-                
-                // Update the tag display
-                const tag = document.querySelector('.pos-topbar .caja-tag');
-                if (tag) {
-                    tag.innerHTML = '<span class="pulse-dot"></span><span>' + cajaNombre + '</span>';
-                    if (cajaCodigo) {
-                        tag.innerHTML += '<span style="opacity: 0.7; font-size: 0.75rem;">' + cajaCodigo + '</span>';
-                    }
-                }
-                
-                // Close dropdown
-                const dropdownToggle = document.querySelector('.pos-topbar .dropdown-toggle');
-                if (dropdownToggle) {
-                    const dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
-                    if (dropdown) dropdown.hide();
-                }
-                
-                showToast('Cambio a: ' + cajaNombre, 'success', 2000);
             });
         });
     });
