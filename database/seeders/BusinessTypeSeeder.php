@@ -194,6 +194,27 @@ class BusinessTypeSeeder extends Seeder
                     'auditoria', 'backups', 'plantilla-gastos',
                 ],
             ],
+            [
+                'slug' => 'mecanica',
+                'nombre' => 'Repuesto de Mecanica',
+                'descripcion' => 'Venta de repuestos automotrices y servicios de mecánica (cambio de aceite y filtros)',
+                'color' => 'warning',
+                'icon' => 'bi-tools',
+                'activo' => true,
+                'orden' => 10,
+                'modulos' => [
+                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
+                    'ventas', 'devoluciones', 'ordenes', 'cotizaciones', 'conduces',
+                    'clientes', 'cobros', 'cajas', 'gastos', 'plantilla-gastos',
+                    'sucursales', 'almacenes',
+                    'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades',
+                    'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
+                    'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
+                    'configuracion-general', 'impresoras', 'payment-processors',
+                    'auditoria', 'backups',
+                ],
+            ],
         ];
 
         foreach ($tipos as $tipoData) {

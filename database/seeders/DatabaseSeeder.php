@@ -44,6 +44,10 @@ class DatabaseSeeder extends Seeder
         $this->call(DeliveryCompanySeeder::class);
         $this->call(WizardStepSeeder::class);
         $this->call(CategoryPermissionsSeeder::class);
+
+        // Repuesto de Mecanica
+        $this->call(MecanicaCategoriasSeeder::class);
+        $this->call(MecanicaProductosSeeder::class);
         
         // Climatización
         $this->call(TiposClimaSeeder::class);

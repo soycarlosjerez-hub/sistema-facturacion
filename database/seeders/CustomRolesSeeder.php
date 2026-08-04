@@ -26,6 +26,7 @@ class CustomRolesSeeder extends Seeder
             'root' => 'Administrador Principal (acceso total)',
             'admin-business' => 'Administrador de Negocio (restringido)',
             'owner' => 'Dueño del Sistema (Super Admin Multi-tenant)',
+            'mecanico' => 'Mecánico (Repuesto de Mecanica)',
         ];
         
         foreach ($customRoles as $roleName => $description) {

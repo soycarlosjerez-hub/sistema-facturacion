@@ -36,4 +36,9 @@ return [
         'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
         'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
     ],
+    'mecanica' => [
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
+    ],
 ];
