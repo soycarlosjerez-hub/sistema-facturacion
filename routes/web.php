@@ -737,6 +737,13 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'index'])->name('api-requests');
     Route::get('/api/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'apiIndex'])->name('api.api-requests');
     Route::get('/api-requests/{apiRequestLog}', [\App\Http\Controllers\OwnerApiController::class, 'show'])->name('api-requests.show');
+    // Platform Owners Management
+    Route::get('/owners', [\App\Http\Controllers\OwnerController::class, 'ownersIndex'])->name('owners.index');
+    Route::get('/owners/create', [\App\Http\Controllers\OwnerController::class, 'ownersCreate'])->name('owners.create');
+    Route::post('/owners', [\App\Http\Controllers\OwnerController::class, 'ownersStore'])->name('owners.store');
+    Route::get('/owners/{owner}/edit', [\App\Http\Controllers\OwnerController::class, 'ownersEdit'])->name('owners.edit');
+    Route::put('/owners/{owner}', [\App\Http\Controllers\OwnerController::class, 'ownersUpdate'])->name('owners.update');
+    Route::delete('/owners/{owner}', [\App\Http\Controllers\OwnerController::class, 'ownersDestroy'])->name('owners.destroy');
     // (owner role management removed — roles are managed per-instance)
 });
 

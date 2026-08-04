@@ -86,6 +86,17 @@ class User extends Authenticatable
         return $this->belongsTo(InstanceRole::class);
     }
 
+    public function businessInstances()
+    {
+        return $this->hasMany(BusinessInstance::class, 'owner_user_id');
+    }
+
+    public function assignedInstances()
+    {
+        return $this->hasMany(BusinessInstance::class, 'owner_user_id')
+            ->where('activo', true);
+    }
+
     protected function getAuditableIgnored(): array
     {
         return ['password', 'remember_token', 'updated_at'];

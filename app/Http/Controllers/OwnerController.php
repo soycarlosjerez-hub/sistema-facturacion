@@ -1618,4 +1618,108 @@ class OwnerController extends Controller
         return redirect()->route('owner.activity.history')
             ->with('success', "Se eliminaron {$count} registros anteriores a {$days} días.");
     }
+
+    // ─── Platform Owners Management ──────────────────────────────────
+
+    public function ownersIndex()
+    {
+        $owners = User::role('owner')
+            ->withCount(['businessInstances', 'assignedInstances'])
+            ->latest()
+            ->paginate(15);
+
+        $totalOwners = User::role('owner')->count();
+        $totalInstances = BusinessInstance::count();
+        $activeInstances = BusinessInstance::where('activo', true)->count();
+
+        return view('owner.owners.index', compact(
+            'owners',
+            'totalOwners',
+            'totalInstances',
+            'activeInstances'
+        ));
+    }
+
+    public function ownersCreate()
+    {
+        return view('owner.owners.create');
+    }
+
+    public function ownersStore(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:12|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => 'owner',
+        ]);
+
+        $user->assignRole('owner');
+
+        $this->logOwnerAction('OWNER_CREATE', "Nuevo dueño de plataforma creado: {$user->name}", null, ['user_id' => $user->id], $user);
+
+        return redirect()->route('owner.owners.index')
+            ->with('success', "Dueño de plataforma '{$user->name}' creado correctamente.");
+    }
+
+    public function ownersEdit($id)
+    {
+        $owner = User::role('owner')->findOrFail($id);
+        return view('owner.owners.edit', compact('owner'));
+    }
+
+    public function ownersUpdate(Request $request, $id)
+    {
+        $owner = User::role('owner')->findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $owner->id,
+            'password' => 'nullable|string|min:12|confirmed',
+        ]);
+
+        $oldData = $owner->getAttributes();
+        $owner->name = $data['name'];
+        $owner->email = $data['email'];
+
+        if (!empty($data['password'])) {
+            $owner->password = Hash::make($data['password']);
+        }
+
+        $owner->save();
+
+        $this->logOwnerAction('OWNER_UPDATE', "Dueño de plataforma actualizado: {$owner->name}", $oldData, $owner->getAttributes(), $owner);
+
+        return redirect()->route('owner.owners.index')
+            ->with('success', "Dueño de plataforma '{$owner->name}' actualizado correctamente.");
+    }
+
+    public function ownersDestroy($id)
+    {
+        $owner = User::role('owner')->findOrFail($id);
+
+        if ($owner->id === auth()->id()) {
+            return redirect()->route('owner.owners.index')
+                ->with('error', 'No puedes eliminar tu propio cuenta.');
+        }
+
+        $linkedInstances = BusinessInstance::where('owner_user_id', $owner->id)->count();
+        if ($linkedInstances > 0) {
+            return redirect()->route('owner.owners.index')
+                ->with('error', "No puedes eliminar '{$owner->name}' porque tiene {$linkedInstances} instancia(s) vinculada(s). Desvincula las instancias primero.");
+        }
+
+        $name = $owner->name;
+        $this->logOwnerAction('OWNER_DELETE', "Dueño de plataforma eliminado: {$name}", ['user_id' => $owner->id], null, $owner);
+        $owner->delete();
+
+        return redirect()->route('owner.owners.index')
+            ->with('success', "Dueño de plataforma '{$name}' eliminado correctamente.");
+    }
 }

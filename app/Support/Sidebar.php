@@ -60,6 +60,13 @@ class Sidebar
                     'exact_route' => 'owner.dashboard',
                 ];
             }
+            $items[] = [
+                'route' => 'owner.owners.index',
+                'icon'  => 'bi-shield-lock',
+                'label' => 'Dueños de Plataforma',
+                'is_route' => 'owner.owners.*',
+                'exact_route' => 'owner.owners.index',
+            ];
             if ($user->can('owner.instances.view')) {
                 $items[] = [
                     'route' => 'owner.instances.index',
