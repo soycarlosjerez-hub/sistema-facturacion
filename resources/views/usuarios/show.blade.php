@@ -186,7 +186,7 @@
                                 $cls = in_array($action, ['delete','destroy','anular']) ? 'delete' : (in_array($action, ['create','store','update','edit','anular','abrir','cerrar']) ? 'write' : '');
                             @endphp
                             <span class="perm-pill {{ $cls }} perm-filterable" data-text="{{ strtolower($p->name) }}">
-                                <i class="bi bi-check2"></i> {{ str_replace($module.'.', '', $p->name) }}
+                                <i class="bi bi-check2"></i> {{ str_replace($modulo.'.', '', $p->name) }}
                             </span>
                         @endforeach
                     </div>

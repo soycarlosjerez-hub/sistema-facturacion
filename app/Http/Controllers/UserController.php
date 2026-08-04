@@ -171,7 +171,7 @@ class UserController extends Controller
             'password'           => 'nullable|string|min:6|confirmed',
             'role'               => 'required|string|exists:roles,name',
             'sucursal_id'        => 'nullable|exists:sucursales,id',
-            'business_type_id'   => 'required|exists:business_types,id', // Required for editing
+            'business_type_id'   => 'required_if:role,admin-business|exists:business_types,id', // Solo obligatorio para admin-business
         ], [
             'name.required'              => 'El nombre es obligatorio.',
             'email.required'             => 'El correo es obligatorio.',
@@ -180,7 +180,7 @@ class UserController extends Controller
             'password.min'               => 'La contraseña debe tener al menos 6 caracteres.',
             'password.confirmed'         => 'Las contraseñas no coinciden.',
             'role.required'              => 'Selecciona un rol.',
-            'business_type_id.required'  => 'El tipo de negocio es obligatorio.',
+            'business_type_id.required_if'  => 'El tipo de negocio es obligatorio.',
         ]);
 
         $cambiaRol = $usuario->roles->pluck('name')->first() !== $request->role;

@@ -82,7 +82,7 @@ class UsuariosUiTest extends TestCase
     {
         $r = $this->actingAs($this->admin)->get('/usuarios/1/edit');
         $r->assertStatus(200);
-        $r->assertSee('Rol Asignado');
+        $r->assertSee('Información Usuario');
     }
 
     public function test_filter_by_role()

@@ -31,23 +31,24 @@ class ErrorAlertMailFeatureTest extends TestCase
 
         Mail::assertSent(ErrorAlertMail::class, function ($mailable) {
             $envelope = $mailable->envelope();
-            return $envelope->to[0]->address === 'jcjerez@gmail.com'
+            return $mailable->hasTo('jcjerez@gmail.com')
                 && str_contains($envelope->subject, '[CRÍTICO]');
         });
     }
 
-    public function test_error_alert_queue_works()
+    public function test_error_alert_is_sent_synchronously()
     {
         Mail::fake();
 
         $mail = new ErrorAlertMail(
             level: 'error',
             title: 'Queued Error Test',
-            message: 'Testing queued error alert',
+            errorMessage: 'Testing queued error alert',
         );
 
-        Mail::to('jcjerez@gmail.com')->queue($mail);
+        Mail::to('jcjerez@gmail.com')->send($mail);
 
-        Mail::assertPushed(ErrorAlertMail::class);
+        Mail::assertSent(ErrorAlertMail::class);
+        Mail::assertNothingQueued();
     }
 }
