@@ -924,13 +924,19 @@ class OwnerController extends Controller
 
         // Ordenar categorías: contabilidad antes de sistema/reportes
         $orden = ['core','operaciones','clientes','organizacion','lavadero','restaurante','alquileres','tattoo','climatizacion','tecnologia','contabilidad','reportes','sistema','configuracion'];
-        $modulos = $modulos->sortKeys(function ($a, $b) use ($orden) {
-            $pa = array_search($a, $orden);
-            $pb = array_search($b, $orden);
-            $pa = $pa === false ? 999 : $pa;
-            $pb = $pb === false ? 999 : $pb;
-            return $pa <=> $pb;
-        }, SORT_NATURAL);
+        $sorted = [];
+        foreach ($orden as $cat) {
+            if ($modulos->has($cat)) {
+                $sorted[$cat] = $modulos->get($cat);
+            }
+        }
+        // Agregar cualquier categoría que no esté en el orden definido
+        foreach ($modulos as $cat => $items) {
+            if (!isset($sorted[$cat])) {
+                $sorted[$cat] = $items;
+            }
+        }
+        $modulos = collect($sorted);
 
         return view('owner.instances.roles.edit', compact('instance', 'role', 'modulos', 'totalModulos', 'selectedModulos'));
     }
