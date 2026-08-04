@@ -2125,59 +2125,13 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 <button type="button" class="btn btn-sm btn-light rounded-pill d-lg-none" onclick="POS.toggleSidebar()" aria-label="Menú lateral" aria-expanded="false" aria-controls="mainSidebar" style="width: 36px; height: 36px; padding: 0;">
                     <i class="bi bi-list fs-5"></i>
                 </button>
-                @if(isset($sesiones) && $sesiones->count() > 1)
-                    <div class="dropdown">
-                        <button class="caja-tag dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
-                            <span class="pulse-dot"></span>
-                            <span>{{ $sesion->caja->nombre }}</span>
-                            @if($sesion->caja->codigo)
-                                <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
-                            @endif
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0" style="min-width: 260px;">
-                            @foreach($sesiones->groupBy('caja_id') as $sesionesCaja)
-                                @php
-                                    $cajaItem = $sesionesCaja->first()->caja;
-                                    $sesionItem = $sesionesCaja->first();
-                                @endphp
-                                <li>
-                                    <a class="dropdown-item small pos-session-link" href="{{ route('ventas.create', ['sesion_id' => $sesionItem->id]) }}">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <i class="bi bi-cash-register me-1"></i>
-                                                <strong>{{ $cajaItem->nombre }}</strong>
-                                                @if($cajaItem->codigo)
-                                                    <span class="badge bg-dark ms-1">{{ $cajaItem->codigo }}</span>
-                                                @endif
-                                                @if($sesionesCaja->count() > 1)
-                                                    <span class="badge bg-warning text-dark ms-1">sesiones: {{ $sesionesCaja->count() }}</span>
-                                                @endif
-                                            </div>
-                                            <span class="text-muted" style="font-size:0.7rem;">{{ $sesionItem->fecha_apertura->format('h:i A') }}</span>
-                                        </div>
-                                    </a>
-                                </li>
-                            @endforeach
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <div class="px-3 py-2" style="background:#f8fafc;border-radius:0 0 8px 8px;">
-                                    <small class="text-muted">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Selecciona una caja para asignarle las ventas
-                                    </small>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                @else
-                    <div class="caja-tag">
-                        <span class="pulse-dot"></span>
-                        <span>{{ $sesion->caja->nombre }}</span>
-                        @if($sesion->caja->codigo)
-                            <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
-                        @endif
-                    </div>
-                @endif
+                <div class="caja-tag">
+                    <span class="pulse-dot"></span>
+                    <span>{{ $sesion->caja->nombre }}</span>
+                    @if($sesion->caja->codigo)
+                        <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
+                    @endif
+                </div>
             </div>
 
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
@@ -3172,20 +3126,6 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             $('scan-input').focus();
         }
     };
-    
-    // Session switcher: los enlaces navegan con ?sesion_id= (recarga la página con esa sesión por defecto)
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.pos-session-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                // Si hay productos en el carrito, confirmar antes de cambiar de caja
-                const carritoVacio = !document.querySelector('#pos-form tbody tr[data-index]');
-                if (!carritoVacio && !confirm('¿Cambiar de caja? Se perderán los productos agregados en el carrito.')) {
-                    e.preventDefault();
-                    return;
-                }
-            });
-        });
-    });
     
     window.POS = POS;
 
