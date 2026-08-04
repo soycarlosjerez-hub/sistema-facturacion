@@ -15,6 +15,7 @@ return new class extends Migration
                 ->constrained('business_instances')
                 ->nullOnDelete();
             $table->foreignId('driver_id')
+                ->nullable()
                 ->constrained('delivery_drivers')
                 ->nullOnDelete();
             $table->date('periodo_inicio');
