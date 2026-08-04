@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 
 class Cliente extends Authenticatable
 {
-    use Auditable, TenantScope, Notifiable;
+    use HasFactory, Auditable, TenantScope, Notifiable;
 
     protected $fillable = [
         'nombre', 'email', 'telefono', 'direccion', 'rnc_cedula', 'rnc',

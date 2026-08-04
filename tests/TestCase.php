@@ -47,9 +47,10 @@ abstract class TestCase extends BaseTestCase
             'role' => 'admin',
         ]);
 
+        Auth::login($user);
+
         $sucursal = \App\Models\Sucursal::factory()->create([
             'tenant_id' => $businessInstance->id,
-            'business_instance_id' => $businessInstance->id,
         ]);
 
         $caja = \App\Models\Caja::factory()->create([
@@ -77,13 +78,23 @@ abstract class TestCase extends BaseTestCase
             'sucursal_id' => $sucursal->id,
         ]);
 
+        \App\Models\AlmacenMovimiento::create([
+            'tenant_id'   => $businessInstance->id,
+            'producto_id' => $producto->id,
+            'almacen_id'  => $almacen->id,
+            'tipo'        => 'entrada',
+            'cantidad'    => 100,
+            'nota'        => 'Stock inicial (test)',
+            'user_id'     => $user->id,
+        ]);
+
         $tipoVenta = \App\Models\TipoVenta::factory()->create();
 
         $ncfSequence = \App\Models\NcfSequence::factory()->create([
             'tenant_id' => $businessInstance->id,
         ]);
 
-        $consumidorFinal = \App\Models\Cliente::consumidorFinal($businessInstance->id);
+        $consumidorFinal = \App\Models\Cliente::consumidorFinal();
 
         return array_merge([
             'businessInstance' => $businessInstance,

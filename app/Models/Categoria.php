@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 
 class Categoria extends Model
 {
+    use HasFactory;
     use Auditable, TenantScope;
 
     protected $fillable = ['nombre', 'descripcion', 'activa', 'tenant_id'];

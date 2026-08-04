@@ -11,21 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('ordenes_reparacion', function (Blueprint $table) {
-            $table->softDeletes();
-        });
-
-        Schema::table('equipos', function (Blueprint $table) {
-            $table->softDeletes();
-        });
-
-        Schema::table('clientes', function (Blueprint $table) {
-            $table->softDeletes();
-        });
-
-        Schema::table('productos', function (Blueprint $table) {
-            $table->softDeletes();
-        });
+        $tables = ['ordenes_reparacion', 'equipos', 'clientes', 'productos'];
+        foreach ($tables as $table) {
+            if (Schema::hasColumn($table, 'deleted_at')) {
+                continue;
+            }
+            Schema::table($table, function (Blueprint $t) {
+                $t->softDeletes();
+            });
+        }
     }
 
     /**
@@ -33,20 +27,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('ordenes_reparacion', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
-
-        Schema::table('equipos', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
-
-        Schema::table('clientes', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
-
-        Schema::table('productos', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        $tables = ['ordenes_reparacion', 'equipos', 'clientes', 'productos'];
+        foreach ($tables as $table) {
+            if (!Schema::hasColumn($table, 'deleted_at')) {
+                continue;
+            }
+            Schema::table($table, function (Blueprint $t) {
+                $t->dropSoftDeletes();
+            });
+        }
     }
 };

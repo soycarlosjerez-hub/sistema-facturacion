@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\BusinessInstance;
+use App\Models\BusinessType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +20,11 @@ class BusinessInstanceFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'telefono' => fake()->phoneNumber(),
             'direccion' => fake()->address(),
-            'business_type_id' => null,
+            'business_type_id' => BusinessType::query()->first()?->id
+                ?? BusinessType::create([
+                    'slug'   => 'general',
+                    'nombre' => 'General',
+                ])->id,
             'owner_user_id' => null,
             'configuracion' => [
                 'restaurante_valida_stock' => '1',

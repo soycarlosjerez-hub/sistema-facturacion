@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Traits\TenantScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class VentaDetalle extends Model
 {
-    use TenantScope;
+    use HasFactory, TenantScope;
 
     protected $fillable = ['venta_id', 'producto_id','almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
 

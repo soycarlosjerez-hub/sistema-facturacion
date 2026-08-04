@@ -3388,9 +3388,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         if (data.tipo_comprobante === 'ecf') {
             facturarBtn.style.display = 'inline-flex';
             facturarBtn.onclick = () => facturarVenta(data.venta_id);
-            // Auto-enviar e-CF después de mostrar el modal
-            $('factura-status').innerHTML = '<span class="text-warning"><i class="bi bi-hourglass-split me-1"></i> Enviando e-CF...</span>';
-            setTimeout(() => facturarVenta(data.venta_id), 800);
+            // El e-CF ya se emitió en el servidor al registrar la venta; aquí solo se consulta el estado
+            $('factura-status').innerHTML = '<span class="text-warning"><i class="bi bi-hourglass-split me-1"></i> Consultando estado del e-CF...</span>';
+            facturarVenta(data.venta_id);
         } else {
             facturarBtn.style.display = 'none';
         }
@@ -3795,9 +3795,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     <input type="hidden" name="producto_id[]" value="${item.id}">
                     <input type="hidden" name="precio[]" value="${item.precio.toFixed(2)}">
                     <input type="hidden" name="cantidad[]" value="${item.qty}">
-                    <input type="hidden" name="subtotal[]" value="${subtotalConDesc.toFixed(2)}">
-                    <input type="hidden" name="descuento[]" value="${descuentoAplicado.toFixed(2)}">
+                    <input type="hidden" name="subtotal[]" value="${subtotal.toFixed(2)}">
+                    <input type="hidden" name="descuento[]" value="${descuentoItem}">
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
+                    <input type="hidden" name="itbis_porcentaje[]" value="${item.itbis_p}">
                 </div>`;
             }).join('');
         }
@@ -3820,7 +3821,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             lineData.push({ subtotalConDesc, itbis_p: item.itbis_p });
         });
         // Recalcular ITBIS proporcionalmente aplicando descuento general
-        const baseImponibleTotal = subtotal - totalDescuentos;
+        const baseImponibleTotal = lineData.reduce((s, ld) => s + ld.subtotalConDesc, 0);
         if (baseImponibleTotal > 0 && descuentoGeneral > 0) {
             itbis = 0;
             lineData.forEach(ld => {

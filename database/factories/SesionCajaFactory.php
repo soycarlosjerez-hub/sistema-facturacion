@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Caja;
 use App\Models\Sucursal;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;

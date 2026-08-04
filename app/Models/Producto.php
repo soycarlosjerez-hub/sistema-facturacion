@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Producto extends Model
 {
-    use Auditable, TenantScope;
+    use HasFactory, Auditable, TenantScope;
     protected $fillable = [
         'categoria_id',
         'nombre',

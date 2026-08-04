@@ -9,7 +9,17 @@ class StoreVentaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->user()->can('ventas.create');
+        $user = auth()->user();
+
+        if ($user->hasRole(['admin', 'owner', 'admin-business'])) {
+            return true;
+        }
+
+        if (in_array($user->role, ['admin', 'owner', 'admin-business', 'root'])) {
+            return true;
+        }
+
+        return $user->can('ventas.create');
     }
 
     public function rules(): array
@@ -34,6 +44,8 @@ class StoreVentaRequest extends FormRequest
             'descuento.*'   => 'numeric|min:0',
             'descuento_tipo' => 'nullable|array',
             'descuento_tipo.*' => 'in:monto,porcentaje',
+            'itbis_porcentaje' => 'nullable|array',
+            'itbis_porcentaje.*' => 'numeric|min:0|max:100',
             'total'         => 'required|numeric|min:0',
             'impuestos'     => 'nullable|numeric|min:0',
             'subtotal_final' => 'nullable|numeric|min:0',

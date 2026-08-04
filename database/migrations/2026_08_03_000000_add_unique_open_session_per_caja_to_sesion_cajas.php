@@ -112,12 +112,18 @@ return new class extends Migration
                 ]);
         }
 
-        // 2. Crear triggers de protección
-        $this->createTriggers();
+        // 2. Crear triggers de protección (solo MySQL; SQLite no los soporta)
+        if (DB::getDriverName() === 'mysql') {
+            $this->createTriggers();
+        }
     }
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement("DROP TRIGGER IF EXISTS sesion_cajas_before_insert");
         DB::statement("DROP TRIGGER IF EXISTS sesion_cajas_before_update");
     }

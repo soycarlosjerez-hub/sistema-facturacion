@@ -24,7 +24,9 @@ return new class extends Migration
                 $t->unsignedBigInteger('tenant_id')->nullable()->index();
             });
             DB::table($table)->whereNull('tenant_id')->update(['tenant_id' => $defaultTenant]);
-            DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            }
         };
 
         // Standalone tables — no FK chain, assign default tenant
@@ -52,7 +54,9 @@ return new class extends Migration
             });
             DB::statement("UPDATE {$table} c INNER JOIN {$cfg['parent']} p ON p.id = c.{$cfg['fk']} SET c.tenant_id = p.tenant_id");
             DB::table($table)->whereNull('tenant_id')->update(['tenant_id' => $defaultTenant]);
-            DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            }
         }
 
         // Two-hop chain tables
@@ -63,7 +67,9 @@ return new class extends Migration
             });
             DB::statement("UPDATE detalles_devolucion dd INNER JOIN devoluciones d ON d.id = dd.devolucion_id INNER JOIN ventas v ON v.id = d.venta_id SET dd.tenant_id = v.tenant_id");
             DB::table('detalles_devolucion')->whereNull('tenant_id')->update(['tenant_id' => $defaultTenant]);
-            DB::statement("ALTER TABLE detalles_devolucion MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement("ALTER TABLE detalles_devolucion MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            }
         }
 
         // sesion_cajas -> cajas -> sucursales
@@ -73,7 +79,9 @@ return new class extends Migration
             });
             DB::statement("UPDATE sesion_cajas sc INNER JOIN cajas c ON c.id = sc.caja_id INNER JOIN sucursales s ON s.id = c.sucursal_id SET sc.tenant_id = s.tenant_id");
             DB::table('sesion_cajas')->whereNull('tenant_id')->update(['tenant_id' => $defaultTenant]);
-            DB::statement("ALTER TABLE sesion_cajas MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement("ALTER TABLE sesion_cajas MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            }
         }
     }
 

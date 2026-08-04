@@ -26,7 +26,9 @@ return new class extends Migration
                 $t->unsignedBigInteger('tenant_id')->nullable()->index();
             });
             DB::table($table)->whereNull('tenant_id')->update(['tenant_id' => $defaultTenant]);
-            DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            }
         };
 
         // Parent tables (no FK to backfill from)
@@ -62,7 +64,9 @@ return new class extends Migration
             ");
 
             DB::table($table)->whereNull('tenant_id')->update(['tenant_id' => $defaultTenant]);
-            DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement("ALTER TABLE {$table} MODIFY COLUMN tenant_id BIGINT UNSIGNED NOT NULL");
+            }
         }
     }
 

@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 
 class Venta extends Model
 {
-    use Auditable, TenantScope, SoftDeletes;
+    use HasFactory, Auditable, TenantScope, SoftDeletes;
 
     protected $casts = [
         'subtotal'       => 'decimal:2',
@@ -22,6 +23,7 @@ class Venta extends Model
         'total'          => 'decimal:2',
         'delivery_fee'   => 'decimal:2',
         'fecha'          => 'datetime',
+        'ncf_vencimiento' => 'date',
         'retenciones'    => 'array',
     ];
 

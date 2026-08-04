@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\NotificationPreference;
+use App\Models\InstanceNotificationSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -53,11 +54,22 @@ class NotificationService
         $created = collect();
 
         foreach ($users as $user) {
-            $pref = NotificationPreference::forUser($user);
-            
-            $prefKey = $this->getPrefKeyFromCategory($category, $priority);
-            if (!$pref->isEnabled($prefKey)) {
-                continue;
+            // Verificar configuración de instancia
+            if ($user->businessInstance) {
+                $settings = InstanceNotificationSetting::firstOrNew(['business_instance_id' => $user->businessInstance->id]);
+                if (!$settings->enabled) {
+                    continue;
+                }
+                if (!$settings->isEnabled($prefKey)) {
+                    continue;
+                }
+            } else {
+                $pref = NotificationPreference::forUser($user);
+                
+                $prefKey = $this->getPrefKeyFromCategory($category, $priority);
+                if (!$pref->isEnabled($prefKey)) {
+                    continue;
+                }
             }
 
             try {

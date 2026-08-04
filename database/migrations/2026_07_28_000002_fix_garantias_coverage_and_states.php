@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Migrate existing ENUM values to numeric percentages
         DB::statement("UPDATE garantias SET cobertura = 100.00 WHERE cobertura = 'ambos'");
         DB::statement("UPDATE garantias SET cobertura = 50.00 WHERE cobertura IN ('piezas', 'mano_obra')");
@@ -25,6 +29,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Reset numeric values back to ENUM-compatible defaults
         DB::statement("UPDATE garantias SET cobertura = 'ambos' WHERE cobertura >= 90");
         DB::statement("UPDATE garantias SET cobertura = 'piezas' WHERE cobertura BETWEEN 40 AND 60 AND cobertura != 'ambos'");

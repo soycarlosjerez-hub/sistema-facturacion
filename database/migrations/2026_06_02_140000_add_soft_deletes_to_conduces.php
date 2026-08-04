@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        if (Schema::hasColumn('conduces', 'deleted_at')) {
+            return;
+        }
         Schema::table('conduces', function (Blueprint $table) {
             $table->softDeletes();
         });

@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Expand tipo enum with additional values
         DB::statement("ALTER TABLE garantias MODIFY COLUMN tipo ENUM('fabrica','extendida','servicio','reparacion','pieza') NOT NULL");
     }
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Revert to original values
         DB::statement("ALTER TABLE garantias MODIFY COLUMN tipo ENUM('fabrica','extendida','servicio') NOT NULL");
     }

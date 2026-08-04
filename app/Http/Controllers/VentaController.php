@@ -6,6 +6,7 @@ use App\Http\Requests\StoreVentaRequest;
 use App\Models\Almacen;
 use App\Models\Caja;
 use App\Models\Cliente;
+use App\Models\EcfDocumento;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\Venta;
@@ -60,7 +61,7 @@ class VentaController extends Controller
     {
         $data = $this->saleService->getCreationData();
 
-        if (empty($data['sesiones'])) {
+        if ($data['sesiones']->isEmpty()) {
             return redirect()->route('cajas.index')
                 ->with('error', 'Necesitas abrir una caja antes de vender.');
         }
@@ -322,11 +323,24 @@ class VentaController extends Controller
         }
 
         try {
-            $ecfService = app(\App\Services\Ecf\EcfService::class);
-            $ecf = $ecfService->generarEcf($venta);
-            $firmado = $ecfService->firmar($ecf);
-            $ecfService->enviar($firmado);
-            return response()->json(['success' => true, 'message' => 'e-CF generado y enviado a DGII.']);
+            $this->saleService->procesarEcf($venta);
+
+            $ecf = EcfDocumento::where('venta_id', $venta->id)
+                ->whereNotNull('encf')
+                ->orderByDesc('id')
+                ->first();
+
+            $estado = $ecf ? $ecf->estado : 'pendiente';
+            $message = $estado === 'aprobado'
+                ? 'e-CF aprobado por DGII.'
+                : 'e-CF procesado (estado: ' . $estado . ').';
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'encf'    => $ecf ? $ecf->encf : null,
+                'estado'  => $estado,
+            ]);
         } catch (\Throwable $e) {
             Log::error('Facturación DGII fallida', [
                 'venta_id' => $id,

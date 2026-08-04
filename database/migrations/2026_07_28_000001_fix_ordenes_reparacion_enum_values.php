@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Expand tipo_servicio enum with additional values
         DB::statement("ALTER TABLE ordenes_reparacion MODIFY COLUMN tipo_servicio ENUM('reparacion','instalacion','configuracion','diagnostico','mantenimiento','hardware','software','desbloqueo','recuperacion_datos','personalizacion','otro') NOT NULL");
 
@@ -24,6 +28,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         // Revert tipo_servicio to original values
         DB::statement("ALTER TABLE ordenes_reparacion MODIFY COLUMN tipo_servicio ENUM('reparacion','instalacion','configuracion','diagnostico','mantenimiento') NOT NULL");
 

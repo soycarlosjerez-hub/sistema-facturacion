@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +11,7 @@ use App\Traits\TenantScope;
 
 class SesionCaja extends Model
 {
+    use HasFactory;
     use Auditable;
     use TenantScope;
     protected $table = 'sesion_cajas';

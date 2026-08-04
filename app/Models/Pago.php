@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\Auditable;
@@ -9,6 +10,7 @@ use App\Traits\TenantScope;
 
 class Pago extends Model
 {
+    use HasFactory;
     use Auditable;
     use TenantScope;
     protected $fillable = [

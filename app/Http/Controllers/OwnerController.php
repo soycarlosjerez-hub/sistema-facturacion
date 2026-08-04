@@ -8,6 +8,7 @@ use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
 use App\Models\InstanceApiKey;
 use App\Models\InstanceErrorLog;
+use App\Models\InstanceNotificationSetting;
 use App\Models\InstanceRole;
 use App\Models\InstanceRoleModule;
 use App\Models\Modulo;
@@ -491,8 +492,9 @@ class OwnerController extends Controller
             'dias_credito' => SystemSetting::get('dias_credito', 30),
         ];
         $instanceConfig = $instance->configuracion ?? [];
+        $instanceNotifSettings = InstanceNotificationSetting::forInstance($instance);
 
-        return view('owner.instances.config', compact('instance', 'globalSettings', 'instanceConfig'));
+        return view('owner.instances.config', compact('instance', 'globalSettings', 'instanceConfig', 'instanceNotifSettings'));
     }
 
     public function instancesConfigUpdate(Request $request, $id)
@@ -508,6 +510,28 @@ class OwnerController extends Controller
             'prefijo_ncf' => 'nullable|string|max:10',
             'dias_credito' => 'nullable|integer|min:0|max:365',
             'restaurante_valida_stock' => 'nullable|string',
+            'enabled' => 'nullable|boolean',
+            'sale_created' => 'nullable|boolean',
+            'sale_paid' => 'nullable|boolean',
+            'sale_cancelled' => 'nullable|boolean',
+            'order_confirmed' => 'nullable|boolean',
+            'order_ready' => 'nullable|boolean',
+            'order_shipped' => 'nullable|boolean',
+            'payment_received' => 'nullable|boolean',
+            'credit_overdue' => 'nullable|boolean',
+            'credit_abono' => 'nullable|boolean',
+            'stock_critical' => 'nullable|boolean',
+            'stock_restocked' => 'nullable|boolean',
+            'product_created' => 'nullable|boolean',
+            'shift_opened' => 'nullable|boolean',
+            'shift_closed' => 'nullable|boolean',
+            'cash_shortage' => 'nullable|boolean',
+            'daily_report' => 'nullable|boolean',
+            'ncff_expiring' => 'nullable|boolean',
+            'ecf_certificate_expiring' => 'nullable|boolean',
+            'backup_completed' => 'nullable|boolean',
+            'backup_failed' => 'nullable|boolean',
+            'user_registered' => 'nullable|boolean',
         ]);
 
         $data['restaurante_valida_stock'] = $request->has('restaurante_valida_stock') ? '1' : '0';
@@ -516,6 +540,22 @@ class OwnerController extends Controller
         $mergedConfig = array_merge($existingConfig, array_filter($data, fn($v) => !is_null($v)));
 
         $instance->update(['configuracion' => $mergedConfig]);
+
+        $notifData = collect($data)->only([
+            'enabled',
+            'sale_created', 'sale_paid', 'sale_cancelled',
+            'order_confirmed', 'order_ready', 'order_shipped',
+            'payment_received', 'credit_overdue', 'credit_abono',
+            'stock_critical', 'stock_restocked', 'product_created',
+            'shift_opened', 'shift_closed', 'cash_shortage', 'daily_report',
+            'ncff_expiring', 'ecf_certificate_expiring',
+            'backup_completed', 'backup_failed', 'user_registered',
+        ])->toArray();
+
+        InstanceNotificationSetting::updateOrCreate(
+            ['business_instance_id' => $instance->id],
+            $notifData
+        );
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Configuración de instancia actualizada correctamente.');

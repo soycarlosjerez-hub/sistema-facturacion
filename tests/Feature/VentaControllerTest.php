@@ -119,7 +119,8 @@ class VentaControllerTest extends TestCase
         ]);
 
         $venta = Venta::where('user_id', $session['user']->id)->first();
-        $this->assertEquals(2, $venta->detalles()->count());
+        $this->assertEquals(1, $venta->detalles()->count());
+        $this->assertEquals(2, $venta->detalles()->first()->cantidad);
         $this->assertDatabaseHas('pagos', [
             'venta_id' => $venta->id,
             'metodo_pago' => 'efectivo',
@@ -199,6 +200,7 @@ class VentaControllerTest extends TestCase
 
         $payload = [
             'tipo_venta_id' => $tipoVenta->id,
+            'cliente_id' => $session['cliente']->id,
             'producto_id' => [$producto->id],
             'cantidad' => [1],
             'precio' => [(float) $producto->precio],
@@ -256,7 +258,7 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($empleado)
-            ->post(route('ventas.destroy', $venta->id), [
+            ->delete(route('ventas.destroy', $venta->id), [
                 'motivo' => 'Test cancellation',
                 'confirmar' => 'yes',
             ]);
@@ -278,7 +280,7 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($session['user'])
-            ->post(route('ventas.destroy', $venta->id), [
+            ->delete(route('ventas.destroy', $venta->id), [
                 'motivo' => 'Test cancellation reason',
                 'confirmar' => 'yes',
             ]);
@@ -299,11 +301,11 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($session['user'])
-            ->getJson(route('ventas.buscar-producto', ['q' => 'Test']));
+            ->getJson(route('ventas.buscarProducto', ['q' => 'Test']));
 
         $response->assertOk();
         $response->assertJsonCount(1);
-        $response->assertJsonPath(0, ['nombre' => 'Test Product Name']);
+        $response->assertJsonPath('0.nombre', 'Test Product Name');
     }
 
     public function test_search_by_barcode(): void
@@ -318,7 +320,7 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($session['user'])
-            ->getJson(route('ventas.buscar-por-codigo-barras', '1234567890123'));
+            ->getJson(route('ventas.buscarPorCodigo', '1234567890123'));
 
         $response->assertOk();
         $response->assertJsonPath('encontrado', true);
@@ -341,7 +343,7 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($session['user'])
-            ->getJson(route('ventas.stats-dia'));
+            ->getJson(route('ventas.statsDia'));
 
         $response->assertOk();
         $response->assertJsonStructure(['total', 'count', 'fecha']);
@@ -371,7 +373,7 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($session['user'])
-            ->getJson(route('ventas.turno', $session['sesion']->id));
+            ->getJson(route('ventas.jsonTurno', $session['sesion']->id));
 
         $response->assertOk();
         $response->assertJsonStructure(['ventas']);
@@ -392,7 +394,7 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($session['user'])
-            ->getJson(route('ventas.cuenta-abierta', $session['cliente']->id));
+            ->getJson(route('ventas.getCuentaAbierta', $session['cliente']->id));
 
         $response->assertOk();
         $response->assertJsonPath('id', $venta->id);
@@ -412,7 +414,7 @@ class VentaControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($session['user'])
-            ->get(route('ventas.export-pdf', $venta->id));
+            ->get(route('venta.pdf', $venta->id));
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');

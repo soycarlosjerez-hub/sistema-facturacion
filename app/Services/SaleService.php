@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AlmacenMovimiento;
 use App\Models\Categoria;
 use App\Models\Cliente;
+use App\Models\EcfDocumento;
 use App\Models\Pago;
 use App\Models\Producto;
 use App\Models\SesionCaja;
@@ -46,65 +47,85 @@ class SaleService
             default => 'completada',
         };
 
-        $subtotalTotal = array_sum(array_map('floatval', $data['subtotal'] ?? []));
-        $descuentosLinea = 0;
-        $generalDescuento = max(0, (float) ($data['general_descuento'] ?? 0));
-        if ($subtotalTotal > 0) {
-            foreach (($data['descuento'] ?? []) as $i => $desc) {
-                $desc = (float) ($desc ?? 0);
-                if ($desc <= 0) continue;
-                $tipo = $data['descuento_tipo'][$i] ?? 'monto';
-                $lineSub = (float) ($data['subtotal'][$i] ?? 0);
-                if ($tipo === 'porcentaje') {
-                    $descuentosLinea += $lineSub * min($desc, 100) / 100;
-                } else {
-                    $descuentosLinea += $desc;
-                }
+        // --- Cálculo autoritativo server-side (F0.2/F0.3) ---
+        $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
+        $puedeSobreescribirPrecio = auth()->user()->hasRole($rolesAutorizados);
+
+        $productoIds = $data['producto_id'] ?? [];
+        $cantidades  = $data['cantidad'] ?? [];
+        $preciosCli  = $data['precio'] ?? [];
+        $descuentoCli = $data['descuento'] ?? [];
+        $tiposCli     = $data['descuento_tipo'] ?? [];
+
+        $lineas = [];
+        foreach ($productoIds as $i => $productoId) {
+            if (!$productoId) continue;
+            $producto = Producto::find($productoId);
+            if (!$producto) {
+                throw new \Exception('El producto #' . $productoId . ' no existe.');
             }
-            $descuentosLinea += $generalDescuento;
-            $pctDescuento = $subtotalTotal > 0 ? ($descuentosLinea / $subtotalTotal) * 100 : 0;
-            $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
-            if ($pctDescuento > 50 && !auth()->user()->hasRole($rolesAutorizados)) {
+            $cantidad   = max(1, (int) ($cantidades[$i] ?? 1));
+            $precioBD   = (float) $producto->precio;
+            $precioCli  = (float) ($preciosCli[$i] ?? $precioBD);
+            if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+                throw new \Exception("No autorizado para modificar el precio de \"{$producto->nombre}\".");
+            }
+            $precioBase = ($precioCli !== $precioBD && $puedeSobreescribirPrecio) ? $precioCli : $precioBD;
+            $lineas[] = [
+                'id'       => $productoId,
+                'cantidad' => $cantidad,
+                'precio'   => $precioBase,
+                'subtotal' => round($precioBase * $cantidad, 2),
+                'desc'     => (float) ($descuentoCli[$i] ?? 0),
+                'tipo'     => $tiposCli[$i] ?? 'monto',
+                'itbis_p'  => (float) ($producto->itbis_porcentaje ?? 0),
+            ];
+        }
+
+        $subtotalTotal = (float) array_sum(array_column($lineas, 'subtotal'));
+        $generalDescuento = max(0, (float) ($data['general_descuento'] ?? 0));
+
+        $descuentosLinea = 0.0;
+        foreach ($lineas as $linea) {
+            if ($linea['desc'] <= 0) continue;
+            $descuentosLinea += $linea['tipo'] === 'porcentaje'
+                ? $linea['subtotal'] * min($linea['desc'], 100) / 100
+                : $linea['desc'];
+        }
+
+        if ($subtotalTotal > 0) {
+            $pctDescuento = (($descuentosLinea + $generalDescuento) / $subtotalTotal) * 100;
+            if ($pctDescuento > 50 && !$puedeSobreescribirPrecio) {
                 throw new \Exception('Descuentos superiores al 50% requieren autorización de administrador.');
             }
         }
 
-        // Recalcular ITBIS proporcionalmente aplicando descuento general
-        $lineItbisData = [];
-        $baseImponibleTotal = 0;
-        foreach (($data['subtotal'] ?? []) as $i => $lineSub) {
-            $lineSub = (float) ($lineSub ?? 0);
-            $desc = (float) ($data['descuento'][$i] ?? 0);
-            $tipo = $data['descuento_tipo'][$i] ?? 'monto';
-            $descuentoAplicado = 0;
-            if ($desc > 0) {
-                if ($tipo === 'porcentaje') {
-                    $descuentoAplicado = $lineSub * min($desc, 100) / 100;
-                } else {
-                    $descuentoAplicado = $desc;
-                }
+        // Recalcular ITBIS sobre la base bruta autoritativa (descuento aplicado por línea)
+        $itbisRecalculado = 0.0;
+        foreach ($lineas as $line) {
+            $descAplicado = $line['tipo'] === 'porcentaje'
+                ? $line['subtotal'] * min($line['desc'], 100) / 100
+                : $line['desc'];
+            $baseFinal = max(0, $line['subtotal'] - $descAplicado);
+            if ($generalDescuento > 0 && $subtotalTotal > 0) {
+                $proporcion = $baseFinal / $subtotalTotal;
+                $baseFinal = max(0, $baseFinal - ($generalDescuento * $proporcion));
             }
-            $subtotalConDesc = max(0, $lineSub - $descuentoAplicado);
-            $baseImponibleTotal += $subtotalConDesc;
-            $itbisPorcentaje = (float) ($data['itbis_porcentaje'][$i] ?? ($data['itbis_p'][$i] ?? 0));
-            $lineItbisData[] = [
-                'subtotalConDesc' => $subtotalConDesc,
-                'itbis_p'         => $itbisPorcentaje,
-            ];
+            $itbisRecalculado += $baseFinal * ($line['itbis_p'] / 100);
         }
-        $itbisRecalculado = 0;
-        if ($baseImponibleTotal > 0 && $generalDescuento > 0) {
-            foreach ($lineItbisData as $ld) {
-                $proporcion = $ld['subtotalConDesc'] / $baseImponibleTotal;
-                $descuentoProporcional = $generalDescuento * $proporcion;
-                $baseFinal = max(0, $ld['subtotalConDesc'] - $descuentoProporcional);
-                $itbisRecalculado += $baseFinal * ($ld['itbis_p'] / 100);
-            }
-        } else {
-            foreach ($lineItbisData as $ld) {
-                $itbisRecalculado += $ld['subtotalConDesc'] * ($ld['itbis_p'] / 100);
-            }
-        }
+        $itbisRecalculado = round($itbisRecalculado, 2);
+
+        // Persistir arrays normalizados para procesarDetalles/procesarPago
+        $data['producto_id']      = array_column($lineas, 'id');
+        $data['cantidad']         = array_column($lineas, 'cantidad');
+        $data['precio']           = array_column($lineas, 'precio');
+        $data['subtotal']         = array_column($lineas, 'subtotal');
+        $data['descuento']        = array_column($lineas, 'desc');
+        $data['descuento_tipo']   = array_column($lineas, 'tipo');
+        $data['itbis_porcentaje'] = array_column($lineas, 'itbis_p');
+        $data['subtotal_final']   = $subtotalTotal;
+        $descuentosLinea += $generalDescuento;
+        $data['total'] = round($subtotalTotal - $descuentosLinea + $itbisRecalculado, 2);
 
         return DB::transaction(function () use ($data, $sesion, $metodo, $estado, $descuentosLinea, $generalDescuento, $itbisRecalculado) {
             $ncf = null;
@@ -164,10 +185,6 @@ class SaleService
                     'cargo_servicio'   => $data['cargo_servicio'] ?? 0,
                     'tenant_id'        => Auth::user()->business_instance_id,
                 ]);
-
-                if ($tipoComprobante === 'ecf') {
-                    $this->procesarEcf($venta);
-                }
             }
 
             $this->procesarDetalles($venta, $data, $ventaExistente);
@@ -184,6 +201,13 @@ class SaleService
 
             return $venta;
         });
+
+        // Punto único de emisión e-CF: fuera de la transacción, tras el commit (F0.4)
+        if (($data['tipo_comprobante'] ?? 'ncf') === 'ecf' && empty($venta->encf)) {
+            $this->procesarEcf($venta);
+        }
+
+        return $venta;
     }
 
     public function cancelSale(int $id, string $motivo): void
@@ -415,8 +439,25 @@ class SaleService
         return (int) $stock;
     }
 
-    private function procesarEcf(Venta $venta): void
+    public function procesarEcf(Venta $venta): void
     {
+        // Idempotente (F0.4): reutilizar el e-CF existente si ya se emitió uno
+        $existente = EcfDocumento::where('venta_id', $venta->id)
+            ->whereNotNull('encf')
+            ->orderByDesc('id')
+            ->first();
+
+        if ($existente) {
+            if ($existente->pendienteEnvio()) {
+                try {
+                    $this->ecfService->enviar($existente);
+                } catch (\Throwable $e) {
+                    Log::warning('No se pudo reenviar e-CF de la venta #' . $venta->id . ': ' . $e->getMessage());
+                }
+            }
+            return;
+        }
+
         if ($venta->cliente_id) {
             $cliente = $venta->cliente;
             if ($cliente && !empty($cliente->rnc_cedula)) {
