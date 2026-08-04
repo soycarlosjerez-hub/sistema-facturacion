@@ -191,6 +191,18 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'domotica.index', 'sidebar_is_route' => 'domotica.*', 'sidebar_exact_route' => 'domotica.index', 'sidebar_permission' => 'domotica.view'],
             ['key' => 'garantias', 'label' => 'Garantías', 'icon' => 'bi-shield-check', 'categoria' => 'tecnologia', 'orden' => 105,
              'sidebar_route' => 'garantias.index', 'sidebar_is_route' => 'garantias.*', 'sidebar_exact_route' => 'garantias.index', 'sidebar_permission' => 'garantias.view'],
+
+            // Delivery
+            ['key' => 'delivery-dashboard', 'label' => 'Dashboard Delivery', 'icon' => 'bi-truck', 'categoria' => 'delivery', 'orden' => 110,
+             'sidebar_route' => 'delivery.dashboard', 'sidebar_is_route' => 'delivery.dashboard*', 'sidebar_exact_route' => 'delivery.dashboard', 'sidebar_permission' => 'delivery-dashboard.view'],
+            ['key' => 'delivery-drivers', 'label' => 'Repartidores', 'icon' => 'bi-person-badge', 'categoria' => 'delivery', 'orden' => 111,
+             'sidebar_route' => 'delivery-drivers.index', 'sidebar_is_route' => 'delivery-drivers.*', 'sidebar_exact_route' => 'delivery-drivers.index', 'sidebar_permission' => 'delivery-drivers.view'],
+            ['key' => 'delivery-zones', 'label' => 'Zonas de Cobertura', 'icon' => 'bi-geo-alt', 'categoria' => 'delivery', 'orden' => 112,
+             'sidebar_route' => 'delivery-zones.index', 'sidebar_is_route' => 'delivery-zones.*', 'sidebar_exact_route' => 'delivery-zones.index', 'sidebar_permission' => 'delivery-zones.view'],
+            ['key' => 'delivery-tracking', 'label' => 'Seguimiento de Entregas', 'icon' => 'bi-signpost-split', 'categoria' => 'delivery', 'orden' => 113,
+             'sidebar_route' => 'delivery-tracking.index', 'sidebar_is_route' => 'delivery-tracking.*', 'sidebar_exact_route' => 'delivery-tracking.index', 'sidebar_permission' => 'delivery-tracking.view'],
+            ['key' => 'delivery-earnings', 'label' => 'Ganancias Repartidores', 'icon' => 'bi-cash-coin', 'categoria' => 'delivery', 'orden' => 114,
+             'sidebar_route' => 'driver-earnings.index', 'sidebar_is_route' => 'driver-earnings.*', 'sidebar_exact_route' => 'driver-earnings.index', 'sidebar_permission' => 'delivery-earnings.view'],
         ];
 
         foreach ($modulos as $modulo) {

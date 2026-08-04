@@ -963,7 +963,7 @@ class OwnerController extends Controller
         $selectedModulos = $role->modules->where('is_visible', true)->pluck('modulo_key')->toArray();
 
         // Ordenar categorías: contabilidad antes de sistema/reportes
-        $orden = ['core','operaciones','clientes','organizacion','lavadero','restaurante','alquileres','tattoo','climatizacion','tecnologia','contabilidad','reportes','sistema','configuracion'];
+        $orden = ['core','operaciones','clientes','organizacion','lavadero','restaurante','alquileres','tattoo','climatizacion','tecnologia','contabilidad','delivery','reportes','sistema','configuracion'];
         $sorted = [];
         foreach ($orden as $cat) {
             if ($modulos->has($cat)) {
