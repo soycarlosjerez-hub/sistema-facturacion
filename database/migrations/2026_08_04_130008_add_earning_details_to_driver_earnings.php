@@ -15,6 +15,7 @@ return new class extends Migration
                 ->constrained('business_instances')
                 ->nullOnDelete();
             $table->foreignId('driver_earning_id')
+                ->nullable()
                 ->constrained('driver_earnings')
                 ->nullOnDelete();
             $table->foreignId('orden_id')
