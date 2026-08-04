@@ -3,8 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 class PermissionSeeder extends Seeder
 {
@@ -281,13 +280,21 @@ class PermissionSeeder extends Seeder
             ],
         ];
 
-        $allPermissions = [];
-        foreach ($permissionsByModule as $module => $perms) {
-            foreach ($perms as $p) {
-                $perm = Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
-                $allPermissions[] = $perm->name;
-            }
-        }
+        $allPermissions = collect($permissionsByModule)
+            ->flatten()
+            ->values()
+            ->all();
+
+        // Inserción masiva de permisos (única query) en vez de firstOrCreate por permiso.
+        DB::table(config('permission.table_names.permissions', 'permissions'))
+            ->insertOrIgnore(
+                collect($allPermissions)->map(fn ($name) => [
+                    'name' => $name,
+                    'guard_name' => 'web',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])->all()
+            );
 
         $rolePermissions = [
             'admin' => $allPermissions,
@@ -874,9 +881,42 @@ class PermissionSeeder extends Seeder
             ],
         ];
 
+        $permIdByName = DB::table(config('permission.table_names.permissions', 'permissions'))
+            ->pluck('id', 'name');
+
+        $roleRows = collect(array_keys($rolePermissions))->map(fn ($name) => [
+            'name' => $name,
+            'guard_name' => 'web',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ])->all();
+
+        DB::table(config('permission.table_names.roles', 'roles'))
+            ->insertOrIgnore($roleRows);
+
+        $roleIdByName = DB::table(config('permission.table_names.roles', 'roles'))
+            ->pluck('id', 'name');
+
+        // Asignación masiva de permisos por rol (única query por rol) en vez de
+        // syncPermissions(), que re-consulta cada permiso por nombre y es muy lento.
         foreach ($rolePermissions as $roleName => $perms) {
-            $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
-            $role->syncPermissions($perms);
+            $roleId = $roleIdByName[$roleName] ?? null;
+            if (!$roleId) {
+                continue;
+            }
+
+            $pivotRows = collect($perms)
+                ->map(fn ($name) => $permIdByName[$name] ?? null)
+                ->filter()
+                ->map(fn ($permId) => ['permission_id' => $permId, 'role_id' => $roleId])
+                ->all();
+
+            DB::table(config('permission.table_names.role_has_permissions', 'role_has_permissions'))
+                ->where('role_id', $roleId)
+                ->delete();
+
+            DB::table(config('permission.table_names.role_has_permissions', 'role_has_permissions'))
+                ->insertOrIgnore($pivotRows);
         }
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

@@ -332,25 +332,51 @@ class PrintService
 
     private function enviarARed(Impresora $impresora, string $contenido): string
     {
-        $socket = @fsockopen($impresora->direccion_ip, $impresora->puerto ?? 9100, $errno, $errstr, 5);
-        if (!$socket) {
-            throw new \RuntimeException("No se pudo conectar a {$impresora->direccion_ip}:{$impresora->puerto} - {$errstr}");
+        if (!extension_loaded('sockets')) {
+            throw new \RuntimeException('Extensión sockets no cargada - imposible imprimir por red');
         }
-        fwrite($socket, $contenido);
+
+        $host = $impresora->direccion_ip;
+        $port = $impresora->puerto ?? 9100;
+        $timeout = 5;
+
+        $socket = @fsockopen($host, $port, $errno, $errstr, $timeout);
+        if (!$socket) {
+            throw new \RuntimeException("No se pudo conectar a {$host}:{$port} - {$errstr} (código: {$errno})");
+        }
+
+        @stream_set_timeout($socket, $timeout);
+        $bytesWritten = fwrite($socket, $contenido);
         fclose($socket);
-        return "Enviado a {$impresora->nombre} (red)";
+
+        if ($bytesWritten === false || $bytesWritten === 0) {
+            throw new \RuntimeException("Error al escribir en socket de {$impresora->nombre}");
+        }
+
+        return "Enviado a {$impresora->nombre} (red {$host}:{$port}, {$bytesWritten} bytes)";
     }
 
     private function enviarALocal(Impresora $impresora, string $contenido): string
     {
         $path = $impresora->ruta_compartida ?? (PHP_OS_FAMILY === 'Windows' ? 'LPT1' : '/dev/usb/lp0');
+        
+        if (!file_exists(dirname($path)) && PHP_OS_FAMILY !== 'Windows') {
+            throw new \RuntimeException("Directorio del puerto no existe: {$path}");
+        }
+
         $fp = @fopen($path, 'wb');
         if (!$fp) {
-            throw new \RuntimeException("No se pudo abrir el puerto: {$path}");
+            throw new \RuntimeException("No se pudo abrir el puerto: {$path} (verifique permisos)");
         }
-        fwrite($fp, $contenido);
+        
+        $bytesWritten = fwrite($fp, $contenido);
         fclose($fp);
-        return "Enviado a {$impresora->nombre} (local: {$path})";
+
+        if ($bytesWritten === false || $bytesWritten === 0) {
+            throw new \RuntimeException("Error al escribir en puerto {$path}");
+        }
+
+        return "Enviado a {$impresora->nombre} (local: {$path}, {$bytesWritten} bytes)";
     }
 
     private function enviarACompartida(Impresora $impresora, string $contenido): string
@@ -359,22 +385,28 @@ class PrintService
             $path = $impresora->ruta_compartida ?? 'LPT1';
             $fp = @fopen($path, 'wb');
             if (!$fp) {
-                throw new \RuntimeException("No se pudo abrir: {$path}");
+                throw new \RuntimeException("No se pudo abrir: {$path} (verifique que la impresora compartida sea accesible)");
             }
-            fwrite($fp, $contenido);
+            $bytesWritten = fwrite($fp, $contenido);
             fclose($fp);
-            return "Enviado a {$impresora->nombre} (compartida)";
+            if ($bytesWritten === false || $bytesWritten === 0) {
+                throw new \RuntimeException("Error al escribir en ruta compartida {$path}");
+            }
+            return "Enviado a {$impresora->nombre} (compartida: {$path}, {$bytesWritten} bytes)";
         }
         // En Linux, usar smbclient
         $ruta = $impresora->ruta_compartida;
+        if (empty($ruta)) {
+            throw new \RuntimeException('Ruta compartida SMB no configurada');
+        }
         $tmpFile = tempnam(sys_get_temp_dir(), 'print_');
         file_put_contents($tmpFile, $contenido);
         exec("smbclient '{$ruta}' -c 'print {$tmpFile}' 2>&1", $output, $code);
         @unlink($tmpFile);
         if ($code !== 0) {
-            throw new \RuntimeException("Error smbclient: " . implode("\n", $output));
+            throw new \RuntimeException("Error smbclient (código {$code}): " . implode("\n", $output));
         }
-        return "Enviado a {$impresora->nombre} (SMB)";
+        return "Enviado a {$impresora->nombre} (SMB: {$ruta})";
     }
 
     private function enviarAPdf(Impresora $impresora, string $texto, ?string $filename = null): string
@@ -387,15 +419,29 @@ class PrintService
         $path = $dir . '/' . $filename . '.txt';
         file_put_contents($path, $texto);
 
+        if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            return "Archivo TXT guardado: {$path} (dompdf no instalado, PDF deshabilitado)";
+        }
+
         try {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML(
-                '<pre style="font-family:monospace;font-size:10px;">' . e($texto) . '</pre>'
-            );
+            $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: monospace; font-size: 10px; white-space: pre-wrap; margin: 10px; }
+    </style>
+</head>
+<body>' . e($texto) . '</body>
+</html>';
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
             $pdfPath = $dir . '/' . $filename . '.pdf';
             $pdf->save($pdfPath);
-            return "PDF generado: {$pdfPath}";
+            return "PDF generado exitosamente: {$pdfPath}";
         } catch (\Throwable $e) {
-            return "Archivo guardado: {$path} (PDF no disponible: {$e->getMessage()})";
+            Log::warning("Error generando PDF para {$impresora->nombre}: " . $e->getMessage());
+            return "Archivo TXT guardado: {$path} (PDF falló: {$e->getMessage()})";
         }
     }
 

@@ -22,7 +22,6 @@ class UsuariosUiTest extends TestCase
     {
         parent::setUp();
         $this->seed(PermissionSeeder::class);
-        $this->seed(\Database\Seeders\RolesYUsuariosSeeder::class);
         $this->seed(DemoUsersSeeder::class);
 
         // Asegurar todos los roles con usuarios

@@ -48,5 +48,8 @@ class DatabaseSeeder extends Seeder
         // Climatización
         $this->call(TiposClimaSeeder::class);
         $this->call(ClimatizacionSeeder::class);
+        
+        // Impresión
+        $this->call(ImpresoraSeeder::class);
     }
 }

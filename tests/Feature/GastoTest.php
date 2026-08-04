@@ -7,7 +7,6 @@ use App\Models\BusinessType;
 use App\Models\Gasto;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
-use Database\Seeders\RolesYUsuariosSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ class GastoTest extends TestCase
     {
         parent::setUp();
         $this->seed(PermissionSeeder::class);
-        $this->seed(RolesYUsuariosSeeder::class);
 
         $owner = User::firstOrCreate(
             ['email' => 'owner@test.com'],
