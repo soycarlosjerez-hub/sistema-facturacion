@@ -91,7 +91,6 @@ class EcfService
             throw $e;
         }
     }
-    }
 
     public function firmar(EcfDocumento $ecf): EcfDocumento
     {
@@ -430,7 +429,7 @@ class EcfService
         $ecf->load('secuencia');
 
         try {
-            $xml = $this->xmlBuilder->buildE41($ecf, $compra);
+            $xml = $this->builder->buildE41($ecf, $compra);
             $ecf->xml_content = $xml;
             $ecf->save();
 

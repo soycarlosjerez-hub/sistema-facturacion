@@ -6,6 +6,7 @@ use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\Auditable;
+use Illuminate\Support\Facades\DB;
 
 class SecuenciaEcf extends Model
 {

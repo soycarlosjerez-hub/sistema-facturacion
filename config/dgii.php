@@ -49,4 +49,23 @@ return [
     'probabilidad_aprobacion_sim' => env('DGII_PROB_APROB', 0.85),
 
     'qr_endpoint' => env('DGII_QR_ENDPOINT', 'https://dgii.gov.do/app/WebApps/ConsultasWeb/ConsultasWeb/consulta'),
+
+    'certificates' => [
+        'sandbox' => [
+            'client_cert_path' => env('DGII_CERT_CLIENT_CERT_SANDBOX'),
+            'client_key_path' => env('DGII_CERT_CLIENT_KEY_SANDBOX'),
+            'client_key_pass' => env('DGII_CERT_CLIENT_KEY_PASS_SANDBOX', ''),
+        ],
+        'produccion' => [
+            'client_cert_path' => env('DGII_CERT_CLIENT_CERT_PROD'),
+            'client_key_path' => env('DGII_CERT_CLIENT_KEY_PROD'),
+            'client_key_pass' => env('DGII_CERT_CLIENT_KEY_PASS_PROD', ''),
+        ],
+    ],
+
+    'api_key' => [
+        'default' => env('DGII_API_KEY', ''),
+        'sandbox' => env('DGII_API_KEY_SANDBOX', ''),
+        'produccion' => env('DGII_API_KEY_PROD', ''),
+    ],
 ];
