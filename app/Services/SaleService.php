@@ -303,14 +303,14 @@ class SaleService
             $sesionesActivas->where('user_id', Auth::id());
         }
 
-        $sesionesActivas = $sesionesActivas->latest('fecha_apertura')->get();
+        $sesiones = $sesionesActivas->latest('fecha_apertura')->get();
 
-        if ($sesionesActivas->isEmpty()) {
+        if ($sesiones->isEmpty()) {
             return ['sesiones' => collect(), 'sesion' => null];
         }
 
         // Default to first (most recently opened) session
-        $sesion = $sesionesActivas->first();
+        $sesion = $sesiones->first();
 
         $clienteConsumidorFinal = Cliente::consumidorFinal($tenantId);
 
