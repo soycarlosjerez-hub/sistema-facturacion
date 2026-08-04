@@ -899,8 +899,36 @@ class OwnerController extends Controller
         $role = InstanceRole::where('business_instance_id', $instance->id)
             ->with('modules')->findOrFail($roleId);
         $modulos = Modulo::allActive()->groupBy('categoria');
+
+        // Extraer módulos de contabilidad y crear categoría propia
+        $modsContabilidad = ['ncf','ecf','secuencias-ecf','certificados-digitales','libros-ventas','libros-compras','reportes-retenciones','reportes-fiscales','reportes-resumen','formulario-14-14'];
+        $contabilidadMods = collect();
+        foreach ($modsContabilidad as $key) {
+            $modulos->each(function ($items) use ($key, &$contabilidadMods) {
+                $found = $items->firstWhere('key', $key);
+                if ($found) {
+                    $contabilidadMods->push($found);
+                }
+            });
+        }
+        // Remover de categorías originales
+        $modulos = $modulos->map(function ($items) use ($modsContabilidad) {
+            return $items->reject(fn($m) => in_array($m->key, $modsContabilidad));
+        })->reject(fn($items) => $items->isEmpty())->values(true);
+        if ($contabilidadMods->isNotEmpty()) {
+            $modulos->put('contabilidad', $contabilidadMods);
+        }
+
         $totalModulos = Modulo::allActive()->count();
         $selectedModulos = $role->modules->where('is_visible', true)->pluck('modulo_key')->toArray();
+
+        // Ordenar categorías: contabilidad antes de sistema/reportes
+        $orden = ['core','operaciones','clientes','organizacion','lavadero','restaurante','alquileres','tattoo','climatizacion','tecnologia','contabilidad','reportes','sistema','configuracion'];
+        $modulos = $modulos->sortBy(function ($items, $cat) use ($orden) {
+            $pos = array_search($cat, $orden);
+            return $pos === false ? 999 : $pos;
+        });
+
         return view('owner.instances.roles.edit', compact('instance', 'role', 'modulos', 'totalModulos', 'selectedModulos'));
     }
 
