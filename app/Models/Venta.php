@@ -124,6 +124,11 @@ class Venta extends Model
             ->withTimestamps();
     }
 
+    public function deliveryTracking()
+    {
+        return $this->hasOne(\App\Models\DeliveryTracking::class, 'orden_id');
+    }
+
     public function usaEcf(): bool
     {
         return $this->tipo_comprobante === 'ecf' || !empty($this->encf);

@@ -827,6 +827,69 @@ Route::middleware(['auth', 'permission:delivery-companies.delete'])->group(funct
     Route::delete('delivery-companies/{deliveryCompany}', [DeliveryCompanyController::class, 'destroy'])->name('delivery-companies.destroy');
 });
 
+// Delivery Module
+Route::middleware(['auth', 'permission:delivery-dashboard.view'])->group(function () {
+    Route::get('/delivery/dashboard', [\App\Http\Controllers\DashboardDeliveryController::class, 'dashboard'])->name('delivery.dashboard');
+});
+
+// Delivery Drivers
+Route::middleware(['auth', 'permission:delivery-drivers.view'])->group(function () {
+    Route::get('/delivery-drivers', [\App\Http\Controllers\DeliveryDriverController::class, 'index'])->name('delivery-drivers.index');
+    Route::get('/delivery-drivers/listar-activos', [\App\Http\Controllers\DeliveryDriverController::class, 'listarActivos'])->name('delivery-drivers.listar-activos');
+});
+Route::middleware(['auth', 'permission:delivery-drivers.create'])->group(function () {
+    Route::get('/delivery-drivers/create', [\App\Http\Controllers\DeliveryDriverController::class, 'create'])->name('delivery-drivers.create');
+    Route::post('/delivery-drivers', [\App\Http\Controllers\DeliveryDriverController::class, 'store'])->name('delivery-drivers.store');
+});
+Route::middleware(['auth', 'permission:delivery-drivers.edit'])->group(function () {
+    Route::get('/delivery-drivers/{deliveryDriver}/edit', [\App\Http\Controllers\DeliveryDriverController::class, 'edit'])->name('delivery-drivers.edit');
+    Route::put('/delivery-drivers/{deliveryDriver}', [\App\Http\Controllers\DeliveryDriverController::class, 'update'])->name('delivery-drivers.update');
+});
+Route::middleware(['auth', 'permission:delivery-drivers.delete'])->group(function () {
+    Route::delete('/delivery-drivers/{deliveryDriver}', [\App\Http\Controllers\DeliveryDriverController::class, 'destroy'])->name('delivery-drivers.destroy');
+});
+
+// Delivery Zones
+Route::middleware(['auth', 'permission:delivery-zones.view'])->group(function () {
+    Route::get('/delivery-zones', [\App\Http\Controllers\DeliveryZoneController::class, 'index'])->name('delivery-zones.index');
+    Route::get('/delivery-zones/listar-activas', [\App\Http\Controllers\DeliveryZoneController::class, 'listarActivas'])->name('delivery-zones.listar-activas');
+});
+Route::middleware(['auth', 'permission:delivery-zones.create'])->group(function () {
+    Route::get('/delivery-zones/create', [\App\Http\Controllers\DeliveryZoneController::class, 'create'])->name('delivery-zones.create');
+    Route::post('/delivery-zones', [\App\Http\Controllers\DeliveryZoneController::class, 'store'])->name('delivery-zones.store');
+});
+Route::middleware(['auth', 'permission:delivery-zones.edit'])->group(function () {
+    Route::get('/delivery-zones/{deliveryZone}/edit', [\App\Http\Controllers\DeliveryZoneController::class, 'edit'])->name('delivery-zones.edit');
+    Route::put('/delivery-zones/{deliveryZone}', [\App\Http\Controllers\DeliveryZoneController::class, 'update'])->name('delivery-zones.update');
+});
+Route::middleware(['auth', 'permission:delivery-zones.delete'])->group(function () {
+    Route::delete('/delivery-zones/{deliveryZone}', [\App\Http\Controllers\DeliveryZoneController::class, 'destroy'])->name('delivery-zones.destroy');
+});
+
+// Delivery Tracking
+Route::middleware(['auth', 'permission:delivery-tracking.view'])->group(function () {
+    Route::get('/delivery-tracking', [\App\Http\Controllers\DeliveryTrackingController::class, 'index'])->name('delivery-tracking.index');
+    Route::get('/delivery-tracking/{tracking}', [\App\Http\Controllers\DeliveryTrackingController::class, 'show'])->name('delivery-tracking.show');
+    Route::post('/delivery-tracking', [\App\Http\Controllers\DeliveryTrackingController::class, 'store'])->name('delivery-tracking.store');
+    Route::patch('/delivery-tracking/{tracking}/status', [\App\Http\Controllers\DeliveryTrackingController::class, 'updateStatus'])->name('delivery-tracking.update-status');
+    Route::post('/delivery-tracking/{tracking}/ubicacion', [\App\Http\Controllers\DeliveryTrackingController::class, 'registrarUbicacion'])->name('delivery-tracking.registrar-ubicacion');
+    Route::post('/delivery-tracking/{tracking}/entrega', [\App\Http\Controllers\DeliveryTrackingController::class, 'confirmarEntrega'])->name('delivery-tracking.confirmar-entrega');
+});
+
+// Driver Assignments (API)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/orden/{orden}/asignar-driver', [\App\Http\Controllers\DeliveryTrackingController::class, 'asignarDriver'])->name('orden.asignar-driver');
+    Route::post('/orden/{orden}/liberar-driver', [\App\Http\Controllers\DeliveryTrackingController::class, 'liberarDriver'])->name('orden.liberar-driver');
+});
+
+// Driver Earnings
+Route::middleware(['auth', 'permission:delivery-earnings.view'])->group(function () {
+    Route::get('/driver-earnings', [\App\Http\Controllers\DriverEarningsController::class, 'index'])->name('driver-earnings.index');
+    Route::get('/driver-earnings/{earning}', [\App\Http\Controllers\DriverEarningsController::class, 'show'])->name('driver-earnings.show');
+    Route::post('/driver-earnings/calcular', [\App\Http\Controllers\DriverEarningsController::class, 'calcularGanancias'])->name('driver-earnings.calcular');
+    Route::get('/driver-earnings/exportar', [\App\Http\Controllers\DriverEarningsController::class, 'exportCsv'])->name('driver-earnings.exportar');
+});
+
 // DEBUG - diagnostic route for reservations
 Route::middleware(['auth'])->get('/_debug-reservaciones', function () {
     $query = \App\Models\Reservacion::with('mesa', 'user')->deSucursal();

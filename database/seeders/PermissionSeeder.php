@@ -278,6 +278,31 @@ class PermissionSeeder extends Seeder
                 'update_climatizacion::orden_emergencia',
                 'delete_climatizacion::orden_emergencia',
             ],
+            'delivery-dashboard' => [
+                'delivery-dashboard.view',
+            ],
+            'delivery-drivers' => [
+                'delivery-drivers.view',
+                'delivery-drivers.create',
+                'delivery-drivers.edit',
+                'delivery-drivers.delete',
+            ],
+            'delivery-zones' => [
+                'delivery-zones.view',
+                'delivery-zones.create',
+                'delivery-zones.edit',
+                'delivery-zones.delete',
+            ],
+            'delivery-tracking' => [
+                'delivery-tracking.view',
+                'delivery-tracking.create',
+                'delivery-tracking.edit',
+                'delivery-tracking.assign',
+            ],
+            'delivery-earnings' => [
+                'delivery-earnings.view',
+                'delivery-earnings.export',
+            ],
         ];
 
         $allPermissions = collect($permissionsByModule)
@@ -861,6 +886,11 @@ class PermissionSeeder extends Seeder
 
                 'clientes.view',
                 'clientes.create',
+
+                'delivery-dashboard.view',
+                'delivery-tracking.view',
+                'delivery-tracking.assign',
+                'delivery-earnings.view',
             ],
 
             'cajero' => [

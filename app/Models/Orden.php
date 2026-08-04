@@ -83,6 +83,11 @@ class Orden extends Model
         return $this->belongsTo(DeliveryCompany::class, 'entrega_empresa_id');
     }
 
+    public function deliveryTracking()
+    {
+        return $this->hasOne(\App\Models\DeliveryTracking::class, 'orden_id');
+    }
+
     public function scopeDeSucursal($query)
     {
         $sucursalId = session('sucursal_id') ?? Auth::user()?->sucursal_id;

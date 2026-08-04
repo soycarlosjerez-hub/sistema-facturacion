@@ -573,6 +573,57 @@ class Sidebar
             }
         }
 
+        // Delivery
+        $tieneDelivery = $mod('delivery-dashboard') || $mod('delivery-drivers') || $mod('delivery-zones') || $mod('delivery-tracking') || $mod('delivery-earnings');
+        if ($tieneDelivery && ($can('delivery-dashboard.view') || $can('delivery-drivers.view') || $can('delivery-zones.view') || $can('delivery-tracking.view') || $can('delivery-earnings.view'))) {
+            $items[] = ['section' => 'Delivery'];
+            if ($mod('delivery-dashboard') && $can('delivery-dashboard.view')) {
+                $items[] = [
+                    'route' => 'delivery.dashboard',
+                    'icon'  => 'bi-truck',
+                    'label' => 'Dashboard Delivery',
+                    'is_route' => 'delivery.dashboard*',
+                    'exact_route' => 'delivery.dashboard',
+                ];
+            }
+            if ($mod('delivery-drivers') && $can('delivery-drivers.view')) {
+                $items[] = [
+                    'route' => 'delivery-drivers.index',
+                    'icon'  => 'bi-person-badge',
+                    'label' => 'Repartidores',
+                    'is_route' => 'delivery-drivers.*',
+                    'exact_route' => 'delivery-drivers.index',
+                ];
+            }
+            if ($mod('delivery-zones') && $can('delivery-zones.view')) {
+                $items[] = [
+                    'route' => 'delivery-zones.index',
+                    'icon'  => 'bi-geo-alt',
+                    'label' => 'Zonas de Cobertura',
+                    'is_route' => 'delivery-zones.*',
+                    'exact_route' => 'delivery-zones.index',
+                ];
+            }
+            if ($mod('delivery-tracking') && $can('delivery-tracking.view')) {
+                $items[] = [
+                    'route' => 'delivery-tracking.index',
+                    'icon'  => 'bi-signpost-split',
+                    'label' => 'Seguimiento de Entregas',
+                    'is_route' => 'delivery-tracking.*',
+                    'exact_route' => 'delivery-tracking.index',
+                ];
+            }
+            if ($mod('delivery-earnings') && $can('delivery-earnings.view')) {
+                $items[] = [
+                    'route' => 'driver-earnings.index',
+                    'icon'  => 'bi-cash-coin',
+                    'label' => 'Ganancias Repartidores',
+                    'is_route' => 'driver-earnings.*',
+                    'exact_route' => 'driver-earnings.index',
+                ];
+            }
+        }
+
         // Reportes
         $hasReportes = $mod('reportes-ventas') || $mod('reportes-compras') || $mod('reportes-stock') || $mod('reportes-utilidades') || $mod('reportes-caja') || $mod('reportes-restaurante') || $mod('reportes-gastos');
         if ($hasReportes && $can('reportes.view')) {
