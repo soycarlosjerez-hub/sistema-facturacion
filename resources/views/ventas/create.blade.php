@@ -4390,6 +4390,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     window.tecladoIdioma = tecladoIdioma;
     window.categoriaFiltroChange = categoriaFiltroChange;
     window.mainCategoriaFiltroChange = mainCategoriaFiltroChange;
+    window.teclaPulsar = teclaPulsar;
+    window.teclaMayusculas = teclaMayusculas;
+    window.teclaBorrar = teclaBorrar;
+    window.teclaEnter = teclaEnter;
 
     // Init on DOMContentLoaded
     if (document.readyState === 'loading') {

@@ -666,4 +666,73 @@ class VentaControllerTest extends TestCase
 
         $this->assertDatabaseCount('ventas', 0);
     }
+
+    public function test_store_rejects_general_discount_above_50_for_vendedor(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 0]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $vendedor = $this->createVendedorConPermisoVentas($session);
+        $this->abrirSesionPara($vendedor, $session);
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'almacen_id' => [$almacen->id],
+            'general_descuento' => 60,
+            'total' => 40,
+            'impuestos' => 0,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($vendedor)
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertUnprocessable();
+        $response->assertJsonPath('error', 'Descuentos superiores al 50% requieren autorización de administrador.');
+
+        $this->assertDatabaseCount('ventas', 0);
+    }
+
+    public function test_store_allows_general_discount_for_admin(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'almacen_id' => [$almacen->id],
+            'general_descuento' => 60,
+            'total' => 47.20,
+            'impuestos' => 7.20,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->post(route('ventas.store'), $payload)
+            ->assertStatus(302);
+
+        $venta = Venta::where('user_id', $session['user']->id)->first();
+        $this->assertNotNull($venta);
+        $this->assertSame('100.00', $venta->subtotal);
+        $this->assertSame('60.00', $venta->descuento);
+        $this->assertSame('60.00', $venta->general_descuento);
+        $this->assertSame('7.20', $venta->impuestos);
+        $this->assertSame('47.20', $venta->total);
+    }
 }
