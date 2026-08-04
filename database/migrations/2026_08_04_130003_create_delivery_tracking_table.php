@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('delivery_tracking', function (Blueprint $table) {
             $table->id();
             $table->foreignId('orden_id')
+                ->nullable()
                 ->constrained('ordenes')
                 ->nullOnDelete();
             $table->foreignId('driver_id')
