@@ -485,6 +485,7 @@ class EcfService
             ->where('fecha_vencimiento', '>=', now())
             ->whereColumn('actual', '<', 'hasta')
             ->orderBy('fecha_vencimiento')
+            ->lockForUpdate()
             ->first();
     }
 

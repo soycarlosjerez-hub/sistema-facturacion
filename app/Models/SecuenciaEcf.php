@@ -94,8 +94,33 @@ class SecuenciaEcf extends Model
         if ($this->agotada()) {
             throw new \RuntimeException("Secuencia {$this->tipo_ecf} agotada");
         }
-        $this->increment('actual');
+
+        $numero = DB::connection()->transaction(function () {
+            $fila = self::where('id', $this->id)
+                ->where('activo', true)
+                ->where('fecha_vencimiento', '>=', now())
+                ->whereColumn('actual', '<', 'hasta')
+                ->lockForUpdate()
+                ->first();
+
+            if (!$fila) {
+                throw new \RuntimeException("Secuencia {$this->tipo_ecf} ya no disponible");
+            }
+
+            if ($fila->actual >= $fila->hasta) {
+                throw new \RuntimeException("Secuencia {$this->tipo_ecf} agotada");
+            }
+
+            $nuevoValor = $fila->actual + 1;
+
+            self::where('id', $this->id)
+                ->where('actual', $fila->actual)
+                ->update(['actual' => $nuevoValor]);
+
+            return $nuevoValor;
+        });
+
         $this->refresh();
-        return $this->actual;
+        return $numero;
     }
 }

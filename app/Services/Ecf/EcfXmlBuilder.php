@@ -167,6 +167,7 @@ class EcfXmlBuilder
             'https://dgii.gov.do/onecore/electronicinvoice/v1',
             'ECF'
         );
+        $root->setAttribute('id', 'ECF');
         $xml->appendChild($root);
 
         $root->setAttributeNS(
@@ -174,67 +175,75 @@ class EcfXmlBuilder
             'xmlns:xsi',
             'http://www.w3.org/2001/XMLSchema-instance'
         );
-        $root->setAttribute('xsi:schemaLocation',
+        $root->setAttributeNS(
+            'http://www.w3.org/2001/XMLSchema-instance',
+            'xsi:schemaLocation',
             'https://dgii.gov.do/onecore/electronicinvoice/v1 DGII_ecf.xsd'
         );
 
-        // Encabezado
+        // Encabezado (mismo formato que E31/E32)
+        $encabezado = $xml->createElement('Encabezado');
+        $root->appendChild($encabezado);
+
+        $encabezado->appendChild($xml->createElement('Version', '1.0'));
+
         $idDoc = $xml->createElement('IdDoc');
-        $idDoc->appendChild($xml->createElement('TipoCF', 'E41'));
-        $idDoc->appendChild($xml->createElement('EcfNumero', $ecf->encf));
+        $idDoc->appendChild($xml->createElement('TipoeCF', 'E41'));
+        $idDoc->appendChild($xml->createElement('eNCF', $ecf->encf));
+        $idDoc->appendChild($xml->createElement('FechaVencimientoSecuencia', $ecf->secuencia?->fecha_vencimiento?->format('Y-m-d') ?? ''));
         $idDoc->appendChild($xml->createElement('FechaEmision', $ecf->fecha_emision->format('Y-m-d')));
         $idDoc->appendChild($xml->createElement('HoraEmision', $ecf->fecha_emision->format('H:i:s')));
-        $root->appendChild($idDoc);
+        $encabezado->appendChild($idDoc);
 
-        // Emisor (la empresa)
+        // Emisor (la empresa compradora)
         $emisor = $xml->createElement('Emisor');
-        $emisor->appendChild($xml->createElement('RNC', $this->cleanRnc($empresa['rnc_empresa'] ?? '')));
-        $emisor->appendChild($xml->createElement('RazonSocial', $empresa['nombre_empresa'] ?? ''));
-        $emisor->appendChild($xml->createElement('NombreComercial', $empresa['nombre_empresa'] ?? ''));
-        $dir = $xml->createElement('DireccionEmisor');
-        $dir->appendChild($xml->createElement('Direccion', $empresa['direccion'] ?? ''));
-        $dir->appendChild($xml->createElement('Municipio', $empresa['ciudad'] ?? ''));
-        $dir->appendChild($xml->createElement('Provincia', ''));
-        $emisor->appendChild($dir);
-        $emisor->appendChild($xml->createElement('Telefono', $empresa['telefono'] ?? ''));
-        $emisor->appendChild($xml->createElement('CorreoElectronico', $empresa['email'] ?? ''));
-        $root->appendChild($emisor);
+        $emisor->appendChild($xml->createElement('RNCEmisor', $this->cleanRnc($empresa['empresa_rnc'] ?? '')));
+        $emisor->appendChild($xml->createElement('RazonSocialEmisor', $empresa['empresa_nombre'] ?? ''));
+        $emisor->appendChild($xml->createElement('DireccionEmisor', $empresa['empresa_direccion'] ?? ''));
+        $emisor->appendChild($xml->createElement('TelefonoEmisor', $empresa['empresa_telefono'] ?? ''));
+        $encabezado->appendChild($emisor);
 
-        // Proveedor (vendedor)
+        // Proveedor (vendedor) como Comprador
+        $tipoDoc = RncValidator::tipoDocumentoDgii($tipoDocProveedor);
+        $rncProveedor = $this->cleanRnc($proveedor?->rnc ?? '');
+
         $comprador = $xml->createElement('Comprador');
-        $tipoDoc = $tipoDocProveedor === 'CEDULA' ? 'Cedula' : ($tipoDocProveedor === 'RNC' ? 'RNC' : 'Otro');
-        $comprador->appendChild($xml->createElement('TipoDocumento', $tipoDoc));
-        $comprador->appendChild($xml->createElement('Documento', $this->cleanRnc($proveedor?->rnc ?? '')));
-        $comprador->appendChild($xml->createElement('Nombre', $proveedor?->nombre ?? 'Proveedor'));
-        $comprador->appendChild($xml->createElement('Direccion', $proveedor?->direccion ?? ''));
-        $comprador->appendChild($xml->createElement('CorreoElectronico', $proveedor?->email ?? ''));
-        $root->appendChild($comprador);
-
-        // Detalles
-        $detalles = $xml->createElement('DetallesFactura');
-        foreach ($compra->detalles as $i => $det) {
-            $item = $xml->createElement('Item');
-            $item->appendChild($xml->createElement('NumeroLinea', $i + 1));
-            $item->appendChild($xml->createElement('Descripcion', $det->producto?->nombre ?? 'Producto'));
-            $item->appendChild($xml->createElement('Cantidad', $this->fmt($det->cantidad)));
-            $item->appendChild($xml->createElement('PrecioUnitario', $this->fmt($det->precio_unitario)));
-            $base = $det->cantidad * $det->precio_unitario;
-            $imp = $base * ($det->itbis_porcentaje ?? 18) / 100;
-            $item->appendChild($xml->createElement('MontoGravado', $this->fmt($base)));
-            $item->appendChild($xml->createElement('MontoItbis', $this->fmt($imp)));
-            $detalles->appendChild($item);
+        $comprador->appendChild($xml->createElement('TipoDocumentoIdentificacionComprador', $tipoDoc));
+        $comprador->appendChild($xml->createElement('RNCComprador', RncValidator::formato($rncProveedor, $tipoDocProveedor)));
+        $comprador->appendChild($xml->createElement('RazonSocialComprador', $proveedor?->nombre ?? 'Proveedor'));
+        if ($proveedor && !empty($proveedor->email)) {
+            $comprador->appendChild($xml->createElement('EmailComprador', $proveedor->email));
         }
-        $root->appendChild($detalles);
+        $encabezado->appendChild($comprador);
 
         // Totales
         $totales = $xml->createElement('Totales');
-        $totales->appendChild($xml->createElement('TotalGravado', $this->fmt($compra->subtotal ?? 0)));
-        $totales->appendChild($xml->createElement('TotalItbis', $this->fmt($compra->itbis_total ?? 0)));
-        $totales->appendChild($xml->createElement('Total', $this->fmt($compra->total)));
-        $root->appendChild($totales);
+        $totales->appendChild($xml->createElement('MontoGravadoTotal', $this->fmt((float)($compra->subtotal ?? 0))));
+        $totales->appendChild($xml->createElement('MontoExentoTotal', $this->fmt(0)));
+        $totales->appendChild($xml->createElement('ITBIS1', $this->fmt((float)($compra->itbis_total ?? 0))));
+        $totales->appendChild($xml->createElement('TotalITBIS', $this->fmt((float)($compra->itbis_total ?? 0))));
+        $totales->appendChild($xml->createElement('MontoTotal', $this->fmt((float)$compra->total)));
+        $encabezado->appendChild($totales);
 
-        // CodigoSeguridad
-        $root->appendChild($xml->createElement('CodigoSeguridad', $ecf->codigo_seguridad ?? ''));
+        // Detalles (mismo formato que ventas)
+        $detalles = $xml->createElement('DetallesItems');
+        foreach ($compra->detalles as $i => $det) {
+            $item = $xml->createElement('Item');
+            $item->appendChild($xml->createElement('NumeroLinea', $i + 1));
+            $item->appendChild($xml->createElement('CodigoItem', $det->producto?->codigo_barras ?? (string) $det->producto_id));
+            $item->appendChild($xml->createElement('DescripcionItem', $det->producto?->nombre ?? 'Producto'));
+            $item->appendChild($xml->createElement('CantidadItem', $this->fmt($det->cantidad)));
+            $item->appendChild($xml->createElement('UnidadMedida', '43'));
+            $item->appendChild($xml->createElement('PrecioUnitarioItem', $this->fmt($det->precio_unitario)));
+            $base = $det->cantidad * $det->precio_unitario;
+            $item->appendChild($xml->createElement('MontoItem', $this->fmt($base)));
+            $item->appendChild($xml->createElement('MontoDescuento', '0.00'));
+            $item->appendChild($xml->createElement('IndicadorFacturacion', '1'));
+            $item->appendChild($xml->createElement('TasaITBIS', $this->fmt($det->itbis_porcentaje ?? 18)));
+            $item->appendChild($xml->createElement('MontoITBIS', $this->fmt($base * ($det->itbis_porcentaje ?? 18) / 100)));
+            $detalles->appendChild($item);
+        }
+        $root->appendChild($detalles);
 
         $this->appendFechaHoraFirma($xml, $root, $ecf);
 

@@ -32,6 +32,9 @@ class EcfDocumento extends Model
         'itbis_total',
         'monto_total',
         'xml_path',
+        'xml_archivado',
+        'xml_archivo_path',
+        'xml_archivado_en',
         'xml_content',
         'firma_digital',
         'codigo_seguridad',
@@ -43,6 +46,7 @@ class EcfDocumento extends Model
         'nota_credito_id',
         'usuario_id',
         'documento_original_id',
+        'ultimo_informe_diario',
         'tenant_id',
     ];
 
