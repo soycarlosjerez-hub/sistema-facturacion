@@ -296,13 +296,6 @@ class SaleService
         $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
             || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
 
-        Log::info('=== DEBUG getCreationData ===', [
-            'user_id' => Auth::id(),
-            'user_role' => Auth::user()->role,
-            'business_instance_id' => $tenantId,
-            'is_elevated' => $isElevated,
-        ]);
-
         $sesionesActivas = SesionCaja::with('caja')
             ->where('estado', 'abierta');
 
@@ -310,22 +303,7 @@ class SaleService
             $sesionesActivas->where('user_id', Auth::id());
         }
 
-        $sql = $sesionesActivas->toSql();
-        $bindings = $sesionesActivas->getBindings();
-        Log::info('SQL Query', ['sql' => $sql, 'bindings' => $bindings]);
-
         $sesionesActivas = $sesionesActivas->latest('fecha_apertura')->get();
-
-        Log::info('Resultados', [
-            'count' => $sesionesActivas->count(),
-            'sessions' => $sesionesActivas->map(fn($s) => [
-                'id' => $s->id,
-                'caja_id' => $s->caja_id,
-                'user_id' => $s->user_id,
-                'tenant_id' => $s->tenant_id,
-                'state' => $s->estado,
-            ])->toArray(),
-        ]);
 
         if ($sesionesActivas->isEmpty()) {
             return ['sesiones' => collect(), 'sesion' => null];
@@ -415,7 +393,7 @@ class SaleService
 
         return compact(
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
-            'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
+            'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
             'productosJs', 'clientesJs', 'categoriasJs', 'validaStock'
         );
     }
