@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphedByMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\Cache;
 
 class BusinessType extends Model
@@ -43,6 +44,11 @@ class BusinessType extends Model
     public function modules(): HasMany
     {
         return $this->hasMany(BusinessTypeModule::class, 'business_type_id');
+    }
+
+    public function businessInstances(): HasMany
+    {
+        return $this->hasMany(BusinessInstance::class, 'business_type_id');
     }
 
     public function visibleModules()

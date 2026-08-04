@@ -78,11 +78,27 @@ class BusinessTypeController extends Controller
     {
         $this->authorize('manage', BusinessType::class);
 
-        // Check if any categories are linked
+        if ($businessType->slug === 'restaurante') {
+            return response()->json([
+                'message' => 'No se puede eliminar el tipo de negocio predeterminado (restaurante).',
+            ], 422);
+        }
+
         if ($businessType->categories()->exists()) {
             return response()->json([
                 'message' => 'No se puede eliminar el tipo de negocio porque tiene categorías asociadas.',
             ], 422);
+        }
+
+        $defaultType = BusinessType::where('slug', 'restaurante')->first();
+
+        if ($defaultType && $businessType->businessInstances()->exists()) {
+            $moved = $businessType->businessInstances()->update(['business_type_id' => $defaultType->id]);
+            if ($moved) {
+                return response()->json([
+                    'message' => 'Tipo de negocio eliminado. Se trasladaron ' . $moved . ' instancia(s) al tipo "Restaurante".',
+                ]);
+            }
         }
 
         $businessType->delete();
