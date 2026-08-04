@@ -103,12 +103,6 @@ body:not(.dark-mode) {
         border-bottom: 1px solid var(--pos-border);
     }
     
-    .pos-topbar .caja-tag {
-        background: rgba(var(--pos-success-rgb), 0.15);
-        color: var(--pos-success);
-        border-color: rgba(var(--pos-success-rgb), 0.3);
-    }
-    
     .pos-stat .label {
         color: var(--pos-text-muted);
     }
@@ -588,30 +582,6 @@ body:not(.dark-mode) {
     animation: uiSlideUp .5s ease both;
     animation-delay: var(--delay, 0s);
 }
-.pos-topbar .caja-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    background: rgba(var(--pos-success-rgb), 0.15);
-    color: var(--pos-success);
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 0.85rem;
-    border: 1px solid rgba(var(--pos-success-rgb), 0.3);
-}
-.pos-topbar .caja-tag .pulse-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--pos-success);
-    animation: pulse-dot 1.5s ease-in-out infinite;
-}
-    @keyframes pulse-dot {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    }
-
 /* ============ Topbar Buttons Visibility Fix ============ */
 .pos-topbar .btn {
     --tb-font-size: 0.82rem;
@@ -1603,8 +1573,6 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             padding: 10px 12px;
             gap: 8px;
         }
-        .pos-topbar .caja-tag span:not(.pulse-dot) { display: none; }
-        .pos-topbar .caja-tag { padding: 4px 10px; }
         .pos-stat .label { display: none; }
         .pos-stat .value { font-size: 0.9rem; }
         #almacen-select { max-width: 120px; font-size: 0.72rem; }
@@ -1714,8 +1682,6 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     @media (max-width: 576px) {
         .pos-app { height: 100vh; }
         .pos-topbar { padding: 8px 10px; gap: 6px; }
-        .pos-topbar .caja-tag { padding: 3px 8px; }
-        .pos-topbar .caja-tag .pulse-dot { width: 6px; height: 6px; }
         .pos-stat { display: none; }
         #almacen-select { max-width: 100px; }
         .pos-keyhint { display: none; }
@@ -2125,13 +2091,6 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 <button type="button" class="btn btn-sm btn-light rounded-pill d-lg-none" onclick="POS.toggleSidebar()" aria-label="Menú lateral" aria-expanded="false" aria-controls="mainSidebar" style="width: 36px; height: 36px; padding: 0;">
                     <i class="bi bi-list fs-5"></i>
                 </button>
-                <div class="caja-tag">
-                    <span class="pulse-dot"></span>
-                    <span>{{ $sesion->caja->nombre }}</span>
-                    @if($sesion->caja->codigo)
-                        <span style="opacity: 0.7; font-size: 0.75rem;">{{ $sesion->caja->codigo }}</span>
-                    @endif
-                </div>
             </div>
 
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
