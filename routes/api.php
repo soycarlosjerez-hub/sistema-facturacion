@@ -33,6 +33,13 @@ use App\Http\Controllers\Api\ClientePedidoController;
 use App\Http\Controllers\Api\OrdenController;
 use App\Http\Controllers\Api\TerminalController;
 use App\Http\Controllers\Api\SystemSettingController;
+use App\Http\Controllers\Api\Arte\ObrasController as ArteObrasController;
+use App\Http\Controllers\Api\Arte\EncargosController;
+use App\Http\Controllers\Api\Arte\ConsignacionesController;
+use App\Http\Controllers\Api\Arte\CertificatesController;
+use App\Http\Controllers\Api\Arte\ExhibitionsController;
+use App\Http\Controllers\Api\Arte\ReportsController as ArteReportsController;
+use App\Http\Controllers\Api\Art\CatalogController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function () {
@@ -276,5 +283,112 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
 
     Route::get('reports/inventory-low-stock', [ReportController::class, 'inventarioBajoStock'])
         ->name('api.reports.inventory-low-stock');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | MÓDULO ARTE / ESCULTURA — APIs INTERNAS (Admin Panel)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('art')->name('api.art.')->group(function () {
+
+        // ===================== OBRAS =====================
+        Route::apiResource('obras', ArteObrasController::class)
+            ->names('api.art.obras')
+            ->except(['edit', 'create']);
+
+        Route::post('obras/{obra}/photos', [ArteObrasController::class, 'uploadPhotos'])
+            ->name('obras.photos.upload')
+            ->middleware('permission:arte.obras.edit');
+
+        Route::delete('obras/{obra}/photos/{filename}', [ArteObrasController::class, 'deletePhoto'])
+            ->name('obras.photos.delete')
+            ->middleware('permission:arte.obras.edit');
+
+        Route::patch('obras/{obra}/status', [ArteObrasController::class, 'updateStatus'])
+            ->name('obras.status.update')
+            ->middleware('permission:arte.obras.edit');
+
+        // ===================== ENCARGOS =====================
+        Route::apiResource('encargos', EncargosController::class)
+            ->names('api.art.encargos')
+            ->except(['edit', 'create']);
+
+        Route::patch('encargos/{encargo}/progress', [EncargosController::class, 'updateProgress'])
+            ->name('encargos.progress.update')
+            ->middleware('permission:arte.encargos.edit');
+
+        Route::post('encargos/{encargo}/progress-photos', [EncargosController::class, 'uploadProgressPhoto'])
+            ->name('encargos.progress-photos.upload')
+            ->middleware('permission:arte.encargos.edit');
+
+        // ===================== CONSIGNACIONES =====================
+        Route::apiResource('consignaciones', ConsignacionesController::class)
+            ->names('api.art.consignaciones')
+            ->except(['edit', 'create']);
+
+        // ===================== CERTIFICADOS =====================
+        Route::apiResource('certificates', CertificatesController::class)
+            ->names('api.art.certificates')
+            ->except(['edit', 'create']);
+
+        // ===================== EXHIBICIONES =====================
+        Route::apiResource('exhibitions', ExhibitionsController::class)
+            ->names('api.art.exhibitions')
+            ->except(['edit', 'create']);
+
+        Route::post('exhibitions/{exhibicion}/obras', [ExhibitionsController::class, 'assignObras'])
+            ->name('exhibitions.obras.assign')
+            ->middleware('permission:arte.exhibiciones.edit');
+
+        Route::delete('exhibitions/{exhibicion}/obras/{obra}', [ExhibitionsController::class, 'removeObra'])
+            ->name('exhibitions.obras.remove')
+            ->middleware('permission:arte.exhibiciones.edit');
+
+        // ===================== REPORTES =====================
+        Route::get('reports/sales-summary', [ArteReportsController::class, 'salesSummary'])
+            ->name('reports.sales-summary')
+            ->middleware('permission:arte.reportes.view');
+
+        Route::get('reports/catalog-stats', [ArteReportsController::class, 'catalogStats'])
+            ->name('reports.catalog-stats')
+            ->middleware('permission:arte.reportes.view');
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MÓDULO ARTE / ESCULTURA — APIs PÚBLICAS (Sitio Web)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('art')->name('api.public.art.')->group(function () {
+
+        // ---- Catálogo de Obras ----
+        Route::get('catalog', [CatalogController::class, 'index'])
+            ->name('catalog.index');
+
+        Route::get('catalog/{slug}', [CatalogController::class, 'show'])
+            ->name('catalog.show');
+
+        Route::get('catalog/{slug}/seo-jsonld', [CatalogController::class, 'jsonLd'])
+            ->name('catalog.seo-jsonld');
+
+        // ---- Exhibiciones ----
+        Route::get('exhibitions', [CatalogController::class, 'exhibitionsIndex'])
+            ->name('exhibitions.index');
+
+        Route::get('exhibitions/{slug}', [CatalogController::class, 'exhibitionShow'])
+            ->name('exhibitions.show');
+
+        // ---- About ----
+        Route::get('about', [CatalogController::class, 'about'])
+            ->name('about');
+
+        // ---- Contact Forms ----
+        Route::post('contact', [CatalogController::class, 'contact'])
+            ->name('contact');
+
+        Route::post('request-quote', [CatalogController::class, 'requestQuote'])
+            ->name('request-quote');
     });
 });

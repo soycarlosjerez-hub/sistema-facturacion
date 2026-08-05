@@ -225,6 +225,28 @@ class BusinessTypeSeeder extends Seeder
                     'auditoria', 'backups',
                 ],
             ],
+            [
+                'slug' => 'arte_escultura',
+                'nombre' => 'Arte / Escultura / Galería',
+                'descripcion' => 'Galería de arte y escultura — gestión de obras, encargos, consignaciones y exhibiciones',
+                'color' => 'purple',
+                'icon' => 'bi-palette',
+                'activo' => true,
+                'orden' => 11,
+                'modulos' => [
+                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex',
+                    'ventas', 'devoluciones', 'ordenes',
+                    'clientes', 'cobros', 'cajas', 'gastos', 'plantilla-gastos',
+                    'sucursales', 'almacenes',
+                    'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades',
+                    'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos',
+                    'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
+                    'libros-ventas', 'libros-compras', 'formulario-14-14',
+                    'configuracion-general', 'impresoras', 'payment-processors',
+                    'auditoria', 'backups',
+                ],
+            ],
         ];
 
         foreach ($tipos as $tipoData) {
