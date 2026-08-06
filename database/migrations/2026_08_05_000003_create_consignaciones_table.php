@@ -15,7 +15,7 @@ return new class extends Migration
             $table->date('fecha_inicio');
             $table->date('fecha_fin')->nullable();
             $table->decimal('comision_percentage', 5, 2)->default(30);
-            $table->string('estado')->default('activa');
+            $table->string('estado', 50)->default('activa');
             $table->date('fecha_venta')->nullable();
             $table->decimal('precio_venta', 12, 2)->nullable();
             $table->decimal('comision_monto', 12, 2)->nullable();

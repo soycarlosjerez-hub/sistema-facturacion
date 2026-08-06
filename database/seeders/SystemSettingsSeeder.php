@@ -17,7 +17,7 @@ class SystemSettingsSeeder extends Seeder
         $settings = [
             [
                 'clave' => 'empresa_nombre',
-                'valor' => 'Erpipo',
+                'valor' => 'Erpipos',
                 'descripcion' => 'Nombre comercial del establecimiento'
             ],
             [

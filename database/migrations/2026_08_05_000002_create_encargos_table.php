@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('avance_porcentaje')->default(0);
             $table->date('estimated_completion')->nullable();
             $table->date('actual_completion')->nullable();
-            $table->string('status')->default('solicitado');
+            $table->string('status', 50)->default('solicitado');
             $table->text('notas')->nullable();
             $table->json('progress_photos')->nullable();
             $table->foreignId('tenant_id')->nullable()->constrained('business_instances')->nullOnDelete();

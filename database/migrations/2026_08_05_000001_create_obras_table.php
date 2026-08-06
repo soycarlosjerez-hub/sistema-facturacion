@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('slug')->unique()->nullable();
             $table->string('dimensiones')->nullable();
             $table->decimal('peso_kg', 8, 2)->nullable();
-            $table->string('medium')->nullable();
-            $table->string('technique')->nullable();
+            $table->string('medium', 100)->nullable();
+            $table->string('technique', 100)->nullable();
             $table->year('year_created')->nullable();
             $table->integer('edition_number')->nullable();
             $table->integer('edition_total')->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->date('creation_date')->nullable();
             $table->json('exhibition_history')->nullable();
             $table->boolean('is_original')->default(true);
-            $table->string('status')->default('disponible');
+            $table->string('status', 50)->default('disponible');
             $table->decimal('cost_materials', 12, 2)->nullable();
             $table->foreignId('tenant_id')->nullable()->constrained('business_instances')->nullOnDelete();
             $table->timestamps();
