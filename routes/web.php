@@ -230,6 +230,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:productos.view')->group(function () {
 
         Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
+        Route::get('/productos/ajax', [ProductoController::class, 'indexAjax'])->name('productos.ajax');
         Route::get('/productos/import', [ProductoController::class, 'showImportForm'])->name('productos.import');
         Route::post('/productos/import/preview', [ProductoController::class, 'uploadPreview'])->name('productos.import.preview');
         Route::post('/productos/import/process', [ProductoController::class, 'processImport'])->name('productos.import.process');

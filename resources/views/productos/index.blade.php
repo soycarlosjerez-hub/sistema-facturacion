@@ -305,6 +305,11 @@ body.dark-mode .child-value { color: var(--dt-gray-100); }
 body.dark-mode .producto-img { border-color: var(--dt-gray-800); }
 body.dark-mode #productos-table_wrapper .dataTables_length label,
 body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--dt-gray-400); }
+
+@keyframes pulse-stock {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.02); }
+}
 </style>
 @endpush
 
@@ -350,6 +355,7 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
                     <label class="ui-label small fw-bold text-muted" for="filter-stock">Stock</label>
                     <select name="stock_status" id="filter-stock" class="ui-select">
                         <option value="">Todos</option>
+                        <option value="ultimas_unidades" {{ request('stock_status') == 'ultimas_unidades' ? 'selected' : '' }}>Últimas unidades (≤2)</option>
                         <option value="critical" {{ request('stock_status') == 'critical' ? 'selected' : '' }}>Crítico (&le; 5)</option>
                         <option value="low" {{ request('stock_status') == 'low' ? 'selected' : '' }}>Bajo (6-15)</option>
                         <option value="ok" {{ request('stock_status') == 'ok' ? 'selected' : '' }}>Normal (&gt; 15)</option>
@@ -423,11 +429,30 @@ $(function() {
     // CONFIG
     // ============================================================
     const API_BASE = '/productos';
-    const productos = @json($productos);
     const csrfToken = '{{ csrf_token() }}';
     const canEdit = {{ auth()->user()->can('productos.edit') ? 'true' : 'false' }};
     const canToggle = canEdit;
     const canDelete = {{ auth()->user()->can('productos.delete') ? 'true' : 'false' }};
+    
+    // Auto-refresh state
+    let refreshInterval = null;
+    const REFRESH_MS = 120000; // 120 seconds
+    let userActive = false;
+    let userActivityTimer = null;
+    let lastDataHash = '';
+    let isSearchTyping = false;
+    let searchDebounceTimer = null;
+
+    // Track user activity
+    function resetUserActivityTimer() {
+        userActive = true;
+        clearTimeout(userActivityTimer);
+        userActivityTimer = setTimeout(() => { userActive = false; }, 30000);
+    }
+
+    $(document).on('mousedown keydown scroll touchstart', function() {
+        resetUserActivityTimer();
+    });
 
     // ============================================================
     // HELPERS
@@ -438,6 +463,31 @@ $(function() {
         const ct = res.headers.get('content-type') || '';
         if (!ct.includes('application/json')) throw new Error('Respuesta inesperada del servidor (no es JSON). Es posible que la sesión haya expirado.');
         return res.json();
+    }
+
+    function generateHash(obj) {
+        return btoa(JSON.stringify(obj).substring(0, 200));
+    }
+
+    function showRefreshToast(changed) {
+        if (typeof Swal !== 'undefined') {
+            const toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: changed ? '#fef3c7' : '#ffffff',
+                color: changed ? '#92400e' : '#64748b',
+                icon: 'info'
+            });
+            
+            if (changed) {
+                toast.fire({ icon: 'info', title: '⚡ El inventario se actualizó' });
+            } else {
+                toast.fire({ title: 'Inventario sincronizado' });
+            }
+        }
     }
 
     function swalExito(text) {
@@ -464,6 +514,9 @@ $(function() {
 
     function renderStock(stock) {
         const s = parseInt(stock || 0);
+        if (s === 0) return '<span class="badge bg-danger rounded-pill"><i class="bi bi-x-octagon-fill me-1"></i> Agotado</span>';
+        if (s === 1) return '<span class="badge rounded-pill" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:700;animation:pulse-stock 2s infinite;"><i class="bi bi-lightning-charge-fill me-1"></i> ¡Última unidad!</span>';
+        if (s === 2) return '<span class="badge rounded-pill" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-weight:700;"><i class="bi bi-lightning-charge-fill me-1"></i> Últimas unidades (' + s + ')</span>';
         if (s <= 5) return '<span class="badge bg-danger rounded-pill"><i class="bi bi-exclamation-triangle-fill me-1"></i> ' + s + ' unid.</span>';
         if (s <= 15) return '<span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-exclamation-circle-fill me-1"></i> ' + s + ' unid.</span>';
         return '<span class="badge rounded-pill" style="background:rgba(34,197,94,.1);color:#16a34a;font-weight:600;"><i class="bi bi-check-circle-fill me-1"></i> ' + s + ' unid.</span>';
@@ -482,10 +535,31 @@ $(function() {
     }
 
     // ============================================================
-    // DATATABLE
+    // DATATABLE WITH AJAX
     // ============================================================
     const table = $('#productos-table').DataTable({
-        data: productos,
+        ajax: {
+            url: '{{ route("productos.ajax") }}',
+            type: 'GET',
+            dataSrc: function(json) {
+                const newHash = generateHash(json.data);
+                if (lastDataHash && newHash !== lastDataHash) {
+                    showRefreshToast(true);
+                }
+                lastDataHash = newHash;
+                
+                // Smooth transition: fade out old rows briefly
+                $('tbody tr').css('transition', 'opacity 0.3s ease');
+                $('tbody tr').animate({ opacity: 0.7 }, 150, function() {
+                    $(this).css('opacity', 1);
+                });
+                
+                return json.data;
+            },
+            error: function(xhr, error, thrown) {
+                console.error('DataTable AJAX error:', error, thrown);
+            }
+        },
         columns: [
             {
                 data: 'id',
@@ -596,7 +670,8 @@ $(function() {
                 next: '<i class="bi bi-chevron-right"></i>',
                 previous: '<i class="bi bi-chevron-left"></i>'
             },
-            zeroRecords: '<div class="text-center py-5"><i class="bi bi-box-seam d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i><p class="fw-semibold mb-1" style="color:#475569;">No se encontraron productos</p><p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>'
+            zeroRecords: '<div class="text-center py-5"><i class="bi bi-box-seam d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i><p class="fw-semibold mb-1" style="color:#475569;">No se encontraron productos</p><p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>',
+            processing: '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>'
         },
         pageLength: 10,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
@@ -622,45 +697,83 @@ $(function() {
     });
 
     // ============================================================
-    // FILTROS
+    // FILTERS
     // ============================================================
-    $('#filtros-form').on('submit', function(e) {
-        e.preventDefault();
+    function buildFilterParams() {
         const nombre = $('#busqueda-producto').val();
         const stockStatus = $('#filter-stock').val();
         const activo = $('#filter-activo').val();
         const precioMin = parseFloat($('#filter-precio-min').val()) || 0;
         const precioMax = parseFloat($('#filter-precio-max').val()) || Infinity;
+        
+        const params = new URLSearchParams();
+        if (nombre) params.set('search', nombre);
+        if (stockStatus) params.set('stock_status', stockStatus);
+        if (activo) params.set('activo', activo);
+        if (precioMin > 0) params.set('precio_min', precioMin);
+        if (precioMax < Infinity) params.set('precio_max', precioMax);
+        
+        return params;
+    }
 
-        table.search(nombre).draw();
+    function reloadWithFilters() {
+        const params = buildFilterParams();
+        table.ajax.url('{{ route("productos.ajax") }}?' + params.toString()).load();
+    }
 
-        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-            const rowData = productos[dataIndex];
-            const stock = parseInt(rowData.stock) || 0;
-            const precio = parseFloat(rowData.precio) || 0;
-            const isActivo = !!rowData.activo;
-
-            if (stockStatus === 'critical' && stock > 5) return false;
-            if (stockStatus === 'low' && (stock < 6 || stock > 15)) return false;
-            if (stockStatus === 'ok' && stock <= 15) return false;
-            if (precio < precioMin) return false;
-            if (precio > precioMax) return false;
-            if (activo === '1' && !isActivo) return false;
-            if (activo === '0' && isActivo) return false;
-
-            return true;
-        });
-
-        table.draw();
-        $.fn.dataTable.ext.search.pop();
+    $('#filtros-form').on('submit', function(e) {
+        e.preventDefault();
+        reloadWithFilters();
     });
 
     // Búsqueda en tiempo real con debounce
-    let searchTimeout;
     $('#busqueda-producto').on('input', function() {
-        clearTimeout(searchTimeout);
+        isSearchTyping = true;
+        clearTimeout(searchDebounceTimer);
         const val = $(this).val();
-        searchTimeout = setTimeout(function() { table.search(val).draw(); }, 300);
+        searchDebounceTimer = setTimeout(function() {
+            isSearchTyping = false;
+            reloadWithFilters();
+        }, 500);
+    });
+
+    // Change event for selects also triggers reload
+    $('#filter-stock, #filter-activo, #filter-precio-min, #filter-precio-max').on('change', function() {
+        reloadWithFilters();
+    });
+
+    // ============================================================
+    // AUTO-REFRESH EVERY 120 SECONDS
+    // ============================================================
+    function startAutoRefresh() {
+        refreshInterval = setInterval(function() {
+            // Skip refresh if user is active or typing
+            if (userActive || isSearchTyping) {
+                return;
+            }
+            table.ajax.reload(null, false); // false = don't jump to first page
+        }, REFRESH_MS);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+
+    // Start auto-refresh on page load
+    startAutoRefresh();
+
+    // Pause auto-refresh when tab loses focus
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+            // Immediate refresh when coming back
+            table.ajax.reload(null, false);
+        }
     });
 
     // ============================================================
@@ -687,6 +800,11 @@ $(function() {
                     const $toggle = $row.find('.toggle-activo');
                     if ($toggle.length) actualizarToggleBtn($toggle, data.activo);
                     swalExito('Producto ' + (data.activo ? 'activado' : 'desactivado') + ' correctamente.');
+                    
+                    // Refresh after action
+                    setTimeout(function() {
+                        table.ajax.reload(null, false);
+                    }, 1000);
                 } else {
                     swalError(data.message || 'No se pudo actualizar el producto.');
                 }

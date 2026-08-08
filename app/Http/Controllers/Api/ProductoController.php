@@ -18,7 +18,8 @@ class ProductoController extends Controller
                     ->orWhere('codigo_barras', 'like', '%' . $request->search . '%');
             }))
             ->when($request->low_stock, fn ($q) => $q->whereColumn('stock', '<=', 'stock_minimo'))
-            ->when($request->out_of_stock, fn ($q) => $q->where('stock', 0));
+            ->when($request->out_of_stock, fn ($q) => $q->where('stock', 0))
+            ->when($request->stock_lte !== null && $request->stock_lte !== '', fn ($q) => $q->where('stock', '<=', (int) $request->stock_lte));
 
         return ProductoResource::collection($query->orderBy('nombre')->paginate(15));
     }

@@ -28,6 +28,59 @@ class ProductoController extends Controller
         return view('productos.index', compact('productos'));
     }
 
+    public function indexAjax(Request $request)
+    {
+        $query = $this->buildFilteredQuery($request);
+        
+        $search = $request->input('search.value', '');
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre', 'like', '%' . $search . '%')
+                  ->orWhere('codigo_barras', 'like', '%' . $search . '%');
+            });
+        }
+
+        $orderColumnIndex = (int) $request->input('columns.' . $request->input('order.0.column') . '.data', 1);
+        $orderDir = $request->input('order.0.dir', 'asc');
+        $sortableColumns = ['id', 'nombre', 'categoria.nombre', 'precio', 'precio_compra', 'stock', 'activo'];
+        $eloquentColumn = $sortableColumns[$orderColumnIndex] ?? 'nombre';
+        
+        if ($eloquentColumn === 'categoria.nombre') {
+            $query->join('categorias', 'productos.categoria_id', '=', 'categorias.id')
+                  ->orderBy('categorias.nombre', $orderDir);
+        } else {
+            $query->orderBy($eloquentColumn, $orderDir);
+        }
+
+        $total = $query->count();
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        
+        $productos = $query->skip($skip)->take($length)->get();
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $productos->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'nombre' => $p->nombre,
+                    'codigo_barras' => $p->codigo_barras ?? '',
+                    'imagen_url' => $p->imagen_url,
+                    'categoria' => $p->categoria ? ['id' => $p->categoria->id, 'nombre' => $p->categoria->nombre] : null,
+                    'precio' => (float) $p->precio,
+                    'precio_compra' => (float) ($p->precio_compra ?? 0),
+                    'itbis_porcentaje' => (float) ($p->itbis_porcentaje ?? 18),
+                    'stock' => (int) $p->stock,
+                    'activo' => (bool) $p->activo,
+                    'ganancia' => $p->ganancia,
+                    'margen_porcentaje' => $p->margen_porcentaje,
+                ];
+            }),
+        ]);
+    }
+
     public function showImportForm()
     {
         return view('productos.import');
@@ -276,6 +329,9 @@ class ProductoController extends Controller
 
         if ($request->filled('stock_status')) {
             switch ($request->stock_status) {
+                case 'ultimas_unidades':
+                    $query->where('stock', '<=', 2);
+                    break;
                 case 'critical':
                     $query->where('stock', '<=', 5);
                     break;
@@ -286,6 +342,10 @@ class ProductoController extends Controller
                     $query->where('stock', '>', 15);
                     break;
             }
+        }
+
+        if ($request->filled('stock_lte')) {
+            $query->where('stock', '<=', (int) $request->stock_lte);
         }
 
         if ($request->filled('activo')) {
