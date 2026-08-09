@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PlantillaImpresion extends Model
 {
     protected $table = 'plantillas_impresion';
 
     protected $fillable = [
+        'tenant_id',
         'nombre',
         'codigo',
         'modulo',
@@ -52,6 +54,16 @@ class PlantillaImpresion extends Model
         'conduce_pdf' => ['modulo' => 'conduces', 'tipo_formato' => 'pdf', 'nombre' => 'Conduce PDF'],
         'ecf_pdf' => ['modulo' => 'ecf', 'tipo_formato' => 'pdf', 'nombre' => 'e-CF PDF'],
     ];
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(BusinessInstance::class, 'tenant_id');
+    }
+
+    public function scopeTenant($query, $tenantId)
+    {
+        return $query->where('tenant_id', $tenantId);
+    }
 
     public function scopeActivas($query)
     {

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Impresora extends Model
@@ -10,6 +11,7 @@ class Impresora extends Model
     protected $table = 'impresoras';
 
     protected $fillable = [
+        'tenant_id',
         'nombre',
         'tipo_conexion',
         'direccion_ip',
@@ -59,6 +61,16 @@ class Impresora extends Model
     public function historial(): HasMany
     {
         return $this->hasMany(HistorialImpresion::class);
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(BusinessInstance::class, 'tenant_id');
+    }
+
+    public function scopeTenant($query, $tenantId)
+    {
+        return $query->where('tenant_id', $tenantId);
     }
 
     public function getCharsPerLine(): int

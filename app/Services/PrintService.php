@@ -501,7 +501,7 @@ class PrintService
     public function imprimir(Venta $venta, string $papelTamano = '80mm'): string
     {
         $papelTamano = $this->resolvePaperSize($papelTamano);
-        $impresora = Impresora::activas()->first();
+        $impresora = $this->obtenerImpresoraActiva();
         if (!$impresora) {
             throw new \RuntimeException('No hay impresoras activas configuradas.');
         }
@@ -514,7 +514,7 @@ class PrintService
     public function printOrden(Orden $orden, string $papelTamano = '80mm'): string
     {
         $papelTamano = $this->resolvePaperSize($papelTamano);
-        $impresora = Impresora::activas()->first();
+        $impresora = $this->obtenerImpresoraActiva();
         if (!$impresora) {
             throw new \RuntimeException('No hay impresoras activas configuradas.');
         }
@@ -545,6 +545,18 @@ class PrintService
         } else {
             return $this->enviarATexto($impresora, $texto);
         }
+    }
+
+    /**
+     * Obtener la primera impresora activa de la instancia actual del usuario.
+     */
+    private function obtenerImpresoraActiva(): ?Impresora
+    {
+        $user = auth()->user();
+        if (!$user || !$user->business_instance_id) {
+            return Impresora::activas()->first();
+        }
+        return Impresora::where('tenant_id', $user->business_instance_id)->activas()->first();
     }
 
     /**

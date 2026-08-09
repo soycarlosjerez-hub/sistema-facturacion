@@ -11,6 +11,7 @@ class HistorialImpresion extends Model
     protected $table = 'historial_impresion';
 
     protected $fillable = [
+        'tenant_id',
         'imprimible_type',
         'imprimible_id',
         'impresora_id',
@@ -36,14 +37,33 @@ class HistorialImpresion extends Model
         return $this->morphTo();
     }
 
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(BusinessInstance::class, 'tenant_id');
+    }
+
     public function impresora(): BelongsTo
     {
         return $this->belongsTo(Impresora::class);
     }
 
+    public function scopeTenant($query, $tenantId)
+    {
+        return $query->where('tenant_id', $tenantId);
+    }
+
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (!$model->tenant_id && auth()->check() && auth()->user()->business_instance_id) {
+                $model->tenant_id = auth()->user()->business_instance_id;
+            }
+        });
     }
 
     public function scopeExitosos($query)

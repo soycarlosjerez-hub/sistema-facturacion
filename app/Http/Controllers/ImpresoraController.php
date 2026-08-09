@@ -15,7 +15,8 @@ class ImpresoraController extends Controller
 
     public function index()
     {
-        $impresoras = Impresora::orderBy('orden')->orderBy('nombre')->get();
+        $tenantId = auth()->user()->business_instance_id;
+        $impresoras = Impresora::where('tenant_id', $tenantId)->orderBy('orden')->orderBy('nombre')->get();
         $stats = [
             'total' => $impresoras->count(),
             'activas' => $impresoras->where('activo', true)->count(),
@@ -49,17 +50,22 @@ class ImpresoraController extends Controller
             'orden' => 'integer|min:0',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
+
         Impresora::create($validated);
         return redirect()->route('impresoras.index')->with('success', 'Impresora creada correctamente');
     }
 
     public function edit(Impresora $impresora)
     {
+        abort_unless($impresora->tenant_id === auth()->user()->business_instance_id, 403, 'No tienes permiso para editar esta impresora');
         return view('impresoras.edit', compact('impresora'));
     }
 
     public function update(Request $request, Impresora $impresora)
     {
+        abort_unless($impresora->tenant_id === auth()->user()->business_instance_id, 403, 'No tienes permiso para editar esta impresora');
+
         $validated = $request->validate([
             'nombre' => 'required|string|max:191',
             'tipo_conexion' => 'required|in:local,red,compartida,pdf',
@@ -83,12 +89,14 @@ class ImpresoraController extends Controller
 
     public function destroy(Impresora $impresora)
     {
+        abort_unless($impresora->tenant_id === auth()->user()->business_instance_id, 403, 'No tienes permiso para eliminar esta impresora');
         $impresora->delete();
         return redirect()->route('impresoras.index')->with('success', 'Impresora eliminada');
     }
 
     public function probar(Impresora $impresora)
     {
+        abort_unless($impresora->tenant_id === auth()->user()->business_instance_id, 403, 'No tienes permiso para probar esta impresora');
         try {
             $resultado = $this->printService->enviarATexto($impresora, "=== PRUEBA DE IMPRESION ===\n\n" .
                 "Impresora: {$impresora->nombre}\n" .
@@ -112,6 +120,7 @@ class ImpresoraController extends Controller
 
     public function toggleAuto(Impresora $impresora, string $modulo)
     {
+        abort_unless($impresora->tenant_id === auth()->user()->business_instance_id, 403, 'No tienes permiso para modificar esta impresora');
         $campo = match ($modulo) {
             'ventas' => 'auto_imprimir_ventas',
             'cotizaciones' => 'auto_imprimir_cotizaciones',
@@ -128,7 +137,9 @@ class ImpresoraController extends Controller
 
     public function historial()
     {
+        $tenantId = auth()->user()->business_instance_id;
         $historial = HistorialImpresion::with(['impresora', 'usuario'])
+            ->where('tenant_id', $tenantId)
             ->orderBy('created_at', 'desc')
             ->paginate(30);
         return view('impresoras.historial', compact('historial'));
@@ -136,7 +147,8 @@ class ImpresoraController extends Controller
 
     public function plantillas(Request $request)
     {
-        $query = PlantillaImpresion::orderBy('modulo')->orderBy('codigo');
+        $tenantId = auth()->user()->business_instance_id;
+        $query = PlantillaImpresion::where('tenant_id', $tenantId)->orderBy('modulo')->orderBy('codigo');
         if ($request->filled('modulo')) {
             $query->where('modulo', $request->modulo);
         }
@@ -147,6 +159,7 @@ class ImpresoraController extends Controller
 
     public function plantillaUpdate(Request $request, PlantillaImpresion $plantilla)
     {
+        abort_unless($plantilla->tenant_id === auth()->user()->business_instance_id, 403, 'No tienes permiso para editar esta plantilla');
         $validated = $request->validate([
             'nombre' => 'required|string|max:191',
             'incluir_logo' => 'boolean',
@@ -163,7 +176,8 @@ class ImpresoraController extends Controller
 
     public function printDialog(Request $request)
     {
-        $impresoras = Impresora::activas()->get();
+        $tenantId = auth()->user()->business_instance_id;
+        $impresoras = Impresora::where('tenant_id', $tenantId)->activas()->get();
         $tipo = $request->tipo; // venta, cotizacion, conduce
         $id = $request->id;
 
@@ -173,7 +187,8 @@ class ImpresoraController extends Controller
             ]);
         }
 
-        $impresoraPorDefecto = Impresora::activas()
+        $impresoraPorDefecto = Impresora::where('tenant_id', $tenantId)
+            ->activas()
             ->where("auto_imprimir_{$tipo}s", true)
             ->first();
 
@@ -182,6 +197,7 @@ class ImpresoraController extends Controller
 
     public function printDirect(Request $request)
     {
+        $tenantId = auth()->user()->business_instance_id;
         $request->validate([
             'tipo' => 'required|in:venta,cotizacion,conduce,ecf',
             'id' => 'required|integer',
@@ -192,8 +208,8 @@ class ImpresoraController extends Controller
         ]);
 
         $impresora = $request->impresora_id
-            ? Impresora::findOrFail($request->impresora_id)
-            : Impresora::activas()->first();
+            ? Impresora::where('tenant_id', $tenantId)->findOrFail($request->impresora_id)
+            : Impresora::where('tenant_id', $tenantId)->activas()->first();
 
         if (!$impresora) {
             return response()->json(['success' => false, 'mensaje' => 'No hay impresoras activas']);
