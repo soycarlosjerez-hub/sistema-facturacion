@@ -23,7 +23,7 @@
                     <h4 class="ui-header-title">Impresoras</h4>
                     <div class="ui-header-meta">
                         <i class="bi bi-list-ul me-1"></i>
-                        <span>{{ $impresoras->total() }} registro(s)</span>
+                        <span>{{ $impresoras->count() }} registro(s)</span>
                     </div>
                 </div>
             </div>
