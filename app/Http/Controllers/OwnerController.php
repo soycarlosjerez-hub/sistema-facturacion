@@ -490,6 +490,7 @@ class OwnerController extends Controller
             'prefijo_factura' => SystemSetting::get('prefijo_factura', 'FAC-'),
             'prefijo_ncf' => SystemSetting::get('prefijo_ncf', ''),
             'dias_credito' => SystemSetting::get('dias_credito', 30),
+            'impresora_papel_default' => SystemSetting::get('impresora_papel_default', '80mm'),
         ];
         $instanceConfig = $instance->configuracion ?? [];
         $instanceNotifSettings = InstanceNotificationSetting::forInstance($instance);
@@ -509,6 +510,7 @@ class OwnerController extends Controller
             'prefijo_factura' => 'nullable|string|max:20',
             'prefijo_ncf' => 'nullable|string|max:10',
             'dias_credito' => 'nullable|integer|min:0|max:365',
+            'impresora_papel_default' => 'nullable|in:58mm,80mm',
             'restaurante_valida_stock' => 'nullable|string',
             'enabled' => 'nullable|boolean',
             'sale_created' => 'nullable|boolean',

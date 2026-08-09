@@ -498,26 +498,28 @@ class PrintService
     /**
      * Imprimir una venta directamente (metodo comodín usado por VentaController)
      */
-    public function imprimir(Venta $venta): string
+    public function imprimir(Venta $venta, string $papelTamano = '80mm'): string
     {
+        $papelTamano = $this->resolvePaperSize($papelTamano);
         $impresora = Impresora::activas()->first();
         if (!$impresora) {
             throw new \RuntimeException('No hay impresoras activas configuradas.');
         }
-        return $this->imprimirDocumento('venta', $venta->id, $impresora);
+        return $this->imprimirDocumento('venta', $venta->id, $impresora, 'ticket', 1, $papelTamano);
     }
 
     /**
      * Imprimir una orden de restaurante (POS)
      */
-    public function printOrden(Orden $orden): string
+    public function printOrden(Orden $orden, string $papelTamano = '80mm'): string
     {
+        $papelTamano = $this->resolvePaperSize($papelTamano);
         $impresora = Impresora::activas()->first();
         if (!$impresora) {
             throw new \RuntimeException('No hay impresoras activas configuradas.');
         }
 
-        $paperWidth = $impresora->papel_tamano === '58mm' ? self::PAPER_58MM : self::PAPER_80MM;
+        $paperWidth = $papelTamano === '58mm' ? self::PAPER_58MM : self::PAPER_80MM;
         $texto = $this->renderOrdenTicket($orden, $paperWidth);
 
         HistorialImpresion::create([
@@ -529,7 +531,7 @@ class PrintService
             'documento_numero' => $orden->ncf ?? '#' . str_pad($orden->id, 6, '0', STR_PAD_LEFT),
             'formato' => 'ticket',
             'copias' => 1,
-            'papel_tamano' => $impresora->papel_tamano ?? '80mm',
+            'papel_tamano' => $papelTamano,
             'exitoso' => true,
             'error_mensaje' => null,
             'tamanio_bytes' => strlen($texto),
@@ -543,6 +545,30 @@ class PrintService
         } else {
             return $this->enviarATexto($impresora, $texto);
         }
+    }
+
+    /**
+     * Determinar el tamaño de papel a usar, verificando la configuración de instancia primero.
+     */
+    private function resolvePaperSize(string $default): string
+    {
+        // Si ya se pasó explícitamente, usar ese valor
+        if (in_array($default, ['58mm', '80mm'], true)) {
+            return $default;
+        }
+
+        // Intentar obtener de la configuración de la instancia actual
+        $user = auth()->user();
+        if ($user && $user->businessInstance) {
+            $instanceConfig = $user->businessInstance->configuracion ?? [];
+            $instanceDefault = $instanceConfig['impresora_papel_default'] ?? null;
+            if (in_array($instanceDefault, ['58mm', '80mm'], true)) {
+                return $instanceDefault;
+            }
+        }
+
+        // Fallback
+        return '80mm';
     }
 
     /**

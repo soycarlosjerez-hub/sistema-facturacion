@@ -128,6 +128,24 @@
                                 </label>
                                 <input type="number" name="dias_credito" class="ui-input rounded-pill @error('dias_credito') is-invalid @enderror" value="{{ old('dias_credito', $instanceConfig['dias_credito'] ?? '') }}" min="0" max="365" placeholder="{{ $globalSettings['dias_credito'] }}">
                             </div>
+                            <div class="col-md-6">
+                                <label class="ui-label fw-bold">
+                                    <i class="bi bi-printer me-1"></i>Tipo de Impresora
+                                    @if(isset($instanceConfig['impresora_papel_default']))
+                                        <span class="ui-badge ui-badge-warning rounded-pill ms-1" style="font-size:.55rem;">personalizado</span>
+                                    @else
+                                        <span class="ui-badge ui-badge-neutral rounded-pill ms-1" style="font-size:.55rem;">global</span>
+                                    @endif
+                                </label>
+                                <select name="impresora_papel_default" class="ui-input rounded-pill @error('impresora_papel_default') is-invalid @enderror" style="appearance:auto; cursor:pointer;">
+                                    <option value="">Global (predeterminado)</option>
+                                    <option value="80mm" {{ old('impresora_papel_default', $instanceConfig['impresora_papel_default'] ?? '') == '80mm' ? 'selected' : '' }}>80 mm</option>
+                                    <option value="58mm" {{ old('impresora_papel_default', $instanceConfig['impresora_papel_default'] ?? '') == '58mm' ? 'selected' : '' }}>58 mm</option>
+                                </select>
+                                @if(!isset($instanceConfig['impresora_papel_default']) && $globalSettings['impresora_papel_default'])
+                                    <small class="text-muted">Global: {{ $globalSettings['impresora_papel_default'] }}</small>
+                                @endif
+                            </div>
                         </div>
 
                         <hr>
