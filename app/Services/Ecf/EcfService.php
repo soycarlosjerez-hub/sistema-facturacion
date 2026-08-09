@@ -57,38 +57,39 @@ class EcfService
                     'tenant_id' => Auth::user()->business_instance_id ?? null,
                 ]);
 
-            $ecf->load(['secuencia', 'venta.cliente', 'venta.detalles.producto']);
+                $ecf->load(['secuencia', 'venta.cliente', 'venta.detalles.producto']);
 
-            $ecf->codigo_seguridad = $this->qr->generarCodigoSeguridad($ecf);
-            $ecf->save();
+                $ecf->codigo_seguridad = $this->qr->generarCodigoSeguridad($ecf);
+                $ecf->save();
 
-            DB::commit();
+                DB::commit();
 
-            $this->log($ecf, 'crear', 'exito', 'e-CF generado en estado borrador');
+                $this->log($ecf, 'crear', 'exito', 'e-CF generado en estado borrador');
 
-            return $ecf->fresh();
-        } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
-            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'encf')) {
-                Log::warning('e-CF: ENCF duplicado, reintentando', [
-                    'venta_id' => $venta->id, 'encf' => $encf ?? '', 'attempt' => $attempt,
-                ]);
-                if ($attempt >= $maxAttempts) {
-                    throw new \RuntimeException("No se pudo generar un ENCF único después de {$maxAttempts} intentos: " . $e->getMessage());
+                return $ecf->fresh();
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollBack();
+                if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'encf')) {
+                    Log::warning('e-CF: ENCF duplicado, reintentando', [
+                        'venta_id' => $venta->id, 'encf' => $encf ?? '', 'attempt' => $attempt,
+                    ]);
+                    if ($attempt >= $maxAttempts) {
+                        throw new \RuntimeException("No se pudo generar un ENCF único después de {$maxAttempts} intentos: " . $e->getMessage());
+                    }
+                    continue;
                 }
-                continue;
+                throw $e;
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                if (isset($ecf) && $ecf->exists) {
+                    $this->log($ecf, 'crear', 'error', $e->getMessage());
+                } else {
+                    Log::error('e-CF: error al generar antes de crear el documento', [
+                        'venta_id' => $venta->id, 'tipo_ecf' => $tipoEcf, 'error' => $e->getMessage(),
+                    ]);
+                }
+                throw $e;
             }
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            if (isset($ecf) && $ecf->exists) {
-                $this->log($ecf, 'crear', 'error', $e->getMessage());
-            } else {
-                Log::error('e-CF: error al generar antes de crear el documento', [
-                    'venta_id' => $venta->id, 'tipo_ecf' => $tipoEcf, 'error' => $e->getMessage(),
-                ]);
-            }
-            throw $e;
         }
     }
 
