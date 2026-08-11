@@ -22,12 +22,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.request.logger' => \App\Http\Middleware\ApiRequestLogger::class,
             'auth.cliente'       => \App\Http\Middleware\AuthenticateCliente::class,
             'tenant.mail'      => \App\Http\Middleware\TenantMailConfig::class,
+            'plan.limits'      => \App\Http\Middleware\EnforcePlanLimits::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckInstanceBlocked::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSetupWizard::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\TenantMailConfig::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnforcePlanLimits::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\TenantMailConfig::class);
 
     })

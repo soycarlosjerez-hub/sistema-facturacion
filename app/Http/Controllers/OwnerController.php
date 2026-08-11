@@ -474,6 +474,22 @@ class OwnerController extends Controller
 
         $plan = $data['plan_id'] ? \App\Models\Plan::find($data['plan_id']) : null;
 
+        // Verificar límite de empresas del owner
+        if ($plan && $data['owner_user_id']) {
+            $instanciasActuales = BusinessInstance::where('owner_user_id', $data['owner_user_id'])
+                ->where('activo', true)
+                ->count();
+            $check = app(\App\Services\PlanLimitService::class)->verificarEmpresa($plan, $instanciasActuales);
+            if (!$check['ok']) {
+                return back()->withInput()->with('error', $check['mensaje']);
+            }
+        }
+
+        // Usar precio de lanzamiento para la primera factura si aplica
+        $costoMensual = $plan?->precio_mensual ?? $data['costo_mensual'] ?? null;
+        $esNuevaInstancia = true; // Primera creación
+        $primerPago = $plan?->costoImplementacionEfectivo(); // precio_lanzamiento o precio_implementacion
+
         $instance = BusinessInstance::create([
             'nombre' => $data['nombre'],
             'slug' => Str::slug($data['slug']),
@@ -484,11 +500,30 @@ class OwnerController extends Controller
             'business_type_id' => $data['business_type_id'],
             'plan_id' => $plan?->id,
             'owner_user_id' => $data['owner_user_id'] ?? auth()->id(),
-            'costo_mensual' => $plan?->precio_mensual ?? $data['costo_mensual'] ?? null,
-            'fecha_vencimiento' => $data['fecha_vencimiento'] ?? null,
+            'costo_mensual' => $costoMensual,
+            'fecha_vencimiento' => $data['fecha_vencimiento'] ?? now()->addMonth(),
             'activo' => $request->boolean('activo', true),
             'configuracion' => [],
         ]);
+
+        // Registrar primer pago (implementación + primer mes) si hay plan
+        if ($plan && $primerPago > 0) {
+            \App\Models\PagoInstancia::create([
+                'business_instance_id' => $instance->id,
+                'plan_id' => $plan->id,
+                'monto' => $primerPago,
+                'mes_pagado' => now()->startOfMonth(),
+                'fecha_pago' => now(),
+                'metodo_pago' => 'transferencia',
+                'referencia_externa' => 'IMPLEMENTACION-LANZAMIENTO',
+                'estado_pago' => 'pagado',
+                'notas' => 'Implementación (oferta lanzamiento) + primer mes',
+                'registrado_por' => auth()->id(),
+            ]);
+
+            // El siguiente vencimiento es el mes siguiente al primer mes pagado
+            $instance->update(['fecha_vencimiento' => now()->addMonth()->startOfMonth()->addMonth()]);
+        }
 
         if ($request->boolean('crear_usuario')) {
             $businessType = BusinessType::find($data['business_type_id']);

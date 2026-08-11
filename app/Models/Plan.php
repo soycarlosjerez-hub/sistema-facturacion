@@ -23,6 +23,19 @@ class Plan extends Model
         'max_usuarios',
         'max_sucursales',
         'max_empresas',
+        'max_almacenes',
+        'max_productos',
+        'max_clientes',
+        'max_proveedores',
+        'max_ventas_mensuales',
+        'max_compras_mensuales',
+        'max_gastos_mensuales',
+        'max_cajas',
+        'max_cotizaciones_mensuales',
+        'max_conduces_mensuales',
+        'max_devoluciones_mensuales',
+        'max_ordenes_mensuales',
+        'max_mesas',
         'features',
         'modulos',
         'activo',
@@ -37,6 +50,19 @@ class Plan extends Model
         'max_usuarios' => 'integer',
         'max_sucursales' => 'integer',
         'max_empresas' => 'integer',
+        'max_almacenes' => 'integer',
+        'max_productos' => 'integer',
+        'max_clientes' => 'integer',
+        'max_proveedores' => 'integer',
+        'max_ventas_mensuales' => 'integer',
+        'max_compras_mensuales' => 'integer',
+        'max_gastos_mensuales' => 'integer',
+        'max_cajas' => 'integer',
+        'max_cotizaciones_mensuales' => 'integer',
+        'max_conduces_mensuales' => 'integer',
+        'max_devoluciones_mensuales' => 'integer',
+        'max_ordenes_mensuales' => 'integer',
+        'max_mesas' => 'integer',
         'features' => 'array',
         'modulos' => 'array',
         'activo' => 'boolean',
@@ -95,6 +121,49 @@ class Plan extends Model
     public function costoImplementacionEfectivo(): float
     {
         return (float) ($this->precio_lanzamiento ?? $this->precio_implementacion ?? 0);
+    }
+
+    /**
+     * Obtiene todos los límites del plan como array
+     */
+    public function getLimites(): array
+    {
+        return [
+            'usuarios' => $this->max_usuarios,
+            'sucursales' => $this->max_sucursales,
+            'empresas' => $this->max_empresas,
+            'almacenes' => $this->max_almacenes,
+            'productos' => $this->max_productos,
+            'clientes' => $this->max_clientes,
+            'proveedores' => $this->max_proveedores,
+            'ventas_mensuales' => $this->max_ventas_mensuales,
+            'compras_mensuales' => $this->max_compras_mensuales,
+            'gastos_mensuales' => $this->max_gastos_mensuales,
+            'cajas' => $this->max_cajas,
+            'cotizaciones_mensuales' => $this->max_cotizaciones_mensuales,
+            'conduces_mensuales' => $this->max_conduces_mensuales,
+            'devoluciones_mensuales' => $this->max_devoluciones_mensuales,
+            'ordenes_mensuales' => $this->max_ordenes_mensuales,
+            'mesas' => $this->max_mesas,
+        ];
+    }
+
+    /**
+     * Verifica si un límite es ilimitado (null)
+     */
+    public function esIlimitado(string $limite): bool
+    {
+        $limites = $this->getLimites();
+        return $limites[$limite] ?? true;
+    }
+
+    /**
+     * Obtiene el límite formateado para mostrar (número o 'Ilimitado')
+     */
+    public function getLimiteFormateado(string $limite): string
+    {
+        $valor = $this->getLimites()[$limite] ?? null;
+        return $valor === null ? 'Ilimitado' : (string) $valor;
     }
 
     public static function active(): \Illuminate\Database\Eloquent\Collection

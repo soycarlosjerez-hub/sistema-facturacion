@@ -31,15 +31,6 @@ class SucursalController extends Controller
 
     public function store(StoreSucursalRequest $request)
     {
-        $instance = auth()->user()?->businessInstance;
-
-        if ($instance) {
-            $check = app(PlanLimitService::class)->verificarSucursal($instance);
-            if (! $check['ok']) {
-                return back()->withInput()->with('error', $check['mensaje']);
-            }
-        }
-
         $this->sucursalService->create($request->validated());
 
         return redirect()->route('sucursales.index')

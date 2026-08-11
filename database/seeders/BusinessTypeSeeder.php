@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
 use Illuminate\Database\Seeder;
@@ -135,28 +136,6 @@ class BusinessTypeSeeder extends Seeder
                 ],
             ],
             [
-                'slug' => 'tattoo',
-                'nombre' => 'Tattoo Studio',
-                'descripcion' => 'Estudio de tatuajes y perforaciones',
-                'color' => 'dark',
-                'icon' => 'bi-brush',
-                'activo' => true,
-                'orden' => 7,
-                'modulos' => [
-                    'dashboard', 'tattoo', 'tattoo-artistas', 'tattoo-disenos', 'tattoo-citas',
-                    'clientes', 'cajas', 'gastos',
-                    'inventario', 'compras', 'proveedores',
-                    'sucursales', 'almacenes',
-                    'reportes-ventas', 'reportes-caja', 'reportes-stock',
-                    'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
-                    'cuentas-bancarias', 'reportes-gastos',
-                    'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
-                    'libros-ventas', 'libros-compras', 'formulario-14-14',
-                    'configuracion-general', 'impresoras', 'payment-processors',
-                    'auditoria', 'backups', 'plantilla-gastos',
-                ],
-            ],
-            [
                 'slug' => 'climatizacion',
                 'nombre' => 'Climatización / HVAC',
                 'descripcion' => 'Servicios de climatización, aire acondicionado y mantenimiento',
@@ -271,6 +250,23 @@ class BusinessTypeSeeder extends Seeder
                 ]);
             }
         }
+
+        // Eliminar tipos de negocio que ya no están definidos en el seeder
+        // (por ejemplo: tattoo / tatto). Sus instancias pasan al tipo predeterminado.
+        $slugsValidos = collect($tipos)->pluck('slug')->all();
+        $tipoRestaurante = BusinessType::where('slug', 'restaurante')->first();
+
+        BusinessType::whereNotIn('slug', $slugsValidos)
+            ->where('slug', '!=', 'restaurante')
+            ->get()
+            ->each(function (BusinessType $tipo) use ($tipoRestaurante) {
+                if ($tipoRestaurante) {
+                    BusinessInstance::where('business_type_id', $tipo->id)
+                        ->update(['business_type_id' => $tipoRestaurante->id]);
+                }
+                $tipo->modules()->delete();
+                $tipo->delete();
+            });
 
         BusinessType::flush();
     }

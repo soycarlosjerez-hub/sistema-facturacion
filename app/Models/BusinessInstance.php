@@ -107,6 +107,16 @@ class BusinessInstance extends Model
         return $this->hasMany(InstanceApiKey::class, 'business_instance_id');
     }
 
+    /**
+     * Cuenta las empresas (instancias) del mismo owner
+     */
+    public function empresasCount(): int
+    {
+        return static::where('owner_user_id', $this->owner_user_id)
+            ->where('activo', true)
+            ->count();
+    }
+
     public function isModuloVisible(string $moduloKey): bool
     {
         $override = $this->modules()->where('modulo_key', $moduloKey)->first();

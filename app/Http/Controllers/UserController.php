@@ -83,15 +83,6 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $instance = auth()->user()?->businessInstance;
-
-        if ($instance) {
-            $check = app(PlanLimitService::class)->verificarUsuario($instance);
-            if (! $check['ok']) {
-                return back()->withInput()->with('error', $check['mensaje']);
-            }
-        }
-
         $request->validate([
             'name'        => 'required|string|max:255',
             'email'       => 'required|email|max:255|unique:users,email',
