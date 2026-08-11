@@ -186,6 +186,16 @@ class PermissionSeeder extends Seeder
                 'servicios.facturacion_horas',
                 'servicios.gastos',
             ],
+            'ordenes' => [
+                'ordenes.view',
+                'ordenes.create',
+                'ordenes.update',
+                'ordenes.pay',
+                'ordenes.cancel',
+            ],
+            'kds' => [
+                'kds.view',
+            ],
             'payment-processors' => [
                 'payment-processors.view',
                 'payment-processors.create',
@@ -368,6 +378,11 @@ class PermissionSeeder extends Seeder
                 'devoluciones.view',
                 'gastos.view',
                 'plantilla-gastos.view',
+                'ordenes.view',
+                'ordenes.create',
+                'ordenes.update',
+                'ordenes.pay',
+                'ordenes.cancel',
                 'clientes.view',
                 'cobros.view',
                 'cajas.view',
@@ -467,6 +482,12 @@ class PermissionSeeder extends Seeder
                 'plantilla-gastos.view',
                 'plantilla-gastos.create',
                 'plantilla-gastos.edit',
+
+                'ordenes.view',
+                'ordenes.create',
+                'ordenes.update',
+                'ordenes.pay',
+                'ordenes.cancel',
 
                 'auditoria.view',
                 'backups.view',
@@ -597,6 +618,12 @@ class PermissionSeeder extends Seeder
                 'plantilla-gastos.create',
                 'plantilla-gastos.edit',
 
+                'ordenes.view',
+                'ordenes.create',
+                'ordenes.update',
+                'ordenes.pay',
+                'ordenes.cancel',
+
                 'auditoria.view',
                 'backups.view',
                 'backups.create',
@@ -718,6 +745,12 @@ class PermissionSeeder extends Seeder
                 'restaurante.cajas',
                 'restaurante.categorias',
                 'restaurante.reservaciones',
+
+                'ordenes.view',
+                'ordenes.create',
+                'ordenes.update',
+                'ordenes.pay',
+                'ordenes.cancel',
 
                 'lavadero.view',
                 'lavadero.servicios',
