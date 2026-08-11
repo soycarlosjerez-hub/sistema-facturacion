@@ -246,7 +246,7 @@
 
     {{-- Header Empresa --}}
     <div class="header-empresa">
-        <div class="nombre">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio S.R.L.' }}</div>
+        <div class="nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
         <div class="datos">
             RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}
             @if(!empty($empresa['empresa_telefono']))
@@ -270,7 +270,7 @@
         <table>
             <tr>
                 <td class="label">Contribuyente:</td>
-                <td class="separator">{{ $empresa['empresa_nombre'] ?? 'N/A' }}</td>
+                <td class="separator">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</td>
                 <td class="label">RNC:</td>
                 <td>{{ $empresa['empresa_rnc'] ?? 'N/A' }}</td>
             </tr>

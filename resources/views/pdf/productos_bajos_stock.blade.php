@@ -13,7 +13,7 @@
 <body>
     @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
     <div style="text-align:center;margin-bottom:15px;">
-        <strong style="font-size:14px;">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</strong><br>
+        <strong style="font-size:14px;">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
         <small>RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</small>
     </div>
     <h2>Productos con stock bajo (5 o menos)</h2>

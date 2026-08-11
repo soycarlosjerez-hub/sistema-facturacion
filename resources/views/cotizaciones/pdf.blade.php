@@ -29,7 +29,7 @@
     <div class="header">
         <div class="company-info">
             @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
-            <h1>{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</h1>
+            <h1>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h1>
             <p>{{ $empresa['sistema_slogan'] ?? 'Sistema de Facturación' }}</p>
             <small>{{ $empresa['empresa_rnc'] ?? '' }}</small>
         </div>

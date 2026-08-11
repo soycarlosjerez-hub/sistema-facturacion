@@ -62,6 +62,22 @@ class SystemSetting extends Model
         return static::get('empresa_nombre', 'Mi Negocio');
     }
 
+    /**
+     * Nombre de la empresa que debe aparecer en facturas y documentos.
+     * Prioriza el nombre de la instancia del usuario autenticado.
+     */
+    public static function nombreEmpresaActual(): string
+    {
+        $user = Auth::user();
+        if ($user && $user->business_instance_id) {
+            $instance = $user->businessInstance;
+            if ($instance && $instance->nombre) {
+                return $instance->nombre;
+            }
+        }
+        return static::empresaNombre();
+    }
+
     public static function empresaSlogan(): string
     {
         return static::get('sistema_slogan', 'Sistema de Ventas');

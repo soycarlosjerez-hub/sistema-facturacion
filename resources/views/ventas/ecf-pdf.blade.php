@@ -39,7 +39,7 @@
             <tr>
                 <td style="width: 60%; vertical-align: top; padding: 0;">
                     @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
-                    <div class="empresa-nombre">{{ $empresa['empresa_nombre'] ?? 'EMPRESA DEMO SRL' }}</div>
+                    <div class="empresa-nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
                     <div class="rnc">RNC: {{ $empresa['empresa_rnc'] ?? '000000000' }}</div>
                     <div class="rnc">{{ $empresa['empresa_direccion'] ?? 'Santo Domingo, R.D.' }}</div>
                     <div class="rnc">Tel: {{ $empresa['empresa_telefono'] ?? '809-000-0000' }}</div>
@@ -74,7 +74,7 @@
         <tr>
             <td style="width: 50%; padding: 5px; background: #fafafa; vertical-align: top;">
                 <strong style="font-size: 9px;">EMITIDO POR:</strong><br>
-                <strong>{{ $empresa['empresa_nombre'] ?? 'EMPRESA DEMO SRL' }}</strong><br>
+                <strong>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
                 RNC: {{ $empresa['empresa_rnc'] ?? '000000000' }}
             </td>
             <td style="width: 50%; padding: 5px; background: #fafafa; vertical-align: top;">

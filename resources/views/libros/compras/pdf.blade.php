@@ -27,7 +27,7 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:7px;margin:0;padding:10px;co
 @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
 
 <div class="header">
-    <h1>{{ strtoupper($empresa['empresa_nombre'] ?? 'MI NEGOCIO S.R.L.') }}</h1>
+    <h1>{{ strtoupper(\App\Models\SystemSetting::nombreEmpresaActual()) }}</h1>
     <p>RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }} &nbsp;&nbsp;|&nbsp;&nbsp; RFC: {{ $empresa['empresa_rfc'] ?? 'N/A' }}</p>
     <p>{{ $empresa['empresa_direccion'] ?? 'Sin direccion registrada' }}</p>
     <h2 style="margin-top:6px;">LIBRO DE COMPRAS</h2>

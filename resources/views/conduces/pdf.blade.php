@@ -43,7 +43,7 @@
             <h1><i class="bi bi-truck"></i> CONDUCE</h1>
             <div class="small">Nota de Entrega</div>
             <p class="small">
-                <strong>{{ $empresaData['empresa_nombre'] ?? 'Mi Negocio' }}</strong><br>
+                <strong>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
                 RNC: {{ $empresaData['empresa_rnc'] ?? 'N/A' }}<br>
                 {{ $empresaData['empresa_direccion'] ?? '' }}<br>
                 {{ $empresaData['empresa_telefono'] ?? '' }}

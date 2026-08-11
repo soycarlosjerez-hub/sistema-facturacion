@@ -193,7 +193,7 @@
     <table style="width:100%; margin-bottom:15px;">
         <tr>
             <td style="border:none; vertical-align:top; width:60%;">
-                <div class="empresa-nombre">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</div>
+                <div class="empresa-nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
                 <div class="empresa-info">
                     RNC/Cédula: {{ $empresa['empresa_rnc'] ?? 'N/A' }}<br>
                     Dirección: {{ $empresa['empresa_direccion'] ?? 'N/A' }}<br>
@@ -381,7 +381,7 @@
     <!-- FOOTER -->
     <div class="footer">
         Este documento es una representación impresa de un NCF electrónico.<br>
-        {{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }} | RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}<br>
+        {{ \App\Models\SystemSetting::nombreEmpresaActual() }} | RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}<br>
         @if($venta->ncf)
         NCF: {{ $venta->ncf }} | Factura No. {{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}
         @endif

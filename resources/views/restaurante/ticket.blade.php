@@ -16,7 +16,7 @@ th, td { padding: 2px 0; text-align: left; }
 </style>
 </head>
 <body>
-    <div class="text-center fw-bold">{{ $empresa->nombre ?? config('app.name') }}</div>
+    <div class="text-center fw-bold">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
     <div class="text-center">RNC: {{ $empresa->rnc ?? 'N/A' }}</div>
     <div class="sep"></div>
     <div class="text-center fw-bold">*** TICKET MESA ***</div>

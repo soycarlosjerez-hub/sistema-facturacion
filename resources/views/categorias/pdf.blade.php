@@ -20,7 +20,7 @@
     <div class="header">
         <h1>Reporte de Categorías</h1>
         @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
-        <p>{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }} — Generado el {{ date('d/m/Y H:i A') }}</p>
+        <p>{{ \App\Models\SystemSetting::nombreEmpresaActual() }} — Generado el {{ date('d/m/Y H:i A') }}</p>
         <p>Total de categorías: <strong>{{ $categorias->count() }}</strong></p>
     </div>
 

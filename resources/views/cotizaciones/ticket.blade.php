@@ -155,7 +155,7 @@
 <body>
     <article class="ticket-container" role="document" aria-label="Cotización {{ $cotizacion->numero }}">
         <header class="ticket-header">
-            <h1>{{ config('app.name', 'Sistema') }}</h1>
+            <h1>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h1>
             @if(isset($cotizacion->user) && $cotizacion->user->empresa)
                 <p>RNC: {{ $cotizacion->user->empresa->rnc ?? 'N/A' }}</p>
                 <p>{{ $cotizacion->user->empresa->direccion ?? '' }}</p>

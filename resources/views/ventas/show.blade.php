@@ -92,7 +92,7 @@ body.dark-mode .pagos-table tbody td {
         <div class="col-lg-4">
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden invoice-card">
                 <div class="p-4 text-center border-bottom border-dashed">
-                    <h4 class="fw-bold mb-0">Erpipos</h4>
+                    <h4 class="fw-bold mb-0">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h4>
                     <small class="text-muted text-uppercase fw-bold" style="letter-spacing: 2px;">Venta Realizada</small>
                 </div>
                 

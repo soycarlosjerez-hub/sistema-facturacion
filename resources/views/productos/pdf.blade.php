@@ -28,7 +28,7 @@
                 $empresa = \App\Models\SystemSetting::allCached();
             }
         @endphp
-        <p>{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }} — Generado el {{ date('d/m/Y H:i A') }}</p>
+        <p>{{ \App\Models\SystemSetting::nombreEmpresaActual() }} — Generado el {{ date('d/m/Y H:i A') }}</p>
         <p>Total de productos: <strong>{{ $productos->count() }}</strong></p>
     </div>
 

@@ -4,7 +4,7 @@
 </head><body>
 @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
 <div style="text-align:center;margin-bottom:8px;">
-    <strong style="font-size:11px;">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</strong><br>
+    <strong style="font-size:11px;">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
     <span style="font-size:7px;color:#666;">RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</span>
 </div>
 <h2>Resumen de Compras</h2>

@@ -23,7 +23,7 @@
     <div class="header">
         <h1>Kardex de Inventario</h1>
         @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
-        <p>{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }} — Generado el {{ date('d/m/Y H:i A') }}</p>
+        <p>{{ \App\Models\SystemSetting::nombreEmpresaActual() }} — Generado el {{ date('d/m/Y H:i A') }}</p>
         <p>Total de movimientos: <strong>{{ $movimientos->count() }}</strong></p>
     </div>
 

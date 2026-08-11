@@ -21,7 +21,7 @@ class PrintService
         $charsPerLine = $this->getCharsPerLine($paperWidth);
         $output = '';
 
-        $output .= $this->center($cotizacion->user?->empresa?->nombre ?? config('app.name', 'Sistema'), $charsPerLine) . "\n";
+        $output .= $this->center($cotizacion->user?->empresa?->nombre ?? \App\Models\SystemSetting::nombreEmpresaActual(), $charsPerLine) . "\n";
         $output .= $this->center('RNC: ' . ($cotizacion->user?->empresa?->rnc ?? 'N/A'), $charsPerLine) . "\n";
         $output .= $this->separator($charsPerLine) . "\n";
         $output .= $this->center('*** COTIZACION ***', $charsPerLine) . "\n";
@@ -91,7 +91,7 @@ class PrintService
             ? $venta->fecha
             : \Carbon\Carbon::parse($venta->fecha);
 
-        $output .= $this->center(config('app.name', 'Sistema'), $charsPerLine) . "\n";
+        $output .= $this->center(\App\Models\SystemSetting::nombreEmpresaActual(), $charsPerLine) . "\n";
         $output .= $this->separator($charsPerLine) . "\n";
         $output .= $this->center('*** FACTURA ***', $charsPerLine) . "\n";
         $output .= $this->center('Venta #' . str_pad($venta->id, 6, '0', STR_PAD_LEFT), $charsPerLine) . "\n";
@@ -131,7 +131,7 @@ class PrintService
         $charsPerLine = $this->getCharsPerLine($paperWidth);
         $output = '';
 
-        $output .= $this->center(config('app.name', 'Sistema'), $charsPerLine) . "\n";
+        $output .= $this->center(\App\Models\SystemSetting::nombreEmpresaActual(), $charsPerLine) . "\n";
         $output .= $this->separator($charsPerLine) . "\n";
         $output .= $this->center('*** CONDUCE ***', $charsPerLine) . "\n";
         $output .= $this->center($conduce->numero, $charsPerLine) . "\n";
@@ -592,7 +592,7 @@ class PrintService
         $charsPerLine = $this->getCharsPerLine($paperWidth);
         $output = '';
 
-        $output .= $this->center(config('app.name', 'Sistema'), $charsPerLine) . "\n";
+        $output .= $this->center(\App\Models\SystemSetting::nombreEmpresaActual(), $charsPerLine) . "\n";
         $output .= $this->separator($charsPerLine) . "\n";
         $output .= $this->center('*** ORDEN DE COCINA ***', $charsPerLine) . "\n";
         $output .= $this->center($orden->ncf ?? ('#' . str_pad($orden->id, 6, '0', STR_PAD_LEFT)), $charsPerLine) . "\n";

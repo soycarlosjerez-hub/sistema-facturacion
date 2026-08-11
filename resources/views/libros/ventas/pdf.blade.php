@@ -41,7 +41,7 @@ th,td{padding:2px 4px;}
 @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
 
 <div class="header-company">
-    <div class="company-name">{{ $empresa['empresa_nombre'] ?? 'Mi Negocio' }}</div>
+    <div class="company-name">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
     <div class="company-info">
         RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }} &nbsp;&nbsp;|&nbsp;&nbsp;
         {{ $empresa['empresa_direccion'] ?? '' }} &nbsp;&nbsp;|&nbsp;&nbsp;

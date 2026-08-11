@@ -19,7 +19,7 @@
 <div class="ticket">
     <h2><i class="bi bi-truck"></i> CONDUCE</h2>
     <div class="center small">{{ str_pad('', 32, '-') }}</div>
-    <p class="center"><strong>{{ $empresa->nombre ?? 'MI EMPRESA SRL' }}</strong><br>
+    <p class="center"><strong>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
     <span class="small">RNC: {{ $empresa->rnc ?? '000-0000000-0' }}</span><br>
     <span class="small">{{ $empresa->direccion ?? 'Santo Domingo, RD' }}</span><br>
     <span class="small">Tel: {{ $empresa->telefono ?? '(809) 000-0000' }}</span></p>
