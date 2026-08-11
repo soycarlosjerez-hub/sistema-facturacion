@@ -156,9 +156,14 @@
                         <span class="ui-badge ui-badge-info rounded-pill">{{ $totalUsuarios }}</span>
                     </div>
                     <hr>
-                    <a href="{{ route('owner.business-types.index') }}" class="ui-btn ui-btn-ghost rounded-pill w-100 btn-sm">
-                        <i class="bi bi-gear me-2"></i>Gestionar Tipos
-                    </a>
+                    <div class="d-grid gap-2">
+                        <a href="{{ route('owner.plans.index') }}" class="ui-btn ui-btn-ghost rounded-pill btn-sm">
+                            <i class="bi bi-card-checklist me-2"></i>Gestionar Planes
+                        </a>
+                        <a href="{{ route('owner.business-types.index') }}" class="ui-btn ui-btn-ghost rounded-pill btn-sm">
+                            <i class="bi bi-gear me-2"></i>Gestionar Tipos
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

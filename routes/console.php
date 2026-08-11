@@ -12,3 +12,4 @@ Schedule::command('backup:run --type=automatico')->dailyAt('00:00');
 Schedule::command('ecf:consultar-pendientes --limite=100')->everyFifteenMinutes();
 Schedule::command('errors:clean --days=30')->daily();
 Schedule::command('ncf:check-expiring')->hourly();
+Schedule::command('billing:verificar')->dailyAt('03:00');

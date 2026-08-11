@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Sucursal;
 use App\Models\BusinessType;
+use App\Services\PlanLimitService;
 use Spatie\Permission\Models\Role;
 use App\Services\UserBusinessService;
 use Illuminate\Http\Request;
@@ -82,6 +83,15 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $instance = auth()->user()?->businessInstance;
+
+        if ($instance) {
+            $check = app(PlanLimitService::class)->verificarUsuario($instance);
+            if (! $check['ok']) {
+                return back()->withInput()->with('error', $check['mensaje']);
+            }
+        }
+
         $request->validate([
             'name'        => 'required|string|max:255',
             'email'       => 'required|email|max:255|unique:users,email',

@@ -671,6 +671,13 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/modules/{module}/edit', [\App\Http\Controllers\OwnerController::class, 'modulesEdit'])->name('modules.edit');
     Route::put('/modules/{module}', [\App\Http\Controllers\OwnerController::class, 'modulesUpdate'])->name('modules.update');
     Route::delete('/modules/{module}', [\App\Http\Controllers\OwnerController::class, 'modulesDestroy'])->name('modules.destroy');
+    // Planes (SaaS)
+    Route::get('/planes', [\App\Http\Controllers\OwnerController::class, 'plansIndex'])->name('plans.index');
+    Route::get('/planes/create', [\App\Http\Controllers\OwnerController::class, 'plansCreate'])->name('plans.create');
+    Route::post('/planes', [\App\Http\Controllers\OwnerController::class, 'plansStore'])->name('plans.store');
+    Route::get('/planes/{plan}/edit', [\App\Http\Controllers\OwnerController::class, 'plansEdit'])->name('plans.edit');
+    Route::put('/planes/{plan}', [\App\Http\Controllers\OwnerController::class, 'plansUpdate'])->name('plans.update');
+    Route::delete('/planes/{plan}', [\App\Http\Controllers\OwnerController::class, 'plansDestroy'])->name('plans.destroy');
     Route::get('/instances', [\App\Http\Controllers\OwnerController::class, 'instances'])->name('instances.index');
     Route::get('/instances/create', [\App\Http\Controllers\OwnerController::class, 'instancesCreate'])->name('instances.create');
     Route::post('/instances', [\App\Http\Controllers\OwnerController::class, 'instancesStore'])->name('instances.store');

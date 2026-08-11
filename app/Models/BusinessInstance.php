@@ -22,6 +22,7 @@ class BusinessInstance extends Model
         'telefono',
         'direccion',
         'business_type_id',
+        'plan_id',
         'owner_user_id',
         'owner_email',
         'owner_nombre',
@@ -50,6 +51,25 @@ class BusinessInstance extends Model
     public function businessType(): BelongsTo
     {
         return $this->belongsTo(BusinessType::class);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    public function planActivo(): ?Plan
+    {
+        return $this->plan;
+    }
+
+    public function precioMensual(): float
+    {
+        if ($this->plan) {
+            return (float) $this->plan->precio_mensual;
+        }
+
+        return (float) $this->costo_mensual;
     }
 
     public function owner(): BelongsTo
@@ -91,9 +111,16 @@ class BusinessInstance extends Model
     {
         $override = $this->modules()->where('modulo_key', $moduloKey)->first();
         if ($override !== null) {
-            return $override->visible;
+            $visible = $override->visible;
+        } else {
+            $visible = $this->businessType?->isModuloVisible($moduloKey, $this->businessType->slug) ?? false;
         }
-        return $this->businessType?->isModuloVisible($moduloKey, $this->businessType->slug) ?? false;
+
+        if (! $visible) {
+            return false;
+        }
+
+        return $this->plan?->permiteModulo($moduloKey) ?? true;
     }
 
     public function getDefaultConfig(): array
@@ -102,18 +129,28 @@ class BusinessInstance extends Model
         return array_merge($baseConfig, $this->configuracion ?? []);
     }
 
+    public function graceDays(): int
+    {
+        return (int) config('system.suscripcion.grace_days', 3);
+    }
+
     public function estaAlDia(): bool
     {
-        $ultimo = $this->ultimoPago()->first();
-        if (!$ultimo) {
+        if ($this->bloqueado) {
             return false;
         }
-        $inicioMesActual = now()->startOfMonth();
-        return $ultimo->mes_pagado->startOfMonth()->greaterThanOrEqualTo($inicioMesActual);
+
+        return $this->proximoPagoEsperado()->startOfDay()
+            ->addDays($this->graceDays())
+            ->gte(now()->startOfDay());
     }
 
     public function mesesAtrasados(): int
     {
+        if ($this->estaAlDia()) {
+            return 0;
+        }
+
         $ultimo = $this->ultimoPago()->first();
         if (!$ultimo) {
             $creado = $this->created_at ? $this->created_at->startOfMonth() : now()->startOfMonth()->subMonth();
@@ -125,10 +162,10 @@ class BusinessInstance extends Model
 
     public function deudaEstimada(): float
     {
-        if (!$this->costo_mensual) {
+        if (!$this->precioMensual()) {
             return 0;
         }
-        return $this->mesesAtrasados() * (float) $this->costo_mensual;
+        return $this->mesesAtrasados() * $this->precioMensual();
     }
 
     public function proximoPagoEsperado(): ?Carbon
@@ -138,6 +175,13 @@ class BusinessInstance extends Model
             return $ultimo->mes_pagado->startOfMonth()->addMonth();
         }
         return $this->created_at->startOfMonth();
+    }
+
+    public function bloqueablePorImpago(): bool
+    {
+        return $this->activo
+            && ! $this->bloqueado
+            && ! $this->estaAlDia();
     }
 
     public function scopeActive($query)

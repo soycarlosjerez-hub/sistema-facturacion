@@ -90,6 +90,12 @@ class OwnerController extends Controller
             ->whereYear('fecha_pago', now()->year)
             ->sum('monto');
 
+        $mrr = BusinessInstance::where('activo', true)
+            ->get()
+            ->sum(fn($i) => $i->precioMensual());
+
+        $planes = \App\Models\Plan::active()->withCount('businessInstances')->get();
+
         $totalTipos = BusinessType::count();
         $totalUsuarios = User::count();
 
@@ -97,7 +103,7 @@ class OwnerController extends Controller
             'totalInstancias', 'activas', 'bloqueadas', 'vencidas', 'porVencer', 'archivadas',
             'instancias', 'instanciasPorTipo', 'instanciasConAtraso',
             'proximosVencimientos', 'ingresosEsperados', 'ingresosRealesMes',
-            'totalTipos', 'totalUsuarios'
+            'totalTipos', 'totalUsuarios', 'mrr', 'planes'
         ));
     }
 
@@ -314,9 +320,107 @@ class OwnerController extends Controller
             ->with('success', "Módulo \"{$modulo->label}\" eliminado.");
     }
 
+    // ===================== PLANES (SaaS) =====================
+
+    public function plansIndex()
+    {
+        $planes = \App\Models\Plan::withCount('businessInstances')->orderBy('orden')->get();
+
+        return view('owner.planes.index', compact('planes'));
+    }
+
+    public function plansCreate()
+    {
+        $modulos = Modulo::allActive();
+
+        return view('owner.planes.create', compact('modulos'));
+    }
+
+    public function plansStore(Request $request)
+    {
+        $data = $this->validatePlan($request);
+
+        \App\Models\Plan::create($data);
+
+        \App\Models\Plan::flush();
+
+        return redirect()->route('owner.plans.index')
+            ->with('success', 'Plan creado correctamente.');
+    }
+
+    public function plansEdit($id)
+    {
+        $plan = \App\Models\Plan::findOrFail($id);
+        $modulos = Modulo::allActive();
+
+        return view('owner.planes.edit', compact('plan', 'modulos'));
+    }
+
+    public function plansUpdate(Request $request, $id)
+    {
+        $plan = \App\Models\Plan::findOrFail($id);
+
+        $data = $this->validatePlan($request, $plan);
+
+        $plan->update($data);
+
+        \App\Models\Plan::flush();
+
+        return redirect()->route('owner.plans.index')
+            ->with('success', 'Plan actualizado correctamente.');
+    }
+
+    public function plansDestroy($id)
+    {
+        $plan = \App\Models\Plan::findOrFail($id);
+
+        $inUse = BusinessInstance::where('plan_id', $plan->id)->count();
+
+        if ($inUse > 0) {
+            return back()->with('error', "No se puede eliminar el plan \"{$plan->nombre}\" porque está asignado a {$inUse} instancia(s). Desactívelo en su lugar.");
+        }
+
+        $plan->delete();
+
+        \App\Models\Plan::flush();
+
+        return redirect()->route('owner.plans.index')
+            ->with('success', 'Plan eliminado correctamente.');
+    }
+
+    private function validatePlan(Request $request, ?\App\Models\Plan $plan = null): array
+    {
+        $slugRule = 'required|string|max:100|unique:plans,slug' . ($plan ? ',' . $plan->id : '');
+
+        return $request->validate([
+            'nombre' => 'required|string|max:255',
+            'slug' => $slugRule,
+            'descripcion' => 'nullable|string|max:500',
+            'precio_mensual' => 'required|numeric|min:0',
+            'precio_implementacion' => 'nullable|numeric|min:0',
+            'precio_lanzamiento' => 'nullable|numeric|min:0',
+            'max_usuarios' => 'nullable|integer|min:0',
+            'max_sucursales' => 'nullable|integer|min:0',
+            'max_empresas' => 'nullable|integer|min:0',
+            'features' => 'nullable|array',
+            'features.*' => 'string|max:255',
+            'modulos' => 'nullable|array',
+            'modulos.*' => 'string|max:100',
+            'activo' => 'boolean',
+            'recomendado' => 'boolean',
+            'orden' => 'nullable|integer|min:0',
+        ]) + [
+            'modulos' => $request->input('modulos', []),
+            'features' => $request->input('features', []),
+            'activo' => $request->boolean('activo', true),
+            'recomendado' => $request->boolean('recomendado', false),
+            'orden' => (int) $request->input('orden', 0),
+        ];
+    }
+
     public function instances()
     {
-        $query = BusinessInstance::with(['businessType', 'owner', 'ultimoPago']);
+        $query = BusinessInstance::with(['businessType', 'plan', 'owner', 'ultimoPago']);
         
         if (request('show_trashed') === '1') {
             $query->withTrashed();
@@ -336,7 +440,8 @@ class OwnerController extends Controller
     {
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
         $owners = User::role('owner')->orderBy('name')->get();
-        return view('owner.instances.create', compact('businessTypes', 'owners'));
+        $plans = \App\Models\Plan::active();
+        return view('owner.instances.create', compact('businessTypes', 'owners', 'plans'));
     }
 
     public function instancesStore(Request $request)
@@ -349,6 +454,7 @@ class OwnerController extends Controller
             'telefono' => 'nullable|string|max:50',
             'direccion' => 'nullable|string|max:500',
             'business_type_id' => 'required|exists:business_types,id',
+            'plan_id' => 'nullable|exists:plans,id',
             'owner_user_id' => 'nullable|exists:users,id',
             'costo_mensual' => 'nullable|numeric|min:0',
             'fecha_vencimiento' => 'nullable|date',
@@ -366,6 +472,8 @@ class OwnerController extends Controller
 
         $data = $request->validate($rules);
 
+        $plan = $data['plan_id'] ? \App\Models\Plan::find($data['plan_id']) : null;
+
         $instance = BusinessInstance::create([
             'nombre' => $data['nombre'],
             'slug' => Str::slug($data['slug']),
@@ -374,8 +482,9 @@ class OwnerController extends Controller
             'telefono' => $data['telefono'] ?? null,
             'direccion' => $data['direccion'] ?? null,
             'business_type_id' => $data['business_type_id'],
+            'plan_id' => $plan?->id,
             'owner_user_id' => $data['owner_user_id'] ?? auth()->id(),
-            'costo_mensual' => $data['costo_mensual'] ?? null,
+            'costo_mensual' => $plan?->precio_mensual ?? $data['costo_mensual'] ?? null,
             'fecha_vencimiento' => $data['fecha_vencimiento'] ?? null,
             'activo' => $request->boolean('activo', true),
             'configuracion' => [],
@@ -402,7 +511,7 @@ class OwnerController extends Controller
 
     public function instancesShow($id)
     {
-        $instance = BusinessInstance::withTrashed()->with(['businessType', 'owner', 'users.tokens', 'ultimoPago'])
+        $instance = BusinessInstance::withTrashed()->with(['businessType', 'plan', 'owner', 'users.tokens', 'ultimoPago'])
             ->findOrFail($id);
         $pagosRecientes = PagoInstancia::where('business_instance_id', $id)
             ->with('registradoPor')
@@ -423,7 +532,8 @@ class OwnerController extends Controller
         $instance = BusinessInstance::withTrashed()->findOrFail($id);
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
         $owners = User::role('owner')->orderBy('name')->get();
-        return view('owner.instances.edit', compact('instance', 'businessTypes', 'owners'));
+        $plans = \App\Models\Plan::active();
+        return view('owner.instances.edit', compact('instance', 'businessTypes', 'owners', 'plans'));
     }
 
     public function instancesUpdate(Request $request, $id)
@@ -437,11 +547,14 @@ class OwnerController extends Controller
             'telefono' => 'nullable|string|max:50',
             'direccion' => 'nullable|string|max:500',
             'business_type_id' => 'required|exists:business_types,id',
+            'plan_id' => 'nullable|exists:plans,id',
             'owner_user_id' => 'nullable|exists:users,id',
             'costo_mensual' => 'nullable|numeric|min:0',
             'fecha_vencimiento' => 'nullable|date',
             'activo' => 'boolean',
         ]);
+
+        $plan = $data['plan_id'] ? \App\Models\Plan::find($data['plan_id']) : null;
 
         $oldData = $instance->getAttributes();
         $instance->update([
@@ -451,8 +564,9 @@ class OwnerController extends Controller
             'telefono' => $data['telefono'] ?? null,
             'direccion' => $data['direccion'] ?? null,
             'business_type_id' => $data['business_type_id'],
+            'plan_id' => $plan?->id,
             'owner_user_id' => $data['owner_user_id'] ?? $instance->owner_user_id,
-            'costo_mensual' => $data['costo_mensual'] ?? null,
+            'costo_mensual' => $plan?->precio_mensual ?? $data['costo_mensual'] ?? null,
             'fecha_vencimiento' => $data['fecha_vencimiento'] ?? null,
             'activo' => $request->boolean('activo', true),
         ]);
@@ -737,24 +851,49 @@ class OwnerController extends Controller
 
     public function storePayment(Request $request, $id)
     {
-        $instance = BusinessInstance::findOrFail($id);
+        $instance = BusinessInstance::with('plan')->findOrFail($id);
 
         $data = $request->validate([
             'monto' => 'required|numeric|min:0',
             'mes_pagado' => 'required|date_format:Y-m-d',
             'metodo_pago' => 'nullable|string|max:100',
+            'referencia_externa' => 'nullable|string|max:255',
+            'estado_pago' => 'nullable|string|max:50',
             'notas' => 'nullable|string|max:500',
         ]);
 
         PagoInstancia::create([
             'business_instance_id' => $instance->id,
+            'plan_id' => $instance->plan_id,
             'monto' => $data['monto'],
             'mes_pagado' => $data['mes_pagado'],
             'fecha_pago' => now(),
             'metodo_pago' => $data['metodo_pago'],
+            'referencia_externa' => $data['referencia_externa'] ?? null,
+            'estado_pago' => $data['estado_pago'] ?? 'completado',
             'notas' => $data['notas'],
             'registrado_por' => auth()->id(),
         ]);
+
+        // Desbloqueo automático cuando el pago cubre el período vigente
+        if ($instance->bloqueado && $instance->estaAlDia()) {
+            $instance->update([
+                'bloqueado' => false,
+                'motivo_bloqueo' => null,
+                'bloqueado_en' => null,
+            ]);
+
+            $this->logOwnerAction(
+                'INSTANCE_UNBLOCK',
+                "Instancia '{$instance->nombre}' desbloqueada automáticamente tras registrar pago.",
+                null,
+                ['bloqueado' => false],
+                $instance
+            );
+
+            return redirect()->route('owner.instances.show', $instance)
+                ->with('success', 'Pago registrado correctamente. La instancia fue desbloqueada.');
+        }
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Pago registrado correctamente.');
@@ -770,6 +909,11 @@ class OwnerController extends Controller
     public function instanceUserStore(Request $request, $id)
     {
         $instance = BusinessInstance::with('businessType')->findOrFail($id);
+
+        $limitCheck = app(\App\Services\PlanLimitService::class)->verificarUsuario($instance);
+        if (! $limitCheck['ok']) {
+            return back()->withInput()->with('error', $limitCheck['mensaje']);
+        }
 
         $data = $request->validate([
             'name' => 'required|string|max:255',

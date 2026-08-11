@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSucursalRequest;
 use App\Http\Requests\UpdateSucursalRequest;
 use App\Models\Sucursal;
+use App\Services\PlanLimitService;
 use App\Services\SucursalService;
 
 class SucursalController extends Controller
@@ -30,6 +31,15 @@ class SucursalController extends Controller
 
     public function store(StoreSucursalRequest $request)
     {
+        $instance = auth()->user()?->businessInstance;
+
+        if ($instance) {
+            $check = app(PlanLimitService::class)->verificarSucursal($instance);
+            if (! $check['ok']) {
+                return back()->withInput()->with('error', $check['mensaje']);
+            }
+        }
+
         $this->sucursalService->create($request->validated());
 
         return redirect()->route('sucursales.index')

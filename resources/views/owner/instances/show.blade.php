@@ -147,6 +147,17 @@
                         <dd class="col-sm-8">{{ $instance->direccion ?? '—' }}</dd>
                         <dt class="col-sm-4 text-muted small fw-bold">Tipo</dt>
                         <dd class="col-sm-8"><span class="badge bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 text-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Plan</dt>
+                        <dd class="col-sm-8">
+                            @if($instance->plan)
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Plan {{ $instance->plan->nombre }}</span>
+                                @if($instance->plan->max_usuarios)
+                                    <span class="text-muted small ms-1">({{ $instance->users->count() }}/{{ $instance->plan->max_usuarios }} usuarios)</span>
+                                @endif
+                            @else
+                                <span class="text-muted">Personalizado</span>
+                            @endif
+                        </dd>
                         <dt class="col-sm-4 text-muted small fw-bold">Due&ntilde;o</dt>
                         <dd class="col-sm-8">{{ $instance->owner?->name ?? '—' }}</dd>
                         <dt class="col-sm-4 text-muted small fw-bold">Creado</dt>

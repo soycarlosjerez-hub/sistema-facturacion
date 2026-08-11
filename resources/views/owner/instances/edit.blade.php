@@ -57,10 +57,21 @@
                         </select>
                     </div>
                     <div class="col-md-6">
+                        <label class="ui-label fw-bold">Plan</label>
+                        <select name="plan_id" class="ui-select rounded-pill @error('plan_id') is-invalid @enderror" id="planSelect">
+                            <option value="">Personalizado</option>
+                            @foreach($plans as $plan)
+                                <option value="{{ $plan->id }}" data-precio="{{ $plan->precio_mensual }}" {{ old('plan_id', $instance->plan_id) == $plan->id ? 'selected' : '' }}>
+                                    {{ $plan->nombre }} — RD${{ number_format($plan->precio_mensual, 2) }}/mes
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
                         <label class="ui-label fw-bold">Costo Mensual</label>
                         <div class="ui-input-group">
                             <span class="ui-input-group-text bg-light border-0 rounded-start-pill">RD$</span>
-                            <input type="number" name="costo_mensual" class="ui-input rounded-end-pill @error('costo_mensual') is-invalid @enderror" value="{{ old('costo_mensual', $instance->costo_mensual) }}" step="0.01" min="0" placeholder="0.00">
+                            <input type="number" name="costo_mensual" class="ui-input rounded-end-pill @error('costo_mensual') is-invalid @enderror" value="{{ old('costo_mensual', $instance->costo_mensual) }}" step="0.01" min="0" placeholder="0.00" id="costoMensual">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -189,3 +200,15 @@
 </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('planSelect')?.addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    const precio = opt ? opt.dataset.precio : '';
+    if (precio !== '' && precio !== undefined) {
+        document.getElementById('costoMensual').value = precio;
+    }
+});
+</script>
+@endpush

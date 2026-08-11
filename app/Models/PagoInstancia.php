@@ -11,10 +11,13 @@ class PagoInstancia extends Model
 
     protected $fillable = [
         'business_instance_id',
+        'plan_id',
         'monto',
         'mes_pagado',
         'fecha_pago',
         'metodo_pago',
+        'referencia_externa',
+        'estado_pago',
         'notas',
         'registrado_por',
     ];
@@ -28,6 +31,11 @@ class PagoInstancia extends Model
     public function instance(): BelongsTo
     {
         return $this->belongsTo(BusinessInstance::class, 'business_instance_id');
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
     }
 
     public function registradoPor(): BelongsTo

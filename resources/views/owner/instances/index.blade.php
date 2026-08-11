@@ -72,6 +72,7 @@
                 <thead class="table-light">
                     <tr>
                         <th class="ps-4">Nombre</th>
+                        <th>Plan</th>
                         <th>Tipo</th>
                         <th>Propietario</th>
                         <th class="text-center">Estado Pago</th>
@@ -87,8 +88,14 @@
                         <td class="ps-4 fw-bold">
                             <a href="{{ route('owner.instances.show', $instance) }}" class="text-decoration-none">{{ $instance->nombre }}</a>
                         </td>
-                        <td><span class="badge bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 text-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>
                         <td>
+                            @if($instance->plan)
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2" title="Plan {{ $instance->plan->nombre }}">Plan {{ $instance->plan->nombre }}</span>
+                            @else
+                                <span class="badge bg-light text-muted rounded-pill px-2">Personalizado</span>
+                            @endif
+                        </td>
+                        <td><span class="badge bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 text-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>                        <td>
                             @if($instance->owner_nombre)
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;background:rgba(139,92,246,.15);color:#8b5cf6;font-size:13px;font-weight:600;">

@@ -94,6 +94,15 @@ class Sidebar
                     'exact_route' => 'owner.modules.index',
                 ];
             }
+            if ($user->can('owner.business-types.view')) {
+                $items[] = [
+                    'route' => 'owner.plans.index',
+                    'icon'  => 'bi-card-checklist',
+                    'label' => 'Planes',
+                    'is_route' => 'owner.plans.*',
+                    'exact_route' => 'owner.plans.index',
+                ];
+            }
             $items[] = [
                 'route' => 'owner.errors.index',
                 'icon'  => 'bi-bug',
