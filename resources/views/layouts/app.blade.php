@@ -689,6 +689,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             'tattoo' => 'dark',
                             'climatizacion' => 'secondary',
                             'tecnologia' => 'danger',
+                            'arte_escultura' => 'purple',
                         ];
                         $iconos = [
                             'restaurante' => 'cup-straw',
@@ -700,6 +701,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                             'tattoo' => 'brush',
                             'climatizacion' => 'wind',
                             'tecnologia' => 'phone',
+                            'arte_escultura' => 'palette',
                         ];
                         $color = $colores[$tipoNegocio] ?? 'secondary';
                         $icono = $iconos[$tipoNegocio] ?? 'grid';

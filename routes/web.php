@@ -1086,6 +1086,50 @@ Route::middleware(['auth'])->prefix('tattoo')->name('tattoo.')->group(function (
     Route::post('/citas/{cita}/pagar', [\App\Http\Controllers\TattooAppointmentController::class, 'pagar'])->name('citas.pagar')->middleware('permission:tattoo.citas');
 });
 
+// Arte / Escultura / Galería
+Route::middleware(['auth'])->prefix('arte')->name('arte.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\ArteController::class, 'index'])->name('index')->middleware('permission:arte.view');
+
+    Route::get('/obras', [\App\Http\Controllers\ArteObraController::class, 'index'])->name('obras.index')->middleware('permission:arte.obras');
+    Route::get('/obras/crear', [\App\Http\Controllers\ArteObraController::class, 'create'])->name('obras.create')->middleware('permission:arte.obras');
+    Route::post('/obras', [\App\Http\Controllers\ArteObraController::class, 'store'])->name('obras.store')->middleware('permission:arte.obras');
+    Route::get('/obras/{obra}', [\App\Http\Controllers\ArteObraController::class, 'show'])->name('obras.show')->middleware('permission:arte.obras');
+    Route::get('/obras/{obra}/editar', [\App\Http\Controllers\ArteObraController::class, 'edit'])->name('obras.edit')->middleware('permission:arte.obras');
+    Route::put('/obras/{obra}', [\App\Http\Controllers\ArteObraController::class, 'update'])->name('obras.update')->middleware('permission:arte.obras');
+    Route::delete('/obras/{obra}', [\App\Http\Controllers\ArteObraController::class, 'destroy'])->name('obras.destroy')->middleware('permission:arte.obras');
+
+    Route::get('/artistas', [\App\Http\Controllers\ArteArtistaController::class, 'index'])->name('artistas.index')->middleware('permission:arte.artistas');
+    Route::get('/artistas/crear', [\App\Http\Controllers\ArteArtistaController::class, 'create'])->name('artistas.create')->middleware('permission:arte.artistas');
+    Route::post('/artistas', [\App\Http\Controllers\ArteArtistaController::class, 'store'])->name('artistas.store')->middleware('permission:arte.artistas');
+    Route::get('/artistas/{artista}/editar', [\App\Http\Controllers\ArteArtistaController::class, 'edit'])->name('artistas.edit')->middleware('permission:arte.artistas');
+    Route::put('/artistas/{artista}', [\App\Http\Controllers\ArteArtistaController::class, 'update'])->name('artistas.update')->middleware('permission:arte.artistas');
+    Route::delete('/artistas/{artista}', [\App\Http\Controllers\ArteArtistaController::class, 'destroy'])->name('artistas.destroy')->middleware('permission:arte.artistas');
+
+    Route::get('/colecciones', [\App\Http\Controllers\ArteColeccionController::class, 'index'])->name('colecciones.index')->middleware('permission:arte.colecciones');
+    Route::get('/colecciones/crear', [\App\Http\Controllers\ArteColeccionController::class, 'create'])->name('colecciones.create')->middleware('permission:arte.colecciones');
+    Route::post('/colecciones', [\App\Http\Controllers\ArteColeccionController::class, 'store'])->name('colecciones.store')->middleware('permission:arte.colecciones');
+    Route::get('/colecciones/{coleccion}/editar', [\App\Http\Controllers\ArteColeccionController::class, 'edit'])->name('colecciones.edit')->middleware('permission:arte.colecciones');
+    Route::put('/colecciones/{coleccion}', [\App\Http\Controllers\ArteColeccionController::class, 'update'])->name('colecciones.update')->middleware('permission:arte.colecciones');
+    Route::delete('/colecciones/{coleccion}', [\App\Http\Controllers\ArteColeccionController::class, 'destroy'])->name('colecciones.destroy')->middleware('permission:arte.colecciones');
+
+    Route::get('/exhibiciones', [\App\Http\Controllers\ArteExhibicionController::class, 'index'])->name('exhibiciones.index')->middleware('permission:arte.exhibiciones');
+    Route::get('/exhibiciones/crear', [\App\Http\Controllers\ArteExhibicionController::class, 'create'])->name('exhibiciones.create')->middleware('permission:arte.exhibiciones');
+    Route::post('/exhibiciones', [\App\Http\Controllers\ArteExhibicionController::class, 'store'])->name('exhibiciones.store')->middleware('permission:arte.exhibiciones');
+    Route::get('/exhibiciones/{exhibicion}', [\App\Http\Controllers\ArteExhibicionController::class, 'show'])->name('exhibiciones.show')->middleware('permission:arte.exhibiciones');
+    Route::get('/exhibiciones/{exhibicion}/editar', [\App\Http\Controllers\ArteExhibicionController::class, 'edit'])->name('exhibiciones.edit')->middleware('permission:arte.exhibiciones');
+    Route::put('/exhibiciones/{exhibicion}', [\App\Http\Controllers\ArteExhibicionController::class, 'update'])->name('exhibiciones.update')->middleware('permission:arte.exhibiciones');
+    Route::delete('/exhibiciones/{exhibicion}', [\App\Http\Controllers\ArteExhibicionController::class, 'destroy'])->name('exhibiciones.destroy')->middleware('permission:arte.exhibiciones');
+    Route::post('/exhibiciones/{exhibicion}/obras', [\App\Http\Controllers\ArteExhibicionController::class, 'attachObra'])->name('exhibiciones.attach-obra')->middleware('permission:arte.exhibiciones');
+    Route::post('/exhibiciones/{exhibicion}/obras/{obra}/detach', [\App\Http\Controllers\ArteExhibicionController::class, 'detachObra'])->name('exhibiciones.detach-obra')->middleware('permission:arte.exhibiciones');
+
+    Route::get('/consignaciones', [\App\Http\Controllers\ArteConsignmentController::class, 'index'])->name('consignaciones.index')->middleware('permission:arte.consignaciones');
+    Route::get('/consignaciones/crear', [\App\Http\Controllers\ArteConsignmentController::class, 'create'])->name('consignaciones.create')->middleware('permission:arte.consignaciones');
+    Route::post('/consignaciones', [\App\Http\Controllers\ArteConsignmentController::class, 'store'])->name('consignaciones.store')->middleware('permission:arte.consignaciones');
+    Route::get('/consignaciones/{consignacion}/editar', [\App\Http\Controllers\ArteConsignmentController::class, 'edit'])->name('consignaciones.edit')->middleware('permission:arte.consignaciones');
+    Route::put('/consignaciones/{consignacion}', [\App\Http\Controllers\ArteConsignmentController::class, 'update'])->name('consignaciones.update')->middleware('permission:arte.consignaciones');
+    Route::delete('/consignaciones/{consignacion}', [\App\Http\Controllers\ArteConsignmentController::class, 'destroy'])->name('consignaciones.destroy')->middleware('permission:arte.consignaciones');
+});
+
 Route::get('/instancia-bloqueada', function () {
     return view('errors.instancia-bloqueada');
 })->name('instancia-bloqueada');

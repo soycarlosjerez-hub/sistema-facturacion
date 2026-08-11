@@ -234,7 +234,9 @@ class BusinessTypeSeeder extends Seeder
                 'activo' => true,
                 'orden' => 11,
                 'modulos' => [
-                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex',
+                    'dashboard', 'arte', 'arte-obras', 'arte-artistas', 'arte-colecciones',
+                    'arte-exhibiciones', 'arte-consignaciones',
+                    'inventario', 'compras', 'proveedores', 'kardex',
                     'ventas', 'devoluciones', 'ordenes',
                     'clientes', 'cobros', 'cajas', 'gastos', 'plantilla-gastos',
                     'sucursales', 'almacenes',

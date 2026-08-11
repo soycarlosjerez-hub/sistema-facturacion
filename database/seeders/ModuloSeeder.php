@@ -192,6 +192,20 @@ class ModuloSeeder extends Seeder
             ['key' => 'garantias', 'label' => 'Garantías', 'icon' => 'bi-shield-check', 'categoria' => 'tecnologia', 'orden' => 105,
              'sidebar_route' => 'garantias.index', 'sidebar_is_route' => 'garantias.*', 'sidebar_exact_route' => 'garantias.index', 'sidebar_permission' => 'garantias.view'],
 
+            // Arte / Escultura / Galería
+            ['key' => 'arte', 'label' => 'Galería de Arte', 'icon' => 'bi-palette', 'categoria' => 'arte', 'orden' => 106,
+             'sidebar_route' => 'arte.index', 'sidebar_is_route' => 'arte.*', 'sidebar_exact_route' => 'arte.index', 'sidebar_permission' => 'arte.view'],
+            ['key' => 'arte-obras', 'label' => 'Obras de Arte', 'icon' => 'bi-images', 'categoria' => 'arte', 'orden' => 107,
+             'sidebar_route' => 'arte.obras.index', 'sidebar_is_route' => 'arte.obras.*', 'sidebar_exact_route' => 'arte.obras.index', 'sidebar_permission' => 'arte.obras'],
+            ['key' => 'arte-artistas', 'label' => 'Artistas', 'icon' => 'bi-person-badge', 'categoria' => 'arte', 'orden' => 108,
+             'sidebar_route' => 'arte.artistas.index', 'sidebar_is_route' => 'arte.artistas.*', 'sidebar_exact_route' => 'arte.artistas.index', 'sidebar_permission' => 'arte.artistas'],
+            ['key' => 'arte-colecciones', 'label' => 'Colecciones', 'icon' => 'bi-collection', 'categoria' => 'arte', 'orden' => 109,
+             'sidebar_route' => 'arte.colecciones.index', 'sidebar_is_route' => 'arte.colecciones.*', 'sidebar_exact_route' => 'arte.colecciones.index', 'sidebar_permission' => 'arte.colecciones'],
+            ['key' => 'arte-exhibiciones', 'label' => 'Exhibiciones', 'icon' => 'bi-easel', 'categoria' => 'arte', 'orden' => 110,
+             'sidebar_route' => 'arte.exhibiciones.index', 'sidebar_is_route' => 'arte.exhibiciones.*', 'sidebar_exact_route' => 'arte.exhibiciones.index', 'sidebar_permission' => 'arte.exhibiciones'],
+            ['key' => 'arte-consignaciones', 'label' => 'Consignaciones', 'icon' => 'bi-arrow-left-right', 'categoria' => 'arte', 'orden' => 111,
+             'sidebar_route' => 'arte.consignaciones.index', 'sidebar_is_route' => 'arte.consignaciones.*', 'sidebar_exact_route' => 'arte.consignaciones.index', 'sidebar_permission' => 'arte.consignaciones'],
+
             // Delivery
             ['key' => 'delivery-dashboard', 'label' => 'Dashboard Delivery', 'icon' => 'bi-truck', 'categoria' => 'delivery', 'orden' => 110,
              'sidebar_route' => 'delivery.dashboard', 'sidebar_is_route' => 'delivery.dashboard*', 'sidebar_exact_route' => 'delivery.dashboard', 'sidebar_permission' => 'delivery-dashboard.view'],

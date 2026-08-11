@@ -470,6 +470,63 @@ class Sidebar
             }
         }
 
+        // Arte / Escultura / Galería
+        if ($mod('arte') && $can('arte.view')) {
+            $items[] = ['section' => 'Arte / Galería'];
+            $items[] = [
+                'route' => 'arte.index',
+                'icon'  => 'bi-palette',
+                'label' => 'Galería de Arte',
+                'is_route' => 'arte.*',
+                'exact_route' => 'arte.index',
+            ];
+            if ($mod('arte-obras') && $can('arte.obras')) {
+                $items[] = [
+                    'route' => 'arte.obras.index',
+                    'icon'  => 'bi-images',
+                    'label' => 'Obras',
+                    'is_route' => 'arte.obras.*',
+                    'exact_route' => 'arte.obras.index',
+                ];
+            }
+            if ($mod('arte-artistas') && $can('arte.artistas')) {
+                $items[] = [
+                    'route' => 'arte.artistas.index',
+                    'icon'  => 'bi-person-badge',
+                    'label' => 'Artistas',
+                    'is_route' => 'arte.artistas.*',
+                    'exact_route' => 'arte.artistas.index',
+                ];
+            }
+            if ($mod('arte-colecciones') && $can('arte.colecciones')) {
+                $items[] = [
+                    'route' => 'arte.colecciones.index',
+                    'icon'  => 'bi-collection',
+                    'label' => 'Colecciones',
+                    'is_route' => 'arte.colecciones.*',
+                    'exact_route' => 'arte.colecciones.index',
+                ];
+            }
+            if ($mod('arte-exhibiciones') && $can('arte.exhibiciones')) {
+                $items[] = [
+                    'route' => 'arte.exhibiciones.index',
+                    'icon'  => 'bi-easel',
+                    'label' => 'Exhibiciones',
+                    'is_route' => 'arte.exhibiciones.*',
+                    'exact_route' => 'arte.exhibiciones.index',
+                ];
+            }
+            if ($mod('arte-consignaciones') && $can('arte.consignaciones')) {
+                $items[] = [
+                    'route' => 'arte.consignaciones.index',
+                    'icon'  => 'bi-arrow-left-right',
+                    'label' => 'Consignaciones',
+                    'is_route' => 'arte.consignaciones.*',
+                    'exact_route' => 'arte.consignaciones.index',
+                ];
+            }
+        }
+
         // Alquileres
         if ($mod('alquileres') && $can('alquileres.view')) {
             $items[] = ['section' => 'Alquileres'];
