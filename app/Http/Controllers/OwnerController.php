@@ -109,7 +109,15 @@ class OwnerController extends Controller
 
     public function businessTypes()
     {
-        $businessTypes = BusinessType::with('modules')->orderBy('orden')->get();
+        $businessTypes = BusinessType::with('modules')
+            ->withCount([
+                'businessInstances',
+                'businessInstances as instancias_activas' => fn ($q) => $q->where('activo', true),
+                'usersAsociados',
+            ])
+            ->orderBy('orden')
+            ->get();
+
         $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
         return view('owner.business-types.index', compact('businessTypes', 'allModules'));
     }

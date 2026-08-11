@@ -51,6 +51,18 @@ class BusinessType extends Model
         return $this->hasMany(BusinessInstance::class, 'business_type_id');
     }
 
+    public function usersAsociados()
+    {
+        return $this->hasManyThrough(
+            User::class,
+            BusinessInstance::class,
+            'business_type_id',       // FK en business_instances
+            'business_instance_id',   // FK en users
+            'id',
+            'id'
+        );
+    }
+
     public function visibleModules()
     {
         return $this->modules()->where('visible', true)->orderBy('orden')->get();

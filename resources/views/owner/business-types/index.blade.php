@@ -52,6 +52,26 @@
                         </div>
                     </div>
                     <p class="text-muted small mb-3">{{ $type->descripcion ?? 'Sin descripci&oacute;n' }}</p>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="rounded-3 border p-2 text-center">
+                                <div class="fs-5 fw-bold text-primary">{{ $type->business_instances_count }}</div>
+                                <small class="text-muted">Instancias</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="rounded-3 border p-2 text-center">
+                                <div class="fs-5 fw-bold text-success">{{ $type->users_asociados_count }}</div>
+                                <small class="text-muted">Usuarios</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="rounded-3 border p-2 text-center">
+                                <div class="fs-5 fw-bold text-info">{{ $type->instancias_activas }}</div>
+                                <small class="text-muted">Activas</small>
+                            </div>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <small class="fw-bold text-muted d-block mb-2">M&oacute;dulos visibles ({{ $type->modules->where('visible', true)->count() }}/{{ $type->modules->count() }})</small>
                         <div class="d-flex flex-wrap gap-1">
