@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class BusinessTypeSeeder extends Seeder
 {
@@ -256,17 +256,36 @@ class BusinessTypeSeeder extends Seeder
         $slugsValidos = collect($tipos)->pluck('slug')->all();
         $tipoRestaurante = BusinessType::where('slug', 'restaurante')->first();
 
-        BusinessType::whereNotIn('slug', $slugsValidos)
+        $obsoletos = BusinessType::whereNotIn('slug', $slugsValidos)
             ->where('slug', '!=', 'restaurante')
-            ->get()
-            ->each(function (BusinessType $tipo) use ($tipoRestaurante) {
-                if ($tipoRestaurante) {
-                    BusinessInstance::where('business_type_id', $tipo->id)
+            ->get();
+
+        if ($obsoletos->isNotEmpty() && $tipoRestaurante) {
+            DB::transaction(function () use ($obsoletos, $tipoRestaurante) {
+                foreach ($obsoletos as $tipo) {
+                    // Reasignar TODAS las instancias (incluidas soft-deleted) al tipo predeterminado,
+                    // evitando el scope global de SoftDeletes del modelo.
+                    DB::table('business_instances')
+                        ->where('business_type_id', $tipo->id)
                         ->update(['business_type_id' => $tipoRestaurante->id]);
+
+                    // Los usuarios con business_type_id apuntan con ON DELETE SET NULL,
+                    // pero lo limpiamos explícitamente por seguridad.
+                    DB::table('users')
+                        ->where('business_type_id', $tipo->id)
+                        ->update(['business_type_id' => null]);
+
+                    // Limpiar relaciones polimórficas huérfanas en categorizables.
+                    DB::table('categorizables')
+                        ->where('categorizable_type', BusinessType::class)
+                        ->where('categorizable_id', $tipo->id)
+                        ->delete();
+
+                    $tipo->modules()->delete();
+                    $tipo->delete();
                 }
-                $tipo->modules()->delete();
-                $tipo->delete();
             });
+        }
 
         BusinessType::flush();
     }

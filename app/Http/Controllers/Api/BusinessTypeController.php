@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BusinessTypeController extends Controller
 {
@@ -93,7 +94,12 @@ class BusinessTypeController extends Controller
         $defaultType = BusinessType::where('slug', 'restaurante')->first();
 
         if ($defaultType && $businessType->businessInstances()->exists()) {
-            $moved = $businessType->businessInstances()->update(['business_type_id' => $defaultType->id]);
+            // Reasignar TODAS las instancias (incluidas soft-deleted) al tipo predeterminado,
+            // evitando el scope global de SoftDeletes del modelo.
+            $moved = DB::table('business_instances')
+                ->where('business_type_id', $businessType->id)
+                ->update(['business_type_id' => $defaultType->id]);
+
             if ($moved) {
                 return response()->json([
                     'message' => 'Tipo de negocio eliminado. Se trasladaron ' . $moved . ' instancia(s) al tipo "Restaurante".',
