@@ -70,7 +70,7 @@ class SystemSetting extends Model
     {
         $user = Auth::user();
         if ($user && $user->business_instance_id) {
-            $instance = $user->businessInstance;
+            $instance = BusinessInstance::find($user->business_instance_id);
             if ($instance && $instance->nombre) {
                 return $instance->nombre;
             }
