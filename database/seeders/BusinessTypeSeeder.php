@@ -228,6 +228,27 @@ class BusinessTypeSeeder extends Seeder
                     'auditoria', 'backups',
                 ],
             ],
+            [
+                'slug' => 'embutidos',
+                'nombre' => 'Embutidos / Charcutería',
+                'descripcion' => 'Venta de embutidos, carnes frías y productos de charcutería',
+                'color' => 'danger',
+                'icon' => 'bi-egg-fried',
+                'activo' => true,
+                'orden' => 12,
+                'modulos' => [
+                    'dashboard', 'inventario', 'compras', 'proveedores', 'kardex', 'listas-precio',
+                    'ventas', 'cotizaciones', 'devoluciones', 'ordenes',
+                    'clientes', 'cobros', 'cajas', 'sucursales', 'almacenes',
+                    'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades',
+                    'reportes-caja', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen',
+                    'cuentas-bancarias', 'reportes-gastos', 'plantilla-gastos',
+                    'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
+                    'libros-ventas', 'libros-compras', 'formulario-14-14',
+                    'configuracion-general', 'impresoras', 'payment-processors', 'delivery-companies',
+                    'auditoria', 'backups',
+                ],
+            ],
         ];
 
         foreach ($tipos as $tipoData) {

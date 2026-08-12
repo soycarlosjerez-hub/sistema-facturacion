@@ -41,4 +41,9 @@ return [
         'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
         'admin-business' => ['gerente', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
     ],
+    'embutidos' => [
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'cajero', 'reponedor', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'cajero', 'reponedor', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'cajero', 'reponedor', 'instance-admin'],
+    ],
 ];

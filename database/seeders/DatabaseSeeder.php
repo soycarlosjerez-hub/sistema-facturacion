@@ -48,6 +48,10 @@ class DatabaseSeeder extends Seeder
         // Repuesto de Mecanica
         $this->call(MecanicaCategoriasSeeder::class);
         $this->call(MecanicaProductosSeeder::class);
+
+        // Embutidos / Charcutería
+        $this->call(EmbutidosCategoriaSeeder::class);
+        $this->call(EmbutidosProductoSeeder::class);
         
         // Climatización
         $this->call(TiposClimaSeeder::class);
