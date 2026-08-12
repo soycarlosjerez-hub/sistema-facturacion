@@ -31,6 +31,79 @@
         </div>
     </div>
 
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg">
+            <div class="ui-card h-100" style="--delay:.1s">
+                <div class="ui-card-accent" style="background:#8b5cf6"></div>
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:46px;height:46px;background:#8b5cf6">
+                        <i class="bi bi-tags fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold lh-1">{{ $stats['tipos'] }}</div>
+                        <small class="text-muted">Tipos de Negocio</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg">
+            <div class="ui-card h-100" style="--delay:.2s">
+                <div class="ui-card-accent" style="background:#0ea5e9"></div>
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:46px;height:46px;background:#0ea5e9">
+                        <i class="bi bi-building fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold lh-1">{{ $stats['instancias'] }}</div>
+                        <small class="text-muted">Instancias</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg">
+            <div class="ui-card h-100" style="--delay:.3s">
+                <div class="ui-card-accent" style="background:#22c55e"></div>
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:46px;height:46px;background:#22c55e">
+                        <i class="bi bi-check-circle fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold lh-1">{{ $stats['activas'] }}</div>
+                        <small class="text-muted">Activas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg">
+            <div class="ui-card h-100" style="--delay:.4s">
+                <div class="ui-card-accent" style="background:#f59e0b"></div>
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:46px;height:46px;background:#f59e0b">
+                        <i class="bi bi-people fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold lh-1">{{ $stats['usuarios'] }}</div>
+                        <small class="text-muted">Usuarios</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg">
+            <div class="ui-card h-100" style="--delay:.5s">
+                <div class="ui-card-accent" style="background:#ec4899"></div>
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0" style="width:46px;height:46px;background:#ec4899">
+                        <i class="bi bi-grid-1x2 fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fs-4 fw-bold lh-1">{{ $stats['modulos'] }}</div>
+                        <small class="text-muted">M&oacute;dulos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-3">
         @forelse($businessTypes as $type)
         <div class="col-md-6 col-lg-4">

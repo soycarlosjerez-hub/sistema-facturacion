@@ -94,7 +94,10 @@ class OwnerController extends Controller
             ->get()
             ->sum(fn($i) => $i->precioMensual());
 
-        $planes = \App\Models\Plan::active()->withCount('businessInstances')->get();
+        $planes = \App\Models\Plan::where('activo', true)
+            ->orderBy('orden')
+            ->withCount('businessInstances')
+            ->get();
 
         $totalTipos = BusinessType::count();
         $totalUsuarios = User::count();
@@ -119,7 +122,16 @@ class OwnerController extends Controller
             ->get();
 
         $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
-        return view('owner.business-types.index', compact('businessTypes', 'allModules'));
+
+        $stats = [
+            'tipos'       => $businessTypes->count(),
+            'instancias'  => $businessTypes->sum('business_instances_count'),
+            'activas'     => $businessTypes->sum('instancias_activas'),
+            'usuarios'    => $businessTypes->sum('users_asociados_count'),
+            'modulos'     => $allModules->count(),
+        ];
+
+        return view('owner.business-types.index', compact('businessTypes', 'allModules', 'stats'));
     }
 
     public function businessTypesCreate()
