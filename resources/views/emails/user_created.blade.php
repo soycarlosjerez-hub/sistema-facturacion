@@ -13,6 +13,8 @@
         .credentials {background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; padding: 15px; font-family: monospace;}
         .footer {background: #f1f5f9; color: #555; text-align: center; padding: 20px; font-size: 12px;}
         a {color: #4e54c8; text-decoration: none;}
+        .btn {display: inline-block; background: linear-gradient(135deg, #4e54c8, #8f94fb); color: #fff !important; font-weight: 700; padding: 14px 40px; border-radius: 6px; text-decoration: none; font-size: 16px; margin: 10px 0 20px 0;}
+        .btn:hover {opacity: 0.9;}
     </style>
 </head>
 <body>
@@ -24,10 +26,13 @@
         <p>Hola {{ $name }},</p>
         <p>Su cuenta ha sido creada exitosamente. A continuación encontrará los datos de acceso que podrá utilizar para iniciar sesión en la plataforma.</p>
         <div class="credentials">
-            <p><strong>Correo electrónico:</strong> {{ $email }}</p>
-            <p><strong>Contraseña:</strong> {{ $password }}</p>
+            <p><strong>Correo electr&oacute;nico:</strong> {{ $email }}</p>
+            <p><strong>Contrase&ntilde;a:</strong> {{ $password }}</p>
         </div>
-        <p>Le recomendamos cambiar la contraseña después de su primer acceso por motivos de seguridad.</p>
+        <p style="text-align: center; margin: 25px 0 15px 0;">
+            <a href="{{ $loginUrl }}" class="btn">Iniciar Sesi&oacute;n &rarr;</a>
+        </p>
+        <p>Le recomendamos cambiar la contrase&ntilde;a despu&eacute;s de su primer acceso por motivos de seguridad.</p>
         <p>Si tiene alguna duda, no dude en ponerse en contacto con el equipo de soporte.</p>
         <p>Saludos cordiales,<br/>El equipo de {{ $instanceName }}</p>
     </div>

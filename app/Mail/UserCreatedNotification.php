@@ -49,6 +49,7 @@ class UserCreatedNotification extends Mailable
                 'email' => $this->user->email,
                 'password' => $this->plainPassword,
                 'instanceName' => $this->user->businessInstance?->nombre ?? config('app.name'),
+                'loginUrl' => route('login'),
             ],
         );
     }
