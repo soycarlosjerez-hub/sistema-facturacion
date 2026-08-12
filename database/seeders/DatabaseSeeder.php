@@ -52,6 +52,9 @@ class DatabaseSeeder extends Seeder
         // Embutidos / Charcutería
         $this->call(EmbutidosCategoriaSeeder::class);
         $this->call(EmbutidosProductoSeeder::class);
+
+        // Cervezas (solo instancia 7, depende de BusinessInstance::find(7))
+        $this->call(CervezasProductoSeeder::class);
         
         // Climatización
         $this->call(TiposClimaSeeder::class);
