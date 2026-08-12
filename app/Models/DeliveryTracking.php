@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use App\Models\BusinessInstance;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,6 +21,7 @@ class DeliveryTracking extends Model
     const STATUS_CANCELADO = 'cancelado';
 
     protected $fillable = [
+        'tenant_id',
         'orden_id',
         'driver_id',
         'status',
@@ -47,5 +49,10 @@ class DeliveryTracking extends Model
     public function creador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creado_por');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(BusinessInstance::class, 'tenant_id');
     }
 }
