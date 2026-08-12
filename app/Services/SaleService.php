@@ -234,16 +234,18 @@ class SaleService
             $stockUpdates = [];
             
             foreach ($venta->detalles as $detalle) {
-                $almacenId = ($detalle->almacen_id > 0) ? $detalle->almacen_id : 1;
-                AlmacenMovimiento::create([
-                    'tenant_id'   => $tenantId,
-                    'producto_id' => $detalle->producto_id,
-                    'almacen_id'  => $almacenId,
-                    'tipo'        => 'entrada',
-                    'cantidad'    => $detalle->cantidad,
-                    'nota'        => 'ANULACIÓN Venta #' . $venta->id . ' | Motivo: ' . $motivo,
-                    'user_id'     => Auth::id(),
-                ]);
+                $almacenId = ($detalle->almacen_id > 0) ? $detalle->almacen_id : null;
+                if ($almacenId) {
+                    AlmacenMovimiento::create([
+                        'tenant_id'   => $tenantId,
+                        'producto_id' => $detalle->producto_id,
+                        'almacen_id'  => $almacenId,
+                        'tipo'        => 'entrada',
+                        'cantidad'    => $detalle->cantidad,
+                        'nota'        => 'ANULACIÓN Venta #' . $venta->id . ' | Motivo: ' . $motivo,
+                        'user_id'     => Auth::id(),
+                    ]);
+                }
 
                 $stockUpdates[$detalle->producto_id] = ($stockUpdates[$detalle->producto_id] ?? 0) + $detalle->cantidad;
             }
@@ -350,11 +352,10 @@ class SaleService
         $almacenes = $almacenes->get();
 
         if ($almacenes->isEmpty()) {
-            $defaultAlmacen = \App\Models\Almacen::firstOrCreate(
-                ['tenant_id' => $tenantId, 'nombre' => 'General'],
-                ['ubicacion' => 'Principal']
-            );
-            $almacenes = collect([$defaultAlmacen]);
+            $defaultAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
+            if ($defaultAlmacen) {
+                $almacenes = collect([$defaultAlmacen]);
+            }
         }
 
         $productos = Producto::where('tenant_id', $tenantId)
@@ -488,13 +489,6 @@ class SaleService
 
         // Ensure we always have a fallback almacen for the FK constraint
         $fallbackAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
-        if (!$fallbackAlmacen) {
-            $fallbackAlmacen = \App\Models\Almacen::create([
-                'tenant_id'   => $tenantId,
-                'nombre'      => 'General',
-                'ubicacion'   => 'Principal',
-            ]);
-        }
 
         $productoIds = $data['producto_id'] ?? [];
         $cantidades  = $data['cantidad'] ?? [];
@@ -510,7 +504,9 @@ class SaleService
             $cantidad = $cantidades[$i] ?? 0;
             $precio = $precios[$i] ?? 0;
             $subtotal = $subtotales[$i] ?? 0;
-            $almacenId = isset($almacenes[$i]) ? (int)$almacenes[$i] : $fallbackAlmacen->id;
+            $almacenId = isset($almacenes[$i]) && (int)$almacenes[$i] > 0
+                ? (int)$almacenes[$i]
+                : ($fallbackAlmacen?->id);
             $descuento = (float) ($data['descuento'][$i] ?? 0);
             $descuentoTipo = $data['descuento_tipo'][$i] ?? 'monto';
             $itbisPorcentaje = (float) ($data['itbis_porcentaje'][$i] ?? 0);
@@ -518,7 +514,7 @@ class SaleService
             $producto = Producto::findOrFail($productoId);
 
             if ($this->validaStock()) {
-                $disponiblePorAlmacen = $this->checkStock($productoId, $almacenId);
+                $disponiblePorAlmacen = $almacenId ? $this->checkStock($productoId, $almacenId) : $producto->stock;
                 if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
                     throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
                 }

@@ -3212,9 +3212,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             }
         }
 
-        // Validate almacen before proceeding
+        // Validate almacen before proceeding (only required if warehouses exist)
         const almacenId = getAlmacenId();
-        if (validaStock && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
 
         isSubmitting = true;
         const btn = document.querySelector('.btn-cobrar-touch');
@@ -3327,9 +3327,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         const total = parseFloat($('hidden-total').value) || 0;
         if (total <= 0) { showToast('Total inválido', 'danger'); return; }
 
-        // Validate almacen before proceeding
+        // Validate almacen before proceeding (only required if warehouses exist)
         const almacenId = getAlmacenId();
-        if (validaStock && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
 
         isSubmitting = true;
         const btn = document.querySelector(`.btn-pay[data-metodo="${metodo}"]`);

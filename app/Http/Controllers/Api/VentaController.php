@@ -161,21 +161,16 @@ class VentaController extends Controller
             $almacenId = (int) ($detalle['almacen_id'] ?? 0);
             if (!$almacenId) {
                 $almacen = Almacen::where('tenant_id', $tenantId)->first();
-                if (!$almacen) {
-                    $almacen = Almacen::create([
-                        'tenant_id' => $tenantId,
-                        'nombre'    => 'General',
-                        'ubicacion' => 'Principal',
-                    ]);
-                }
-                $almacenId = $almacen->id;
+                $almacenId = $almacen?->id;
             }
 
             if ($validaStock) {
-                $stockAlmacen = (int) (AlmacenMovimiento::where('producto_id', $producto->id)
-                    ->where('almacen_id', $almacenId)
-                    ->selectRaw('SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
-                    ->value('stock') ?? 0);
+                $stockAlmacen = $almacenId
+                    ? (int) (AlmacenMovimiento::where('producto_id', $producto->id)
+                        ->where('almacen_id', $almacenId)
+                        ->selectRaw('SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
+                        ->value('stock') ?? 0)
+                    : (int) $producto->stock;
 
                 if ($stockAlmacen < $cantidad || $producto->stock < $cantidad) {
                     return response()->json([
