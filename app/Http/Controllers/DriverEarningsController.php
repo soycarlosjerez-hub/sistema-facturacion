@@ -14,7 +14,7 @@ class DriverEarningsController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DriverEarning::with(['driver'])->query();
+        $query = DriverEarning::query()->with(['driver']);
 
         if ($driverId = $request->input('driver_id')) {
             $query->where('driver_id', $driverId);
@@ -155,7 +155,7 @@ class DriverEarningsController extends Controller
             'periodo_fin' => 'required|date|after_or_equal:periodo_inicio',
         ]);
 
-        $query = DriverEarningDetail::with(['orden', 'venta', 'earning.driver'])->query();
+        $query = DriverEarningDetail::query()->with(['orden', 'venta', 'earning.driver']);
 
         if ($driverId = $data['driver_id']) {
             $query->whereHas('earning', fn($q) => $q->where('driver_id', $driverId));
