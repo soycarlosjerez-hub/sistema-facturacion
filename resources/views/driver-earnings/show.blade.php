@@ -69,7 +69,7 @@
                     <h4 class="ui-header-title">Detalle de Ganancias</h4>
                     <div class="ui-header-meta">
                         <i class="bi bi-calendar-range me-1"></i>
-                        <span>{{ $earning->fecha_inicio->format('d/m/Y') }} — {{ $earning->fecha_fin->format('d/m/Y') }}</span>
+                        <span>{{ $earning->periodo_inicio->format('d/m/Y') }} — {{ $earning->periodo_fin->format('d/m/Y') }}</span>
                     </div>
                 </div>
             </div>
@@ -125,7 +125,7 @@
                     </h6>
                     <div class="period-badge mb-3">
                         <i class="bi bi-calendar3 me-1"></i>
-                        {{ $earning->fecha_inicio->format('d/m/Y') }} al {{ $earning->fecha_fin->format('d/m/Y') }}
+                        {{ $earning->periodo_inicio->format('d/m/Y') }} al {{ $earning->periodo_fin->format('d/m/Y') }}
                     </div>
 
                     <div class="detail-row">

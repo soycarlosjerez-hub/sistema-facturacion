@@ -85,11 +85,11 @@
                 </div>
                 <div class="col-md-3">
                     <label class="ui-label">Desde</label>
-                    <input type="date" name="date_from" class="ui-input" value="{{ request('date_from') }}">
+                    <input type="date" name="periodo_inicio" class="ui-input" value="{{ request('periodo_inicio') }}">
                 </div>
                 <div class="col-md-3">
                     <label class="ui-label">Hasta</label>
-                    <input type="date" name="date_to" class="ui-input" value="{{ request('date_to') }}">
+                    <input type="date" name="periodo_fin" class="ui-input" value="{{ request('periodo_fin') }}">
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="ui-btn ui-btn-solid w-100 rounded-pill">
@@ -149,7 +149,7 @@
                         <td class="ps-4">
                             <span class="earning-period">
                                 <i class="bi bi-calendar-range me-1"></i>
-                                {{ $earning->fecha_inicio->format('d/m/Y') }} — {{ $earning->fecha_fin->format('d/m/Y') }}
+                                {{ $earning->periodo_inicio->format('d/m/Y') }} — {{ $earning->periodo_fin->format('d/m/Y') }}
                             </span>
                         </td>
                         <td>
@@ -203,7 +203,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('driver-earnings.calculate') }}" method="POST">
+                <form action="{{ route('driver-earnings.calcular') }}" method="POST">
                     @csrf
                     <div class="mb-3">
                         <label class="ui-label">Repartidor <span class="text-danger">*</span></label>
@@ -217,16 +217,12 @@
                     <div class="row g-3">
                         <div class="col-6">
                             <label class="ui-label">Fecha Inicio <span class="text-danger">*</span></label>
-                            <input type="date" name="fecha_inicio" class="ui-input" required>
+                            <input type="date" name="periodo_inicio" class="ui-input" required>
                         </div>
                         <div class="col-6">
                             <label class="ui-label">Fecha Fin <span class="text-danger">*</span></label>
-                            <input type="date" name="fecha_fin" class="ui-input" required>
+                            <input type="date" name="periodo_fin" class="ui-input" required>
                         </div>
-                    </div>
-                    <div class="mt-3">
-                        <label class="ui-label">Nota Interna</label>
-                        <textarea name="nota" class="ui-textarea" rows="2" placeholder="Opcional..."></textarea>
                     </div>
                     <div class="d-flex gap-2 justify-content-end mt-4">
                         <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
