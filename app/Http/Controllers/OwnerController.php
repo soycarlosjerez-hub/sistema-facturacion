@@ -352,8 +352,9 @@ class OwnerController extends Controller
     public function plansCreate()
     {
         $modulos = Modulo::allActive();
+        $businessTypes = BusinessType::where('activo', true)->orderBy('orden')->get();
 
-        return view('owner.planes.create', compact('modulos'));
+        return view('owner.planes.create', compact('modulos', 'businessTypes'));
     }
 
     public function plansStore(Request $request)
@@ -372,8 +373,22 @@ class OwnerController extends Controller
     {
         $plan = \App\Models\Plan::findOrFail($id);
         $modulos = Modulo::allActive();
+        $businessTypes = BusinessType::where('activo', true)->orderBy('orden')->get();
 
-        return view('owner.planes.edit', compact('plan', 'modulos'));
+        // Pre-seleccionar business type si los módulos coinciden exactamente
+        $planModulos = $plan->modulos ?? [];
+        $preSelectedBusinessType = null;
+        if (!empty($planModulos)) {
+            foreach ($businessTypes as $bt) {
+                $btModulos = $bt->modules()->pluck('modulo_key')->toArray();
+                if (count($btModulos) === count($planModulos) && count(array_diff($btModulos, $planModulos)) === 0) {
+                    $preSelectedBusinessType = $bt->id;
+                    break;
+                }
+            }
+        }
+
+        return view('owner.planes.edit', compact('plan', 'modulos', 'businessTypes', 'preSelectedBusinessType'));
     }
 
     public function plansUpdate(Request $request, $id)

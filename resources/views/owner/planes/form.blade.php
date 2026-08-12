@@ -98,6 +98,19 @@
                 </div>
 
                 <hr class="my-4">
+
+                <!-- Selector de Tipo de Negocio para auto-seleccionar módulos -->
+                <div class="mb-4">
+                    <label class="ui-label fw-bold">Auto-seleccionar m&oacute;dulos por Tipo de Negocio</label>
+                    <select id="businessTypeSelector" class="ui-select rounded-pill" aria-label="Seleccionar tipo de negocio">
+                        <option value="">— Seleccionar tipo para auto-llenar m&oacute;dulos —</option>
+                        @foreach($businessTypes as $bt)
+                            <option value="{{ $bt->id }}" {{ (isset($preSelectedBusinessType) && $preSelectedBusinessType == $bt->id) ? 'selected' : '' }}>{{ $bt->nombre }}</option>
+                        @endforeach
+                    </select>
+                    <small class="text-muted d-block mt-1">Selecciona un tipo para auto-marcar sus m&oacute;dulos. Puedes ajustar despu&eacute;s manualmente.</small>
+                </div>
+
                 <h5 class="fw-bold mb-3"><i class="bi bi-check2-circle me-2"></i>Features (incluidos en el plan)</h5>
                 <div class="mb-2">
                     <button type="button" class="ui-btn ui-btn-ghost btn-sm" onclick="addFeature()"><i class="bi bi-plus-lg me-1"></i>Agregar feature</button>
@@ -160,5 +173,35 @@ function addFeature() {
                     '<button type="button" class="ui-btn ui-btn-danger btn-sm ms-2 rounded-pill" onclick="this.closest(\'.input-group\').remove()"><i class="bi bi-x-lg"></i></button>';
     document.getElementById('featuresContainer').appendChild(div);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const selector = document.getElementById('businessTypeSelector');
+    if (!selector) return;
+
+    selector.addEventListener('change', async function() {
+        const typeId = this.value;
+        const checkboxes = document.querySelectorAll('input[name="modulos[]"]');
+        
+        // Desmarcar todos primero
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        if (!typeId) return;
+        
+        try {
+            const resp = await fetch(`/business-types/${typeId}/modules-data`);
+            const data = await resp.json();
+            const modulos = data.modulos || [];
+            
+            // Marcar los que coincidan
+            checkboxes.forEach(cb => {
+                if (modulos.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+        } catch (e) {
+            console.error('Error cargando m&oacute;dulos:', e);
+        }
+    });
+});
 </script>
 @endpush
