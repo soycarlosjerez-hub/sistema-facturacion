@@ -980,7 +980,7 @@ class OwnerController extends Controller
     {
         $instance = BusinessInstance::with('businessType')->findOrFail($id);
 
-        $limitCheck = app(\App\Services\PlanLimitService::class)->verificarUsuario($instance);
+        $limitCheck = app(\App\Services\PlanLimitService::class)->verificar($instance, 'usuario');
         if (! $limitCheck['ok']) {
             return back()->withInput()->with('error', $limitCheck['mensaje']);
         }
