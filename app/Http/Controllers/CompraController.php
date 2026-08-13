@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompraRequest;
 use App\Http\Requests\UpdateCompraRequest;
+use App\Exports\ComprasExport;
 use App\Models\Almacen;
 use App\Models\Compra;
 use App\Models\DetalleCompra;
@@ -12,8 +13,10 @@ use App\Models\Proveedor;
 use App\Models\TipoCompra;
 use App\Services\Ecf\EcfService;
 use App\Services\PurchaseService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CompraController extends Controller
 {
@@ -76,6 +79,26 @@ class CompraController extends Controller
     {
         $compra->load('detalles.producto', 'proveedor', 'almacen', 'tipoCompra', 'user');
         return view('compras.show', compact('compra'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(
+            new ComprasExport(
+                $request->input('proveedor'),
+                $request->input('desde'),
+                $request->input('hasta'),
+                session('sucursal_id')
+            ),
+            'compras.xlsx'
+        );
+    }
+
+    public function pdf(Request $request)
+    {
+        $compras = $this->buildFilteredQuery($request)->get();
+        $pdf = Pdf::loadView('compras.all-pdf', compact('compras'))->setPaper('a4', 'landscape');
+        return $pdf->download('compras_reporte.pdf');
     }
 
     public function store(StoreCompraRequest $request)
@@ -177,5 +200,38 @@ class CompraController extends Controller
             $query->where('sucursal_id', $sucursalId);
         }
         return $query->get();
+    }
+
+    private function buildFilteredQuery(Request $request)
+    {
+        $query = Compra::with([
+            'proveedor:id,nombre,rnc,rnc_cedula',
+            'almacen:id,nombre',
+            'tipoCompra:id,nombre',
+            'detalles.producto:id,nombre',
+        ]);
+
+        if ($sucursalId = session('sucursal_id')) {
+            $query->where('sucursal_id', $sucursalId);
+        }
+
+        if ($request->filled('proveedor')) {
+            $termino = trim($request->proveedor);
+            $query->whereHas('proveedor', function ($q) use ($termino) {
+                $q->where('nombre', 'like', '%' . $termino . '%')
+                  ->orWhere('rnc_cedula', 'like', '%' . $termino . '%')
+                  ->orWhere('rnc', 'like', '%' . $termino . '%');
+            });
+        }
+
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha', '>=', $request->desde);
+        }
+
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha', '<=', $request->hasta);
+        }
+
+        return $query->orderByDesc('fecha');
     }
 }
