@@ -135,6 +135,16 @@ class AppServiceProvider extends ServiceProvider
             // Table might not exist during fresh install / migrations
         }
 
+        // El ITBIS por instancia debe estar disponible en TODAS las vistas
+        // (los compositors por layout no alcanzan las secciones hijas).
+        View::composer('*', function ($view) {
+            static $itbis = null;
+            if ($itbis === null) {
+                $itbis = SystemSetting::itbisDefault();
+            }
+            $view->with('systemItbis', $itbis);
+        });
+
         View::composer('layouts.app', function ($view) {
             $sesionesCajaGlobales = collect([]);
             $sucursales = collect([]);
