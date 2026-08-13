@@ -29,6 +29,9 @@
 @media (max-width: 575.98px) {
     :root { --page-py: .75rem; --page-px: .75rem; }
 }
+@media (min-width: 576px) and (max-width: 1199.98px) {
+    :root { --page-py: 1.25rem; --page-px: 1.5rem; }
+}
 
 /* ============================================================
    KEYFRAMES
@@ -570,7 +573,7 @@
     gap: .75rem;
     max-width: 100%;
 }
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
     .ui-sticky-bar { left: 0; }
 }
 @media (max-width: 575.98px) {
@@ -787,6 +790,19 @@ body.dark-mode .ui-badge-primary {
     .ui-card-body { padding: 1.1rem; }
     .ui-table { min-width: 600px; }
     .table-responsive { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .ui-header { padding: 1.35rem 1.5rem; }
+    .ui-header-title { font-size: 1.2rem; }
+    .ui-card-title { padding: 1.1rem 1.4rem .15rem; }
+    .ui-card-subtitle { padding: 0 1.4rem; }
+    .ui-card-body { padding: 1.25rem 1.4rem; }
+    .ui-stat-value { font-size: 1.35rem; }
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .ui-page { padding: 1.25rem 1.5rem; }
+    .ui-header { padding: 1.5rem 1.75rem; }
+    .ui-card-body { padding: 1.35rem 1.5rem; }
 }
 @media (max-width: 575.98px) {
     .ui-header-title { font-size: 1.1rem; }

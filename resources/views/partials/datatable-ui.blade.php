@@ -302,4 +302,30 @@ body.dark-mode table.dataTable > tbody > tr.child ul li .child-value { color: #f
 
 body.dark-mode [id$="_wrapper"] .dataTables_length label { color: #94a3b8; }
 body.dark-mode [id$="_wrapper"] .dataTables_filter label { color: #94a3b8; }
+
+/* ============================================================
+   DATATABLE UI - Tablet responsive (768 - 1199)
+   ============================================================ */
+@media (max-width: 1199.98px) {
+    [id$="_wrapper"] > .row:first-child,
+    [id$="_wrapper"] > .row:last-child { padding-left: .75rem; padding-right: .75rem; }
+    [id$="_wrapper"] .dataTables_filter input { width: 100%; max-width: 260px; }
+}
+@media (max-width: 991.98px) {
+    [id$="_wrapper"] > .row:first-child {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+    [id$="_wrapper"] > .row:first-child > div { flex: 0 0 100%; max-width: 100%; }
+    [id$="_wrapper"] .dataTables_length label,
+    [id$="_wrapper"] .dataTables_filter label { width: 100%; }
+    [id$="_wrapper"] .dataTables_filter { text-align: left; }
+    [id$="_wrapper"] .dataTables_filter input:focus { width: 100%; }
+    [id$="_wrapper"] .dataTables_paginate { text-align: center !important; }
+    [id$="_wrapper"] .dataTables_info { text-align: center; }
+}
+@media (max-width: 575.98px) {
+    [id$="_wrapper"] > .row:last-child { flex-direction: column-reverse; gap: .25rem; }
+}
 </style>

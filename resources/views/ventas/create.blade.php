@@ -2088,7 +2088,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         <!-- ============ TOP BAR ============ -->
         <div class="pos-topbar" style="--delay:0s">
             <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-sm btn-light rounded-pill d-lg-none" onclick="POS.toggleSidebar()" aria-label="Menú lateral" aria-expanded="false" aria-controls="mainSidebar" style="width: 36px; height: 36px; padding: 0;">
+                <button type="button" class="btn btn-sm btn-light rounded-pill d-xl-none" onclick="POS.toggleSidebar()" aria-label="Menú lateral" aria-expanded="false" aria-controls="mainSidebar" style="width: 36px; height: 36px; padding: 0;">
                     <i class="bi bi-list fs-5"></i>
                 </button>
             </div>

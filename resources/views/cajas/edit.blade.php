@@ -24,7 +24,7 @@
         background: #0f172a;
         border-top-color: #f59e0b;
     }
-    @media (max-width: 991.98px) {
+    @media (max-width: 1199.98px) {
         .sticky-save-bar { left: 0; }
     }
 </style>

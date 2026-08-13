@@ -1,6 +1,6 @@
 <div class="row g-3 mb-4">
     {{-- Sales trend chart --}}
-    <div class="col-xl-8">
+    <div class="col-xl-8 col-lg-8">
         <div class="ui-card h-100" style="--delay:.1s">
             <div class="ui-card-accent"></div>
             <div class="ui-card-body">
@@ -18,7 +18,7 @@
     </div>
 
     {{-- Hourly sales chart --}}
-    <div class="col-xl-4">
+    <div class="col-xl-4 col-lg-4">
         <div class="ui-card h-100" style="--delay:.15s">
             <div class="ui-card-accent"></div>
             <div class="ui-card-body">
@@ -34,7 +34,7 @@
 
 <div class="row g-3 mb-4">
     {{-- Payment methods --}}
-    <div class="col-xl-4">
+    <div class="col-xl-4 col-lg-4">
         <div class="ui-card h-100" style="--delay:.2s">
             <div class="ui-card-accent"></div>
             <div class="ui-card-body">
@@ -63,7 +63,7 @@
     </div>
 
     {{-- Top products --}}
-    <div class="col-xl-4">
+    <div class="col-xl-4 col-lg-4">
         <div class="ui-card h-100" style="--delay:.25s">
             <div class="ui-card-accent"></div>
             <div class="ui-card-body">
@@ -102,7 +102,7 @@
     </div>
 
     {{-- Top debtors --}}
-    <div class="col-xl-4">
+    <div class="col-xl-4 col-lg-4">
         <div class="ui-card h-100" style="--delay:.3s">
             <div class="ui-card-accent"></div>
             <div class="ui-card-body">

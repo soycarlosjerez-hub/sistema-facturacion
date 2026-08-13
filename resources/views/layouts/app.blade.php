@@ -74,7 +74,7 @@ body.dark-mode .sidebar {
     z-index: 998;
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
     .sidebar {
         position: fixed !important;
         left: calc(-1 * var(--sidebar-width-mobile));
@@ -295,12 +295,19 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         }
         body.dark-mode .topbar { background: rgba(2, 6, 23, 0.8); border-bottom: 1px solid #1e293b; }
         @media (min-width: 992px) {
+            .topbar { padding: 0.75rem 1.5rem; }
+        }
+        @media (min-width: 1200px) {
             .topbar { padding: 1rem 2rem; }
         }
 
         /* Content responsive */
-        @media (max-width: 991.98px) {
+        @media (max-width: 1199.98px) {
             main#main-content { width: 100%; overflow-x: hidden; }
+        }
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .p-4.p-lg-5 { padding: 1.5rem !important; }
+            .container-fluid.px-4 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
         }
         @media (max-width: 575.98px) {
             .p-4.p-lg-5 { padding: 1rem !important; }
@@ -436,9 +443,11 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         body.dark-mode .text-muted span { color: #94a3b8 !important; }
 
         /* Force horizontal scroll on tables in small screens */
-        @media (max-width: 767.98px) {
-            .card .table { min-width: 600px; }
+        @media (max-width: 1199.98px) {
             .table-responsive { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+        @media (max-width: 991.98px) {
+            .card .table { min-width: 600px; }
         }
 
         /* Scrollbar */
@@ -591,7 +600,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         <main id="main-content" class="flex-grow-1 content-wrapper" role="main" aria-label="Contenido principal" tabindex="-1">
             <header class="topbar d-flex justify-content-between align-items-center @yield('topbar_class')">
                 <div class="d-flex align-items-center gap-2 flex-shrink-1 overflow-hidden">
-                    <button class="btn btn-sm btn-light rounded-pill d-lg-none shadow-sm me-1" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                    <button class="btn btn-sm btn-light rounded-pill d-xl-none shadow-sm me-1" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
                         <i class="bi bi-list fs-5"></i>
                     </button>
                     <h5 class="mb-0 fw-bold text-truncate">@yield('title')</h5>
@@ -604,7 +613,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-shrink-0">
                     <!-- Global Search -->
-                    <div class="global-search-wrap d-none d-lg-flex align-items-center" style="position:relative;">
+                    <div class="global-search-wrap d-none d-xl-flex align-items-center" style="position:relative;">
                         <i class="bi bi-search text-muted position-absolute" style="left:12px;z-index:2;font-size:.8rem;"></i>
                         <input type="search" id="globalSearchInput" class="form-control form-control-sm rounded-pill pe-2" 
                                style="padding-left:34px;width:180px;background:rgba(255,255,255,.05);border:1px solid rgba(0,0,0,.08);"
@@ -651,7 +660,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                     @endif
 
                     @if($sucursales->count() > 0)
-                    <div class="dropdown d-none d-lg-inline-block">
+                    <div class="dropdown d-none d-xl-inline-block">
                         <button class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
                             <i class="bi bi-building me-1"></i>
                             {{ $sucursalActiva?->nombre ?? 'Todas' }}
@@ -707,7 +716,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         $icono = $iconos[$tipoNegocio] ?? 'grid';
                     @endphp
                     @if($tipoNegocio)
-                    <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} rounded-pill px-3 py-2 d-none d-lg-inline-flex align-items-center gap-1" style="cursor:help;" title="Tipo de negocio: {{ ucfirst($tipoNegocio) }}">
+                    <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} rounded-pill px-3 py-2 d-none d-xl-inline-flex align-items-center gap-1" style="cursor:help;" title="Tipo de negocio: {{ ucfirst($tipoNegocio) }}">
                         <i class="bi bi-{{ $icono }} me-1"></i>
                         {{ ucfirst($tipoNegocio) }}
                     </span>

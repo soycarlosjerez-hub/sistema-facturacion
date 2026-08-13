@@ -1034,6 +1034,9 @@
 .producto-item:hover { background-color: #f8f9fa; }
 .producto-item:active { background-color: #e9ecef; }
 
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .restaurant-pos .mesas-panel { width: 340px !important; min-width: 340px !important; }
+}
 @media (max-width: 991.98px) {
     .restaurant-pos { flex-direction: column !important; height: auto !important; }
     .restaurant-pos .mesas-panel { width: 100% !important; min-width: unset !important; max-height: 50vh; }
