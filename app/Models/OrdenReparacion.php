@@ -158,7 +158,7 @@ class OrdenReparacion extends Model
         $base_imponible = $this->subtotal - $this->descuento;
         if ($base_imponible < 0) $base_imponible = 0;
 
-        $this->itbis = $base_imponible * 0.18;
+        $this->itbis = $base_imponible * (SystemSetting::itbisDefault() / 100);
         $this->total = $base_imponible + $this->itbis;
     }
 

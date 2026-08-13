@@ -116,7 +116,7 @@ class EcfXmlBuilder
             $producto = $detalle->producto;
             $cantidad = (float) $detalle->cantidad;
             $precioUnitario = (float) $detalle->precio_unitario;
-            $itbisPorcentaje = (float) ($producto->itbis_porcentaje ?? 18);
+            $itbisPorcentaje = (float) ($producto->itbis_porcentaje ?? SystemSetting::itbisDefault());
             $subtotalBruto = $cantidad * $precioUnitario;
             $itbisItem = $subtotalBruto * ($itbisPorcentaje / 100);
 
@@ -239,8 +239,8 @@ class EcfXmlBuilder
             $item->appendChild($xml->createElement('MontoItem', $this->fmt($base)));
             $item->appendChild($xml->createElement('MontoDescuento', '0.00'));
             $item->appendChild($xml->createElement('IndicadorFacturacion', '1'));
-            $item->appendChild($xml->createElement('TasaITBIS', $this->fmt($det->itbis_porcentaje ?? 18)));
-            $item->appendChild($xml->createElement('MontoITBIS', $this->fmt($base * ($det->itbis_porcentaje ?? 18) / 100)));
+            $item->appendChild($xml->createElement('TasaITBIS', $this->fmt($det->itbis_porcentaje ?? SystemSetting::itbisDefault())));
+            $item->appendChild($xml->createElement('MontoITBIS', $this->fmt($base * ($det->itbis_porcentaje ?? SystemSetting::itbisDefault()) / 100)));
             $detalles->appendChild($item);
         }
         $root->appendChild($detalles);

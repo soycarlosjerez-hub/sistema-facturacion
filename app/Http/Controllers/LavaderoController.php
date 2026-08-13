@@ -112,7 +112,7 @@ class LavaderoController extends Controller
             DB::beginTransaction();
 
             $subtotal = collect($data['servicios'])->sum('precio');
-            $itbis = $subtotal * 0.18;
+            $itbis = $subtotal * (SystemSetting::itbisDefault() / 100);
             $total = $subtotal + $itbis;
 
             $isElevated = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])

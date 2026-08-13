@@ -7,6 +7,7 @@ use App\Models\Cotizacion;
 use App\Models\CotizacionItem;
 use App\Models\Producto;
 use App\Models\SesionCaja;
+use App\Models\SystemSetting;
 use App\Models\TipoVenta;
 use App\Models\Venta;
 use Illuminate\Http\Request;
@@ -271,7 +272,7 @@ class CotizacionService
                 'cantidad'         => $itemData['cantidad'],
                 'precio_unitario'  => $itemData['precio_unitario'],
                 'descuento'        => $itemData['descuento'] ?? 0,
-                'itbis_porcentaje' => $itemData['itbis_porcentaje'] ?? ($producto?->itbis_porcentaje ?? 18),
+                'itbis_porcentaje' => $itemData['itbis_porcentaje'] ?? ($producto?->itbis_porcentaje ?? SystemSetting::itbisDefault()),
                 'orden'            => $i,
                 'tenant_id'        => Auth::user()->business_instance_id ?? null,
             ]);

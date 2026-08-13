@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Producto;
+use App\Models\SystemSetting;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -103,7 +104,7 @@ class ProductoService
         $data['imagen'] = $this->saveImage($imagen);
     }
 
-        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? config('system.default_itbis', 18.00);
+        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? SystemSetting::itbisDefault();
 
         return Producto::create($data);
     }
@@ -117,7 +118,7 @@ class ProductoService
             $data['imagen'] = $this->saveImage($imagen);
         }
 
-        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? config('system.default_itbis', 18.00);
+        $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? SystemSetting::itbisDefault();
         $producto->update($data);
 
         return $producto;

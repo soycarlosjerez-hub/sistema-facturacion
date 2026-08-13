@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Categoria;
 use App\Models\Producto;
+use App\Models\SystemSetting;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -77,7 +78,7 @@ class ClimatizacionProductosImport implements ToModel, WithHeadingRow, SkipsOnFa
         $data['stock'] = !empty($data['stock']) ? (int) filter_var($data['stock'], FILTER_SANITIZE_NUMBER_INT) : ($this->defaults['stock'] ?? 0);
         $data['stock_minimo'] = !empty($data['stock_minimo']) ? (int) filter_var($data['stock_minimo'], FILTER_SANITIZE_NUMBER_INT) : ($this->defaults['stock_minimo'] ?? 0);
 
-        $data['itbis_porcentaje'] = !empty($data['itbis_porcentaje']) ? (float) str_replace(',', '.', (string) $data['itbis_porcentaje']) : ($this->defaults['itbis_porcentaje'] ?? 18);
+        $data['itbis_porcentaje'] = !empty($data['itbis_porcentaje']) ? (float) str_replace(',', '.', (string) $data['itbis_porcentaje']) : ($this->defaults['itbis_porcentaje'] ?? SystemSetting::itbisDefault());
 
         if (!empty($data['capacidad_toneladas'])) {
             $ton = (float) str_replace(',', '.', (string) $data['capacidad_toneladas']);

@@ -278,7 +278,7 @@
                 <td class="text-center">{{ number_format($d->cantidad, 2) }}</td>
                 <td class="text-right">${{ number_format($d->precio_unitario, 2) }}</td>
                 <td class="text-right">${{ number_format($d->subtotal, 2) }}</td>
-                <td class="text-center">{{ $d->producto->itbis_porcentaje ?? 18 }}%</td>
+                <td class="text-center">{{ $d->producto->itbis_porcentaje ?? $systemItbis ?? 18 }}%</td>
             </tr>
             @endforeach
         </tbody>

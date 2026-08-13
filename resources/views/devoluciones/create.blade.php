@@ -187,7 +187,7 @@ body.dark-mode .devoluciones-create-table tbody td {
 
 <datalist id="productList">
     @foreach(\App\Models\Producto::orderBy('nombre')->get() as $p)
-        <option value="{{ $p->nombre }}" data-id="{{ $p->id }}" data-precio="{{ $p->precio }}" data-itbis="{{ $p->itbis_porcentaje ?? 18 }}"></option>
+        <option value="{{ $p->nombre }}" data-id="{{ $p->id }}" data-precio="{{ $p->precio }}" data-itbis="{{ $p->itbis_porcentaje ?? $systemItbis ?? 18 }}"></option>
     @endforeach
 </datalist>
 

@@ -53,7 +53,7 @@
                 <td>{{ Str::limit($producto->descripcion ?? '—', 40) }}</td>
                 <td class="text-right">RD$ {{ number_format($producto->precio, 2) }}</td>
                 <td class="text-right">RD$ {{ number_format($producto->precio_compra ?? 0, 2) }}</td>
-                <td class="text-right">{{ number_format($producto->itbis_porcentaje ?? 18, 2) }}%</td>
+                <td class="text-right">{{ number_format($producto->itbis_porcentaje ?? $systemItbis ?? 18, 2) }}%</td>
                 <td class="text-center {{ $producto->estado_stock === 'critical' ? 'badge-crit' : ($producto->estado_stock === 'low' ? 'badge-low' : '') }}">
                     {{ $producto->stock }}
                 </td>

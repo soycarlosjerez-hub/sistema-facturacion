@@ -59,6 +59,13 @@ class ConfigurationController extends Controller
 
         SystemSetting::flush();
 
+        // Propagar el ITBIS a todos los productos de la instancia
+        if (array_key_exists('impuesto_itbis', $filteredData) && $tenantId) {
+            $itbis = (float) $filteredData['impuesto_itbis'];
+            \App\Models\Producto::where('tenant_id', $tenantId)
+                ->update(['itbis_porcentaje' => $itbis]);
+        }
+
         return redirect()->route('configuracion.index')
             ->with('success', 'Configuración actualizada correctamente.');
     }

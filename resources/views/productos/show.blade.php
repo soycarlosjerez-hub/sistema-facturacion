@@ -105,7 +105,7 @@
                         <div class="col-md-4">
                             <div class="p-3 rounded-3" style="background:rgba(99,102,241,.05);">
                                 <small class="text-muted text-uppercase d-block small fw-semibold">ITBIS</small>
-                                <span class="fw-bold">{{ number_format($producto->itbis_porcentaje ?? 18, 2) }}%</span>
+                                <span class="fw-bold">{{ number_format($producto->itbis_porcentaje ?? $systemItbis ?? 18, 2) }}%</span>
                             </div>
                         </div>
                         <div class="col-md-4">

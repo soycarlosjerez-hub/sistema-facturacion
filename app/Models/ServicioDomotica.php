@@ -128,7 +128,7 @@ class ServicioDomotica extends Model
     public function calcularTotales(): void
     {
         $this->subtotal = $this->presupuesto;
-        $this->itbis = round($this->subtotal * 0.18, 2);
+        $this->itbis = round($this->subtotal * (SystemSetting::itbisDefault() / 100), 2);
         $this->total = $this->subtotal + $this->itbis - $this->descuento;
         $this->save();
     }

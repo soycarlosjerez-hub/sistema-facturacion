@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Producto;
 use App\Models\Cliente;
+use App\Models\SystemSetting;
 
 class SaleDataService
 {
@@ -35,7 +36,7 @@ class SaleDataService
             'codigo_barras' => $p->codigo_barras,
             'precio'        => (float) $p->precio,
             'precio_compra' => (float) ($p->precio_compra ?? 0),
-            'itbis_p'       => (float) ($p->itbis_porcentaje ?? 18),
+            'itbis_p'       => (float) ($p->itbis_porcentaje ?? SystemSetting::itbisDefault()),
             'stock'          => (int) $p->stock,
             'ventas_count'  => (int) ($p->ventas_count ?? 0),
             'unidad_medida' => $p->unidad_medida ?? 'Unidad',

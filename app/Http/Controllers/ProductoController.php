@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use App\Models\Categoria;
+use App\Models\SystemSetting;
 use App\Exports\ProductosExport;
 use App\Imports\DynamicProductosImport;
 use App\Imports\ProductosImport;
@@ -71,7 +72,7 @@ class ProductoController extends Controller
                     'categoria' => $p->categoria ? ['id' => $p->categoria->id, 'nombre' => $p->categoria->nombre] : null,
                     'precio' => (float) $p->precio,
                     'precio_compra' => (float) ($p->precio_compra ?? 0),
-                    'itbis_porcentaje' => (float) ($p->itbis_porcentaje ?? 18),
+                    'itbis_porcentaje' => (float) ($p->itbis_porcentaje ?? SystemSetting::itbisDefault()),
                     'stock' => (int) $p->stock,
                     'activo' => (bool) $p->activo,
                     'ganancia' => $p->ganancia,
@@ -180,7 +181,7 @@ class ProductoController extends Controller
 
         $defaults = [
             'unidad_medida' => 'Unidad',
-            'itbis_porcentaje' => 18,
+            'itbis_porcentaje' => SystemSetting::itbisDefault(),
             'stock' => 0,
             'precio' => 0,
         ];

@@ -122,7 +122,7 @@
                                 </td>
                                 <td><input type="number" min="0.01" step="0.01" name="productos[{{ $loop->index }}][cantidad]" class="ui-input cantidad" value="{{ $detalle->cantidad }}" required></td>
                                 <td><input type="number" min="0" step="0.01" name="productos[{{ $loop->index }}][precio]" class="ui-input precio" value="{{ $detalle->precio_unitario }}" required></td>
-                                <td><input type="number" min="0" max="100" step="0.01" name="productos[{{ $loop->index }}][itbis_porcentaje]" class="ui-input itbis" value="{{ $detalle->itbis_porcentaje ?? 18 }}" required></td>
+                                <td><input type="number" min="0" max="100" step="0.01" name="productos[{{ $loop->index }}][itbis_porcentaje]" class="ui-input itbis" value="{{ $detalle->itbis_porcentaje ?? $systemItbis ?? 18 }}" required></td>
                                 <td class="subtotal fw-bold text-end">RD$ {{ number_format($detalle->subtotal, 2) }}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btnEliminarFila" title="Quitar de la compra">
@@ -226,7 +226,7 @@
         </td>
         <td><input type="number" min="0.01" step="0.01" class="ui-input cantidad" value="1" required></td>
         <td><input type="number" min="0" step="0.01" class="ui-input precio" value="0.00" required></td>
-        <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="18" required></td>
+        <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="{{ $systemItbis ?? 18 }}" required></td>
         <td class="subtotal fw-bold text-end">RD$ 0.00</td>
         <td class="text-center">
             <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btnEliminarFila">

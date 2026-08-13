@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\DetalleDevolucion;
 use App\Models\Devolucion;
 use App\Models\Producto;
+use App\Models\SystemSetting;
 use App\Models\Venta;
 use App\Services\Ecf\EcfService;
 use Illuminate\Support\Facades\Auth;
@@ -51,7 +52,7 @@ class DevolucionService
 
             foreach ($data['items'] as $item) {
                 $base = (float) $item['cantidad'] * (float) $item['precio_unitario'];
-                $imp = $base * ((float) ($item['itbis_porcentaje'] ?? 18) / 100);
+                $imp = $base * ((float) ($item['itbis_porcentaje'] ?? SystemSetting::itbisDefault()) / 100);
                 $subtotal += $base;
                 $itbis += $imp;
             }
@@ -79,8 +80,8 @@ class DevolucionService
                     'producto_id'      => $item['producto_id'],
                     'cantidad'         => $item['cantidad'],
                     'precio_unitario'  => $item['precio_unitario'],
-                    'itbis_porcentaje' => $item['itbis_porcentaje'] ?? 18,
-                    'subtotal'         => round((float) $item['cantidad'] * (float) $item['precio_unitario'] * (1 + ((float) ($item['itbis_porcentaje'] ?? 18) / 100)), 2),
+                    'itbis_porcentaje' => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
+                    'subtotal'         => round((float) $item['cantidad'] * (float) $item['precio_unitario'] * (1 + ((float) ($item['itbis_porcentaje'] ?? SystemSetting::itbisDefault()) / 100)), 2),
                     'motivo'           => $item['motivo'] ?? null,
                     'tenant_id'        => Auth::user()->business_instance_id ?? null,
                 ]);
@@ -169,7 +170,7 @@ class DevolucionService
                     'producto_nombre' => $d->producto->nombre ?? 'N/A',
                     'cantidad'        => $d->cantidad,
                     'precio'          => $d->precio_unitario,
-                    'itbis'           => $d->itbis_porcentaje ?? 18,
+                    'itbis'           => $d->itbis_porcentaje ?? SystemSetting::itbisDefault(),
                 ]),
             ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Producto;
+use App\Models\SystemSetting;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -62,7 +63,7 @@ class ProductosExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             $producto->unidad_medida ?? 'Unidad',
             number_format($producto->precio, 2, '.', ''),
             number_format($producto->precio_compra ?? 0, 2, '.', ''),
-            number_format($producto->itbis_porcentaje ?? 18, 2, '.', ''),
+            number_format($producto->itbis_porcentaje ?? SystemSetting::itbisDefault(), 2, '.', ''),
             $producto->stock,
             number_format($ganancia, 2, '.', ''),
             number_format($margen, 2, '.', ''),

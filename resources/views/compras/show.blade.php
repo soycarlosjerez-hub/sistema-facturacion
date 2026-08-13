@@ -151,7 +151,7 @@ body.dark-mode .detalles-table tbody td {
                             </td>
                             <td class="text-end fw-bold">{{ $detalle->cantidad }}</td>
                             <td class="text-end">RD$ {{ number_format($detalle->precio_unitario, 2) }}</td>
-                            <td class="text-end text-muted">{{ number_format($detalle->itbis_porcentaje ?? 18, 2) }}%</td>
+                            <td class="text-end text-muted">{{ number_format($detalle->itbis_porcentaje ?? $systemItbis ?? 18, 2) }}%</td>
                             <td class="text-end text-muted">RD$ {{ number_format($detalle->base, 2) }}</td>
                             <td class="text-end pe-4 fw-bold text-success">RD$ {{ number_format($detalle->subtotal, 2) }}</td>
                         </tr>

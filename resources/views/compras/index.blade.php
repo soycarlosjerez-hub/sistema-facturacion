@@ -214,7 +214,7 @@ body.dark-mode .compras-table tbody td {
                                                         <td class="fw-medium text-dark">{{ $d->producto->nombre ?? '—' }}</td>
                                                         <td class="text-center">{{ $d->cantidad }}</td>
                                                         <td class="text-end text-muted">RD$ {{ number_format($d->precio_unitario, 2) }}</td>
-                                                        <td class="text-end text-muted">{{ number_format($d->itbis_porcentaje ?? 18, 2) }}%</td>
+                                                        <td class="text-end text-muted">{{ number_format($d->itbis_porcentaje ?? $systemItbis ?? 18, 2) }}%</td>
                                                         <td class="text-end fw-bold text-dark">RD$ {{ number_format($d->subtotal, 2) }}</td>
                                                     </tr>
                                                     @endforeach

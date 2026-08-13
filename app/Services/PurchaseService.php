@@ -7,6 +7,7 @@ use App\Models\Compra;
 use App\Models\DetalleCompra;
 use App\Models\Producto;
 use App\Models\Proveedor;
+use App\Models\SystemSetting;
 use App\Support\RetencionCalculator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,7 @@ class PurchaseService
                     'producto_id'       => $producto->id,
                     'cantidad'          => $item['cantidad'],
                     'precio_unitario'   => $item['precio'],
-                    'itbis_porcentaje'  => $item['itbis_porcentaje'] ?? 18,
+                    'itbis_porcentaje'  => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
                     'subtotal'          => $this->computeDetailSubtotal($item),
                     'tenant_id'         => Auth::user()->business_instance_id ?? null,
                 ]);
@@ -98,7 +99,7 @@ class PurchaseService
                     'producto_id'      => $producto->id,
                     'cantidad'         => $item['cantidad'],
                     'precio_unitario'  => $item['precio'],
-                    'itbis_porcentaje' => $item['itbis_porcentaje'] ?? 18,
+                    'itbis_porcentaje' => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
                     'subtotal'         => $this->computeDetailSubtotal($item),
                     'tenant_id'        => Auth::user()->business_instance_id ?? null,
                 ]);
@@ -187,7 +188,7 @@ class PurchaseService
         foreach ($products as $item) {
             $cantidad = (float) $item['cantidad'];
             $precio   = (float) $item['precio'];
-            $itbis    = (float) ($item['itbis_porcentaje'] ?? 18);
+            $itbis    = (float) ($item['itbis_porcentaje'] ?? SystemSetting::itbisDefault());
             $base     = $cantidad * $precio;
             $impuesto = $base * ($itbis / 100);
             $subtotal   += $base;
@@ -206,7 +207,7 @@ class PurchaseService
     {
         $cantidad = (float) $item['cantidad'];
         $precio   = (float) $item['precio'];
-        $itbis    = (float) ($item['itbis_porcentaje'] ?? 18);
+        $itbis    = (float) ($item['itbis_porcentaje'] ?? SystemSetting::itbisDefault());
         return round($cantidad * $precio * (1 + $itbis / 100), 2);
     }
 
@@ -214,7 +215,7 @@ class PurchaseService
     {
         $cantidad = (float) $item['cantidad'];
         $precio   = (float) $item['precio'];
-        $itbis    = (float) ($item['itbis_porcentaje'] ?? 18);
+        $itbis    = (float) ($item['itbis_porcentaje'] ?? SystemSetting::itbisDefault());
 
         $producto = null;
         if (!empty($item['producto_id'])) {
@@ -256,7 +257,7 @@ class PurchaseService
 
         foreach ($detalles as $d) {
             $base    = (float) $d->cantidad * (float) $d->precio_unitario;
-            $itbis   = (float) ($d->itbis_porcentaje ?? 18);
+            $itbis   = (float) ($d->itbis_porcentaje ?? SystemSetting::itbisDefault());
             $impuesto = $base * ($itbis / 100);
             $totals['subtotal']   += $base;
             $totals['itbis_total'] += $impuesto;

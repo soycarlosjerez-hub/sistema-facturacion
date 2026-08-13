@@ -264,7 +264,7 @@ class EcfService
             : 0;
         $gravadoAdicional = round($montoAdicional * $porcentajeGravado, 2);
         $exentoAdicional = round($montoAdicional * (1 - $porcentajeGravado), 2);
-        $itbisAdicional = round($gravadoAdicional * 0.18, 2);
+        $itbisAdicional = round($gravadoAdicional * (SystemSetting::itbisDefault() / 100), 2);
 
         $nc = EcfDocumento::create([
             'venta_id' => $original->venta_id,
@@ -497,7 +497,7 @@ class EcfService
 
         foreach ($venta->detalles as $detalle) {
             $producto = $detalle->producto;
-            $itbisPorcentaje = (float) ($producto->itbis_porcentaje ?? 18);
+            $itbisPorcentaje = (float) ($producto->itbis_porcentaje ?? SystemSetting::itbisDefault());
             $subtotal = (float) $detalle->subtotal;
 
             if ($itbisPorcentaje > 0) {

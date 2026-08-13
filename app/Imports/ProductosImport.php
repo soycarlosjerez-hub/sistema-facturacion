@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Categoria;
 use App\Models\Producto;
+use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -20,7 +21,7 @@ class ProductosImport implements ToModel, WithHeadingRow, WithValidation
             'precio'           => $row['precio'] ?? 0,
             'precio_compra'    => $row['precio_compra'] ?? 0,
             'unidad_medida'    => $row['unidad_medida'] ?? 'Unidad',
-            'itbis_porcentaje' => $row['itbis_porcentaje'] ?? 18,
+            'itbis_porcentaje' => $row['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
             'stock'            => $row['stock'] ?? 0,
             'imagen'           => $row['imagen'] ?? null,
             'categoria_id'     => $this->resolveCategoryId($row['categoria'] ?? $row['categoria_id'] ?? null),

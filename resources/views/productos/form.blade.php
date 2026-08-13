@@ -86,11 +86,11 @@
             <div class="mb-3">
                 <label class="ui-label small fw-semibold">ITBIS</label>
                 <div class="ui-input-group input-group-lg">
-                    <input type="number" name="itbis_porcentaje" value="{{ old('itbis_porcentaje', $producto->itbis_porcentaje ?? config('system.default_itbis', '18.00')) }}" class="ui-input @error('itbis_porcentaje') is-invalid @enderror" step="0.01" min="0" max="100" placeholder="18">
+                    <input type="number" name="itbis_porcentaje" value="{{ old('itbis_porcentaje', $producto->itbis_porcentaje ?? $systemItbis ?? 18) }}" class="ui-input @error('itbis_porcentaje') is-invalid @enderror" step="0.01" min="0" max="100" placeholder="{{ $systemItbis ?? 18 }}">
                     <span class="ui-input-group-text bg-light fw-bold">%</span>
                 </div>
                 @error('itbis_porcentaje')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                <small class="text-muted">18% por defecto. Usa 0 para productos exentos.</small>
+                <small class="text-muted">{{ $systemItbis ?? 18 }}% por defecto. Usa 0 para productos exentos.</small>
             </div>
         </div>
 

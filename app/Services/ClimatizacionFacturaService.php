@@ -7,6 +7,7 @@ use App\Models\Mantenimiento;
 use App\Models\ContratoMantenimiento;
 use App\Models\OrdenEmergencia;
 use App\Models\Instalacion;
+use App\Models\SystemSetting;
 use Illuminate\Support\Facades\DB;
 
 class ClimatizacionFacturaService
@@ -256,7 +257,7 @@ class ClimatizacionFacturaService
 
     private function calcularConITBIS(float $subtotal): array
     {
-        $itbis = round($subtotal * 0.18, 2);
+        $itbis = round($subtotal * (SystemSetting::itbisDefault() / 100), 2);
         $total = round($subtotal + $itbis, 2);
         return [$subtotal, $itbis, $total];
     }
