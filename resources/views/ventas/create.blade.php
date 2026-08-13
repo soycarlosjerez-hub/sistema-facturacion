@@ -559,12 +559,20 @@ body:not(.dark-mode) {
     .pos-app {
         background: var(--pos-bg);
         color: var(--pos-text);
-        height: calc(100vh - 70px);
-        height: calc(100dvh - 70px);
+        flex: 1 1 auto;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         overflow: hidden;
     }
+    /* El POS ocupa exactamente el viewport debajo del topbar (sin números mágicos) */
+    main#main-content.content-wrapper {
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    main#main-content.content-wrapper > header.topbar { flex-shrink: 0; }
 
 /* ============ Top Bar ============ */
 .pos-topbar {
@@ -748,6 +756,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     padding: 16px;
     gap: 12px;
     min-width: 0;
+    min-height: 0;
     animation: uiSlideUp .5s ease both;
     animation-delay: var(--delay, .1s);
 }
@@ -757,10 +766,25 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     border-left: 1px solid var(--pos-border);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    min-height: 0;
     animation: uiSlideUp .5s ease both;
     animation-delay: var(--delay, .15s);
 }
+/* Panel derecho: secciones fijas + barra de pago sticky (botones siempre visibles) */
+.pos-right .pr-section { flex-shrink: 0; }
+.pos-right .pr-section.flex-grow-1 { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.pos-right .pr-section:last-child {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    background: var(--pos-topbar);
+    border-top: 1px solid var(--pos-border);
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.pos-right::-webkit-scrollbar { width: 6px; }
+.pos-right::-webkit-scrollbar-thumb { background: var(--pos-border); border-radius: 3px; }
 
     /* ============ Search Section ============ */
     .pos-search-wrap {
@@ -953,6 +977,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     /* ============ Products Grid ============ */
     .pos-products {
         flex: 1;
+        min-height: 0;
         overflow-y: auto;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -1029,6 +1054,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     /* ============ Cart ============ */
     .pos-cart {
         flex: 1;
+        min-height: 0;
         overflow-y: auto;
         padding: 4px;
     }
@@ -1054,6 +1080,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         align-items: center;
         gap: 10px;
         padding: 10px;
+        min-width: 0;
         background: rgba(255,255,255,0.03);
         border: 1px solid var(--pos-border);
         border-radius: 12px;
@@ -1083,9 +1110,12 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         font-size: 0.85rem;
         font-weight: 700;
         line-height: 1.2;
-        white-space: nowrap;
+        white-space: normal;
         overflow: hidden;
-        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        min-height: 2.4em;
     }
     .cart-item .ci-meta {
         font-size: 0.7rem;
@@ -1093,6 +1123,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         margin-top: 2px;
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 6px;
     }
     .cart-item .ci-qty {
@@ -1580,7 +1611,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .pos-stat .value { font-size: 0.85rem; }
         .pos-keyhint { display: none; }
         .dgii-badge { font-size: 0.65rem; padding: 2px 7px; }
-        .pos-app { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
+        .pos-app { flex: 1 1 auto; min-height: 0; }
         .pos-search { padding: 14px 50px 14px 50px; font-size: 1.15rem; border-radius: 14px; }
         .pos-search-icon { left: 16px; font-size: 1.25rem; }
         .pos-search-clear { right: 12px; width: 30px; height: 30px; }
@@ -1611,7 +1642,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .btn-pay.full { grid-column: span 2; min-height: 56px; }
     }
     @media (min-width: 769px) and (max-width: 992px) and (orientation: portrait) {
-        .pos-app { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
+        .pos-app { flex: 1 1 auto; min-height: 0; }
         .pos-topbar { gap: 10px; padding: 10px 14px; }
         #almacen-select { max-width: 130px; font-size: 0.75rem; }
         .pos-stat .label { display: none; }
@@ -1769,7 +1800,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
     /* ============ MÓVIL (≤576px) ============ */
     @media (max-width: 576px) {
-        .pos-app { height: 100vh; height: 100dvh; }
+        .pos-app { flex: 1 1 auto; min-height: 0; }
         .pos-topbar { padding: 8px 10px; gap: 6px; }
         .pos-stat { display: none; }
         #almacen-select { max-width: 100px; }
