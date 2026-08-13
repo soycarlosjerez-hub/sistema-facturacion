@@ -1561,10 +1561,12 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .pos-body { grid-template-columns: 1fr 380px; }
     }
     @media (max-width: 992px) {
-        .pos-body { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+        .pos-body { grid-template-columns: 1fr; grid-template-rows: auto auto; overflow-y: auto; }
         .pos-right { border-left: none; border-top: 1px solid var(--pos-border); }
         .pos-right { order: 2; }
-        .pos-left { order: 1; }
+        .pos-left { order: 1; min-width: 0; min-height: 0; overflow: visible; }
+        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); padding-top: 4px; }
+        .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); padding: 4px 0; }
     }
 
     /* ============ TABLET (≤768px) ============ */
@@ -1579,15 +1581,16 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
         .pos-body {
             grid-template-columns: 1fr;
-            grid-template-rows: 1fr auto;
+            grid-template-rows: auto auto;
             padding: 8px;
             gap: 8px;
+            overflow-y: auto;
         }
-        .pos-left { padding: 8px; gap: 8px; }
+        .pos-left { padding: 8px; gap: 8px; overflow: visible; }
         .pos-right {
             border-left: none;
             border-top: 1px solid var(--pos-border);
-            min-height: 400px;
+            min-height: auto;
         }
         .pos-search {
             padding: 14px 48px 14px 48px;
@@ -1613,7 +1616,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .cart-item .discount-input { width: 52px; font-size: 0.72rem; }
         .cart-item .discount-toggle { padding: 1px 4px; font-size: 0.65rem; }
 
-        .pos-right { padding: 0; min-height: 350px; }
+        .pos-right { padding: 0; min-height: auto; }
         .pos-right .pr-section { padding: 10px 12px; }
         .pos-right .pr-section-title { font-size: 0.62rem; margin-bottom: 6px; }
         .cliente-select { padding: 8px 10px; font-size: 0.85rem; }
