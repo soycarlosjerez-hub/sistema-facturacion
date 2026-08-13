@@ -383,13 +383,13 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
                 </div>
                 <div class="col-12">
                     <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('productos.import') }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('productos.import') }}" class="ui-btn ui-btn-solid rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-upload me-1"></i> Importar CSV
                         </a>
-                        <a href="{{ route('productos.exportar', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('productos.exportar', request()->all()) }}" class="ui-btn ui-btn-solid rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-excel me-1"></i> Excel
                         </a>
-                        <a href="{{ route('productos.pdf', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('productos.pdf', request()->all()) }}" class="ui-btn ui-btn-solid rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-pdf me-1"></i> PDF
                         </a>
                     </div>
@@ -707,7 +707,7 @@ $(function() {
         const precioMax = parseFloat($('#filter-precio-max').val()) || Infinity;
         
         const params = new URLSearchParams();
-        if (nombre) params.set('search', nombre);
+        if (nombre) params.set('nombre', nombre);
         if (stockStatus) params.set('stock_status', stockStatus);
         if (activo) params.set('activo', activo);
         if (precioMin > 0) params.set('precio_min', precioMin);
