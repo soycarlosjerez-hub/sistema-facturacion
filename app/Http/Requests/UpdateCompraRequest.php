@@ -27,6 +27,7 @@ class UpdateCompraRequest extends FormRequest
             'productos.*.codigo_barras'    => 'nullable|string|max:100',
             'productos.*.cantidad'         => 'required_with:productos|numeric|min:0.01',
             'productos.*.precio'           => 'required_with:productos|numeric|min:0',
+            'productos.*.precio_venta'     => 'nullable|numeric|min:0',
             'productos.*.itbis_porcentaje' => 'nullable|numeric|min:0|max:100',
         ];
     }

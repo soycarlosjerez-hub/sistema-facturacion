@@ -105,6 +105,7 @@
                             <th style="width: 160px;">Cód. Barras</th>
                             <th style="width: 90px;">Cantidad</th>
                             <th style="width: 130px;">Precio Unit.</th>
+                            <th style="width: 130px;">Precio Venta</th>
                             <th style="width: 90px;">ITBIS %</th>
                             <th style="width: 130px;">Subtotal</th>
                             <th style="width: 60px;"></th>
@@ -122,6 +123,7 @@
                                 </td>
                                 <td><input type="number" min="0.01" step="0.01" name="productos[{{ $loop->index }}][cantidad]" class="ui-input cantidad" value="{{ $detalle->cantidad }}" required></td>
                                 <td><input type="number" min="0" step="0.01" name="productos[{{ $loop->index }}][precio]" class="ui-input precio" value="{{ $detalle->precio_unitario }}" required></td>
+                                <td><input type="number" min="0" step="0.01" name="productos[{{ $loop->index }}][precio_venta]" class="ui-input precio-venta" value="{{ $detalle->producto->precio ?? '' }}"></td>
                                 <td><input type="number" min="0" max="100" step="0.01" name="productos[{{ $loop->index }}][itbis_porcentaje]" class="ui-input itbis" value="{{ $detalle->itbis_porcentaje ?? $systemItbis ?? 18 }}" required></td>
                                 <td class="subtotal fw-bold text-end">RD$ {{ number_format($detalle->subtotal, 2) }}</td>
                                 <td class="text-center">
@@ -134,27 +136,27 @@
                     </tbody>
                     <tfoot class="bg-light bg-opacity-50">
                         <tr>
-                            <td colspan="5" class="text-end fw-bold">Subtotal:</td>
+                            <td colspan="6" class="text-end fw-bold">Subtotal:</td>
                             <td class="fw-bold text-end" id="subtotal-display">RD$ {{ number_format($compra->subtotal ?? 0, 2) }}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td colspan="5" class="text-end fw-bold">ITBIS:</td>
+                            <td colspan="6" class="text-end fw-bold">ITBIS:</td>
                             <td class="fw-bold text-end" id="itbis-display">RD$ {{ number_format($compra->itbis_total ?? 0, 2) }}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td colspan="5" class="text-end fw-bold fs-5">TOTAL:</td>
+                            <td colspan="6" class="text-end fw-bold fs-5">TOTAL:</td>
                             <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ {{ number_format($compra->total, 2) }}</td>
                             <td></td>
                         </tr>
                         <tr class="retenciones-row" style="display:none">
-                            <td colspan="5" class="text-end text-danger fw-bold">Retenciones:</td>
+                            <td colspan="6" class="text-end text-danger fw-bold">Retenciones:</td>
                             <td class="text-end fw-bold" id="retenciones-display">RD$ 0.00</td>
                             <td></td>
                         </tr>
                         <tr class="total-neto-row" style="display:none">
-                            <td colspan="5" class="text-end fw-bold fs-5">Total a Pagar:</td>
+                            <td colspan="6" class="text-end fw-bold fs-5">Total a Pagar:</td>
                             <td class="fw-bold text-end fs-5 text-success" id="total-neto-display">RD$ 0.00</td>
                             <td></td>
                         </tr>
@@ -211,7 +213,7 @@
 
 <datalist id="productList">
     @foreach($productos as $producto)
-        <option value="{{ $producto->nombre }}" data-id="{{ $producto->id }}" data-precio="{{ $producto->precio_compra }}" data-barcode="{{ $producto->codigo_barras }}"></option>
+        <option value="{{ $producto->nombre }}" data-id="{{ $producto->id }}" data-precio="{{ $producto->precio_compra }}" data-precio-venta="{{ $producto->precio }}" data-barcode="{{ $producto->codigo_barras }}"></option>
     @endforeach
 </datalist>
 
@@ -226,6 +228,7 @@
         </td>
         <td><input type="number" min="0.01" step="0.01" class="ui-input cantidad" value="1" required></td>
         <td><input type="number" min="0" step="0.01" class="ui-input precio" value="0.00" required></td>
+        <td><input type="number" min="0" step="0.01" class="ui-input precio-venta" value="0.00"></td>
         <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="{{ $systemItbis ?? 18 }}" required></td>
         <td class="subtotal fw-bold text-end">RD$ 0.00</td>
         <td class="text-center">

@@ -114,6 +114,7 @@
                             <th style="width: 160px;">Cód. Barras</th>
                             <th style="width: 90px;">Cantidad</th>
                             <th style="width: 130px;">Precio Unit.</th>
+                            <th style="width: 130px;">Precio Venta</th>
                             <th style="width: 90px;">ITBIS %</th>
                             <th style="width: 130px;">Subtotal</th>
                             <th style="width: 60px;"></th>
@@ -122,27 +123,27 @@
                     <tbody id="detalle-body"></tbody>
                     <tfoot class="bg-light bg-opacity-50">
                         <tr>
-                            <td colspan="5" class="text-end fw-bold">Subtotal:</td>
+                            <td colspan="6" class="text-end fw-bold">Subtotal:</td>
                             <td class="fw-bold text-end" id="subtotal-display">RD$ 0.00</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td colspan="5" class="text-end fw-bold">ITBIS:</td>
+                            <td colspan="6" class="text-end fw-bold">ITBIS:</td>
                             <td class="fw-bold text-end" id="itbis-display">RD$ 0.00</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td colspan="5" class="text-end fw-bold fs-5">TOTAL:</td>
+                            <td colspan="6" class="text-end fw-bold fs-5">TOTAL:</td>
                             <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ 0.00</td>
                             <td></td>
                         </tr>
                         <tr class="retenciones-row" style="display:none">
-                            <td colspan="5" class="text-end text-danger fw-bold">Retenciones:</td>
+                            <td colspan="6" class="text-end text-danger fw-bold">Retenciones:</td>
                             <td class="text-end fw-bold" id="retenciones-display">RD$ 0.00</td>
                             <td></td>
                         </tr>
                         <tr class="total-neto-row" style="display:none">
-                            <td colspan="5" class="text-end fw-bold fs-5">Total a Pagar:</td>
+                            <td colspan="6" class="text-end fw-bold fs-5">Total a Pagar:</td>
                             <td class="fw-bold text-end fs-5 text-success" id="total-neto-display">RD$ 0.00</td>
                             <td></td>
                         </tr>
@@ -199,7 +200,7 @@
 
 <datalist id="productList">
     @foreach ($productos as $producto)
-        <option value="{{ $producto->nombre }}" data-id="{{ $producto->id }}" data-precio="{{ $producto->precio_compra }}" data-barcode="{{ $producto->codigo_barras }}"></option>
+        <option value="{{ $producto->nombre }}" data-id="{{ $producto->id }}" data-precio="{{ $producto->precio_compra }}" data-precio-venta="{{ $producto->precio }}" data-barcode="{{ $producto->codigo_barras }}"></option>
     @endforeach
 </datalist>
 
@@ -217,6 +218,7 @@
         </td>
         <td><input type="number" min="0.01" step="0.01" class="ui-input cantidad" value="1" required></td>
         <td><input type="number" min="0" step="0.01" class="ui-input precio" value="0.00" required></td>
+        <td><input type="number" min="0" step="0.01" class="ui-input precio-venta" value="0.00"></td>
         <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="{{ $systemItbis ?? 18 }}" required></td>
         <td class="subtotal fw-bold text-end">RD$ 0.00</td>
         <td class="text-center">
@@ -228,7 +230,7 @@
 </template>
 
 @php
-    $oldProductos = old('productos', [['nombre' => '', 'codigo_barras' => '', 'cantidad' => 1, 'precio' => 0, 'itbis_porcentaje' => $systemItbis ?? 18]]);
+    $oldProductos = old('productos', [['nombre' => '', 'codigo_barras' => '', 'cantidad' => 1, 'precio' => 0, 'precio_venta' => 0, 'itbis_porcentaje' => $systemItbis ?? 18]]);
 @endphp
 
 <script>
@@ -291,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hidden = row.querySelector('.producto-id');
         const msg    = row.querySelector('.nuevo-producto-msg');
         const precio = row.querySelector('.precio');
+        const precioVenta = row.querySelector('.precio-venta');
         const barcode = row.querySelector('.codigo-barras');
 
         nombre.addEventListener('input', function () {
@@ -301,6 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 msg.classList.add('d-none');
                 if (!parseFloat(precio.value) && option.dataset.precio) {
                     precio.value = parseFloat(option.dataset.precio).toFixed(2);
+                }
+                if (precioVenta && option.dataset.precioVenta && !parseFloat(precioVenta.value)) {
+                    precioVenta.value = parseFloat(option.dataset.precioVenta).toFixed(2);
                 }
                 if (option.dataset.barcode && !barcode.value) {
                     barcode.value = option.dataset.barcode;
@@ -318,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         row.querySelector('.btnEliminarFila').addEventListener('click', () => {
             if (tbody.children.length === 1) {
-                nombre.value = ''; hidden.value = ''; precio.value = 0; cantidad.value = 1; itbis.value = {{ $systemItbis ?? 18 }};
+                nombre.value = ''; hidden.value = ''; precio.value = 0; precioVenta.value = 0; cantidad.value = 1; itbis.value = {{ $systemItbis ?? 18 }};
                 barcode.value = ''; msg.classList.add('d-none');
             } else {
                 row.remove();
@@ -334,6 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.codigo_barras) row.querySelector('.codigo-barras').value = data.codigo_barras;
         if (data.cantidad) row.querySelector('.cantidad').value = data.cantidad;
         if (data.precio !== undefined) row.querySelector('.precio').value = data.precio;
+        if (data.precio_venta !== undefined) row.querySelector('.precio-venta').value = data.precio_venta;
         if (data.itbis_porcentaje !== undefined) row.querySelector('.itbis').value = data.itbis_porcentaje;
         tbody.appendChild(row);
         attachEvents(row);
@@ -368,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'codigo_barras': row.querySelector('.codigo-barras').value,
                 'cantidad': row.querySelector('.cantidad').value,
                 'precio': row.querySelector('.precio').value,
+                'precio_venta': row.querySelector('.precio-venta').value,
                 'itbis_porcentaje': row.querySelector('.itbis').value,
             };
             for (const [key, val] of Object.entries(campos)) {

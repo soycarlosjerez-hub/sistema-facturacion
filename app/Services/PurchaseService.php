@@ -216,6 +216,9 @@ class PurchaseService
         $cantidad = (float) $item['cantidad'];
         $precio   = (float) $item['precio'];
         $itbis    = (float) ($item['itbis_porcentaje'] ?? SystemSetting::itbisDefault());
+        $precioVenta = ($item['precio_venta'] ?? null) !== '' && ($item['precio_venta'] ?? null) !== null
+            ? (float) $item['precio_venta']
+            : null;
 
         $producto = null;
         if (!empty($item['producto_id'])) {
@@ -231,6 +234,9 @@ class PurchaseService
             if ((float) $producto->precio_compra != $precio) {
                 $producto->precio_compra = $precio;
             }
+            if ($precioVenta !== null && (float) $producto->precio != $precioVenta) {
+                $producto->precio = $precioVenta;
+            }
             $producto->save();
             $updatedProducts[] = $producto->id;
             return $producto;
@@ -241,7 +247,7 @@ class PurchaseService
             'nombre'           => trim($item['nombre']),
             'codigo_barras'    => !empty($item['codigo_barras']) ? trim($item['codigo_barras']) : null,
             'precio_compra'    => $precio,
-            'precio'           => $precio,
+            'precio'           => $precioVenta !== null ? $precioVenta : $precio,
             'stock'            => $cantidad,
             'itbis_porcentaje' => $itbis,
             'unidad_medida'    => 'Unidad',
