@@ -105,15 +105,13 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(139,9
                                 <tr><th>Mesero</th><th class="text-center">Órdenes</th><th class="text-end">Total</th></tr>
                             </thead>
                             <tbody>
-                                @forelse($ventasPorMesero as $v)
+                                @foreach($ventasPorMesero as $v)
                                 <tr>
                                     <td>{{ $v->usuario?->name ?? '—' }}</td>
                                     <td class="text-center">{{ $v->total_ordenes }}</td>
                                     <td class="text-end fw-bold">RD$ {{ number_format($v->total_ventas, 2) }}</td>
                                 </tr>
-                                @empty
-                                <tr><td colspan="3" class="text-center text-muted py-4">Sin datos</td></tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -135,15 +133,13 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(139,9
                                 <tr><th>Mesa</th><th class="text-center">Órdenes</th><th class="text-end">Total</th></tr>
                             </thead>
                             <tbody>
-                                @forelse($ventasPorMesa as $v)
+                                @foreach($ventasPorMesa as $v)
                                 <tr>
                                     <td>{{ $v->mesa?->nombre ?? 'Mesa ' . ($v->mesa?->numero ?? $v->mesa_id) }}</td>
                                     <td class="text-center">{{ $v->total_ordenes }}</td>
                                     <td class="text-end fw-bold">RD$ {{ number_format($v->total_ventas, 2) }}</td>
                                 </tr>
-                                @empty
-                                <tr><td colspan="3" class="text-center text-muted py-4">Sin datos</td></tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -165,15 +161,13 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(139,9
                                 <tr><th>Turno</th><th class="text-center">Órdenes</th><th class="text-end">Total</th></tr>
                             </thead>
                             <tbody>
-                                @forelse($ventasPorHora as $v)
+                                @foreach($ventasPorHora as $v)
                                 <tr>
                                     <td>{{ $v->turno }}</td>
                                     <td class="text-center">{{ $v->total_ordenes }}</td>
                                     <td class="text-end fw-bold">RD$ {{ number_format($v->total_ventas, 2) }}</td>
                                 </tr>
-                                @empty
-                                <tr><td colspan="3" class="text-center text-muted py-4">Sin datos</td></tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -195,16 +189,14 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(139,9
                                 <tr><th>#</th><th>Producto</th><th class="text-center">Cantidad</th><th class="text-end">Total</th></tr>
                             </thead>
                             <tbody>
-                                @forelse($productosTop as $i => $p)
+                                @foreach($productosTop as $i => $p)
                                 <tr>
                                     <td>{{ $i + 1 }}</td>
                                     <td>{{ $p->producto->nombre ?? '—' }}</td>
                                     <td class="text-center">{{ $p->total_cantidad }}</td>
                                     <td class="text-end fw-bold">RD$ {{ number_format($p->total_ventas, 2) }}</td>
                                 </tr>
-                                @empty
-                                <tr><td colspan="4" class="text-center text-muted py-4">Sin datos</td></tr>
-                                @endforelse
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -221,25 +213,25 @@ body.dark-mode #restauranteProductosTable tbody tr:hover { background:rgba(139,9
 $(document).ready(function() {
     $('#restauranteMeseroTable').DataTable({
         responsive: true, pageLength: 10, lengthMenu: [[5,10,25,-1],[5,10,25,'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json', emptyTable: 'Sin datos' },
         columnDefs: [{ orderable: false, targets: [2] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
     $('#restauranteMesaTable').DataTable({
         responsive: true, pageLength: 10, lengthMenu: [[5,10,25,-1],[5,10,25,'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json', emptyTable: 'Sin datos' },
         columnDefs: [{ orderable: false, targets: [2] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
     $('#restauranteTurnoTable').DataTable({
         responsive: true, pageLength: 10, lengthMenu: [[5,10,25,-1],[5,10,25,'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json', emptyTable: 'Sin datos' },
         columnDefs: [{ orderable: false, targets: [2] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
     $('#restauranteProductosTable').DataTable({
         responsive: true, pageLength: 10, lengthMenu: [[5,10,25,-1],[5,10,25,'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json', emptyTable: 'Sin datos' },
         columnDefs: [{ orderable: false, targets: [3] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });

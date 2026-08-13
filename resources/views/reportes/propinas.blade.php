@@ -107,16 +107,14 @@ body.dark-mode #propinasTable tbody tr:hover { background:rgba(139,92,246,.08); 
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($propinas as $p)
+                        @foreach($propinas as $p)
                         <tr>
                             <td class="fw-medium">{{ $p->usuario?->name ?? '—' }}</td>
                             <td class="text-center">{{ $p->total_ordenes }}</td>
                             <td class="text-end fw-bold text-success">RD$ {{ number_format($p->total_propinas, 2) }}</td>
                             <td class="text-end">RD$ {{ number_format($p->promedio_propina, 2) }}</td>
                         </tr>
-                        @empty
-                        <tr><td colspan="4" class="text-center text-muted py-4">Sin datos</td></tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -131,7 +129,7 @@ body.dark-mode #propinasTable tbody tr:hover { background:rgba(139,92,246,.08); 
 $(document).ready(function() {
     $('#propinasTable').DataTable({
         responsive: true, pageLength: 10, lengthMenu: [[5,10,25,-1],[5,10,25,'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json', emptyTable: 'Sin datos' },
         columnDefs: [{ orderable: false, targets: [2,3] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });

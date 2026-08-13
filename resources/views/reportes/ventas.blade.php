@@ -147,7 +147,7 @@ body.dark-mode #ventasTable tfoot td { background:rgba(15,23,42,.6);border-top-c
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($ventas as $v)
+                    @foreach($ventas as $v)
                         <tr>
                             <td class="ps-4">{{ str_pad($v->id, 5, '0', STR_PAD_LEFT) }}</td>
                             <td><span class="fw-semibold small">{{ $v->cliente?->nombre ?? 'Consumidor Final' }}</span><br><small class="text-muted font-monospace">{{ $v->cliente?->rnc_cedula ?? '' }}</small></td>
@@ -158,9 +158,7 @@ body.dark-mode #ventasTable tfoot td { background:rgba(15,23,42,.6);border-top-c
                             <td class="text-end text-warning fw-semibold">RD$ {{ number_format($v->impuestos ?? 0, 2) }}</td>
                             <td class="text-end pe-4 fw-bold">RD$ {{ number_format($v->total, 2) }}</td>
                         </tr>
-                    @empty
-                        <tr><td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1"></i><p class="mt-2 mb-0">No hay ventas en este período</p></td></tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
                 <tfoot class="fw-bold">
                     <tr>
@@ -184,7 +182,7 @@ $(document).ready(function() {
         responsive: true,
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json', emptyTable: 'No hay ventas en este período' },
         columnDefs: [{ orderable: false, targets: [5, 6, 7] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });

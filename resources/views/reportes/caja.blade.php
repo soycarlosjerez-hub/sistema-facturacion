@@ -183,7 +183,7 @@ body.dark-mode #cajaTable tfoot td {
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($sesiones as $s)
+                    @foreach($sesiones as $s)
                         <tr>
                             <td><span class="fw-semibold">{{ $s->caja?->nombre ?? '' }}</span></td>
                             <td>{{ $s->user?->name ?? '' }}</td>
@@ -202,14 +202,7 @@ body.dark-mode #cajaTable tfoot td {
                             <td class="text-end">RD$ {{ number_format($s->monto_declarado ?? 0, 2) }}</td>
                             <td class="text-end fw-bold {{ ($s->descuadre ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">RD$ {{ number_format($s->descuadre ?? 0, 2) }}</td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="10" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                <p class="mb-0">No hay sesiones en este período</p>
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
                 <tfoot>
                     <tr>
@@ -237,7 +230,8 @@ $(document).ready(function() {
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
+            emptyTable: 'No hay sesiones en este período'
         },
         columnDefs: [
             { orderable: false, targets: [4, 5, 6, 7, 8, 9] }

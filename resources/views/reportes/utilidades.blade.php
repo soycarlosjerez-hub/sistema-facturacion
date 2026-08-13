@@ -125,7 +125,7 @@ body.dark-mode #utilidadesTable tfoot td {
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($detalles as $d)
+                    @foreach($detalles as $d)
                         <tr>
                             <td class="ps-4 font-monospace small">#{{ str_pad($d['venta_id'], 5, '0', STR_PAD_LEFT) }}</td>
                             <td><small>{{ $d['fecha'] }}</small></td>
@@ -137,9 +137,7 @@ body.dark-mode #utilidadesTable tfoot td {
                             <td class="text-end">RD$ {{ number_format($d['subtotal'], 2) }}</td>
                             <td class="text-end pe-4 fw-bold {{ $d['ganancia'] >= 0 ? 'text-success' : 'text-danger' }}">RD$ {{ number_format($d['ganancia'], 2) }}</td>
                         </tr>
-                    @empty
-                        <tr><td colspan="9" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1"></i><p class="mt-2 mb-0">No hay datos en este período</p></td></tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
                 <tfoot class="fw-bold">
                     <tr>
@@ -166,7 +164,8 @@ $(document).ready(function() {
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
+            emptyTable: 'No hay datos en este período'
         },
         columnDefs: [
             { orderable: false, targets: [4,5,6,7,8] }

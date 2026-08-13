@@ -90,7 +90,7 @@ body.dark-mode #gastosTable tfoot td { background:rgba(15,23,42,.6);border-top-c
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($gastos as $g)
+                    @foreach($gastos as $g)
                         <tr>
                             <td class="ps-4">{{ str_pad($g->id, 4, '0', STR_PAD_LEFT) }}</td>
                             <td><span class="fw-semibold small">{{ $g->descripcion }}</span></td>
@@ -101,9 +101,7 @@ body.dark-mode #gastosTable tfoot td { background:rgba(15,23,42,.6);border-top-c
                             <td><small>{{ $g->fecha_gasto?->format('d/m/Y') ?? '' }}</small></td>
                             <td class="text-end pe-4 fw-bold">RD$ {{ number_format($g->monto, 2) }}</td>
                         </tr>
-                    @empty
-                        <tr><td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1"></i><p class="mt-2 mb-0">No hay gastos en este período</p></td></tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
                 <tfoot class="fw-bold">
                     <tr>
@@ -125,7 +123,7 @@ $(document).ready(function() {
         responsive: true,
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json', emptyTable: 'No hay gastos en este período' },
         columnDefs: [{ orderable: false, targets: [7] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });

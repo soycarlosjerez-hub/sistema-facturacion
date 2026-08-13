@@ -132,7 +132,7 @@ body.dark-mode #stockTable tfoot td {
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($productos as $p)
+                    @foreach($productos as $p)
                         @php
                             $estado = $p->stock <= 0 ? 'danger' : ($p->stock <= ($p->stock_minimo ?? 0) ? 'warning' : 'success');
                             $label = $p->stock <= 0 ? 'Sin Stock' : ($p->stock <= ($p->stock_minimo ?? 0) ? 'Stock Bajo' : 'Disponible');
@@ -146,9 +146,7 @@ body.dark-mode #stockTable tfoot td {
                             <td class="text-end">RD$ {{ number_format($p->precio ?? 0, 2) }}</td>
                             <td class="text-end pe-4 fw-bold">RD$ {{ number_format($p->stock * ($p->precio_compra ?? 0), 2) }}</td>
                         </tr>
-                    @empty
-                        <tr><td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1"></i><p class="mt-2 mb-0">No hay productos</p></td></tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
                 <tfoot class="fw-bold">
                     <tr>
@@ -171,7 +169,8 @@ $(document).ready(function() {
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
+            emptyTable: 'No hay productos'
         },
         columnDefs: [
             { orderable: false, targets: [2,3,4,5,6] }
