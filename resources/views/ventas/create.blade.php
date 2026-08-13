@@ -573,6 +573,12 @@ body:not(.dark-mode) {
         overflow: hidden;
     }
     main#main-content.content-wrapper > header.topbar { flex-shrink: 0; }
+    main#main-content.content-wrapper > form#pos-form {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
 
 /* ============ Top Bar ============ */
 .pos-topbar {
@@ -742,8 +748,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 /* ============ Body grid ============ */
 .pos-body {
     flex: 1;
+    min-height: 0;
     display: grid;
     grid-template-columns: 1fr 420px;
+    grid-template-rows: 1fr;
     gap: 0;
     overflow: hidden;
     animation: uiSlideUp .5s ease both;
