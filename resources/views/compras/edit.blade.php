@@ -74,9 +74,9 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="ui-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
-                        <select name="almacen_id" class="ui-select ui-select-lg" required>
-                            <option value="">Seleccionar almacén</option>
+                        <label class="ui-label small fw-semibold">Almacén</label>
+                        <select name="almacen_id" class="ui-select ui-select-lg">
+                            <option value="" {{ empty($compra->almacen_id) ? 'selected' : '' }}>Trabajar sin almacén</option>
                             @foreach($almacenes as $almacen)
                                 <option value="{{ $almacen->id }}" {{ ($compra->almacen_id ?? old('almacen_id')) == $almacen->id ? 'selected' : '' }}>{{ $almacen->nombre }}</option>
                             @endforeach

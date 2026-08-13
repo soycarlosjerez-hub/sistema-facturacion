@@ -79,9 +79,9 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="ui-label small fw-semibold">Almacén <span class="text-danger">*</span></label>
-                        <select name="almacen_id" class="ui-select ui-select-lg" required>
-                            <option value="">Seleccionar almacén</option>
+                        <label class="ui-label small fw-semibold">Almacén</label>
+                        <select name="almacen_id" class="ui-select ui-select-lg">
+                            <option value="">Trabajar sin almacén</option>
                             @foreach($almacenes as $almacen)
                                 <option value="{{ $almacen->id }}" {{ old('almacen_id') == $almacen->id ? 'selected' : '' }}>{{ $almacen->nombre }}</option>
                             @endforeach
@@ -97,9 +97,14 @@
 
         <div class="ui-card mb-4" style="--delay:.15s">
             <div class="ui-card-accent"></div>
-            <div class="ui-card-title">
-                <i class="bi bi-list-check me-2"></i>
-                Detalle de la Compra
+            <div class="d-flex justify-content-between align-items-center p-4 pb-0">
+                <div class="ui-card-title mb-0">
+                    <i class="bi bi-list-check me-2"></i>
+                    Detalle de la Compra
+                </div>
+                <button type="button" class="ui-btn ui-btn-solid rounded-pill px-3 btn-sm" id="btnAgregarFila" style="background:var(--accent);border-color:var(--accent);">
+                    <i class="bi bi-plus-lg me-1"></i> Agregar producto
+                </button>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="detalleCompra">
