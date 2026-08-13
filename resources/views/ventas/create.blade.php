@@ -560,6 +560,7 @@ body:not(.dark-mode) {
         background: var(--pos-bg);
         color: var(--pos-text);
         height: calc(100vh - 70px);
+        height: calc(100dvh - 70px);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -1560,13 +1561,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     @media (max-width: 1200px) {
         .pos-body { grid-template-columns: 1fr 380px; }
     }
-    @media (max-width: 992px) {
-        .pos-body { grid-template-columns: 1fr; grid-template-rows: auto auto; overflow-y: auto; }
-        .pos-right { border-left: none; border-top: 1px solid var(--pos-border); }
-        .pos-right { order: 2; }
-        .pos-left { order: 1; min-width: 0; min-height: 0; overflow: visible; }
-        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); padding-top: 4px; }
-        .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); padding: 4px 0; }
+    @media (min-width: 769px) and (max-width: 992px) {
+        .pos-body { grid-template-columns: 1fr 340px; grid-template-rows: 1fr; }
+        .pos-right { border-left: 1px solid var(--pos-border); border-top: none; }
+        .pos-left { min-width: 0; min-height: 0; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
     }
 
     /* ============ TABLET (≤768px) ============ */
@@ -1587,6 +1586,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             overflow-y: auto;
         }
         .pos-left { padding: 8px; gap: 8px; overflow: visible; }
+        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); padding-top: 4px; }
+        .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); padding: 4px 0; }
         .pos-right {
             border-left: none;
             border-top: 1px solid var(--pos-border);
@@ -1683,7 +1684,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
     /* ============ MÓVIL (≤576px) ============ */
     @media (max-width: 576px) {
-        .pos-app { height: 100vh; }
+        .pos-app { height: 100vh; height: 100dvh; }
         .pos-topbar { padding: 8px 10px; gap: 6px; }
         .pos-stat { display: none; }
         #almacen-select { max-width: 100px; }
