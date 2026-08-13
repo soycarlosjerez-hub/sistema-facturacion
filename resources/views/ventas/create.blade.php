@@ -2182,13 +2182,13 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 </button>
             </div>
 
+            @if($almacenes->isNotEmpty())
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
-                @forelse($almacenes as $alm)
+                @foreach($almacenes as $alm)
                     <option value="{{ $alm->id }}" @if($loop->first) selected @endif>{{ $alm->nombre }}</option>
-                @empty
-                    <option value="" disabled>Sin almacenes disponibles</option>
-                @endforelse
+                @endforeach
             </select>
+            @endif
 
             <div class="pos-stat">
                 <span class="label">Vendido Hoy</span>
@@ -3028,7 +3028,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             if (!isNaN(id) && id > 0) return id;
         }
         if (almacenes.length > 0) return almacenes[0].id;
-        // Last resort — shouldn't happen since server ensures at least one almacen
+        // Sin almacenes configurados: la venta se factura sin almacén.
         return 0;
     }
 
@@ -3134,7 +3134,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 showToast('Ya hay un pago en proceso', 'warning');
                 return;
             }
-            if (validaStock && !getAlmacenId()) {
+            if (validaStock && almacenes.length > 0 && !getAlmacenId()) {
                 showToast('Selecciona un almacén válido', 'danger');
                 return;
             }
@@ -3317,8 +3317,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         formData.set('propina', propina.toFixed(2));
         formData.set('general_descuento', (parseFloat(document.querySelector('input[name=\"general_descuento\"]')?.value) || 0).toFixed(2));
 
-        // Inject almacen_id for each cart item when stock validation is active
-        if (validaStock) {
+        // Inject almacen_id for each cart item only when a warehouse is selected
+        if (validaStock && almacenId) {
             cart.forEach(() => formData.append('almacen_id', almacenId));
         }
 
@@ -3434,8 +3434,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         formData.set('metodo_pago', metodo);
         formData.set('propina', '0');
         formData.set('general_descuento', (parseFloat(document.querySelector('input[name="general_descuento"]')?.value) || 0).toFixed(2));
-        // Inject almacen_id for each cart item when stock validation is active
-        if (validaStock) {
+        // Inject almacen_id for each cart item only when a warehouse is selected
+        if (validaStock && almacenId) {
             cart.forEach(() => formData.append('almacen_id', almacenId));
         }
 
