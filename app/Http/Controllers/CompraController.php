@@ -122,7 +122,7 @@ class CompraController extends Controller
         $tiposCompra = TipoCompra::orderBy('nombre')->get();
         $almacenes = $this->almacenesSegunSucursal();
 
-        return view('compras.edit', compact('proveedores', 'productos', 'detalles', 'tiposCompra', 'almacenes'));
+        return view('compras.edit', compact('compra', 'proveedores', 'productos', 'detalles', 'tiposCompra', 'almacenes'));
     }
 
     public function update(UpdateCompraRequest $request, Compra $compra)
