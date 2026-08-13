@@ -1566,6 +1566,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .pos-left { min-width: 0; min-height: 0; padding: 10px; gap: 8px; }
         .pos-right { border-left: 1px solid var(--pos-border); border-top: none; }
         .pos-right { overflow-y: auto; min-height: 0; }
+        .pos-right .pr-section { flex-shrink: 0; }
+        .pos-right .pr-section.flex-grow-1 { flex-shrink: 1; min-height: 0; }
+        .pos-right .pr-section:last-child { position: sticky; bottom: 0; z-index: 5; background: var(--pos-topbar); border-top: 1px solid var(--pos-border); box-shadow: 0 -6px 16px rgba(0,0,0,0.08); }
+        .pos-right::-webkit-scrollbar { width: 6px; }
+        .pos-right::-webkit-scrollbar-thumb { background: var(--pos-border); border-radius: 3px; }
         .pos-products { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; padding: 4px; overflow-y: auto; }
         .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); }
         .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); }
