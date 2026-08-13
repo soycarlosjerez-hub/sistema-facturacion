@@ -1563,33 +1563,93 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     }
     @media (min-width: 769px) and (max-width: 992px) and (orientation: landscape) {
         .pos-body { grid-template-columns: 1fr 340px; grid-template-rows: 1fr; overflow: hidden; }
-        .pos-left { min-width: 0; min-height: 0; padding: 10px; gap: 8px; }
-        .pos-right { border-left: 1px solid var(--pos-border); border-top: none; }
-        .pos-right { overflow-y: auto; min-height: 0; }
+        .pos-left { min-width: 0; min-height: 0; padding: 10px; gap: 8px; display: flex; flex-direction: column; }
+        .pos-right { border-left: 1px solid var(--pos-border); border-top: none; display: flex; flex-direction: column; }
+        .pos-right { overflow-y: auto; min-height: 0; flex: 1; }
         .pos-right .pr-section { flex-shrink: 0; }
-        .pos-right .pr-section.flex-grow-1 { flex-shrink: 1; min-height: 0; }
-        .pos-right .pr-section:last-child { position: sticky; bottom: 0; z-index: 5; background: var(--pos-topbar); border-top: 1px solid var(--pos-border); box-shadow: 0 -6px 16px rgba(0,0,0,0.08); }
+        .pos-right .pr-section.flex-grow-1 { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+        .pos-right .pr-section:last-child { position: sticky; bottom: 0; z-index: 5; background: var(--pos-topbar); border-top: 1px solid var(--pos-border); box-shadow: 0 -8px 24px rgba(0,0,0,0.12); padding-bottom: max(12px, env(safe-area-inset-bottom)); }
         .pos-right::-webkit-scrollbar { width: 6px; }
         .pos-right::-webkit-scrollbar-thumb { background: var(--pos-border); border-radius: 3px; }
-        .pos-products { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; padding: 4px; overflow-y: auto; }
-        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); }
-        .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); }
-        #almacen-select { max-width: 120px; font-size: 0.72rem; }
-        .pos-stat .label { display: none; }
-        .pos-stat .value { font-size: 0.88rem; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; padding: 4px; overflow-y: auto; flex: 1; min-height: 0; }
+        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); padding-bottom: 4px; }
+        .pos-tabs { position: sticky; top: 58px; z-index: 85; background: var(--pos-bg); padding: 4px 0; }
         .pos-topbar { gap: 8px; padding: 8px 12px; }
+        #almacen-select { max-width: 110px; font-size: 0.7rem; padding: 3px 8px; }
+        .pos-stat .label { display: none; }
+        .pos-stat .value { font-size: 0.85rem; }
         .pos-keyhint { display: none; }
-        .dgii-badge { font-size: 0.68rem; padding: 3px 8px; }
-        .pos-app { height: calc(100vh - 58px); height: calc(100dvh - 58px); }
+        .dgii-badge { font-size: 0.65rem; padding: 2px 7px; }
+        .pos-app { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
+        .pos-search { padding: 14px 50px 14px 50px; font-size: 1.15rem; border-radius: 14px; }
+        .pos-search-icon { left: 16px; font-size: 1.25rem; }
+        .pos-search-clear { right: 12px; width: 30px; height: 30px; }
+        .search-mode-toggle { padding: 3px; gap: 1px; }
+        .search-mode-toggle button { padding: 5px 10px; font-size: 0.72rem; }
+        .pos-tab { padding: 7px 11px; font-size: 0.75rem; }
+        .pos-product-card { padding: 8px; border-radius: 12px; }
+        .pos-product-card .ppc-name { font-size: 0.78rem; min-height: 2.2em; }
+        .pos-product-card .ppc-price { font-size: 0.95rem; }
+        .pos-product-card .ppc-stock { font-size: 0.6rem; padding: 1px 5px; }
+        .pos-right .pr-section { padding: 10px 14px; }
+        .pos-right .pr-section-title { font-size: 0.65rem; margin-bottom: 6px; }
+        .cliente-select { padding: 8px 10px; font-size: 0.85rem; }
+        .comprobante-card { padding: 10px 4px; border-radius: 10px; }
+        .comprobante-card i { font-size: 1.25rem; }
+        .comprobante-card .ct-name { font-size: 0.7rem; }
+        .comprobante-card .ct-sub { font-size: 0.6rem; }
+        .ncf-select { padding: 6px 8px; font-size: 0.78rem; }
+        .totals-row { font-size: 0.8rem; padding: 5px 0; }
+        .descuento-input { width: 80px; font-size: 0.75rem; }
+        .total-display { padding: 12px 8px; border-radius: 12px; margin-top: 8px; }
+        .total-display .td-label { font-size: 0.62rem; }
+        .total-display .td-amount { font-size: 1.9rem; }
+        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 6px; }
+        .btn-pay { padding: 12px 6px; border-radius: 12px; font-size: 0.8rem; min-height: 56px; }
+        .btn-pay i { font-size: 1.4rem; }
+        .btn-pay .pay-shortcut { display: none; }
+        .btn-pay.full { grid-column: span 2; min-height: 56px; }
     }
     @media (min-width: 769px) and (max-width: 992px) and (orientation: portrait) {
-        .pos-body { grid-template-columns: 1fr; grid-template-rows: auto auto; overflow-y: auto; }
+        .pos-app { height: calc(100vh - 56px); height: calc(100dvh - 56px); }
+        .pos-topbar { gap: 10px; padding: 10px 14px; }
+        #almacen-select { max-width: 130px; font-size: 0.75rem; }
+        .pos-stat .label { display: none; }
+        .pos-stat .value { font-size: 0.9rem; }
+        .pos-keyhint { display: none; }
+        .dgii-badge { font-size: 0.68rem; padding: 3px 8px; }
+        .pos-body { grid-template-columns: 1fr; grid-template-rows: auto auto; overflow-y: auto; gap: 0; }
         .pos-right { border-left: none; border-top: 1px solid var(--pos-border); min-height: auto; }
         .pos-right { order: 2; }
-        .pos-left { order: 1; min-width: 0; min-height: 0; overflow: visible; }
-        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); padding-top: 4px; }
-        .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); padding: 4px 0; }
-        .pos-products { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+        .pos-left { order: 1; min-width: 0; min-height: 0; overflow: visible; padding: 12px; gap: 10px; }
+        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); padding-bottom: 4px; }
+        .pos-tabs { position: sticky; top: 60px; z-index: 85; background: var(--pos-bg); padding: 4px 0; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; padding: 4px; }
+        .pos-search { padding: 14px 50px; font-size: 1.2rem; border-radius: 14px; }
+        .pos-search-icon { left: 16px; font-size: 1.3rem; }
+        .pos-search-clear { right: 12px; width: 30px; height: 30px; }
+        .search-mode-toggle { padding: 3px; gap: 1px; }
+        .search-mode-toggle button { padding: 6px 12px; font-size: 0.75rem; }
+        .pos-tab { padding: 8px 12px; font-size: 0.78rem; }
+        .pos-product-card { padding: 9px; }
+        .pos-product-card .ppc-name { font-size: 0.8rem; min-height: 2.3em; }
+        .pos-product-card .ppc-price { font-size: 1rem; }
+        .pos-right .pr-section { padding: 12px 16px; }
+        .cliente-select { padding: 10px 12px; font-size: 0.9rem; }
+        .comprobante-grid { gap: 8px; }
+        .comprobante-card { padding: 12px 6px; }
+        .comprobante-card i { font-size: 1.4rem; }
+        .comprobante-card .ct-name { font-size: 0.75rem; }
+        .totals-row { font-size: 0.85rem; padding: 6px 0; }
+        .descuento-input { width: 90px; font-size: 0.8rem; }
+        .total-display { padding: 14px 10px; margin-top: 10px; }
+        .total-display .td-label { font-size: 0.65rem; }
+        .total-display .td-amount { font-size: 2.1rem; }
+        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-pay { padding: 14px 8px; border-radius: 14px; font-size: 0.85rem; min-height: 60px; }
+        .btn-pay i { font-size: 1.5rem; }
+        .btn-pay.full { grid-column: span 2; }
+        .ecf-hint { font-size: 0.72rem; padding: 8px 10px; }
     }
 
     /* ============ TABLET (≤768px) ============ */
@@ -1660,11 +1720,12 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .total-display .td-label { font-size: 0.62rem; }
         .total-display .td-amount { font-size: 2rem; }
 
+        .pos-right .pr-section:last-child { position: sticky; bottom: 0; z-index: 5; background: var(--pos-topbar); border-top: 1px solid var(--pos-border); box-shadow: 0 -8px 24px rgba(0,0,0,0.1); padding-bottom: max(12px, env(safe-area-inset-bottom)); }
         .payment-buttons { grid-template-columns: 1fr 1fr; gap: 6px; }
-        .btn-pay { padding: 12px 6px; border-radius: 10px; font-size: 0.78rem; }
+        .btn-pay { padding: 12px 6px; border-radius: 10px; font-size: 0.78rem; min-height: 56px; }
         .btn-pay i { font-size: 1.3rem; }
         .btn-pay .pay-shortcut { display: none; }
-        .btn-pay.full { grid-column: span 2; }
+        .btn-pay.full { grid-column: span 2; min-height: 56px; }
 
         .cobrar-section { margin-bottom: 10px; }
         .cobrar-total-card { padding: 12px 16px; border-radius: 12px; }
