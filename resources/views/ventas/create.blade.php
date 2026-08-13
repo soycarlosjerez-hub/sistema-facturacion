@@ -1561,11 +1561,30 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     @media (max-width: 1200px) {
         .pos-body { grid-template-columns: 1fr 380px; }
     }
-    @media (min-width: 769px) and (max-width: 992px) {
-        .pos-body { grid-template-columns: 1fr 340px; grid-template-rows: 1fr; }
+    @media (min-width: 769px) and (max-width: 992px) and (orientation: landscape) {
+        .pos-body { grid-template-columns: 1fr 340px; grid-template-rows: 1fr; overflow: hidden; }
+        .pos-left { min-width: 0; min-height: 0; padding: 10px; gap: 8px; }
         .pos-right { border-left: 1px solid var(--pos-border); border-top: none; }
-        .pos-left { min-width: 0; min-height: 0; }
-        .pos-products { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+        .pos-right { overflow-y: auto; min-height: 0; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; padding: 4px; overflow-y: auto; }
+        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); }
+        .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); }
+        #almacen-select { max-width: 120px; font-size: 0.72rem; }
+        .pos-stat .label { display: none; }
+        .pos-stat .value { font-size: 0.88rem; }
+        .pos-topbar { gap: 8px; padding: 8px 12px; }
+        .pos-keyhint { display: none; }
+        .dgii-badge { font-size: 0.68rem; padding: 3px 8px; }
+        .pos-app { height: calc(100vh - 58px); height: calc(100dvh - 58px); }
+    }
+    @media (min-width: 769px) and (max-width: 992px) and (orientation: portrait) {
+        .pos-body { grid-template-columns: 1fr; grid-template-rows: auto auto; overflow-y: auto; }
+        .pos-right { border-left: none; border-top: 1px solid var(--pos-border); min-height: auto; }
+        .pos-right { order: 2; }
+        .pos-left { order: 1; min-width: 0; min-height: 0; overflow: visible; }
+        .pos-search-wrap { position: sticky; top: 0; z-index: 90; background: var(--pos-bg); padding-top: 4px; }
+        .pos-tabs { position: sticky; top: 62px; z-index: 85; background: var(--pos-bg); padding: 4px 0; }
+        .pos-products { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
     }
 
     /* ============ TABLET (≤768px) ============ */
