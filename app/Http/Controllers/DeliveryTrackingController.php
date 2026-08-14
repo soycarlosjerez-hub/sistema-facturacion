@@ -10,7 +10,7 @@ class DeliveryTrackingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DeliveryTracking::with(['orden', 'driver'])->query();
+        $query = DeliveryTracking::with(['orden', 'driver']);
 
         if ($orderId = $request->input('order_id')) {
             $query->where('orden_id', $orderId);
