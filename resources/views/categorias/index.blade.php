@@ -339,6 +339,7 @@ $(function() {
 
         fetch('/categorias/' + id, {
             method: 'POST',
+            headers: { 'Accept': 'application/json' },
             body: formData
         })
         .then(function(r) {
