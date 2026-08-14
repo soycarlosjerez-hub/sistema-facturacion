@@ -41,8 +41,8 @@ class ReporteService
 
         $sesionesAbiertas = SesionCaja::where('estado', 'abierta')->count();
 
-        $stats = Venta::when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
-            ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)
+        $stats = Venta::when($sucursalId, fn($q) => $q->where('ventas.sucursal_id', $sucursalId))
+            ->whereMonth('ventas.created_at', now()->month)->whereYear('ventas.created_at', now()->year)
             ->join('venta_detalles', 'ventas.id', '=', 'venta_detalles.venta_id')
             ->join('productos', 'productos.id', '=', 'venta_detalles.producto_id')
             ->selectRaw('
