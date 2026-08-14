@@ -103,7 +103,7 @@ body.dark-mode .dropdown-item:hover { background: #334155; color: #f1f5f9; }
                 </div>
 
                 @if(!$ncf->activo)
-                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style="z-index: 2;">
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-75" style="z-index: 2; pointer-events: none;">
                     <span class="badge bg-secondary rounded-pill px-4 py-2 shadow-sm fw-bold">DESACTIVADO</span>
                 </div>
                 @endif
