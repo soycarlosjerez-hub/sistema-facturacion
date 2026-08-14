@@ -356,6 +356,37 @@
             font-size: 0.75rem;
         }
 
+        .btn-register-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(96,165,250,0.45);
+            border-radius: 14px;
+            color: var(--primary-light);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register-link:hover {
+            background: rgba(59,130,246,0.12);
+            border-color: var(--primary);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(59,130,246,0.25);
+        }
+
+        .btn-register-link:active {
+            transform: translateY(0);
+        }
+
         /* ── Responsive ── */
         @media (max-width: 480px) {
             .login-card {
@@ -498,10 +529,10 @@
             <!-- Footer -->
             <div class="login-footer">
                 @if (Route::has('register'))
-                    <p style="margin-bottom:8px;">
-                        ¿No tienes cuenta?
-                        <a href="{{ route('register') }}" class="forgot-link">Crea tu empresa</a>
-                    </p>
+                    <div class="divider"><span>¿Nuevo en Erpipos?</span></div>
+                    <a href="{{ route('register') }}" class="btn-register-link">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Crea tu empresa
+                    </a>
                 @endif
                 <p>&copy; {{ date('Y') }} Erpipos — Todos los derechos reservados</p>
             </div>
