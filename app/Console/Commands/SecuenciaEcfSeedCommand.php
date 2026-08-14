@@ -33,7 +33,7 @@ class SecuenciaEcfSeedCommand extends Command
         }
 
         $this->info("Instancia: {$instancia->nombre} (ID: {$instancia->id})");
-        $this->line(" Tipo de negocio: {$instancia->businessType->nombre ?? 'N/A'}");
+        $this->line(" Tipo de negocio: " . ($instancia->businessType->nombre ?? 'N/A'));
 
         if (! $force) {
             if (! $this->confirm("¿Desea sembrar las secuencias e-CF para esta instancia?")) {
