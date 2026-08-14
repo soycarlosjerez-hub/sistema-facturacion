@@ -119,9 +119,10 @@ body.dark-mode #ventasTable tfoot td { background:rgba(15,23,42,.6);border-top-c
                                 <div class="fw-semibold text-warning">RD$ {{ number_format($cajero['itbis'], 2) }}</div>
                             </div>
                         </div>
-                        @if($cajero['cajas_usadas']->isNotEmpty())
+                        @php $cajasUsadas = collect($cajero['cajas_usadas']); @endphp
+                        @if($cajasUsadas->isNotEmpty())
                         <div class="mt-2">
-                            <small class="text-muted">Cajas: {{ $cajero['cajas_usadas']->join(', ') }}</small>
+                            <small class="text-muted">Cajas: {{ $cajasUsadas->join(', ') }}</small>
                         </div>
                         @endif
                     </div>
