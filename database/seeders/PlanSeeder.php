@@ -13,6 +13,7 @@ class PlanSeeder extends Seeder
             'dashboard', 'ventas', 'inventario', 'compras', 'proveedores',
             'clientes', 'cobros', 'cajas', 'gastos',
             'kardex', 'listas-precio',
+            'sucursales',
             'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
             'impresoras', 'payment-processors', 'cuentas-bancarias',
             'configuracion-general', 'auditoria', 'backups',
