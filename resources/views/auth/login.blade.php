@@ -497,6 +497,12 @@
 
             <!-- Footer -->
             <div class="login-footer">
+                @if (Route::has('register'))
+                    <p style="margin-bottom:8px;">
+                        ¿No tienes cuenta?
+                        <a href="{{ route('register') }}" class="forgot-link">Crea tu empresa</a>
+                    </p>
+                @endif
                 <p>&copy; {{ date('Y') }} Erpipos — Todos los derechos reservados</p>
             </div>
         </div>

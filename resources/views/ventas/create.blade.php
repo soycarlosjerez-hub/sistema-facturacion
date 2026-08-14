@@ -2434,7 +2434,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     </div>
                 </div>
 
-                <div class="pr-section flex-grow-1 overflow-auto">
+                <div class="pr-section">
                     <div class="pr-section-title">
                         <i class="bi bi-calculator"></i> Totales
                     </div>
@@ -2460,8 +2460,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                         <input type="hidden" name="subtotal_final" id="hidden-subtotal">
                         <input type="hidden" name="impuestos" id="hidden-itbis">
                     </div>
+                </div>
 
-                    <!-- Mini history -->
+                <!-- Mini history (scrollable, no recorta los totales) -->
+                <div class="pr-section flex-grow-1 overflow-auto">
                     <div id="turno-history-wrap" style="display: none; margin-top: 12px;">
                         <div class="pr-section-title">
                             <i class="bi bi-clock-history"></i> Últimas ventas

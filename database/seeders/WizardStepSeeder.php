@@ -123,6 +123,16 @@ class WizardStepSeeder extends Seeder
                 'entity_class' => NcfSequence::class,
                 'orden' => 50,
             ],
+            [
+                'key'          => 'usuario-admin',
+                'module_key'   => 'configuracion-general',
+                'label'        => 'Usuarios Administradores',
+                'icon'         => 'bi-person-plus',
+                'required'     => false,
+                'skipable'     => true,
+                'entity_class' => null,
+                'orden'        => 55,
+            ],
 
             // ===== RESTAURANTE =====
             [

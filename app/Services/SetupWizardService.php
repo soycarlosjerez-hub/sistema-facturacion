@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BusinessType;
+use App\Models\SystemSetting;
 use App\Models\WizardStep;
 use App\Models\User;
 use Illuminate\Support\Facades\Schema;
@@ -98,13 +99,21 @@ class SetupWizardService
 
     public function isStepCompleted(WizardStep $step, ?User $user = null): bool
     {
+        $tenantId = $user?->business_instance_id;
+
+        // Paso custom: se completa al crear un admin adicional o al saltarlo
+        if ($step->key === 'usuario-admin') {
+            return SystemSetting::where('tenant_id', $tenantId)
+                ->whereIn('clave', ['wizard_usuario_admin', 'wizard_usuario_admin_skip'])
+                ->exists();
+        }
+
         if (!$step->entity_class || !class_exists($step->entity_class)) {
             return true;
         }
 
         $query = $step->entity_class::query();
 
-        $tenantId = $user?->business_instance_id;
         if ($tenantId) {
             $table = (new $step->entity_class)->getTable();
             if (Schema::hasColumn($table, 'tenant_id')) {

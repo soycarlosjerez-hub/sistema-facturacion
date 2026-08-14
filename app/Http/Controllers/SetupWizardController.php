@@ -6,6 +6,7 @@ use App\Models\Almacen;
 use App\Models\Caja;
 use App\Models\Categoria;
 use App\Models\Cliente;
+use App\Models\InstanceRole;
 use App\Models\LavaderoServicio;
 use App\Models\Lavador;
 use App\Models\Mesa;
@@ -25,11 +26,16 @@ use App\Models\Tecnico;
 use App\Models\Equipo;
 use App\Models\OrdenReparacion;
 use App\Models\ServicioDomotica;
+use App\Models\User;
+use App\Mail\UserCreatedNotification;
 use App\Services\CajaService;
 use App\Services\SetupWizardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class SetupWizardController extends Controller
@@ -53,6 +59,12 @@ class SetupWizardController extends Controller
     {
         $user = Auth::user();
         $step = $request->input('step');
+
+        // Paso con lógica propia (creación de usuario administrador / skip)
+        if ($step === 'usuario-admin') {
+            return $this->processUsuarioAdminStep($request, $user);
+        }
+
         $rules = $this->rulesFor($step, $user->business_instance_id);
 
         $data = $request->validate($rules);
@@ -61,6 +73,70 @@ class SetupWizardController extends Controller
         $this->createEntity($step, $data, $data['tenant_id']);
 
         return redirect()->route('setup.wizard');
+    }
+
+    /**
+     * Crea un usuario administrador adicional para la instancia o marca el paso como omitido.
+     */
+    protected function processUsuarioAdminStep(Request $request, User $user): RedirectResponse
+    {
+        if ($request->boolean('skip')) {
+            SystemSetting::updateOrCreate(
+                ['clave' => 'wizard_usuario_admin_skip', 'tenant_id' => $user->business_instance_id],
+                ['valor' => now()->toDateTimeString()]
+            );
+
+            return redirect()->route('setup.wizard')
+                ->with('success', 'Paso omitido. Podrás crear más usuarios desde el panel de usuarios.');
+        }
+
+        $instance = $user->businessInstance;
+
+        $limitCheck = app(\App\Services\PlanLimitService::class)->verificar($instance, 'usuario');
+        if (! $limitCheck['ok']) {
+            return back()->withInput()->with('error', $limitCheck['mensaje']);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:12|confirmed',
+        ]);
+
+        $adminRole = InstanceRole::where('business_instance_id', $instance->id)
+            ->where('name', 'admin')
+            ->first();
+
+        $newUser = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => 'admin-business',
+            'business_type_id' => $instance->business_type_id,
+            'business_instance_id' => $instance->id,
+            'instance_role_id' => $adminRole?->id,
+            'sucursal_id' => null,
+        ]);
+        $newUser->assignRole('admin-business');
+
+        try {
+            Mail::to($newUser->email)->send(new UserCreatedNotification($newUser, $data['password']));
+        } catch (\Exception $e) {
+            Log::error('Failed to send user created email', [
+                'user_id' => $newUser->id,
+                'email' => $newUser->email,
+                'instance_id' => $instance->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        SystemSetting::updateOrCreate(
+            ['clave' => 'wizard_usuario_admin', 'tenant_id' => $instance->id],
+            ['valor' => now()->toDateTimeString()]
+        );
+
+        return redirect()->route('setup.wizard')
+            ->with('success', "Usuario administrador {$newUser->name} creado correctamente.");
     }
 
     public function complete(): RedirectResponse
@@ -124,6 +200,9 @@ class SetupWizardController extends Controller
             'parametros' => [
                 'empresa_nombre'   => 'required|string|max:255',
                 'empresa_telefono' => 'nullable|string|max:50',
+                'empresa_rnc'      => 'nullable|string|max:20',
+                'empresa_direccion'=> 'nullable|string|max:500',
+                'empresa_email'    => 'nullable|email|max:255',
                 'moneda_simbolo'   => 'required|string|max:10',
                 'impuesto_itbis'   => 'required|numeric|min:0',
             ],
@@ -264,6 +343,19 @@ class SetupWizardController extends Controller
                     ['valor' => $value ?? '']
                 );
             }
+
+            // Sincronizar los datos de la instancia (negocio)
+            $instance = Auth::user()?->businessInstance;
+            if ($instance) {
+                $instance->update(array_filter([
+                    'nombre'    => $data['empresa_nombre'] ?? null,
+                    'telefono'  => $data['empresa_telefono'] ?? null,
+                    'rnc'       => $data['empresa_rnc'] ?? null,
+                    'direccion' => $data['empresa_direccion'] ?? null,
+                    'email'     => $data['empresa_email'] ?? null,
+                ], fn ($v) => ! is_null($v)));
+            }
+
             return true; 
         }
 
