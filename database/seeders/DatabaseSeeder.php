@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
         $this->call(NcfSequenceSeeder::class);
         $this->call(SecuenciaEcfSeeder::class);
         $this->call(NcfSequenceInstancia7Seeder::class);
+        $this->call(SecuenciaEcfInstancia7Seeder::class);
         $this->call(DeliveryCompanySeeder::class);
         $this->call(WizardStepSeeder::class);
         $this->call(CategoryPermissionsSeeder::class);
