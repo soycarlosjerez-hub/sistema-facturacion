@@ -83,7 +83,7 @@ class PlanLimitObserver
             ]);
 
             throw new \Illuminate\Validation\ValidationException(
-                \Illuminate\Validation\Validator::make([], [])
+                \Illuminate\Support\Facades\Validator::make([], [])
                     ->after(function ($validator) use ($mensaje) {
                         $validator->errors()->add('plan_limit', $mensaje);
                     })
@@ -109,29 +109,6 @@ class PlanLimitObserver
         // User tiene business_instance_id
         if ($model instanceof User) {
             return $model->businessInstance;
-        }
-
-        // Sucursal tiene business_instance_id
-        if ($model instanceof Sucursal) {
-            return \App\Models\BusinessInstance::find($model->business_instance_id);
-        }
-
-        // Almacen tiene sucursal_id -> business_instance_id
-        if ($model instanceof Almacen && $model->sucursal_id) {
-            $sucursal = \App\Models\Sucursal::find($model->sucursal_id);
-            if ($sucursal) {
-                return \App\Models\BusinessInstance::find($sucursal->business_instance_id);
-            }
-        }
-
-        // Mesa tiene business_instance_id
-        if ($model instanceof Mesa) {
-            return \App\Models\BusinessInstance::find($model->business_instance_id);
-        }
-
-        // Caja tiene business_instance_id
-        if ($model instanceof Caja) {
-            return \App\Models\BusinessInstance::find($model->business_instance_id);
         }
 
         return null;
