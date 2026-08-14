@@ -334,7 +334,7 @@ $(function() {
         formData.append('_method', 'DELETE');
         formData.append('_token', csrfToken);
 
-        const row = btn.closest('tr');
+        const row = btn.closest('tr')[0];
         if (row) row.style.opacity = '0.5';
 
         fetch('/categorias/' + id, {
