@@ -1643,11 +1643,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .total-display { padding: 12px 8px; border-radius: 12px; margin-top: 8px; }
         .total-display .td-label { font-size: 0.62rem; }
         .total-display .td-amount { font-size: 1.9rem; }
-        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 5px; }
-        .btn-pay { padding: 8px 5px; border-radius: 10px; font-size: 0.7rem; min-height: 42px; }
-        .btn-pay i { font-size: 1.15rem; }
+        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 4px; }
+        .btn-pay { padding: 6px 4px; border-radius: 8px; font-size: 0.62rem; min-height: 34px; }
+        .btn-pay i { font-size: 0.95rem; }
         .btn-pay .pay-shortcut { display: none; }
-        .btn-pay.full { grid-column: span 2; min-height: 42px; }
+        .btn-pay.full { grid-column: span 2; min-height: 34px; }
     }
     @media (min-width: 769px) and (max-width: 992px) and (orientation: portrait) {
         .pos-app { flex: 1 1 auto; min-height: 0; }
@@ -1684,9 +1684,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .total-display { padding: 14px 10px; margin-top: 10px; }
         .total-display .td-label { font-size: 0.65rem; }
         .total-display .td-amount { font-size: 2.1rem; }
-        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 6px; }
-        .btn-pay { padding: 10px 6px; border-radius: 12px; font-size: 0.75rem; min-height: 46px; }
-        .btn-pay i { font-size: 1.3rem; }
+        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 5px; }
+        .btn-pay { padding: 8px 5px; border-radius: 10px; font-size: 0.66rem; min-height: 38px; }
+        .btn-pay i { font-size: 1.1rem; }
         .btn-pay.full { grid-column: span 2; }
         .ecf-hint { font-size: 0.72rem; padding: 8px 10px; }
     }
@@ -1760,11 +1760,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .total-display .td-amount { font-size: 2rem; }
 
         .pos-right .pr-section:last-child { position: sticky; bottom: 0; z-index: 5; background: var(--pos-topbar); border-top: 1px solid var(--pos-border); box-shadow: 0 -8px 24px rgba(0,0,0,0.1); padding-bottom: max(12px, env(safe-area-inset-bottom)); }
-        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 5px; }
-        .btn-pay { padding: 8px 5px; border-radius: 10px; font-size: 0.68rem; min-height: 40px; }
-        .btn-pay i { font-size: 1.1rem; }
+        .payment-buttons { grid-template-columns: 1fr 1fr; gap: 4px; }
+        .btn-pay { padding: 6px 4px; border-radius: 8px; font-size: 0.6rem; min-height: 32px; }
+        .btn-pay i { font-size: 0.9rem; }
         .btn-pay .pay-shortcut { display: none; }
-        .btn-pay.full { grid-column: span 2; min-height: 40px; }
+        .btn-pay.full { grid-column: span 2; min-height: 32px; }
 
         .cobrar-section { margin-bottom: 10px; }
         .cobrar-total-card { padding: 12px 16px; border-radius: 12px; }
@@ -1857,9 +1857,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .total-display .td-label { font-size: 0.58rem; }
         .total-display .td-amount { font-size: 1.8rem; }
 
-        .payment-buttons { grid-template-columns: 1fr; gap: 4px; }
-        .btn-pay { padding: 10px 8px; font-size: 0.78rem; border-radius: 10px; min-height: 42px; }
-        .btn-pay i { font-size: 1.3rem; }
+        .payment-buttons { grid-template-columns: 1fr; gap: 3px; }
+        .btn-pay { padding: 8px 6px; font-size: 0.72rem; border-radius: 8px; min-height: 34px; }
+        .btn-pay i { font-size: 1.1rem; }
         .btn-pay.full { grid-column: auto; }
 
         .pos-search { padding: 12px 40px; font-size: 1rem; }
@@ -1969,7 +1969,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         .pos-tab { padding: 10px 12px; }
         .tecla { min-height: 48px; }
         .keypad-btn { min-height: 52px; }
-        .btn-pay { min-height: 42px; }
+        .btn-pay { min-height: 34px; }
         .metodo-btn { min-height: 56px; }
         .comprobante-card { min-height: 56px; }
     }
