@@ -115,7 +115,7 @@ class PlanLimitService
 
     public function sucursalesUsadas(BusinessInstance $instance): int
     {
-        return Sucursal::where('business_instance_id', $instance->id)->count();
+        return Sucursal::where('tenant_id', $instance->id)->count();
     }
 
     public function empresasUsadas(BusinessInstance $instance): int
@@ -127,7 +127,7 @@ class PlanLimitService
 
     public function almacenesUsados(BusinessInstance $instance): int
     {
-        return Almacen::where('business_instance_id', $instance->id)->count();
+        return Almacen::where('tenant_id', $instance->id)->count();
     }
 
     public function productosUsados(BusinessInstance $instance): int
@@ -171,7 +171,7 @@ class PlanLimitService
 
     public function cajasUsadas(BusinessInstance $instance): int
     {
-        return Caja::where('business_instance_id', $instance->id)->count();
+        return Caja::where('tenant_id', $instance->id)->count();
     }
 
     public function cotizacionesUsadas(BusinessInstance $instance): int
@@ -208,7 +208,7 @@ class PlanLimitService
 
     public function mesasUsadas(BusinessInstance $instance): int
     {
-        return Mesa::where('business_instance_id', $instance->id)->count();
+        return Mesa::where('tenant_id', $instance->id)->count();
     }
 
     public function puedeAgregar(BusinessInstance $instance, string $resource): bool
