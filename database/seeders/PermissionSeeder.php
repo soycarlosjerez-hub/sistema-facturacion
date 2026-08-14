@@ -604,6 +604,25 @@ class PermissionSeeder extends Seeder
 
                 'usuarios.view',
                 'roles.view',
+
+                'delivery-companies.view',
+                'delivery-companies.create',
+                'delivery-companies.edit',
+                'delivery-dashboard.view',
+                'delivery-drivers.view',
+                'delivery-drivers.create',
+                'delivery-drivers.edit',
+                'delivery-drivers.delete',
+                'delivery-zones.view',
+                'delivery-zones.create',
+                'delivery-zones.edit',
+                'delivery-zones.delete',
+                'delivery-tracking.view',
+                'delivery-tracking.create',
+                'delivery-tracking.edit',
+                'delivery-tracking.assign',
+                'delivery-earnings.view',
+                'delivery-earnings.export',
             ],
 
             'gerente' => [

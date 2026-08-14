@@ -17,6 +17,8 @@ class PlanSeeder extends Seeder
             'impresoras', 'payment-processors', 'cuentas-bancarias',
             'configuracion-general', 'auditoria', 'backups',
             'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-gastos',
+            'delivery-companies', 'delivery-dashboard', 'delivery-drivers',
+            'delivery-zones', 'delivery-tracking', 'delivery-earnings',
         ];
 
         $profesionalModules = array_values(array_unique(array_merge($basicoModules, [
