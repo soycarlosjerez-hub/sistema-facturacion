@@ -106,6 +106,8 @@ class ImpresoraController extends Controller
 
             $impresora->historial()->create([
                 'user_id' => auth()->id(),
+                'imprimible_type' => 'prueba',
+                'imprimible_id' => null,
                 'tipo_documento' => 'prueba',
                 'documento_numero' => null,
                 'copias' => 1,
