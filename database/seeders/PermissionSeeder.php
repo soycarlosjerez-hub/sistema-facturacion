@@ -130,13 +130,6 @@ class PermissionSeeder extends Seeder
                 'ecf.send',
                 'ecf.certificados',
             ],
-            'impresoras' => [
-                'impresoras.view',
-                'impresoras.create',
-                'impresoras.edit',
-                'impresoras.delete',
-                'impresoras.print',
-            ],
             'gastos' => [
                 'gastos.view',
                 'gastos.create',
@@ -416,7 +409,6 @@ class PermissionSeeder extends Seeder
                 'sucursales.view',
                 'ncf.view',
                 'ecf.view',
-                'impresoras.view',
                 'payment-processors.view',
                 'cuentas-bancarias.view',
                 'cuentas-bancarias.create',

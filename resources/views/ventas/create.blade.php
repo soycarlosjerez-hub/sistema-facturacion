@@ -3514,7 +3514,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         $('post-total').textContent = fmt(data.total);
         const metodoMap = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia', fiado: 'Fiado', cuenta_abierta: 'Cuenta Abierta', mixto: 'Mixto' };
         $('post-metodo').textContent = metodoMap[data.metodo_pago] || data.metodo_pago;
-        const ticketUrl = `/ventas/pdf/${data.venta_id}`;
+        const ticketUrl = `/ventas/${data.venta_id}/ticket`;
         $('btn-ticket').href = ticketUrl;
         // Enable/disable facturar based on comprobante
         const facturarBtn = $('btn-facturar');
@@ -3559,15 +3559,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
     function imprimirTicket() {
         if (!ultimaVentaId) return;
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || document.querySelector('input[name="_token"]')?.value;
-        fetch(`/ventas/imprimir/${ultimaVentaId}`, {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token },
-            body: '{}'
-        })
-        .then(r => r.ok ? r.json() : Promise.reject())
-        .then(res => showToast('Impresión enviada', 'success'))
-        .catch(() => showToast('Error al imprimir', 'danger'));
+        window.open(`/ventas/${ultimaVentaId}/ticket`, '_blank');
     }
 
     // Event listener for payment monto-recibido (works for both modals via delegation)

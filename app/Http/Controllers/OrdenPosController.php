@@ -9,7 +9,6 @@ use App\Models\Producto;
 use App\Services\OrdenService;
 use App\Services\OrdenPaymentService;
 use App\Services\OrdenNotificationService;
-use App\Services\PrintService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +19,6 @@ class OrdenPosController extends Controller
         protected OrdenService $ordenService,
         protected OrdenPaymentService $paymentService,
         protected OrdenNotificationService $notificationService,
-        protected PrintService $printService,
     ) {}
 
     public function index()

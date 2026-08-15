@@ -298,7 +298,7 @@ class VentaController extends Controller
 
     public function ticket($id)
     {
-        $venta = Viva::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal'])->findOrFail($id);
+        $venta = Venta::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal'])->findOrFail($id);
 
         return view('ventas.ticket', [
             'venta' => $venta,

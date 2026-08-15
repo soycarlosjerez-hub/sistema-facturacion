@@ -8,7 +8,6 @@ use App\Models\Producto;
 use App\Models\VentaDetalle;
 use App\Services\RestaurantOrderService;
 use App\Services\Ecf\EcfService;
-use App\Services\PrintService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +18,6 @@ class OrdenController extends Controller
     public function __construct(
         protected RestaurantOrderService $orderService,
         protected EcfService $ecfService,
-        protected PrintService $printService,
     ) {}
 
     private function restauranteValidaStock(): bool
@@ -280,29 +278,15 @@ class OrdenController extends Controller
 
     public function imprimirTicket(Request $request, Mesa $mesa)
     {
-        $venta = \App\Models\Venta::with('detalles.producto', 'cliente', 'pagos', 'mesa')
-            ->findOrFail($request->input('venta_id'));
-
-        try {
-            $impresora = \App\Models\Impresora::activas()->first();
-            if (!$impresora) {
-                throw new \RuntimeException('No hay impresoras activas configuradas.');
-            }
-            $resultado = $this->printService->imprimirDocumento('venta', $venta->id, $impresora);
-            return response()->json(['success' => true, 'message' => $resultado]);
-        } catch (\Throwable $e) {
-            return response()->json(['error' => 'Error al imprimir: ' . $e->getMessage()], 500);
-        }
+        return back()->with('error', 'Configuración de impresoras ha sido removida. Use la vista de ticket.');
     }
 
     public function ticketText(Mesa $mesa, Request $request)
     {
         $venta = \App\Models\Venta::with('detalles.producto', 'cliente', 'pagos', 'mesa')
             ->findOrFail($request->input('venta_id'));
-        $empresa = (object) config('app.empresa', []);
-        $paper = (int) $request->get('paper', 80);
-        $text = $this->printService->renderVentaTicket($venta, $empresa, $paper);
-        $text = "MESA: {$mesa->nombre}\n" . $text;
+        $text = "MESA: {$mesa->numero}\n\n";
+        $text .= "Ticket de venta #{$venta->id}\n";
         return response($text, 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8')
             ->header('Content-Disposition', "inline; filename=ticket-mesa-{$mesa->numero}.txt");

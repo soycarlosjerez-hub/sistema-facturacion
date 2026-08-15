@@ -25,7 +25,6 @@ use App\Http\Controllers\Api\ReservacionController;
 use App\Http\Controllers\Api\ListaPrecioController;
 use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\PaymentProcessorController;
-use App\Http\Controllers\Api\ImpresoraController;
 use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\NcfSequenceController;
 use App\Http\Controllers\Api\Auth\ClienteAuthController;
@@ -203,10 +202,7 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
         ->names('api.payment-processors')
         ->except(['edit', 'create']);
 
-    // Printers
-    Route::apiResource('printers', ImpresoraController::class)
-        ->names('api.printers')
-        ->except(['edit', 'create']);
+    // Printers removed - now using thermal ticket system
 
     // Audit Logs
     Route::get('audit-logs', [AuditLogController::class, 'index'])

@@ -5,15 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Conduce;
 use App\Models\Venta;
 use App\Services\ConduceService;
-use App\Services\PrintService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class ConduceController extends Controller
 {
     public function __construct(
-        protected ConduceService $conduceService,
-        protected PrintService $printService
+        protected ConduceService $conduceService
     ) {}
 
     public function index(Request $request)
@@ -133,8 +131,7 @@ class ConduceController extends Controller
     public function ticketText(Conduce $conduce)
     {
         $conduce->load(['cliente', 'items']);
-        $empresa = (object) config('app.empresa', []);
-        $text = $this->printService->renderConduceTicket($conduce, $empresa, 80);
+        $text = "Conduce #{$conduce->numero}\n\n";
         return response($text, 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8')
             ->header('Content-Disposition', "inline; filename=conduce-{$conduce->numero}.txt");

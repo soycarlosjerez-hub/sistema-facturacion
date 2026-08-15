@@ -7,15 +7,13 @@ use App\Http\Requests\UpdateCotizacionRequest;
 use App\Models\Cotizacion;
 use App\Services\CotizacionEmailService;
 use App\Services\CotizacionService;
-use App\Services\PrintService;
 use Illuminate\Http\Request;
 
 class CotizacionController extends Controller
 {
     public function __construct(
         protected CotizacionService $cotizacionService,
-        protected CotizacionEmailService $emailService,
-        protected PrintService $printService
+        protected CotizacionEmailService $emailService
     ) {
         $this->middleware('auth');
         $this->middleware('permission:cotizaciones.view')->only(['index', 'show', 'pdf', 'ticket']);
@@ -153,10 +151,13 @@ class CotizacionController extends Controller
         $cotizacione->load(['cliente', 'user', 'items']);
         $paperWidth = (int) $request->input('paper', 80);
         $format = $request->input('format', 'txt');
-        $content = $this->printService->renderCotizacionTicket($cotizacione, $paperWidth);
+
+        $charsPerLine = $paperWidth === 58 ? 32 : 42;
+        $content = '';
+        $content .= str_pad(mb_strimwidth($cotizacione->user?->empresa?->nombre ?? \App\Models\SystemSetting::nombreActual(), '', 42), 42, ' ', STR_PAD_BOTH) . "\n";
+        $content .= str_repeat("-", 42) . "\n";
 
         if ($format === 'escpos') {
-            $content = $this->printService->toEscPos($content);
             $filename = "cotizacion-{$cotizacione->numero}.bin";
             $mimeType = 'application/octet-stream';
         } else {
