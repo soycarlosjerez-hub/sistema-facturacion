@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Conduce;
 use App\Models\Cotizacion;
 use App\Models\HistorialImpresion;
-use App\Models\Impresora;
 use App\Models\Orden;
 use App\Models\Venta;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +13,8 @@ class PrintService
 {
     public const PAPER_58MM = 58;
     public const PAPER_80MM = 80;
+    protected const DEFAULT_TERMINAL_IP = '127.0.0.1';
+    protected const DEFAULT_TERMINAL_PORT = 9100;
 
     public function renderCotizacionTicket(Cotizacion $cotizacion, int $paperWidth = self::PAPER_80MM): string
     {
@@ -254,11 +255,12 @@ class PrintService
 
     /**
      * Imprimir un documento completo (venta, cotizacion, conduce)
+     * Ahora usa impresora terminal por defecto en lugar de configuración de impresora
      */
     public function imprimirDocumento(
         string $tipo,
         int $id,
-        Impresora $impresora,
+        ?Impresora $impresora = null,
         string $formato = 'ticket',
         int $copias = 1,
         string $papelTamano = '80mm',
@@ -290,18 +292,16 @@ class PrintService
 
         for ($i = 0; $i < $copias; $i++) {
             try {
-                if ($impresora->tipo_conexion === 'pdf') {
-                    $this->enviarAPdf($impresora, $texto, "{$tipo}_{$id}_copia" . ($i + 1));
-                } elseif (class_exists('\Mike42\Escpos\Printer')) {
-                    $this->imprimirConEscpos($impresora, $texto);
+                if ($impresora?->tipo_conexion === 'pdf' ?? false) {
+                    $this->enviarAPdf($impresora ?? new Impresora(), $texto, "{$tipo}_{$id}_copia" . ($i + 1));
                 } else {
-                    $this->enviarATexto($impresora, $texto);
+                    $this->imprimirConEscposTerminal($texto);
                 }
             } catch (\Throwable $e) {
                 $exitoso = false;
                 $errores[] = $e->getMessage();
                 Log::error("Error imprimiendo {$tipo}#{$id}", [
-                    'impresora' => $impresora->nombre,
+                    'impresora' => $impresora?->nombre ?? 'terminal',
                     'copia' => $i + 1,
                     'error' => $e->getMessage(),
                 ]);
@@ -311,7 +311,7 @@ class PrintService
         HistorialImpresion::create([
             'imprimible_type' => get_class($modelo),
             'imprimible_id' => $modelo->id,
-            'impresora_id' => $impresora->id,
+            'impresora_id' => $impresora?->id ?? null,
             'user_id' => auth()->id(),
             'tipo_documento' => $tipo,
             'documento_numero' => $documentoNumero,
@@ -327,7 +327,7 @@ class PrintService
             throw new \RuntimeException("Error al imprimir: " . implode('; ', $errores));
         }
 
-        return "Documento {$tipo} {$documentoNumero} impreso correctamente en {$impresora->nombre} ({$copias} copia(s))";
+        return "Documento {$tipo} {$documentoNumero} impreso correctamente en impresora terminal ({$copias} copia(s))";
     }
 
     private function enviarARed(Impresora $impresora, string $contenido): string
@@ -496,36 +496,78 @@ class PrintService
     }
 
     /**
+     * Enviar texto a la impresora terminal (directo ESC/POS a IP/puerto por defecto)
+     */
+    private function imprimirConEscposTerminal(string $texto): void
+    {
+        $connector = new \Mike42\Escpos\PrintConnectors\NetworkPrintConnector(
+            self::DEFAULT_TERMINAL_IP,
+            self::DEFAULT_TERMINAL_PORT
+        );
+
+        $printer = new \Mike42\Escpos\Printer($connector);
+        $printer->initialize();
+        $printer->setTextSize(1, 1);
+        $printer->selectPrintMode();
+        $printer->setJustification(\Mike42\Escpos\Printer::JUSTIFY_LEFT);
+
+        $lines = explode("\n", $texto);
+        foreach ($lines as $line) {
+            if (str_starts_with($line, '***') && str_ends_with($line, '***')) {
+                $printer->setEmphasis(true);
+                $printer->text($line . "\n");
+                $printer->setEmphasis(false);
+            } else {
+                $printer->text($line . "\n");
+            }
+        }
+
+        $printer->cut();
+        $printer->close();
+    }
+
+    /**
+     * Enviar texto a la impresora terminal (formato de texto simple)
+     */
+    private function imprimirATextoTerminal(string $texto): string
+    {
+        $contenido = $this->toEscPos($texto);
+
+        $socket = @fsockopen(self::DEFAULT_TERMINAL_IP, self::DEFAULT_TERMINAL_PORT, $errno, $errstr, 5);
+        if ($socket) {
+            @stream_set_timeout($socket, 5);
+            $bytesWritten = fwrite($socket, $contenido);
+            fclose($socket);
+            return "Enviado a impresora terminal ({$bytesWritten} bytes)";
+        }
+
+        // Fallback: guardar como archivo de texto
+        return $this->saveAsTextFile($texto, 'ticket_terminal_' . now()->format('Ymd_His'));
+    }
+
+    /**
      * Imprimir una venta directamente (metodo comodín usado por VentaController)
+     * Ahora usa la impresora terminal por defecto
      */
     public function imprimir(Venta $venta, string $papelTamano = '80mm'): string
     {
         $papelTamano = $this->resolvePaperSize($papelTamano);
-        $impresora = $this->obtenerImpresoraActiva();
-        if (!$impresora) {
-            throw new \RuntimeException('No hay impresoras activas configuradas.');
-        }
-        return $this->imprimirDocumento('venta', $venta->id, $impresora, 'ticket', 1, $papelTamano);
+        return $this->imprimirDocumento('venta', $venta->id, null, 'ticket', 1, $papelTamano);
     }
 
     /**
      * Imprimir una orden de restaurante (POS)
+     * Ahora usa la impresora terminal por defecto
      */
     public function printOrden(Orden $orden, string $papelTamano = '80mm'): string
     {
         $papelTamano = $this->resolvePaperSize($papelTamano);
-        $impresora = $this->obtenerImpresoraActiva();
-        if (!$impresora) {
-            throw new \RuntimeException('No hay impresoras activas configuradas.');
-        }
-
-        $paperWidth = $papelTamano === '58mm' ? self::PAPER_58MM : self::PAPER_80MM;
-        $texto = $this->renderOrdenTicket($orden, $paperWidth);
+        $texto = $this->renderOrdenTicket($orden, $papelTamano === '58mm' ? self::PAPER_58MM : self::PAPER_80MM);
 
         HistorialImpresion::create([
             'imprimible_type' => get_class($orden),
             'imprimible_id' => $orden->id,
-            'impresora_id' => $impresora->id,
+            'impresora_id' => null,
             'user_id' => auth()->id(),
             'tipo_documento' => 'orden',
             'documento_numero' => $orden->ncf ?? '#' . str_pad($orden->id, 6, '0', STR_PAD_LEFT),
@@ -537,26 +579,9 @@ class PrintService
             'tamanio_bytes' => strlen($texto),
         ]);
 
-        if ($impresora->tipo_conexion === 'pdf') {
-            return $this->enviarAPdf($impresora, $texto, "orden_{$orden->id}");
-        } elseif (class_exists('\Mike42\Escpos\Printer')) {
-            $this->imprimirConEscpos($impresora, $texto);
-            return "Orden #{$orden->id} impresa correctamente en {$impresora->nombre}";
-        } else {
-            return $this->enviarATexto($impresora, $texto);
-        }
-    }
+        $this->imprimirATextoTerminal($texto);
 
-    /**
-     * Obtener la primera impresora activa de la instancia actual del usuario.
-     */
-    private function obtenerImpresoraActiva(): ?Impresora
-    {
-        $user = auth()->user();
-        if (!$user || !$user->business_instance_id) {
-            return Impresora::activas()->first();
-        }
-        return Impresora::where('tenant_id', $user->business_instance_id)->activas()->first();
+        return "Orden #{$orden->id} enviada a la impresora terminal";
     }
 
     /**
