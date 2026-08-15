@@ -304,9 +304,9 @@ class VentaController extends Controller
 
         try {
             app(PrintService::class)->imprimir($venta);
-            return response()->json(['success' => true, 'message' => 'Impresión enviada.']);
+            return response()->json(['success' => true, 'message' => 'Ticket enviado a la impresora terminal.']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al imprimir.'], 500);
+            return response()->json(['error' => 'Error al imprimir: ' . $e->getMessage()], 500);
         }
     }
 
