@@ -10,6 +10,7 @@
         'alquileres' => 'bi-building', 'tattoo' => 'bi-brush',
         'climatizacion' => 'bi-wind', 'tecnologia' => 'bi-phone',
         'contabilidad' => 'bi-calculator', 'delivery' => 'bi-truck',
+        'arte' => 'bi-palette',
     ];
     $categoriaColores = [
         'core' => '#3b82f6', 'operaciones' => '#22c55e', 'clientes' => '#ec4899',
@@ -19,6 +20,7 @@
         'alquileres' => '#8b5cf6', 'tattoo' => '#f43f5e',
         'climatizacion' => '#0ea5e9', 'tecnologia' => '#ef4444',
         'contabilidad' => '#dc3545', 'delivery' => '#0ea5e9',
+        'arte' => '#e1306c',
     ];
     $selectedMods = old('modulos', $selectedModulos);
 @endphp
