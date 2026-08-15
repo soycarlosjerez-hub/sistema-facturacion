@@ -673,8 +673,8 @@ $(function() {
             zeroRecords: '<div class="text-center py-5"><i class="bi bi-box-seam d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i><p class="fw-semibold mb-1" style="color:#475569;">No se encontraron productos</p><p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>',
             processing: '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>'
         },
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+        pageLength: -1,
+        lengthMenu: [[-1, 10, 25, 50, 100], ['Todos', 10, 25, 50, 100]],
         order: [[1, 'asc']],
         responsive: {
             details: {

@@ -21,7 +21,15 @@ class ProductoController extends Controller
             ->when($request->out_of_stock, fn ($q) => $q->where('stock', 0))
             ->when($request->stock_lte !== null && $request->stock_lte !== '', fn ($q) => $q->where('stock', '<=', (int) $request->stock_lte));
 
-        return ProductoResource::collection($query->orderBy('nombre')->paginate(15));
+        $perPage = $request->input('per_page', 15);
+
+        if ($perPage === 'all' || (int) $perPage === -1) {
+            $productos = $query->orderBy('nombre')->get();
+
+            return ProductoResource::collection($productos);
+        }
+
+        return ProductoResource::collection($query->orderBy('nombre')->paginate(min((int) $perPage, 100)));
     }
 
     public function store(Request $request)

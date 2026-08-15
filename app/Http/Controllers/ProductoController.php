@@ -56,8 +56,12 @@ class ProductoController extends Controller
         $total = $query->count();
         $skip = (int) $request->input('start', 0);
         $length = (int) $request->input('length', 10);
-        
-        $productos = $query->skip($skip)->take($length)->get();
+
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        $productos = $query->get();
 
         return response()->json([
             'draw' => (int) $request->input('draw', 1),
