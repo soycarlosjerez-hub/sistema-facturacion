@@ -3757,10 +3757,6 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         renderCart('add');
         cerrarModalProductos();
     }
-        renderCart('add');
-        showToast(`+ ${qty}× ${p.nombre}`, 'success', 1200);
-        cerrarModalProductos();
-    }
 
     // Teclado virtual
     function renderizarTecladoModal() {
