@@ -420,6 +420,21 @@ class SaleService
 
         $cajas = \App\Models\Caja::where('tenant_id', $tenantId)->activas()->orderBy('nombre')->get();
 
+        $puedeModificarPrecio = in_array(Auth::user()->role, ['admin', 'admin-business', 'root', 'gerente'])
+            || Auth::user()->hasAnyRole(['admin', 'admin-business', 'root', 'gerente']);
+
+        $clientesJs = $clientes->map(fn($c) => [
+            'id'         => (int) $c->id,
+            'nombre'     => $c->nombre,
+            'tipo'       => $c->tipo_cliente ?? 'consumo',
+            'deuda'      => (float) ($c->balance_pendiente ?? 0),
+            'limite'     => (float) ($c->limite_credito ?? 0),
+            'es_final'   => $c->id === $clienteConsumidorFinal->id,
+            'rnc'        => $c->rnc ?? $c->rnc_cedula ?? '',
+            'rnc_cedula' => $c->rnc_cedula ?? $c->rnc ?? '',
+            'tipo_cliente' => $c->tipo_cliente ?? 'consumo',
+        ])->values()->all();
+
         if ($modoObras) {
             $obras = ArteObra::where('tenant_id', $tenantId)
                 ->where('activo', true)
@@ -482,21 +497,6 @@ class SaleService
         ])->values()->all();
 
         $categoriasJs = Categoria::where('tenant_id', $tenantId)->orderBy('nombre')->get(['id', 'nombre'])->toArray();
-
-        $puedeModificarPrecio = in_array(Auth::user()->role, ['admin', 'admin-business', 'root', 'gerente'])
-            || Auth::user()->hasAnyRole(['admin', 'admin-business', 'root', 'gerente']);
-
-        $clientesJs = $clientes->map(fn($c) => [
-            'id'         => (int) $c->id,
-            'nombre'     => $c->nombre,
-            'tipo'       => $c->tipo_cliente ?? 'consumo',
-            'deuda'      => (float) ($c->balance_pendiente ?? 0),
-            'limite'     => (float) ($c->limite_credito ?? 0),
-            'es_final'   => $c->id === $clienteConsumidorFinal->id,
-            'rnc'        => $c->rnc ?? $c->rnc_cedula ?? '',
-            'rnc_cedula' => $c->rnc_cedula ?? $c->rnc ?? '',
-            'tipo_cliente' => $c->tipo_cliente ?? 'consumo',
-        ])->values()->all();
 
         return compact(
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
