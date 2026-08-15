@@ -14,6 +14,8 @@ class ArteColeccion extends Model
     use Auditable;
     use TenantScope;
 
+    protected $table = 'arte_colecciones';
+
     protected $fillable = [
         'tenant_id',
         'nombre',
