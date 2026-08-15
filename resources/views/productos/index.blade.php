@@ -441,7 +441,6 @@ $(function() {
     let userActivityTimer = null;
     let lastDataHash = '';
     let isSearchTyping = false;
-    let searchDebounceTimer = null;
 
     // Track user activity
     function resetUserActivityTimer() {
@@ -727,14 +726,21 @@ $(function() {
     });
 
     // Búsqueda en tiempo real con debounce
-    $('#busqueda-producto').on('input', function() {
-        isSearchTyping = true;
-        clearTimeout(searchDebounceTimer);
-        const val = $(this).val();
-        searchDebounceTimer = setTimeout(function() {
+    // Se usan 'input' y 'keypress' para compatibilidad con terminales POS
+    let searchTimeout = null;
+    $('#busqueda-producto').on('input keypress', function(e) {
+        // Si se presiona Enter, buscar inmediatamente sin debounce
+        if (e.type === 'keypress' && e.which === 13) {
             isSearchTyping = false;
             reloadWithFilters();
-        }, 500);
+            return;
+        }
+        isSearchTyping = true;
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            isSearchTyping = false;
+            reloadWithFilters();
+        }, 300); // Reducido de 500ms a 300ms para respuesta más rápida
     });
 
     // Change event for selects also triggers reload
