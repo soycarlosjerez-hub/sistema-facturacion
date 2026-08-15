@@ -30,7 +30,6 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReporteFiscalController;
 use App\Http\Controllers\ReporteController;
-use App\Http\Controllers\ImpresoraController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\DeliveryCompanyController;
 use App\Http\Controllers\DevolucionController;
@@ -170,7 +169,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ventas/pdf/{id}', [VentaController::class, 'exportPdf'])->name('venta.pdf');
     });
 
-    Route::post('/ventas/imprimir/{id}', [VentaController::class, 'imprimir'])->name('ventas.imprimir');
     Route::match(['GET', 'POST'], '/ventas/facturar/{id}', [VentaController::class, 'facturar'])->name('ventas.facturar');
 
     // POS - Ordenes (sin mesas)
@@ -626,22 +624,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/certificados-digitales/{certificado}/toggle', [CertificadoDigitalController::class, 'toggle'])->name('certificados-digitales.toggle');
     });
 
-    // Impresoras
-    Route::middleware('permission:impresoras.view')->group(function () {
-        Route::get('/impresoras', [ImpresoraController::class, 'index'])->name('impresoras.index');
-        Route::get('/impresoras/create', [ImpresoraController::class, 'create'])->name('impresoras.create');
-        Route::post('/impresoras', [ImpresoraController::class, 'store'])->name('impresoras.store');
-        Route::get('/impresoras/{impresora}/edit', [ImpresoraController::class, 'edit'])->name('impresoras.edit');
-        Route::put('/impresoras/{impresora}', [ImpresoraController::class, 'update'])->name('impresoras.update');
-        Route::delete('/impresoras/{impresora}', [ImpresoraController::class, 'destroy'])->name('impresoras.destroy');
-        Route::post('/impresoras/{impresora}/probar', [ImpresoraController::class, 'probar'])->name('impresoras.probar');
-        Route::post('/impresoras/{impresora}/toggle-auto/{modulo}', [ImpresoraController::class, 'toggleAuto'])->name('impresoras.toggle-auto');
-        Route::get('/impresoras/historial', [ImpresoraController::class, 'historial'])->name('impresoras.historial');
-        Route::get('/impresoras/plantillas', [ImpresoraController::class, 'plantillas'])->name('impresoras.plantillas');
-        Route::post('/impresoras/plantillas/{plantilla}', [ImpresoraController::class, 'plantillaUpdate'])->name('impresoras.plantilla-update');
-        Route::get('/impresoras/print-dialog', [ImpresoraController::class, 'printDialog'])->name('impresoras.print-dialog');
-        Route::post('/impresoras/print-direct', [ImpresoraController::class, 'printDirect'])->name('impresoras.print-direct');
-    });
+    // Ventas - Ticket terminal
+    Route::get('/ventas/{id}/ticket', [VentaController::class, 'ticket'])->name('ventas.ticket');
 });
 
 // Admin only routes (using Spatie role admin)

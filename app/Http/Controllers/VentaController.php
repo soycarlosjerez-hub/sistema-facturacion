@@ -11,7 +11,6 @@ use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\Venta;
 use App\Exports\VentasExport;
-use App\Services\PrintService;
 use App\Services\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -297,17 +296,14 @@ class VentaController extends Controller
         return response()->json(['ventas' => $ventas]);
     }
 
-    public function imprimir($id)
+    public function ticket($id)
     {
-        $venta = Venta::where('tenant_id', Auth::user()->business_instance_id)
-            ->findOrFail($id);
+        $venta = Viva::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal'])->findOrFail($id);
 
-        try {
-            app(PrintService::class)->imprimir($venta);
-            return response()->json(['success' => true, 'message' => 'Ticket enviado a la impresora terminal.']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al imprimir: ' . $e->getMessage()], 500);
-        }
+        return view('ventas.ticket', [
+            'venta' => $venta,
+            'empresa' => (object) config('app.empresa', \App\Models\SystemSetting::getEmpresaConfig()),
+        ]);
     }
 
     public function facturar(Request $request, $id)

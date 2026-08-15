@@ -808,7 +808,6 @@ class Sidebar
             ($hasConf('payment-processors') && $can('payment-processors.view')) ||
             ($hasConf('cuentas-bancarias') && $can('cuentas-bancarias.view')) ||
             ($hasConf('delivery-companies') && $can('delivery-companies.view')) ||
-            ($hasConf('impresoras') && $can('impresoras.view')) ||
             ($hasConf('configuracion-general') && $can('configuracion.view'))
         ) {
             $items[] = ['section' => 'Configuración'];
@@ -832,9 +831,6 @@ class Sidebar
             }
             if ($hasConf('delivery-companies') && $can('delivery-companies.view')) {
                 $items[] = ['route' => 'delivery-companies.index', 'icon' => 'bi-truck', 'label' => 'Delivery Companies', 'is_route' => 'delivery-companies.*', 'exact_route' => 'delivery-companies.index'];
-            }
-            if ($hasConf('impresoras') && $can('impresoras.view')) {
-                $items[] = ['route' => 'impresoras.index', 'icon' => 'bi-printer', 'label' => 'Impresoras', 'is_route' => 'impresoras.*', 'exact_route' => 'impresoras.index'];
             }
             if ($hasConf('configuracion-general') && $can('configuracion.view')) {
                 $items[] = ['route' => 'configuracion.index', 'icon' => 'bi-sliders', 'label' => 'Parámetros', 'is_route' => 'configuracion.*', 'exact_route' => 'configuracion.index'];

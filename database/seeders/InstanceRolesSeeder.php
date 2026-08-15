@@ -15,7 +15,7 @@ class InstanceRolesSeeder extends Seeder
         'clientes', 'cajas', 'sucursales', 'almacenes', 'cuentas-bancarias',
         'reportes-caja', 'reportes-restaurante', 'reportes-resumen', 'reportes-gastos',
         'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
-        'configuracion-general', 'impresoras', 'payment-processors', 'delivery-companies',
+        'configuracion-general', 'payment-processors', 'delivery-companies',
         'auditoria', 'backups', 'plantilla-gastos',
     ];
 

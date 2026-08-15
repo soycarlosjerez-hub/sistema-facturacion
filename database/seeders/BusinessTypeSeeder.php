@@ -27,7 +27,7 @@ class BusinessTypeSeeder extends Seeder
                     'reportes-caja', 'reportes-restaurante', 'reportes-resumen', 'reportes-gastos',
                     'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
                     'libros-ventas', 'libros-compras', 'formulario-14-14',
-                    'configuracion-general', 'impresoras', 'payment-processors', 'delivery-companies',
+                    'configuracion-general', 'payment-processors', 'delivery-companies',
                     'delivery-dashboard', 'delivery-drivers', 'delivery-zones', 'delivery-tracking', 'delivery-earnings',
                     'auditoria', 'backups', 'plantilla-gastos',
                 ],
