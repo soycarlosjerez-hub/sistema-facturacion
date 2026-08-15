@@ -2791,18 +2791,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 <div class="fs-2 fw-bold text-success mb-3" id="post-total">RD$ 0.00</div>
                 <span class="badge bg-secondary rounded-pill px-3 py-2 mb-3" id="post-metodo">Efectivo</span>
 
-                <div class="d-flex gap-2 justify-content-center mt-3">
-                    <a href="#" id="btn-ticket" target="_blank" class="btn btn-outline-primary rounded-pill">
-                        <i class="bi bi-receipt me-1"></i> Ticket
-                    </a>
-                    <button type="button" id="btn-imprimir" class="btn btn-outline-secondary rounded-pill" onclick="imprimirTicket()">
-                        <i class="bi bi-printer me-1"></i> Imprimir
-                    </button>
-                    <button type="button" id="btn-facturar" class="btn btn-outline-warning rounded-pill" onclick="facturarVenta()">
-                        <i class="bi bi-shield-check me-1"></i> Facturar (e-CF)
+                <div class="d-grid gap-2 mt-3">
+                    <button type="button" id="btn-ticket" class="btn btn-success btn-lg rounded-pill">
+                        <i class="bi bi-printer me-1"></i> Imprimir Ticket
                     </button>
                 </div>
-                <div id="factura-status" class="mt-2 small"></div>
             </div>
             <div class="modal-footer border-0 justify-content-center" style="background:var(--pos-bg);">
                 <button type="button" class="btn btn-success rounded-pill px-4" onclick="POS.nuevaVenta()">
@@ -3514,21 +3507,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         $('post-total').textContent = fmt(data.total);
         const metodoMap = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia', fiado: 'Fiado', cuenta_abierta: 'Cuenta Abierta', mixto: 'Mixto' };
         $('post-metodo').textContent = metodoMap[data.metodo_pago] || data.metodo_pago;
-        const ticketUrl = `/ventas/${data.venta_id}/ticket`;
-        $('btn-ticket').href = ticketUrl;
-        // Enable/disable facturar based on comprobante
-        const facturarBtn = $('btn-facturar');
-        if (data.tipo_comprobante === 'ecf') {
-            facturarBtn.style.display = 'inline-flex';
-            facturarBtn.onclick = () => facturarVenta(data.venta_id);
-            // El e-CF ya se emitió en el servidor al registrar la venta; aquí solo se consulta el estado
-            $('factura-status').innerHTML = '<span class="text-warning"><i class="bi bi-hourglass-split me-1"></i> Consultando estado del e-CF...</span>';
-            facturarVenta(data.venta_id);
-        } else {
-            facturarBtn.style.display = 'none';
-        }
         loadDayStats();
         loadTurnoHistory();
+        const ticketUrl = `/ventas/${data.venta_id}/ticket`;
+        $('btn-ticket').onclick = () => window.open(ticketUrl, '_blank');
         new bootstrap.Modal($('postPagoModal')).show();
     }
 

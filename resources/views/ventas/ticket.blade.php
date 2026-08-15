@@ -150,6 +150,22 @@
         </div>
         <div class="separator-double"></div>
 
+        @php
+            $totalPagado = $venta->pagos->sum('monto');
+            $diferencia = $totalPagado - $venta->total;
+        @endphp
+        @if($diferencia >= 0)
+        <div class="section">
+            <div class="bold" style="font-size: 13px; margin-bottom: 2px;">Pago:</div>
+            <div class="bold" style="font-size: 14px; color: #000;">RD{{ number_format($totalPagado, 2) }}</div>
+            @if($diferencia > 0)
+            <div class="bold" style="font-size: 13px; margin-top: 4px;">Cambio:</div>
+            <div class="bold" style="font-size: 14px; color: #000;">RD{{ number_format($diferencia, 2) }}</div>
+            @endif
+        </div>
+        <div class="separator-double"></div>
+        @endif
+
         <div class="section" style="margin: 6px 0;">
             <p class="bold" style="margin-bottom: 4px;">Métodos de Pago:</p>
             @foreach($venta->pagos as $pago)
