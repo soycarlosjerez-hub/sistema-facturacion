@@ -55,7 +55,7 @@ class ProductoController extends Controller
 
         $total = $query->count();
         $skip = (int) $request->input('start', 0);
-        $length = (int) $request->input('length', 10);
+        $length = (int) $request->input('length', -1);
 
         if ($length > 0) {
             $query->skip($skip)->take($length);
