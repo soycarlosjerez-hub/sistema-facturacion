@@ -298,12 +298,8 @@ class VentaController extends Controller
 
     public function ticket($id)
     {
-        $venta = Venta::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal'])->findOrFail($id);
-
-        return view('ventas.ticket', [
-            'venta' => $venta,
-            'empresa' => (object) config('app.empresa', \App\Models\SystemSetting::getEmpresaConfig()),
-        ]);
+        $venta = Venta::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal', 'pagos'])->findOrFail($id);
+        return view('ventas.ticket', ['venta' => $venta]);
     }
 
     public function facturar(Request $request, $id)

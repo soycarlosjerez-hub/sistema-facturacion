@@ -31,7 +31,7 @@
         .row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 11px; }
         .row .label { font-weight: bold; }
         
-        .items-table { width: 100%; margin: 6px 0; }
+        .items-table { width: 100%; border-spacing: 0; margin: 6px 0; }
         .items-table tr { border-bottom: 1px dotted #ccc; }
         .items-table td { padding: 3px 0; vertical-align: top; }
         .items-table .name { width: 55%; }
@@ -64,15 +64,10 @@
     <div class="ticket">
         <div class="header center">
             <h1 class="bold">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h1>
-            @php
-                $empresa = (isset($empresa) && $empresa) ? $empresa : \App\Models\SystemSetting::getEmpresaConfig();
-            @endphp
-            @if($empresa)
-                <p>RNC: {{ $empresa->rnc ?? 'N/A' }}</p>
-                <p>{{ $empresa->direccion ?? '' }}</p>
-                @if(!empty($empresa->telefono))
-                <p>Tel: {{ $empresa->telefono }}</p>
-                @endif
+            <p>RNC: {{ \App\Models\SystemSetting::get('empresa_rnc', 'N/A') }}</p>
+            <p>{{ \App\Models\SystemSetting::get('empresa_direccion', '') }}</p>
+            @if(!empty(\App\Models\SystemSetting::get('empresa_telefono', '')))
+            <p>Tel: {{ \App\Models\SystemSetting::get('empresa_telefono') }}</p>
             @endif
             <div class="separator"></div>
         </div>
