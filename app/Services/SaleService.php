@@ -413,6 +413,13 @@ class SaleService
             $productos = $productos->filter(fn($p) => $p->stock > 0)->values();
         }
 
+        $ncfSequences = \App\Models\NcfSequence::where('tenant_id', $tenantId)
+            ->where('activo', true)
+            ->where('fecha_vencimiento', '>=', now())
+            ->get();
+
+        $cajas = \App\Models\Caja::where('tenant_id', $tenantId)->activas()->orderBy('nombre')->get();
+
         if ($modoObras) {
             $obras = ArteObra::where('tenant_id', $tenantId)
                 ->where('activo', true)
@@ -459,13 +466,6 @@ class SaleService
         foreach ($productos as $producto) {
             $stocks[$producto->id] ??= [];
         }
-
-        $ncfSequences = \App\Models\NcfSequence::where('tenant_id', $tenantId)
-            ->where('activo', true)
-            ->where('fecha_vencimiento', '>=', now())
-            ->get();
-
-        $cajas = \App\Models\Caja::where('tenant_id', $tenantId)->activas()->orderBy('nombre')->get();
 
         $productosJs = $productos->map(fn($p) => [
             'id'           => (int) $p->id,
