@@ -133,7 +133,7 @@ body.dark-mode .pagos-table tbody td {
                         @foreach($venta->detalles as $d)
                         <div class="d-flex justify-content-between mb-2">
                             <div class="small pe-3" style="flex: 1;">
-                                <div class="fw-bold">{{ $d->producto->nombre }}</div>
+                                <div class="fw-bold">{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Obra de Arte' }}</div>
                                 <small class="text-muted">{{ $d->cantidad }} x RD${{ number_format($d->precio_unitario, 2) }}</small>
                             </div>
                             <div class="fw-bold text-end small">RD${{ number_format($d->subtotal, 2) }}</div>

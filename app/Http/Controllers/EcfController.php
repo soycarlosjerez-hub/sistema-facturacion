@@ -50,7 +50,8 @@ class EcfController extends Controller
     {
         $ecf->load([
             'venta.cliente',
-            'venta.detalles.producto',
+'venta.detalles.producto',
+            'venta.detalles.obra',
             'secuencia',
             'certificado',
             'usuario',
@@ -138,7 +139,7 @@ class EcfController extends Controller
 
     public function pdf(EcfDocumento $ecf)
     {
-        $ecf->load(['venta.cliente', 'venta.detalles.producto', 'venta.usuario', 'secuencia', 'notaCredito', 'documentoOriginal']);
+        $ecf->load(['venta.cliente', 'venta.detalles.producto', 'venta.detalles.obra', 'venta.usuario', 'secuencia', 'notaCredito', 'documentoOriginal']);
         $qrUrl = app(\App\Services\Ecf\EcfQrGenerator::class)->toQrApiUrl($ecf);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('ventas.ecf-pdf', compact('ecf', 'qrUrl'))
             ->setPaper('letter', 'portrait');

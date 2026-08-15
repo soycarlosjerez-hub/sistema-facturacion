@@ -157,7 +157,7 @@ class DevolucionService
     {
         return Venta::where('id', 'like', "%{$term}%")
             ->orWhereHas('cliente', fn($q) => $q->where('nombre', 'like', "%{$term}%"))
-            ->with(['cliente', 'detalles.producto'])
+            ->with(['cliente', 'detalles.producto', 'detalles.obra'])
             ->limit(10)
             ->get()
             ->map(fn($v) => [
@@ -167,7 +167,7 @@ class DevolucionService
                 'fecha' => $v->created_at->format('d/m/Y'),
                 'detalles' => $v->detalles->map(fn($d) => [
                     'producto_id'     => $d->producto_id,
-                    'producto_nombre' => $d->producto->nombre ?? 'N/A',
+                    'producto_nombre' => $d->producto->nombre ?? $d->obra->titulo ?? 'N/A',
                     'cantidad'        => $d->cantidad,
                     'precio'          => $d->precio_unitario,
                     'itbis'           => $d->itbis_porcentaje ?? SystemSetting::itbisDefault(),

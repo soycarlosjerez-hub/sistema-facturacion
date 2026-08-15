@@ -89,6 +89,15 @@
                             <label class="ui-label fw-bold">Icono (Bootstrap Icons)</label>
                             <input type="text" name="icon" class="ui-input rounded-pill" value="{{ old('icon', $businessType->icon) }}" placeholder="bi-building">
                         </div>
+                        <div class="mb-3">
+                            <label class="ui-label fw-bold">Modo de Facturaci&oacute;n</label>
+                            <select name="facturacion_modo" class="ui-select rounded-pill">
+                                @php $facturacionModo = old('facturacion_modo', $businessType->config['facturacion_modo'] ?? 'productos'); @endphp
+                                <option value="productos" {{ $facturacionModo === 'productos' ? 'selected' : '' }}>Productos (inventario)</option>
+                                <option value="obras_arte" {{ $facturacionModo === 'obras_arte' ? 'selected' : '' }}>Obras de Arte (galer&iacute;a)</option>
+                            </select>
+                            <small class="text-muted">En "Obras de Arte" el terminal de ventas factura el cat&aacute;logo de obras del m&oacute;dulo Arte en lugar de productos.</small>
+                        </div>
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="form-check form-switch">

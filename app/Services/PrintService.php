@@ -84,7 +84,7 @@ class PrintService
 
     public function renderVentaTicket(Venta $venta, int $paperWidth = self::PAPER_80MM): string
     {
-        $venta->load(['cliente', 'usuario', 'detalles.producto']);
+        $venta->load(['cliente', 'usuario', 'detalles.producto', 'detalles.obra']);
         $charsPerLine = $this->getCharsPerLine($paperWidth);
         $output = '';
         $fechaVenta = $venta->fecha instanceof \DateTimeInterface
@@ -106,7 +106,7 @@ class PrintService
         $output .= $this->separator($charsPerLine) . "\n";
 
         foreach ($venta->detalles as $det) {
-            $output .= $this->truncate($det->producto?->nombre ?? 'N/A', $charsPerLine) . "\n";
+            $output .= $this->truncate($det->producto?->nombre ?? $det->obra?->titulo ?? 'N/A', $charsPerLine) . "\n";
             $qtyPrice = $det->cantidad . ' x RD$' . number_format($det->precio_unitario, 2);
             $subtotal = 'RD$' . number_format($det->subtotal, 2);
             $output .= $this->leftRight($qtyPrice, $subtotal, $charsPerLine) . "\n";

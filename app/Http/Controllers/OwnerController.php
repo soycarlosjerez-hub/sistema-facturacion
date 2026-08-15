@@ -218,6 +218,7 @@ class OwnerController extends Controller
             'orden' => 'integer|min:0',
             'modules' => 'nullable|array',
             'modules.*' => 'string',
+            'facturacion_modo' => 'nullable|string|in:productos,obras_arte',
         ]);
 
         $businessType->update([
@@ -227,6 +228,9 @@ class OwnerController extends Controller
             'icon' => $data['icon'] ?? null,
             'activo' => $request->boolean('activo', true),
             'orden' => $data['orden'] ?? 0,
+            'config' => array_merge($businessType->config ?? [], [
+                'facturacion_modo' => $data['facturacion_modo'] ?? 'productos',
+            ]),
         ]);
 
         $selectedModules = $data['modules'] ?? [];

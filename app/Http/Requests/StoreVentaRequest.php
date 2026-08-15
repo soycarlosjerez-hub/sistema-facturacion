@@ -24,14 +24,18 @@ class StoreVentaRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $tieneObras = $this->has('obra_id') && is_array($this->input('obra_id')) && count(array_filter($this->input('obra_id'))) > 0;
+
+        $reglas = [
             'cliente_id'    => [
                 Rule::requiredIf(fn () => in_array($this->metodo_pago, ['fiado', 'cuenta_abierta'])),
                 'exists:clientes,id',
             ],
             'tipo_venta_id' => 'required|exists:tipos_ventas,id',
-            'producto_id'   => 'required|array|min:1',
+            'producto_id'   => [$tieneObras ? 'nullable' : 'required', 'array', 'min:1'],
             'producto_id.*' => 'exists:productos,id',
+            'obra_id'       => 'nullable|array',
+            'obra_id.*'     => 'exists:arte_obras,id',
             'almacen_id'    => 'nullable|array',
             'almacen_id.*'  => 'nullable|exists:almacenes,id',
             'cantidad'      => 'required|array|min:1',
@@ -60,6 +64,8 @@ class StoreVentaRequest extends FormRequest
             'ncf_tipo'      => ['nullable', 'string', 'exists:ncf_sequences,prefijo', Rule::requiredIf(fn() => $this->tipo_comprobante === 'ncf')],
             'tipo_comprobante' => 'nullable|in:sin,ncf,ecf',
         ];
+
+        return $reglas;
     }
 
     public function messages(): array

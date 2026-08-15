@@ -253,8 +253,8 @@ body.dark-mode code { background: rgba(30,41,59,.8); color: #93c5fd; padding: .2
                             <tr>
                                 <td class="ps-3 small">{{ $i + 1 }}</td>
                                 <td>
-                                    <span class="fw-bold small">{{ $d->producto->nombre }}</span>
-                                    <br><small class="text-muted">{{ $d->producto->codigo_barras ?? 'N/A' }}</small>
+                                    <span class="fw-bold small">{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Obra de Arte' }}</span>
+                                    <br><small class="text-muted">{{ $d->producto->codigo_barras ?? ($d->obra_id ? 'OBRA-' . $d->obra_id : 'N/A') }}</small>
                                 </td>
                                 <td class="text-end small">{{ $d->cantidad }}</td>
                                 <td class="text-end small">RD$ {{ number_format($d->precio_unitario, 2) }}</td>

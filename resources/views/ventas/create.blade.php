@@ -2221,7 +2221,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 </button>
             </div>
 
-            @if($almacenes->isNotEmpty())
+            @if($almacenes->isNotEmpty() && !($modoObras ?? false))
             <select id="almacen-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:160px;" title="Almacén de despacho">
                 @foreach($almacenes as $alm)
                     <option value="{{ $alm->id }}" @if($loop->first) selected @endif>{{ $alm->nombre }}</option>
@@ -3023,6 +3023,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     const urlCuentaAbierta = {!! json_encode(url('/ventas/cuenta-abierta')) !!};
     const turnoInicio = new Date({!! json_encode($sesion->fecha_apertura->toIso8601String()) !!});
     const validaStock = {!! json_encode($validaStock ?? true) !!};
+    const modoObras = {!! json_encode($modoObras ?? false) !!};
     const puedeModificarPrecio = {!! json_encode($puedeModificarPrecio ?? false) !!};
 
     // ============ Estado ============
@@ -3133,6 +3134,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         },
 
         updateQty(index, val) {
+            if (modoObras) return;
             const v = parseInt(val) || 1;
             if (v < 1) return;
             if (!validaStock) {
@@ -3344,7 +3346,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
         // Validate almacen before proceeding (only required if warehouses exist)
         const almacenId = getAlmacenId();
-        if (validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (!modoObras && validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
 
         isSubmitting = true;
         const btn = document.querySelector('.btn-cobrar-touch');
@@ -3359,7 +3361,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         formData.set('general_descuento', (parseFloat(document.querySelector('input[name=\"general_descuento\"]')?.value) || 0).toFixed(2));
 
         // Inject almacen_id for each cart item only when a warehouse is selected
-        if (validaStock && almacenId) {
+        if (!modoObras && validaStock && almacenId) {
             cart.forEach(() => formData.append('almacen_id', almacenId));
         }
 
@@ -3459,7 +3461,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
         // Validate almacen before proceeding (only required if warehouses exist)
         const almacenId = getAlmacenId();
-        if (validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (!modoObras && validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
 
         isSubmitting = true;
         const btn = document.querySelector(`.btn-pay[data-metodo="${metodo}"]`);
@@ -3476,7 +3478,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         formData.set('propina', '0');
         formData.set('general_descuento', (parseFloat(document.querySelector('input[name="general_descuento"]')?.value) || 0).toFixed(2));
         // Inject almacen_id for each cart item only when a warehouse is selected
-        if (validaStock && almacenId) {
+        if (!modoObras && validaStock && almacenId) {
             cart.forEach(() => formData.append('almacen_id', almacenId));
         }
 
@@ -3689,9 +3691,19 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             const qty = cantidadesModal[id];
             const c = colorProductoModal(p.nombre);
             const initial = (p.nombre || '?').charAt(0).toUpperCase();
-            const stockCls = !validaStock ? 'bg-warning text-dark' : (p.stock <= 0 ? 'bg-secondary' : p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark');
-            const stockTxt = p.stock <= 0 ? 'Sin stock' : p.stock + ' uds';
-            const outCls = (validaStock && p.stock <= 0) ? ' out-of-stock' : '';
+            let stockHtml = '';
+            let qtyHtml = '';
+            if (!modoObras) {
+                const stockCls = !validaStock ? 'bg-warning text-dark' : (p.stock <= 0 ? 'bg-secondary' : p.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark');
+                const stockTxt = p.stock <= 0 ? 'Sin stock' : p.stock + ' uds';
+                stockHtml = `<span class="modal-prod-stock-badge badge ${stockCls}">${stockTxt}</span>`;
+                qtyHtml = `<div class="modal-prod-qty" onclick="event.stopPropagation()">
+                    <button type="button" onpointerdown="cambiarQtyModal(${id}, -1)">&#8722;</button>
+                    <span id="mqty-${id}">${qty}</span>
+                    <button type="button" onpointerdown="cambiarQtyModal(${id}, 1)">+</button>
+                </div>`;
+            }
+            const outCls = (!modoObras && validaStock && p.stock <= 0) ? ' out-of-stock' : '';
             let imgHtml;
             if (p.imagen_url) {
                 imgHtml = `<img class="modal-prod-img" src="${escapeHtml(p.imagen_url)}" alt="" onerror="this.onerror=null;this.remove();this.nextElementSibling.style.display='flex';">`;
@@ -3702,15 +3714,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             html += `
             <div class="col-4 col-md-3 col-lg-2">
                 <div class="modal-prod-card${outCls}" onclick="agregarProductoDesdeModal(${id})">
-                    <span class="modal-prod-stock-badge badge ${stockCls}">${stockTxt}</span>
+                    ${stockHtml}
                     ${imgHtml}
                     <div class="modal-prod-name">${escapeHtml(p.nombre)}</div>
                     <div class="modal-prod-price">${fmt(p.precio)}</div>
-                    <div class="modal-prod-qty" onclick="event.stopPropagation()">
-                        <button type="button" onpointerdown="cambiarQtyModal(${id}, -1)">&#8722;</button>
-                        <span id="mqty-${id}">${qty}</span>
-                        <button type="button" onpointerdown="cambiarQtyModal(${id}, 1)">+</button>
-                    </div>
+                    ${qtyHtml}
                 </div>
             </div>`;
         });
@@ -3730,7 +3738,15 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     function agregarProductoDesdeModal(id) {
         const p = productos.find(x => x.id === id);
         if (!p) { showToast('Producto no encontrado', 'danger'); return; }
-        if (validaStock && p.stock <= 0) { showToast('Producto sin stock', 'warning'); return; }
+        if (!modoObras && validaStock && p.stock <= 0) { showToast('Producto sin stock', 'warning'); return; }
+        if (modoObras) {
+            const existing = cart.find(x => x.id === id);
+            if (existing) { showToast(`La obra "${p.nombre}" ya está en el carrito`, 'warning'); return; }
+            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', es_obra: true });
+            renderCart('add');
+            cerrarModalProductos();
+            return;
+        }
         const qty = cantidadesModal[id] || 1;
         const existing = cart.find(x => x.id === id);
         if (existing) {
@@ -3738,6 +3754,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         } else {
             cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: qty, stock: p.stock, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto' });
         }
+        renderCart('add');
+        cerrarModalProductos();
+    }
         renderCart('add');
         showToast(`+ ${qty}× ${p.nombre}`, 'success', 1200);
         cerrarModalProductos();
@@ -3830,7 +3849,17 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             return;
         }
         const existing = cart.find(x => x.id === id);
-        if (existing) {
+        if (modoObras) {
+            if (existing) {
+                showToast(`La obra "${p.nombre}" ya está en el carrito`, 'warning');
+                return;
+            }
+            cart.push({
+                id: p.id, nombre: p.nombre, precio: p.precio,
+                itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url,
+                descuento: 0, descuento_tipo: 'monto', es_obra: true
+            });
+        } else if (existing) {
             existing.qty++;
         } else {
             cart.push({
@@ -3886,14 +3915,16 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     <div class="ci-info">
                         <div class="ci-name">${escapeHtml(item.nombre)}</div>
                         <div class="ci-meta">
-                            <span class="ci-qty">
+                            ${modoObras
+                                ? `<span class="qty-val">1</span>`
+                                : `<span class="ci-qty">
                                 <button type="button" data-action="dec" data-index="${index}" aria-label="Disminuir cantidad">−</button>
                                 <span class="qty-val" aria-label="Cantidad">${item.qty}</span>
                                 <button type="button" data-action="inc" data-index="${index}" aria-label="Aumentar cantidad">+</button>
-                            </span>
+                            </span>`}
                             <span>× ${fmt(item.precio)}</span>
                         </div>
-                        <div class="ci-discount">
+                        ${modoObras ? '' : `<div class="ci-discount">
                             <label for="desc-${index}" class="visually-hidden">Descuento línea ${index + 1}</label>
                             <div class="discount-input-group">
                                 <button type="button" 
@@ -3914,7 +3945,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                                        aria-label="Descuento de la línea ${index + 1}">
                             </div>
                             ${descuentoAplicado > 0 ? `<small class="discount-applied">-${fmt(descuentoAplicado)}</small>` : ''}
-                        </div>
+                        </div>`}
                     </div>
                     <div class="ci-right">
                         <div class="ci-subtotal">${fmt(subtotalConDesc)}</div>
@@ -3923,9 +3954,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     <button type="button" class="ci-remove" data-action="remove" data-index="${index}" title="Eliminar" aria-label="Eliminar producto del carrito">
                         <i class="bi bi-x-circle" aria-hidden="true"></i>
                     </button>
-                    <input type="hidden" name="producto_id[]" value="${item.id}">
+                    ${modoObras
+                        ? `<input type="hidden" name="obra_id[]" value="${item.id}">`
+                        : `<input type="hidden" name="producto_id[]" value="${item.id}">`}
                     <input type="hidden" name="precio[]" value="${item.precio.toFixed(2)}">
-                    <input type="hidden" name="cantidad[]" value="${item.qty}">
+                    <input type="hidden" name="cantidad[]" value="${modoObras ? 1 : item.qty}">
                     <input type="hidden" name="subtotal[]" value="${subtotal.toFixed(2)}">
                     <input type="hidden" name="descuento[]" value="${descuentoItem}">
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
@@ -4060,6 +4093,15 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         viewport.style.display = 'grid';
         cartViewport.style.display = 'none';
         viewport.innerHTML = items.map(p => {
+            if (modoObras) {
+                return `
+                <button type="button" class="pos-product-card" data-action="add" data-id="${p.id}">
+                    <img src="${escapeHtml(p.imagen_url)}" class="ppc-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+                    <div class="ppc-name">${escapeHtml(p.nombre)}</div>
+                    <div class="ppc-price">${fmt(p.precio)}</div>
+                    <span class="ppc-stock ok">Obra</span>
+                </button>`;
+            }
             const stockCls = p.stock === 0 ? 'out' : p.stock <= 5 ? 'crit' : p.stock <= 15 ? 'low' : 'ok';
             const stockLbl = p.stock === 0 ? 'Agotado' : p.stock + ' disp.';
             return `

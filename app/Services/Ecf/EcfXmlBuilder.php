@@ -13,7 +13,7 @@ class EcfXmlBuilder
 {
     public function build(EcfDocumento $ecf): string
     {
-        $venta = Venta::with(['cliente', 'detalles.producto', 'usuario'])->findOrFail($ecf->venta_id);
+        $venta = Venta::with(['cliente', 'detalles.producto', 'detalles.obra', 'usuario'])->findOrFail($ecf->venta_id);
         $empresa = SystemSetting::allCached();
 
         $xml = new DOMDocument('1.0', 'UTF-8');
@@ -114,16 +114,17 @@ class EcfXmlBuilder
 
         foreach ($venta->detalles as $detalle) {
             $producto = $detalle->producto;
+            $obra = $detalle->obra;
             $cantidad = (float) $detalle->cantidad;
             $precioUnitario = (float) $detalle->precio_unitario;
-            $itbisPorcentaje = (float) ($producto->itbis_porcentaje ?? SystemSetting::itbisDefault());
+            $itbisPorcentaje = (float) ($detalle->itbis_porcentaje ?? $producto->itbis_porcentaje ?? SystemSetting::itbisDefault());
             $subtotalBruto = $cantidad * $precioUnitario;
             $itbisItem = $subtotalBruto * ($itbisPorcentaje / 100);
 
             $item = $xml->createElement('Item');
             $item->appendChild($xml->createElement('NumeroLinea', (string) $lineNum++));
-            $item->appendChild($xml->createElement('CodigoItem', $producto->codigo_barras ?? (string) $producto->id));
-            $item->appendChild($xml->createElement('DescripcionItem', $producto->nombre));
+            $item->appendChild($xml->createElement('CodigoItem', $obra ? 'OBRA-' . $obra->id : ($producto->codigo_barras ?? (string) $producto->id)));
+            $item->appendChild($xml->createElement('DescripcionItem', $obra?->titulo ?? $producto->nombre));
             $item->appendChild($xml->createElement('CantidadItem', $this->fmt($cantidad)));
             $item->appendChild($xml->createElement('UnidadMedida', '43'));
             $item->appendChild($xml->createElement('PrecioUnitarioItem', $this->fmt($precioUnitario)));

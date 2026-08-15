@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AlmacenMovimiento;
+use App\Models\ArteObra;
 use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\EcfDocumento;
@@ -53,35 +54,63 @@ class SaleService
         $puedeSobreescribirPrecio = in_array(auth()->user()->role, $rolesAutorizados)
             || auth()->user()->hasRole($rolesAutorizados);
 
+        $modoObras = $this->facturaObrasArte();
+
         $productoIds = $data['producto_id'] ?? [];
+        $obraIds     = $data['obra_id'] ?? [];
         $cantidades  = $data['cantidad'] ?? [];
         $preciosCli  = $data['precio'] ?? [];
         $descuentoCli = $data['descuento'] ?? [];
         $tiposCli     = $data['descuento_tipo'] ?? [];
 
         $lineas = [];
-        foreach ($productoIds as $i => $productoId) {
-            if (!$productoId) continue;
-            $producto = Producto::find($productoId);
-            if (!$producto) {
-                throw new \Exception('El producto #' . $productoId . ' no existe.');
+        if ($modoObras) {
+            foreach ($obraIds as $i => $obraId) {
+                if (!$obraId) continue;
+                $obra = ArteObra::find($obraId);
+                if (!$obra) {
+                    throw new \Exception('La obra #' . $obraId . ' no existe.');
+                }
+                $cantidad   = 1;
+                $precioBD   = (float) $obra->precio_venta;
+                $lineas[] = [
+                    'id'       => $obraId,
+                    'es_obra'  => true,
+                    'nombre'   => $obra->titulo,
+                    'cantidad' => $cantidad,
+                    'precio'   => $precioBD,
+                    'subtotal' => round($precioBD * $cantidad, 2),
+                    'desc'     => 0,
+                    'tipo'     => 'monto',
+                    'itbis_p'  => (float) ($this->itbisPorcentajeInstancia()),
+                ];
             }
-            $cantidad   = max(1, (int) ($cantidades[$i] ?? 1));
-            $precioBD   = (float) $producto->precio;
-            $precioCli  = (float) ($preciosCli[$i] ?? $precioBD);
-            if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
-                throw new \Exception("No autorizado para modificar el precio de \"{$producto->nombre}\".");
+        } else {
+            foreach ($productoIds as $i => $productoId) {
+                if (!$productoId) continue;
+                $producto = Producto::find($productoId);
+                if (!$producto) {
+                    throw new \Exception('El producto #' . $productoId . ' no existe.');
+                }
+                $cantidad   = max(1, (int) ($cantidades[$i] ?? 1));
+                $precioBD   = (float) $producto->precio;
+                $precioCli  = (float) ($preciosCli[$i] ?? $precioBD);
+                if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+                    throw new \Exception("No autorizado para modificar el precio de \"{$producto->nombre}\".");
+                }
+                $precioBase = ($precioCli !== $precioBD && $puedeSobreescribirPrecio) ? $precioCli : $precioBD;
+                $lineas[] = [
+                    'id'       => $productoId,
+                    'es_obra'  => false,
+                    'nombre'   => $producto->nombre,
+                    'cantidad' => $cantidad,
+                    'precio'   => $precioBase,
+                    'subtotal' => round($precioBase * $cantidad, 2),
+                    'desc'     => (float) ($descuentoCli[$i] ?? 0),
+                    'tipo'     => $tiposCli[$i] ?? 'monto',
+                    'itbis_p'  => (float) ($producto->itbis_porcentaje ?? 0),
+                ];
             }
-            $precioBase = ($precioCli !== $precioBD && $puedeSobreescribirPrecio) ? $precioCli : $precioBD;
-            $lineas[] = [
-                'id'       => $productoId,
-                'cantidad' => $cantidad,
-                'precio'   => $precioBase,
-                'subtotal' => round($precioBase * $cantidad, 2),
-                'desc'     => (float) ($descuentoCli[$i] ?? 0),
-                'tipo'     => $tiposCli[$i] ?? 'monto',
-                'itbis_p'  => (float) ($producto->itbis_porcentaje ?? 0),
-            ];
         }
 
         $subtotalTotal = (float) array_sum(array_column($lineas, 'subtotal'));
@@ -118,7 +147,8 @@ class SaleService
         $itbisRecalculado = round($itbisRecalculado, 2);
 
         // Persistir arrays normalizados para procesarDetalles/procesarPago
-        $data['producto_id']      = array_column($lineas, 'id');
+        $data['obra_id']          = $modoObras ? array_column($lineas, 'id') : [];
+        $data['producto_id']      = $modoObras ? [] : array_column($lineas, 'id');
         $data['cantidad']         = array_column($lineas, 'cantidad');
         $data['precio']           = array_column($lineas, 'precio');
         $data['subtotal']         = array_column($lineas, 'subtotal');
@@ -257,6 +287,15 @@ class SaleService
                 }
             }
 
+            // Revertir obras de arte a disponible al anular
+            $obraDetalles = $venta->detalles->whereNotNull('obra_id');
+            foreach ($obraDetalles as $detalle) {
+                $obra = ArteObra::where('tenant_id', $tenantId)->find($detalle->obra_id);
+                if ($obra && $obra->estado === 'vendida') {
+                    $obra->update(['estado' => 'disponible']);
+                }
+            }
+
             // Devolver deuda del cliente si estaba pendiente
             if ($venta->cliente_id && in_array($venta->estado, ['pendiente', 'cuenta_abierta'])) {
                 $cliente = Cliente::where('id', $venta->cliente_id)
@@ -359,6 +398,9 @@ class SaleService
             }
         }
 
+        $modoObras = $this->facturaObrasArte();
+        $itbisInstancia = $this->itbisPorcentajeInstancia();
+
         $productos = Producto::where('tenant_id', $tenantId)
             ->orderBy('nombre')
             ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen', 'categoria_id')
@@ -369,6 +411,40 @@ class SaleService
         $validaStock = $this->validaStock();
         if ($validaStock) {
             $productos = $productos->filter(fn($p) => $p->stock > 0)->values();
+        }
+
+        if ($modoObras) {
+            $obras = ArteObra::where('tenant_id', $tenantId)
+                ->where('activo', true)
+                ->where('estado', 'disponible')
+                ->with('artista')
+                ->orderBy('titulo')
+                ->get();
+
+            $productosJs = $obras->map(fn($o) => [
+                'id'           => (int) $o->id,
+                'nombre'       => $o->titulo,
+                'codigo_barras'=> 'OBRA-' . $o->id,
+                'precio'       => (float) $o->precio_venta,
+                'precio_compra'=> (float) ($o->precio_compra ?? 0),
+                'itbis_p'      => $itbisInstancia,
+                'stock'        => 1,
+                'ventas_count' => 0,
+                'unidad_medida'=> 'Obra',
+                'imagen_url'   => $o->imagen,
+                'categoria_id' => 0,
+                'es_obra'      => true,
+            ])->values()->all();
+
+            $stocks = [];
+            $categoriasJs = [];
+
+            return compact(
+                'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
+                'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
+                'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
+                'modoObras'
+            );
         }
 
         $stockPorProductoAlmacen = AlmacenMovimiento::query()
@@ -425,7 +501,8 @@ class SaleService
         return compact(
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
-            'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio'
+            'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
+            'modoObras'
         );
     }
 
@@ -434,6 +511,20 @@ class SaleService
         $user = Auth::user();
         if (!$user?->businessInstance) return true;
         return ($user->businessInstance->configuracion['restaurante_valida_stock'] ?? '1') === '1';
+    }
+
+    private function facturaObrasArte(): bool
+    {
+        $user = Auth::user();
+        $tipo = $user?->businessInstance?->businessType;
+        return ($tipo?->config['facturacion_modo'] ?? 'productos') === 'obras_arte';
+    }
+
+    private function itbisPorcentajeInstancia(): float
+    {
+        $user = Auth::user();
+        $config = $user?->businessInstance?->configuracion ?? [];
+        return (float) ($config['itbis_porcentaje'] ?? SystemSetting::itbisDefault());
     }
 
     public function checkStock(int $productoId, int $almacenId): int
@@ -487,9 +578,15 @@ class SaleService
     private function procesarDetalles(Venta $venta, array $data, ?Venta $ventaExistente): void
     {
         $tenantId = Auth::user()->business_instance_id;
+        $modoObras = $this->facturaObrasArte();
 
         // Ensure we always have a fallback almacen for the FK constraint
         $fallbackAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
+
+        if ($modoObras) {
+            $this->procesarDetallesObras($venta, $data, $tenantId);
+            return;
+        }
 
         $productoIds = $data['producto_id'] ?? [];
         $cantidades  = $data['cantidad'] ?? [];
@@ -553,6 +650,42 @@ class SaleService
             }
 
             $producto->increment('ventas_count', $cantidad);
+        }
+    }
+
+    private function procesarDetallesObras(Venta $venta, array $data, int $tenantId): void
+    {
+        $obraIds = $data['obra_id'] ?? [];
+        $precios = $data['precio'] ?? [];
+        $subtotales = $data['subtotal'] ?? [];
+        $descuentos = $data['descuento'] ?? [];
+        $descuentoTipos = $data['descuento_tipo'] ?? [];
+        $itbisPorcentajes = $data['itbis_porcentaje'] ?? [];
+
+        foreach ($obraIds as $i => $obraId) {
+            if (!$obraId) continue;
+
+            $obra = ArteObra::where('tenant_id', $tenantId)->find($obraId);
+            if (!$obra) {
+                throw new \Exception('La obra #' . $obraId . ' no existe.');
+            }
+            if ($obra->estado === 'vendida') {
+                throw new \Exception("La obra \"{$obra->titulo}\" ya fue vendida.");
+            }
+
+            VentaDetalle::create([
+                'venta_id'         => $venta->id,
+                'obra_id'          => $obra->id,
+                'cantidad'         => 1,
+                'precio_unitario'  => $precios[$i] ?? $obra->precio_venta,
+                'subtotal'         => $subtotales[$i] ?? $obra->precio_venta,
+                'descuento'        => (float) ($descuentos[$i] ?? 0),
+                'descuento_tipo'   => $descuentoTipos[$i] ?? 'monto',
+                'itbis_porcentaje' => (float) ($itbisPorcentajes[$i] ?? 0),
+                'tenant_id'        => $tenantId,
+            ]);
+
+            $obra->update(['estado' => 'vendida']);
         }
     }
 

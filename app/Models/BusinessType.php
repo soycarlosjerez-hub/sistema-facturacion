@@ -15,13 +15,14 @@ class BusinessType extends Model
     protected $fillable = [
         'key', 'slug', 'nombre', 'descripcion', 
         'color', 'color_default', 'icon', 'icono_default',
-        'activo', 'orden', 'campos_extra', 'soft_delete_default'
+        'activo', 'orden', 'campos_extra', 'config', 'soft_delete_default'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
         'orden' => 'integer',
         'campos_extra' => 'array',
+        'config' => 'array',
         'soft_delete_default' => 'boolean',
     ];
 
@@ -101,7 +102,7 @@ class BusinessType extends Model
                     ->sortBy('orden')
                     ->pluck('modulo_key')
                     ->toArray(),
-                'config' => $t['campos_extra'] ?? [],
+                'config' => $t['config'] ?? $t['campos_extra'] ?? [],
             ];
         }, $types);
     }

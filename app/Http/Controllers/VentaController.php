@@ -127,7 +127,7 @@ class VentaController extends Controller
     {
         $venta = Venta::with([
             'cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal',
-            'detalles.producto', 'detalles.almacen'
+            'detalles.producto', 'detalles.obra', 'detalles.almacen'
         ])->findOrFail($id);
 
         return view('ventas.show', compact('venta'));
@@ -199,7 +199,7 @@ class VentaController extends Controller
 
     public function exportPdf($id)
     {
-        $venta = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal', 'detalles.producto', 'detalles.almacen'])
+        $venta = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal', 'detalles.producto', 'detalles.obra', 'detalles.almacen'])
             ->where('tenant_id', Auth::user()->business_instance_id)
             ->findOrFail($id);
 
