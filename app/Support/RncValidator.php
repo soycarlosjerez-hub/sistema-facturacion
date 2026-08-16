@@ -24,14 +24,20 @@ class RncValidator
 
     private static function validarCedula($cedula): bool
     {
-        $multiplicadores = [1, 2, 1, 2, 1, 2, 1, 2, 1, 2];
+        if (strlen($cedula) !== 10) return false;
+
+        $multiplicadores = [1, 2, 1, 2, 1, 2, 1, 2];
         $suma = 0;
-        for ($i = 0; $i < 10; $i++) {
-            $producto = (int)$cedula[$i] * $multiplicadores[$i];
+        for ($i = 0; $i < 8; $i++) {
+            $d = (int)$cedula[$i];
+            $producto = $d * $multiplicadores[$i];
             $suma += $producto >= 10 ? $producto - 9 : $producto;
         }
-        $digito = (ceil($suma / 10) * 10) - $suma;
-        return $digito === (int)$cedula[10];
+        $digitoVerificador = 10 - ($suma % 10);
+        if ($digitoVerificador == 10) {
+            $digitoVerificador = 0;
+        }
+        return $digitoVerificador === (int)$cedula[8];
     }
 
     private static function validarRNC($rnc): bool
