@@ -19,7 +19,7 @@ class CategoryStoreRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('categories')->where(fn ($q) => $q->where('tenant_id', $this->user()->tenant_id)),
+                Rule::unique('categories')->where(fn ($q) => $q->where('tenant_id', $this->user()->business_instance_id)),
             ],
             'descripcion' => 'nullable|string|max:500',
             'activa' => 'boolean',

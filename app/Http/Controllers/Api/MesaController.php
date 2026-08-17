@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MesaResource;
 use App\Models\Mesa;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class MesaController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Mesa::with(['categoria', 'ubicacion', 'sucursal', 'ordenActiva', 'reservacion'])
@@ -46,11 +48,14 @@ class MesaController extends Controller
 
     public function show(Mesa $mesa)
     {
+        $this->requireTenantOwnership($mesa);
         return new MesaResource($mesa->load(['categoria', 'ubicacion', 'sucursal', 'ordenActiva', 'reservacion']));
     }
 
     public function update(Request $request, Mesa $mesa)
     {
+        $this->requireTenantOwnership($mesa);
+
         $validated = $request->validate([
             'sucursal_id' => 'sometimes|exists:sucursales,id',
             'numero' => 'sometimes|integer',
@@ -71,6 +76,7 @@ class MesaController extends Controller
 
     public function destroy(Mesa $mesa)
     {
+        $this->requireTenantOwnership($mesa);
         $mesa->delete();
         return response()->json(['message' => 'Mesa eliminada.']);
     }

@@ -10,7 +10,7 @@ use App\Traits\Auditable;
 
 class Category extends Model
 {
-    use SoftDeletes, Auditable;
+    use SoftDeletes, Auditable, \App\Traits\TenantScope;
 
     protected $table = 'categories';
 

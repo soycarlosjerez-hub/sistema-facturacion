@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = User::with(['businessInstance.businessType', 'instanceRole', 'sucursal'])
@@ -48,11 +50,20 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        $currentTenantId = $this->getCurrentTenantId();
+        if ($currentTenantId && (int) $user->business_instance_id !== $currentTenantId) {
+            abort(404, 'Usuario no encontrado.');
+        }
         return new UserResource($user->load(['businessInstance.businessType', 'instanceRole', 'sucursal']));
     }
 
     public function update(Request $request, User $user)
     {
+        $currentTenantId = $this->getCurrentTenantId();
+        if ($currentTenantId && (int) $user->business_instance_id !== $currentTenantId) {
+            abort(404, 'Usuario no encontrado.');
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
@@ -74,6 +85,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $currentTenantId = $this->getCurrentTenantId();
+        if ($currentTenantId && (int) $user->business_instance_id !== $currentTenantId) {
+            abort(404, 'Usuario no encontrado.');
+        }
         $user->delete();
         return response()->json(['message' => 'User deleted.']);
     }

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CajaResource;
 use App\Models\Caja;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class CajaController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Caja::with(['sucursal', 'sesiones'])
@@ -37,11 +39,14 @@ class CajaController extends Controller
 
     public function show(Caja $caja)
     {
+        $this->requireTenantOwnership($caja);
         return new CajaResource($caja->load(['sucursal', 'sesiones', 'sesionActiva']));
     }
 
     public function update(Request $request, Caja $caja)
     {
+        $this->requireTenantOwnership($caja);
+
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:255',
             'codigo' => 'sometimes|string|max:50',
@@ -58,6 +63,7 @@ class CajaController extends Controller
 
     public function destroy(Caja $caja)
     {
+        $this->requireTenantOwnership($caja);
         $caja->delete();
         return response()->json(['message' => 'Caja eliminada.']);
     }

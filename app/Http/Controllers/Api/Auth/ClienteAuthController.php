@@ -33,7 +33,7 @@ class ClienteAuthController extends Controller
         if (!$tenantId) {
             $authUser = $request->user();
             if ($authUser) {
-                $tenantId = $authUser->business_instance_id ?? $authUser->tenant_id ?? null;
+                $tenantId = $authUser->business_instance_id ?? null;
             }
             if (!$tenantId) {
                 $clientToken = $request->attributes->get('client_api_token');
@@ -283,7 +283,7 @@ class ClienteAuthController extends Controller
             'limite_credito'     => $cliente->limite_credito,
             'balance_pendiente'  => $cliente->balance_pendiente,
             'created_at'         => $cliente->created_at,
-            'tenant_id'          => $cliente->tenant_id,
+            'tenant_id'          => $cliente->business_instance_id,
         ];
     }
 }

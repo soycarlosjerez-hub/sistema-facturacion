@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DevolucionResource;
 use App\Models\Devolucion;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class DevolucionController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Devolucion::with(['venta', 'cliente', 'sucursal', 'user', 'detalles'])
@@ -36,6 +38,7 @@ class DevolucionController extends Controller
             'detalles.*.cantidad' => 'required|numeric|min:0.01',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $devolucion = Devolucion::create($validated);
 
         foreach ($validated['detalles'] as $detalle) {
@@ -47,11 +50,14 @@ class DevolucionController extends Controller
 
     public function show(Devolucion $devolucion)
     {
+        $this->requireTenantOwnership($devolucion);
         return new DevolucionResource($devolucion->load(['venta', 'cliente', 'sucursal', 'user', 'detalles']));
     }
 
     public function update(Request $request, Devolucion $devolucion)
     {
+        $this->requireTenantOwnership($devolucion);
+
         $validated = $request->validate([
             'estado' => 'sometimes|string|max:20',
             'motivo' => 'nullable|string',
@@ -65,6 +71,7 @@ class DevolucionController extends Controller
 
     public function destroy(Devolucion $devolucion)
     {
+        $this->requireTenantOwnership($devolucion);
         $devolucion->delete();
         return response()->json(['message' => 'Devolución eliminada.']);
     }

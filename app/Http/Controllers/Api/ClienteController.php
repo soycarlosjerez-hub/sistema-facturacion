@@ -55,7 +55,7 @@ class ClienteController extends Controller
         ]);
 
         $user = $request->user();
-        $validated['tenant_id'] = $user->tenant_id ?? ($user->business_instance_id ?? null);
+        $validated['tenant_id'] = $user->business_instance_id ?? null;
         
         if (!$validated['tenant_id']) {
             return response()->json(['message' => 'No se pudo determinar la instancia del negocio.'], 400);
@@ -154,7 +154,7 @@ class ClienteController extends Controller
     private function ensureTenantAccess(Cliente $cliente): void
     {
         $user = auth()->user();
-        $tenantId = $user->tenant_id ?? ($user->business_instance_id ?? null);
+        $tenantId = $user->business_instance_id ?? null;
         
         if (!$tenantId || $cliente->tenant_id !== $tenantId) {
             abort(404, 'Cliente no encontrado.');

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompraResource;
 use App\Models\Compra;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class CompraController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Compra::with(['proveedor', 'sucursal', 'almacen', 'user', 'tipoCompra', 'detalles.producto'])
@@ -58,11 +60,14 @@ class CompraController extends Controller
 
     public function show(Compra $compra)
     {
+        $this->requireTenantOwnership($compra);
         return new CompraResource($compra->load(['proveedor', 'sucursal', 'almacen', 'user', 'tipoCompra', 'detalles.producto']));
     }
 
     public function update(Request $request, Compra $compra)
     {
+        $this->requireTenantOwnership($compra);
+
         $validated = $request->validate([
             'total' => 'sometimes|numeric|min:0',
             'subtotal' => 'sometimes|numeric|min:0',
@@ -78,6 +83,7 @@ class CompraController extends Controller
 
     public function destroy(Compra $compra)
     {
+        $this->requireTenantOwnership($compra);
         $compra->delete();
         return response()->json(['message' => 'Compra eliminada.']);
     }

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SucursalResource;
 use App\Models\Sucursal;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class SucursalController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Sucursal::with(['usuarios', 'ventas', 'compras', 'cajas', 'gastos', 'mesas'])
@@ -42,11 +44,14 @@ class SucursalController extends Controller
 
     public function show(Sucursal $sucursal)
     {
+        $this->requireTenantOwnership($sucursal);
         return new SucursalResource($sucursal->load(['usuarios', 'ventas', 'compras', 'cajas', 'gastos', 'mesas']));
     }
 
     public function update(Request $request, Sucursal $sucursal)
     {
+        $this->requireTenantOwnership($sucursal);
+
         $validated = $request->validate([
             'codigo' => 'sometimes|string|max:50',
             'nombre' => 'sometimes|string|max:255',
@@ -65,6 +70,7 @@ class SucursalController extends Controller
 
     public function destroy(Sucursal $sucursal)
     {
+        $this->requireTenantOwnership($sucursal);
         $sucursal->delete();
         return response()->json(['message' => 'Sucursal eliminada.']);
     }

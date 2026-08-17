@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CotizacionResource;
 use App\Models\Cotizacion;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class CotizacionController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Cotizacion::with(['cliente', 'sucursal', 'user', 'detalles.producto'])
@@ -44,6 +46,7 @@ class CotizacionController extends Controller
             'detalles.*.precio_unitario' => 'required|numeric|min:0',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $cotizacion = Cotizacion::create($validated);
 
         foreach ($validated['detalles'] as $detalle) {
@@ -55,11 +58,14 @@ class CotizacionController extends Controller
 
     public function show(Cotizacion $cotizacion)
     {
+        $this->requireTenantOwnership($cotizacion);
         return new CotizacionResource($cotizacion->load(['cliente', 'sucursal', 'user', 'detalles.producto']));
     }
 
     public function update(Request $request, Cotizacion $cotizacion)
     {
+        $this->requireTenantOwnership($cotizacion);
+
         $validated = $request->validate([
             'folio' => 'sometimes|string|max:50',
             'estado' => 'sometimes|string|max:20',
@@ -74,6 +80,7 @@ class CotizacionController extends Controller
 
     public function destroy(Cotizacion $cotizacion)
     {
+        $this->requireTenantOwnership($cotizacion);
         $cotizacion->delete();
         return response()->json(['message' => 'Cotización eliminada.']);
     }

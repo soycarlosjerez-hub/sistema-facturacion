@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AlquilerResource;
 use App\Models\Alquiler;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class AlquilerController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Alquiler::with(['cliente', 'sucursal', 'user', 'vehiculo'])
@@ -35,6 +37,7 @@ class AlquilerController extends Controller
             'notas' => 'nullable|string',
         ]);
 
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $alquiler = Alquiler::create($validated);
 
         return new AlquilerResource($alquiler->load(['cliente', 'sucursal', 'user', 'vehiculo']));
@@ -42,11 +45,14 @@ class AlquilerController extends Controller
 
     public function show(Alquiler $alquiler)
     {
+        $this->requireTenantOwnership($alquiler);
         return new AlquilerResource($alquiler->load(['cliente', 'sucursal', 'user', 'vehiculo']));
     }
 
     public function update(Request $request, Alquiler $alquiler)
     {
+        $this->requireTenantOwnership($alquiler);
+
         $validated = $request->validate([
             'estado' => 'sometimes|string|max:20',
             'fecha_fin' => 'sometimes|date|after:fecha_inicio',
@@ -62,6 +68,7 @@ class AlquilerController extends Controller
 
     public function destroy(Alquiler $alquiler)
     {
+        $this->requireTenantOwnership($alquiler);
         $alquiler->delete();
         return response()->json(['message' => 'Alquiler eliminado.']);
     }

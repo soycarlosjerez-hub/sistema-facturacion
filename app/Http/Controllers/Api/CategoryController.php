@@ -18,7 +18,6 @@ class CategoryController extends Controller
         $query = Category::with(['businessTypes' => function ($q) {
             $q->select('business_types.id', 'business_types.key', 'business_types.nombre', 'business_types.color_default', 'business_types.icono_default');
         }])
-            ->where('tenant_id', $request->user()->tenant_id)
             ->withCount(['products', 'tables']);
 
         // Filtros
@@ -50,7 +49,7 @@ class CategoryController extends Controller
     {
         return DB::transaction(function () use ($request) {
             $category = Category::create([
-                'tenant_id' => $request->user()->tenant_id,
+                'tenant_id' => $request->user()->business_instance_id,
                 'nombre' => $request->nombre,
                 'descripcion' => $request->descripcion,
                 'activa' => $request->activa,
@@ -125,7 +124,7 @@ class CategoryController extends Controller
 
         foreach ($request->items as $item) {
             Category::where('id', $item['id'])
-                ->where('tenant_id', $request->user()->tenant_id)
+                ->where('tenant_id', $request->user()->business_instance_id)
                 ->update(['orden' => $item['orden']]);
         }
 

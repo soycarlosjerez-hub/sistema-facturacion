@@ -9,6 +9,7 @@ use App\Models\AlmacenMovimiento;
 use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\Venta;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 
 class VentaController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Venta::with(['usuario', 'cliente', 'sucursal', 'caja', 'detalles.producto', 'pagos', 'tipoVenta', 'mesa'])
@@ -124,7 +126,13 @@ class VentaController extends Controller
 
         $user = Auth::user();
         $tenantId = $user->business_instance_id;
-        $validated['tenant_id'] = $tenantId;
+
+        // Ensure tenant_id is set (TenantScope global auto-sets tenant_id on create)
+        if (isset($validated['tenant_id'])) {
+            $validated['tenant_id'] = $tenantId;
+        } elseif (isset($validated['user_id'])) {
+            $validated['tenant_id'] = $tenantId;
+        }
 
         // --- Cálculo autoritativo server-side (F2.5) ---
         $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
@@ -139,9 +147,11 @@ class VentaController extends Controller
         $descuentosLinea = 0.0;
 
         foreach ($validated['detalles'] as $i => $detalle) {
-            $producto = Producto::find($detalle['producto_id']);
+            $producto = Producto::where('tenant_id', $tenantId)->find($detalle['producto_id']);
             if (!$producto) {
-                return response()->json(['message' => "El producto #{$detalle['producto_id']} no existe."], 422);
+                return response()->json([
+                    'message' => "El producto #{$detalle['producto_id']} no existe o no pertenece a tu instancia.",
+                ], 422);
             }
 
             $cantidad = max(0.01, (float) $detalle['cantidad']);

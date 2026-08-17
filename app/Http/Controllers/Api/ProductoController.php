@@ -86,41 +86,9 @@ class ProductoController extends Controller
             'imagen' => 'nullable|string',
         ]);
 
-        $validated['tenant_id'] = auth()->user()->business_instance_id ?? auth()->user()->tenant_id;
+        $validated['tenant_id'] = auth()->user()->business_instance_id;
         $producto = Producto::create($validated);
 
         return new ProductoResource($producto->load(['categoria', 'ingredientes']));
-    }
-
-    public function show(Producto $producto)
-    {
-        return new ProductoResource($producto->load(['categoria', 'ingredientes']));
-    }
-
-    public function update(Request $request, Producto $producto)
-    {
-        $validated = $request->validate([
-            'categoria_id' => 'sometimes|exists:categorias,id',
-            'nombre' => 'sometimes|string|max:255',
-            'codigo_barras' => 'sometimes|string|max:100|unique:productos,codigo_barras,' . $producto->id,
-            'descripcion' => 'nullable|string',
-            'precio' => 'sometimes|numeric|min:0',
-            'precio_compra' => 'sometimes|numeric|min:0',
-            'unidad_medida' => 'nullable|string|max:50',
-            'itbis_porcentaje' => 'sometimes|numeric|min:0',
-            'stock' => 'sometimes|integer|min:0',
-            'stock_minimo' => 'sometimes|integer|min:0',
-            'imagen' => 'nullable|string',
-        ]);
-
-        $producto->update($validated);
-
-        return new ProductoResource($producto->load(['categoria', 'ingredientes']));
-    }
-
-    public function destroy(Producto $producto)
-    {
-        $producto->delete();
-        return response()->json(['message' => 'Producto eliminado.']);
     }
 }

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProveedorResource;
 use App\Models\Proveedor;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class ProveedorController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Proveedor::with(['compras'])
@@ -43,11 +45,14 @@ class ProveedorController extends Controller
 
     public function show(Proveedor $proveedor)
     {
+        $this->requireTenantOwnership($proveedor);
         return new ProveedorResource($proveedor->load('compras'));
     }
 
     public function update(Request $request, Proveedor $proveedor)
     {
+        $this->requireTenantOwnership($proveedor);
+
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|max:255',
@@ -66,6 +71,7 @@ class ProveedorController extends Controller
 
     public function destroy(Proveedor $proveedor)
     {
+        $this->requireTenantOwnership($proveedor);
         $proveedor->delete();
         return response()->json(['message' => 'Proveedor eliminado.']);
     }

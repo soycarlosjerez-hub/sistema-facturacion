@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AlmacenResource;
 use App\Models\Almacen;
+use App\Traits\TenantAccess;
 use Illuminate\Http\Request;
 
 class AlmacenController extends Controller
 {
+    use TenantAccess;
     public function index(Request $request)
     {
         $query = Almacen::with(['sucursal'])
@@ -34,11 +36,14 @@ class AlmacenController extends Controller
 
     public function show(Almacen $almacen)
     {
+        $this->requireTenantOwnership($almacen);
         return new AlmacenResource($almacen->load('sucursal'));
     }
 
     public function update(Request $request, Almacen $almacen)
     {
+        $this->requireTenantOwnership($almacen);
+
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:255',
             'ubicacion' => 'nullable|string|max:500',
@@ -52,6 +57,7 @@ class AlmacenController extends Controller
 
     public function destroy(Almacen $almacen)
     {
+        $this->requireTenantOwnership($almacen);
         $almacen->delete();
         return response()->json(['message' => 'Almacén eliminado.']);
     }
