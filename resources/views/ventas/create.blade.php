@@ -2240,6 +2240,43 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     .cliente-result-item .cr-info { flex: 1; min-width: 0; }
     .cliente-result-item .cr-name { font-weight: 700; color: var(--pos-text); }
     .cliente-result-item .cr-meta { font-size: 0.75rem; color: var(--pos-text-muted); }
+
+    /* ============ Modal Autorización Admin (quitar ITBIS) ============ */
+    @keyframes adminGradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes adminBubbleFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-14px) scale(1.08); } }
+    #modalAutorizarAdmin .modal-content { border-radius: 20px; overflow: hidden; border: 0; background: var(--pos-bg); color: var(--pos-text); box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5); }
+    #modalAutorizarAdmin .admin-header { position: relative; overflow: hidden; background: linear-gradient(135deg, #1d4ed8, #3b82f6, #60a5fa, #1d4ed8); background-size: 300% 300%; animation: adminGradientShift 6s ease infinite; padding: 22px 24px 18px; color: #fff; border: 0; }
+    #modalAutorizarAdmin .admin-header .bubble { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.12); animation: adminBubbleFloat 5s ease-in-out infinite; }
+    #modalAutorizarAdmin .admin-header .bubble.b1 { width: 70px; height: 70px; top: -22px; right: 18px; animation-delay: 0s; }
+    #modalAutorizarAdmin .admin-header .bubble.b2 { width: 40px; height: 40px; bottom: -14px; left: 30px; animation-delay: 1.2s; }
+    #modalAutorizarAdmin .admin-header .bubble.b3 { width: 22px; height: 22px; top: 14px; right: 130px; animation-delay: 2s; }
+    #modalAutorizarAdmin .admin-shield { width: 54px; height: 54px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); flex-shrink: 0; }
+    #modalAutorizarAdmin .admin-body { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); padding: 20px 24px; }
+    #modalAutorizarAdmin .admin-warning { display: flex; align-items: flex-start; gap: 10px; background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; }
+    #modalAutorizarAdmin .admin-warning i { color: #ef4444; font-size: 1.1rem; margin-top: 1px; }
+    #modalAutorizarAdmin .admin-warning span { font-size: 0.8rem; color: var(--pos-text-muted); line-height: 1.4; }
+    #modalAutorizarAdmin .admin-field { margin-bottom: 14px; }
+    #modalAutorizarAdmin .admin-field label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: var(--pos-text-muted); margin-bottom: 6px; display: block; }
+    #modalAutorizarAdmin .admin-input-wrap { position: relative; }
+    #modalAutorizarAdmin .admin-input-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--pos-text-muted); font-size: 1rem; pointer-events: none; }
+    #modalAutorizarAdmin .admin-input { width: 100%; background: rgba(255, 255, 255, 0.06); border: 2px solid var(--pos-border); border-radius: 12px; color: var(--pos-text); padding: 11px 14px 11px 42px; font-size: 0.95rem; transition: all 0.15s; }
+    #modalAutorizarAdmin .admin-input:focus { outline: none; border-color: var(--pos-accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18); background: rgba(255, 255, 255, 0.09); }
+    #modalAutorizarAdmin .admin-input::placeholder { color: var(--pos-text-muted); opacity: 0.6; }
+    #modalAutorizarAdmin .admin-footer { border-top: 1px solid var(--pos-border); padding: 14px 24px; background: rgba(255, 255, 255, 0.02); display: flex; justify-content: flex-end; gap: 10px; }
+    #modalAutorizarAdmin .btn-admin-cancel { border: 1px solid var(--pos-border); background: transparent; color: var(--pos-text); border-radius: 50px; padding: 8px 20px; font-weight: 600; font-size: 0.85rem; transition: all 0.15s; }
+    #modalAutorizarAdmin .btn-admin-cancel:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--pos-text-muted); color: var(--pos-text); }
+    #modalAutorizarAdmin .btn-admin-submit { background: linear-gradient(135deg, #2563eb, #3b82f6); border: 0; border-radius: 50px; padding: 9px 22px; font-weight: 700; font-size: 0.85rem; color: #fff; transition: all 0.2s; box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35); }
+    #modalAutorizarAdmin .btn-admin-submit:hover { box-shadow: 0 6px 24px rgba(59, 130, 246, 0.5); transform: translateY(-1px); color: #fff; }
+    #modalAutorizarAdmin .btn-admin-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+    #modalAutorizarAdmin .admin-error { background: #fee2e2; border: 0; border-left: 4px solid #dc2626; border-radius: 10px; color: #991b1b; padding: 10px 12px; font-size: 0.82rem; margin-top: 6px; }
+    body:not(.dark-mode) #modalAutorizarAdmin .modal-content { background: #ffffff; color: #1e293b; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18); }
+    body:not(.dark-mode) #modalAutorizarAdmin .admin-body { background: #ffffff; }
+    body:not(.dark-mode) #modalAutorizarAdmin .admin-input { background: #f8fafc; border-color: #e2e8f0; color: #1e293b; }
+    body:not(.dark-mode) #modalAutorizarAdmin .admin-input:focus { background: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+    body:not(.dark-mode) #modalAutorizarAdmin .admin-warning { background: #fef2f2; }
+    body:not(.dark-mode) #modalAutorizarAdmin .admin-footer { background: #ffffff; border-top-color: #e2e8f0; }
+    body:not(.dark-mode) #modalAutorizarAdmin .btn-admin-cancel { border-color: #cbd5e1; color: #475569; }
+    body:not(.dark-mode) #modalAutorizarAdmin .btn-admin-cancel:hover { background: #f1f5f9; border-color: #94a3b8; color: #1e293b; }
 </style>
 
 <form id="pos-form" action="{{ route('ventas.store') }}" method="POST" autocomplete="off">
@@ -2541,30 +2578,48 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 <!-- Modal Autorización Admin para quitar ITBIS -->
 <div class="modal fade" id="modalAutorizarAdmin" tabindex="-1" aria-labelledby="authAdminTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-pos">
-            <div class="modal-header">
-                <h5 class="fw-bold"><i class="bi bi-shield-lock me-2"></i>Autorización de Administrador</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <div class="modal-content">
+            <div class="admin-header modal-header">
+                <div class="bubble b1"></div>
+                <div class="bubble b2"></div>
+                <div class="bubble b3"></div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="admin-shield">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color:#fff;">Autorización de Administrador</h5>
+                        <small style="color:rgba(255,255,255,.85);">Acción sensible · Quitar ITBIS</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body">
-                <p class="small text-muted mb-3">
-                    Para quitar el <strong>ITBIS</strong> de esta línea se requiere autorización de un usuario con rol de administrador.
-                </p>
+            <div class="admin-body">
+                <div class="admin-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Para quitar el <strong style="color:var(--pos-text);">ITBIS</strong> de esta línea se requiere autorización de un usuario con rol de administrador. Solo aplica a ventas <strong style="color:var(--pos-text);">Sin Comprobante</strong>.</span>
+                </div>
                 <form id="form-autorizar-admin" autocomplete="off">
-                    <div class="mb-3">
-                        <label for="auth-admin-email" class="form-label small fw-semibold">Email del administrador</label>
-                        <input type="email" class="form-control" id="auth-admin-email" placeholder="admin@empresa.com" autocomplete="off" required>
+                    <div class="admin-field">
+                        <label for="auth-admin-email">Email del administrador</label>
+                        <div class="admin-input-wrap">
+                            <i class="bi bi-envelope"></i>
+                            <input type="email" class="admin-input" id="auth-admin-email" placeholder="admin@empresa.com" autocomplete="off" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="auth-admin-password" class="form-label small fw-semibold">Contraseña</label>
-                        <input type="password" class="form-control" id="auth-admin-password" placeholder="••••••••" autocomplete="off" required>
+                    <div class="admin-field mb-0">
+                        <label for="auth-admin-password">Contraseña</label>
+                        <div class="admin-input-wrap">
+                            <i class="bi bi-lock"></i>
+                            <input type="password" class="admin-input" id="auth-admin-password" placeholder="••••••••" autocomplete="off" required>
+                        </div>
                     </div>
-                    <div id="auth-admin-error" class="alert alert-danger py-2 small" style="display:none;"></div>
+                    <div id="auth-admin-error" class="admin-error" style="display:none;"></div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary btn-sm" id="btn-auth-admin-submit">
+            <div class="admin-footer">
+                <button type="button" class="btn-admin-cancel" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-admin-submit" id="btn-auth-admin-submit">
                     <i class="bi bi-shield-check me-1"></i>Autorizar
                 </button>
             </div>
@@ -3238,15 +3293,15 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 ncfSelect.disabled = true;
                 ecfInfo.style.display = 'block';
             }
-            // e-CF no admite quitar ITBIS: limpiar marcas y token
-            if (tipo === 'ecf') {
+            // Comprobante fiscal (NCF/e-CF) no admite quitar ITBIS: limpiar marcas y token
+            if (tipo !== 'sin') {
                 const habiaSinItbis = cart.some(i => i.sin_itbis);
                 cart.forEach(i => i.sin_itbis = false);
                 adminToken = '';
                 adminTokenExp = 0;
                 $('admin-token').value = '';
                 if (habiaSinItbis) {
-                    showToast('Los comprobantes e-CF no permiten quitar el ITBIS. Marcas eliminadas.', 'warning');
+                    showToast('Los comprobantes fiscales no permiten quitar el ITBIS. Marcas eliminadas.', 'warning');
                 }
                 renderCart();
             }
@@ -3255,8 +3310,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         toggleSinItbis(index) {
             const item = cart[index];
             if (!item) return;
-            if ($('tipo_comprobante').value === 'ecf') {
-                showToast('Los comprobantes e-CF no permiten quitar el ITBIS.', 'warning');
+            if ($('tipo_comprobante').value !== 'sin') {
+                showToast('Los comprobantes fiscales no permiten quitar el ITBIS.', 'warning');
                 return;
             }
             if (!item.sin_itbis) {
@@ -3281,8 +3336,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 return;
             }
             if (cart.some(i => i.sin_itbis)) {
-                if ($('tipo_comprobante').value === 'ecf') {
-                    showToast('Los comprobantes e-CF no permiten quitar el ITBIS.', 'warning');
+                if ($('tipo_comprobante').value !== 'sin') {
+                    showToast('Los comprobantes fiscales no permiten facturar sin ITBIS.', 'warning');
                     return;
                 }
                 if (!adminTokenValid()) {

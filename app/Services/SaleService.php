@@ -70,8 +70,9 @@ class SaleService
         $tieneSinItbis = is_array($sinItbisCli) && in_array(true, array_map(fn ($v) => (bool) $v, $sinItbisCli), true);
 
         if ($tieneSinItbis) {
-            if (($data['tipo_comprobante'] ?? 'ncf') === 'ecf') {
-                throw new \Exception('No se permite quitar el ITBIS en comprobantes e-CF (DGII).');
+            $tipoComprobante = $data['tipo_comprobante'] ?? 'ncf';
+            if ($tipoComprobante !== 'sin') {
+                throw new \Exception('No se permite quitar el ITBIS en comprobantes fiscales (NCF/e-CF).');
             }
             $this->verificarTokenAdmin($data['admin_token'] ?? null);
         }

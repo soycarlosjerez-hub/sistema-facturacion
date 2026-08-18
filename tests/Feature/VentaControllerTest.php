@@ -796,6 +796,7 @@ class VentaControllerTest extends TestCase
             'subtotal' => [100],
             'itbis_porcentaje' => [18],
             'sin_itbis' => [1],
+            'tipo_comprobante' => 'sin',
             'almacen_id' => [$almacen->id],
             'total' => 100,
             'impuestos' => 0,
@@ -833,6 +834,7 @@ class VentaControllerTest extends TestCase
             'subtotal' => [100],
             'itbis_porcentaje' => [18],
             'sin_itbis' => [1],
+            'tipo_comprobante' => 'sin',
             'admin_token' => $token,
             'almacen_id' => [$almacen->id],
             'total' => 100,
@@ -894,6 +896,7 @@ class VentaControllerTest extends TestCase
             'subtotal' => [100, 100],
             'itbis_porcentaje' => [18, 18],
             'sin_itbis' => [1, 0],
+            'tipo_comprobante' => 'sin',
             'admin_token' => $token,
             'almacen_id' => [$almacen->id, $almacen->id],
             'total' => 218,
@@ -944,6 +947,7 @@ class VentaControllerTest extends TestCase
             'subtotal' => [100],
             'itbis_porcentaje' => [18],
             'sin_itbis' => [1],
+            'tipo_comprobante' => 'sin',
             'admin_token' => $token,
             'almacen_id' => [$almacen->id],
             'total' => 100,
@@ -995,7 +999,47 @@ class VentaControllerTest extends TestCase
             ->postJson(route('ventas.store'), $payload);
 
         $response->assertUnprocessable();
-        $response->assertJsonPath('error', 'No se permite quitar el ITBIS en comprobantes e-CF (DGII).');
+        $response->assertJsonPath('error', 'No se permite quitar el ITBIS en comprobantes fiscales (NCF/e-CF).');
+        $this->assertDatabaseCount('ventas', 0);
+    }
+
+    public function test_store_with_sin_itbis_and_ncf_rejected(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $token = Crypt::encryptString(json_encode([
+            'email'     => $session['user']->email,
+            'tenant_id' => $session['businessInstance']->id,
+            'exp'       => now()->addMinutes(5)->timestamp,
+        ]));
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'itbis_porcentaje' => [18],
+            'sin_itbis' => [1],
+            'admin_token' => $token,
+            'almacen_id' => [$almacen->id],
+            'tipo_comprobante' => 'ncf',
+            'ncf_tipo' => $session['ncfSequence']->prefijo,
+            'total' => 100,
+            'impuestos' => 0,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertUnprocessable();
+        $response->assertJsonPath('error', 'No se permite quitar el ITBIS en comprobantes fiscales (NCF/e-CF).');
         $this->assertDatabaseCount('ventas', 0);
     }
 }

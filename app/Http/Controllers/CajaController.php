@@ -129,8 +129,21 @@ class CajaController extends Controller
             ->with('success', $result['message']);
     }
 
-    public function resumenCierre(Caja $caja, ?SesionCaja $sesion = null)
+    public function resumenCierre(Caja $caja, Request $request)
     {
+        $sesion = null;
+        if ($request->has('sesion')) {
+            $sesion = SesionCaja::findOrFail($request->input('sesion'));
+
+            if ($sesion->caja_id !== $caja->id) {
+                abort(404, 'La sesión no pertenece a esta caja.');
+            }
+
+            if (!in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root']) && $sesion->user_id !== auth()->id()) {
+                abort(403, 'No puedes ver el cierre de una sesión que no es tuya.');
+            }
+        }
+
         return view('cajas.cierre', $this->cajaService->resumenCierre($sesion));
     }
 
