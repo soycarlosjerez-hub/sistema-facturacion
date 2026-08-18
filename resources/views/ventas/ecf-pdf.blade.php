@@ -123,7 +123,7 @@
                 <td>{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Obra de Arte' }}</td>
                 <td class="text-end">{{ $d->cantidad }}</td>
                 <td class="text-end">${{ number_format($d->precio_unitario, 2) }}</td>
-                <td class="text-end">${{ number_format($d->subtotal * (($d->producto->itbis_porcentaje ?? $d->itbis_porcentaje ?? 0) / 100), 2) }}</td>
+                <td class="text-end">${{ number_format($d->sin_itbis ? 0 : $d->subtotal * (($d->producto->itbis_porcentaje ?? $d->itbis_porcentaje ?? 0) / 100), 2) }}</td>
                 <td class="text-end">${{ number_format($d->subtotal, 2) }}</td>
             </tr>
             @endforeach

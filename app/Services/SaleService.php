@@ -17,7 +17,9 @@ use App\Support\RncValidator;
 use App\Services\Ecf\EcfService;
 use App\Services\NcfService;
 use App\Services\RetentionService;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -62,6 +64,17 @@ class SaleService
         $preciosCli  = $data['precio'] ?? [];
         $descuentoCli = $data['descuento'] ?? [];
         $tiposCli     = $data['descuento_tipo'] ?? [];
+        $sinItbisCli  = $data['sin_itbis'] ?? [];
+
+        // --- Validaciones para ventas con líneas sin ITBIS ---
+        $tieneSinItbis = is_array($sinItbisCli) && in_array(true, array_map(fn ($v) => (bool) $v, $sinItbisCli), true);
+
+        if ($tieneSinItbis) {
+            if (($data['tipo_comprobante'] ?? 'ncf') === 'ecf') {
+                throw new \Exception('No se permite quitar el ITBIS en comprobantes e-CF (DGII).');
+            }
+            $this->verificarTokenAdmin($data['admin_token'] ?? null);
+        }
 
         $lineas = [];
         if ($modoObras) {
@@ -83,6 +96,7 @@ class SaleService
                     'desc'     => 0,
                     'tipo'     => 'monto',
                     'itbis_p'  => (float) ($this->itbisPorcentajeInstancia()),
+                    'sin_itbis' => (bool) ($sinItbisCli[$i] ?? false),
                 ];
             }
         } else {
@@ -109,6 +123,7 @@ class SaleService
                     'desc'     => (float) ($descuentoCli[$i] ?? 0),
                     'tipo'     => $tiposCli[$i] ?? 'monto',
                     'itbis_p'  => (float) ($producto->itbis_porcentaje ?? 0),
+                    'sin_itbis' => (bool) ($sinItbisCli[$i] ?? false),
                 ];
             }
         }
@@ -142,7 +157,8 @@ class SaleService
                 $proporcion = $baseFinal / $subtotalTotal;
                 $baseFinal = max(0, $baseFinal - ($generalDescuento * $proporcion));
             }
-            $itbisRecalculado += $baseFinal * ($line['itbis_p'] / 100);
+            $tasaItbis = $line['sin_itbis'] ? 0 : $line['itbis_p'];
+            $itbisRecalculado += $baseFinal * ($tasaItbis / 100);
         }
         $itbisRecalculado = round($itbisRecalculado, 2);
 
@@ -155,6 +171,7 @@ class SaleService
         $data['descuento']        = array_column($lineas, 'desc');
         $data['descuento_tipo']   = array_column($lineas, 'tipo');
         $data['itbis_porcentaje'] = array_column($lineas, 'itbis_p');
+        $data['sin_itbis']        = array_map(fn ($v) => (int) $v, array_column($lineas, 'sin_itbis'));
         $data['subtotal_final']   = $subtotalTotal;
         $descuentosLinea += $generalDescuento;
         $data['total'] = round($subtotalTotal - $descuentosLinea + $itbisRecalculado, 2);
@@ -527,6 +544,43 @@ class SaleService
         return (float) ($config['itbis_porcentaje'] ?? SystemSetting::itbisDefault());
     }
 
+    private function verificarTokenAdmin(?string $token): void
+    {
+        if (empty($token)) {
+            throw new \Exception('Se requiere autorización de un administrador para quitar el ITBIS.');
+        }
+
+        try {
+            $payload = json_decode(Crypt::decryptString($token), true);
+        } catch (\Throwable $e) {
+            throw new \Exception('Token de autorización inválido o expirado. Solicita nuevamente la autorización del administrador.');
+        }
+
+        if (!is_array($payload) || empty($payload['email']) || empty($payload['tenant_id']) || empty($payload['exp'])) {
+            throw new \Exception('Token de autorización inválido. Solicita nuevamente la autorización del administrador.');
+        }
+
+        if ((int) $payload['exp'] < now()->timestamp) {
+            throw new \Exception('La autorización del administrador expiró. Solicítala nuevamente.');
+        }
+
+        if ((int) $payload['tenant_id'] !== (int) Auth::user()->business_instance_id) {
+            throw new \Exception('La autorización no corresponde a este negocio.');
+        }
+
+        $rolesAdmin = ['admin', 'admin-business', 'root', 'gerente'];
+        $admin = User::where('email', $payload['email'])->first();
+
+        $esAdmin = $admin && (
+            in_array($admin->role, $rolesAdmin)
+            || $admin->hasAnyRole($rolesAdmin)
+        );
+
+        if (!$esAdmin) {
+            throw new \Exception('El usuario autorizante ya no tiene rol de administrador.');
+        }
+    }
+
     public function checkStock(int $productoId, int $almacenId): int
     {
         $stock = AlmacenMovimiento::where('producto_id', $productoId)
@@ -627,6 +681,7 @@ class SaleService
                 'descuento'        => $descuento,
                 'descuento_tipo'   => $descuentoTipo,
                 'itbis_porcentaje' => $itbisPorcentaje,
+                'sin_itbis'        => (bool) ($data['sin_itbis'][$i] ?? false),
                 'almacen_id'       => $almacenId,
                 'tenant_id'        => $tenantId,
             ]);
@@ -682,6 +737,7 @@ class SaleService
                 'descuento'        => (float) ($descuentos[$i] ?? 0),
                 'descuento_tipo'   => $descuentoTipos[$i] ?? 'monto',
                 'itbis_porcentaje' => (float) ($itbisPorcentajes[$i] ?? 0),
+                'sin_itbis'        => (bool) ($data['sin_itbis'][$i] ?? false),
                 'tenant_id'        => $tenantId,
             ]);
 

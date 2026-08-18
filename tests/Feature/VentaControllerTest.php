@@ -17,6 +17,7 @@ use App\Models\BusinessInstance;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Tests\TestCase;
 
 class VentaControllerTest extends TestCase
@@ -734,5 +735,267 @@ class VentaControllerTest extends TestCase
         $this->assertSame('60.00', $venta->general_descuento);
         $this->assertSame('7.20', $venta->impuestos);
         $this->assertSame('47.20', $venta->total);
+    }
+
+    public function test_autorizar_admin_returns_token_with_valid_admin_credentials(): void
+    {
+        $session = $this->setupSession();
+
+        $response = $this->postJson(route('ventas.autorizarAdmin'), [
+            'email'    => $session['user']->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['token', 'admin', 'expira']);
+
+        $this->assertNotEmpty($response->json('token'));
+    }
+
+    public function test_autorizar_admin_rejects_invalid_password(): void
+    {
+        $session = $this->setupSession();
+
+        $response = $this->postJson(route('ventas.autorizarAdmin'), [
+            'email'    => $session['user']->email,
+            'password' => 'incorrecta',
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJsonPath('error', 'Credenciales inválidas o el usuario no tiene rol de administrador.');
+    }
+
+    public function test_autorizar_admin_rejects_non_admin_user(): void
+    {
+        $session = $this->setupSession();
+        $vendedor = $this->createVendedorConPermisoVentas($session);
+
+        $response = $this->actingAs($vendedor)->postJson(route('ventas.autorizarAdmin'), [
+            'email'    => $vendedor->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJsonPath('error', 'Credenciales inválidas o el usuario no tiene rol de administrador.');
+    }
+
+    public function test_store_with_sin_itbis_requires_admin_token(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'itbis_porcentaje' => [18],
+            'sin_itbis' => [1],
+            'almacen_id' => [$almacen->id],
+            'total' => 100,
+            'impuestos' => 0,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertUnprocessable();
+        $response->assertJsonPath('error', 'Se requiere autorización de un administrador para quitar el ITBIS.');
+        $this->assertDatabaseCount('ventas', 0);
+    }
+
+    public function test_store_with_sin_itbis_and_valid_token_excludes_itbis(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $token = Crypt::encryptString(json_encode([
+            'email'     => $session['user']->email,
+            'tenant_id' => $session['businessInstance']->id,
+            'exp'       => now()->addMinutes(5)->timestamp,
+        ]));
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'itbis_porcentaje' => [18],
+            'sin_itbis' => [1],
+            'admin_token' => $token,
+            'almacen_id' => [$almacen->id],
+            'total' => 100,
+            'impuestos' => 0,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->post(route('ventas.store'), $payload);
+
+        $response->assertStatus(302);
+
+        $this->assertDatabaseHas('venta_detalles', [
+            'sin_itbis' => 1,
+        ]);
+
+        $venta = Venta::where('user_id', $session['user']->id)->first();
+        $this->assertNotNull($venta);
+        $this->assertSame('100.00', $venta->subtotal);
+        $this->assertSame('0.00', $venta->impuestos);
+        $this->assertSame('100.00', $venta->total);
+    }
+
+    public function test_store_with_sin_itbis_and_mixed_lines_only_excludes_marked(): void
+    {
+        $session = $this->setupSession();
+        $producto1 = $session['producto'];
+        $producto1->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $producto2 = Producto::factory()->create([
+            'tenant_id' => $session['businessInstance']->id,
+            'precio' => 100.00,
+            'itbis_porcentaje' => 18,
+            'stock' => 100,
+        ]);
+        \App\Models\AlmacenMovimiento::create([
+            'tenant_id'   => $session['businessInstance']->id,
+            'producto_id' => $producto2->id,
+            'almacen_id'  => $almacen->id,
+            'tipo'        => 'entrada',
+            'cantidad'    => 100,
+            'nota'        => 'Stock inicial (test)',
+            'user_id'     => $session['user']->id,
+        ]);
+        $tipoVenta = $session['tipoVenta'];
+
+        $token = Crypt::encryptString(json_encode([
+            'email'     => $session['user']->email,
+            'tenant_id' => $session['businessInstance']->id,
+            'exp'       => now()->addMinutes(5)->timestamp,
+        ]));
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto1->id, $producto2->id],
+            'cantidad' => [1, 1],
+            'precio' => [100, 100],
+            'subtotal' => [100, 100],
+            'itbis_porcentaje' => [18, 18],
+            'sin_itbis' => [1, 0],
+            'admin_token' => $token,
+            'almacen_id' => [$almacen->id, $almacen->id],
+            'total' => 218,
+            'impuestos' => 18,
+            'subtotal_final' => 200,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->post(route('ventas.store'), $payload);
+
+        $response->assertStatus(302);
+
+        $this->assertDatabaseHas('venta_detalles', [
+            'producto_id' => $producto1->id,
+            'sin_itbis' => 1,
+        ]);
+        $this->assertDatabaseHas('venta_detalles', [
+            'producto_id' => $producto2->id,
+            'sin_itbis' => 0,
+        ]);
+
+        $venta = Venta::where('user_id', $session['user']->id)->first();
+        $this->assertNotNull($venta);
+        $this->assertSame('18.00', $venta->impuestos);
+        $this->assertSame('218.00', $venta->total);
+    }
+
+    public function test_store_with_sin_itbis_and_expired_token_rejected(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $token = Crypt::encryptString(json_encode([
+            'email'     => $session['user']->email,
+            'tenant_id' => $session['businessInstance']->id,
+            'exp'       => now()->subMinute()->timestamp,
+        ]));
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'itbis_porcentaje' => [18],
+            'sin_itbis' => [1],
+            'admin_token' => $token,
+            'almacen_id' => [$almacen->id],
+            'total' => 100,
+            'impuestos' => 0,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertUnprocessable();
+        $response->assertJsonPath('error', 'La autorización del administrador expiró. Solicítala nuevamente.');
+        $this->assertDatabaseCount('ventas', 0);
+    }
+
+    public function test_store_with_sin_itbis_and_ecf_rejected(): void
+    {
+        $session = $this->setupSession();
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18]);
+        $almacen = $session['almacen'];
+        $tipoVenta = $session['tipoVenta'];
+
+        $token = Crypt::encryptString(json_encode([
+            'email'     => $session['user']->email,
+            'tenant_id' => $session['businessInstance']->id,
+            'exp'       => now()->addMinutes(5)->timestamp,
+        ]));
+
+        $payload = [
+            'tipo_venta_id' => $tipoVenta->id,
+            'producto_id' => [$producto->id],
+            'cantidad' => [1],
+            'precio' => [100],
+            'subtotal' => [100],
+            'itbis_porcentaje' => [18],
+            'sin_itbis' => [1],
+            'admin_token' => $token,
+            'almacen_id' => [$almacen->id],
+            'tipo_comprobante' => 'ecf',
+            'total' => 100,
+            'impuestos' => 0,
+            'subtotal_final' => 100,
+            'metodo_pago' => 'efectivo',
+        ];
+
+        $response = $this->actingAs($session['user'])
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertUnprocessable();
+        $response->assertJsonPath('error', 'No se permite quitar el ITBIS en comprobantes e-CF (DGII).');
+        $this->assertDatabaseCount('ventas', 0);
     }
 }

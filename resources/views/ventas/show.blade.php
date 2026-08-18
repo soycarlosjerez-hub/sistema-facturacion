@@ -150,6 +150,9 @@ body.dark-mode .pagos-table tbody td {
                             <span class="text-muted small">ITBIS (Impuestos)</span>
                             <span class="small">RD${{ number_format($venta->impuestos, 2) }}</span>
                         </div>
+                        @if($venta->detalles->contains(fn($d) => $d->sin_itbis))
+                        <div class="small text-danger fw-bold mb-1"><i class="bi bi-slash-circle me-1"></i>Venta incluye líneas sin ITBIS</div>
+                        @endif
                         @if($venta->descuento > 0)
                         <div class="d-flex justify-content-between mb-1 text-danger">
                             <span class="small">Descuento</span>

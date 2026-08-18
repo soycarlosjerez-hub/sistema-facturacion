@@ -278,7 +278,7 @@
                 <td class="text-center">{{ number_format($d->cantidad, 2) }}</td>
                 <td class="text-right">${{ number_format($d->precio_unitario, 2) }}</td>
                 <td class="text-right">${{ number_format($d->subtotal, 2) }}</td>
-                <td class="text-center">{{ $d->producto->itbis_porcentaje ?? $d->itbis_porcentaje ?? $systemItbis ?? 18 }}%</td>
+                <td class="text-center">{{ $d->sin_itbis ? '0' : ($d->producto->itbis_porcentaje ?? $d->itbis_porcentaje ?? $systemItbis ?? 18) }}%{{ $d->sin_itbis ? ' <span style="font-size:7px;color:#dc3545;">(Sin ITBIS)</span>' : '' }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -294,7 +294,7 @@
             <td class="totals-value">${{ number_format($venta->subtotal, 2) }}</td>
         </tr>
         <tr>
-            <td class="totals-label">ITBIS ({{ $venta->impuestos > 0 ? round(($venta->impuestos / max($venta->subtotal, 1)) * 100) : 18 }}%):</td>
+            <td class="totals-label">ITBIS ({{ $venta->impuestos > 0 ? round(($venta->impuestos / max($venta->subtotal, 1)) * 100) : 0 }}%):</td>
             <td class="totals-value">${{ number_format($venta->impuestos, 2) }}</td>
         </tr>
         @if($venta->descuento > 0)

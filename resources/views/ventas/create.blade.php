@@ -363,6 +363,40 @@ body:not(.dark-mode) {
         font-size: 0.7rem;
         font-weight: 600;
     }
+    .cart-item .ci-sinitbis {
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .cart-item .sinitbis-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: transparent;
+        border: 1px solid var(--pos-border);
+        color: var(--pos-text-muted);
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .cart-item .sinitbis-toggle:hover {
+        background: rgba(var(--pos-warning-rgb), 0.12);
+        border-color: var(--pos-warning);
+        color: var(--pos-text);
+    }
+    .cart-item .sinitbis-toggle.active {
+        background: rgba(var(--pos-danger-rgb), 0.15);
+        border-color: var(--pos-danger);
+        color: #fca5a5;
+    }
+    .cart-item .sinitbis-toggle:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
     
     .cart-item .ci-qty button:hover:not(:disabled) {
         background: var(--pos-accent);
@@ -2211,6 +2245,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 <form id="pos-form" action="{{ route('ventas.store') }}" method="POST" autocomplete="off">
     @csrf
     <input type="hidden" name="sesion_caja_id" id="selected-sesion-id" value="{{ $sesion->id ?? '' }}">
+    <input type="hidden" name="admin_token" id="admin-token" value="">
 
     <div class="pos-app" style="--delay:0s">
         <!-- ============ TOP BAR ============ -->
@@ -2502,6 +2537,40 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         </div>
     </div>
 </form>
+
+<!-- Modal Autorización Admin para quitar ITBIS -->
+<div class="modal fade" id="modalAutorizarAdmin" tabindex="-1" aria-labelledby="authAdminTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-pos">
+            <div class="modal-header">
+                <h5 class="fw-bold"><i class="bi bi-shield-lock me-2"></i>Autorización de Administrador</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-3">
+                    Para quitar el <strong>ITBIS</strong> de esta línea se requiere autorización de un usuario con rol de administrador.
+                </p>
+                <form id="form-autorizar-admin" autocomplete="off">
+                    <div class="mb-3">
+                        <label for="auth-admin-email" class="form-label small fw-semibold">Email del administrador</label>
+                        <input type="email" class="form-control" id="auth-admin-email" placeholder="admin@empresa.com" autocomplete="off" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="auth-admin-password" class="form-label small fw-semibold">Contraseña</label>
+                        <input type="password" class="form-control" id="auth-admin-password" placeholder="••••••••" autocomplete="off" required>
+                    </div>
+                    <div id="auth-admin-error" class="alert alert-danger py-2 small" style="display:none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-auth-admin-submit">
+                    <i class="bi bi-shield-check me-1"></i>Autorizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal Cambio de Caja -->
 @if(count($cajas) > 1)
@@ -3032,6 +3101,16 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     let creditoWarningInstance = null;
     let audioEnabled = localStorage.getItem('pos_audio_enabled') !== 'false';
 
+    // Autorización admin para quitar ITBIS por línea
+    let adminToken = '';
+    let adminTokenExp = 0;
+    let pendingSinItbis = null;
+    const currentUserEmail = {!! json_encode(auth()->user()->email) !!};
+
+    function adminTokenValid() {
+        return adminToken !== '' && Date.now() < adminTokenExp;
+    }
+
     function playBeep(type) {
         if (!audioEnabled) return;
         try {
@@ -3159,6 +3238,37 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 ncfSelect.disabled = true;
                 ecfInfo.style.display = 'block';
             }
+            // e-CF no admite quitar ITBIS: limpiar marcas y token
+            if (tipo === 'ecf') {
+                const habiaSinItbis = cart.some(i => i.sin_itbis);
+                cart.forEach(i => i.sin_itbis = false);
+                adminToken = '';
+                adminTokenExp = 0;
+                $('admin-token').value = '';
+                if (habiaSinItbis) {
+                    showToast('Los comprobantes e-CF no permiten quitar el ITBIS. Marcas eliminadas.', 'warning');
+                }
+                renderCart();
+            }
+        },
+
+        toggleSinItbis(index) {
+            const item = cart[index];
+            if (!item) return;
+            if ($('tipo_comprobante').value === 'ecf') {
+                showToast('Los comprobantes e-CF no permiten quitar el ITBIS.', 'warning');
+                return;
+            }
+            if (!item.sin_itbis) {
+                // Activar: requiere autorización de administrador
+                if (!adminTokenValid()) {
+                    pendingSinItbis = index;
+                    mostrarModalAutorizarAdmin();
+                    return;
+                }
+            }
+            item.sin_itbis = !item.sin_itbis;
+            renderCart();
         },
 
         submitForm(metodo) {
@@ -3169,6 +3279,18 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             if (isSubmitting) {
                 showToast('Ya hay un pago en proceso', 'warning');
                 return;
+            }
+            if (cart.some(i => i.sin_itbis)) {
+                if ($('tipo_comprobante').value === 'ecf') {
+                    showToast('Los comprobantes e-CF no permiten quitar el ITBIS.', 'warning');
+                    return;
+                }
+                if (!adminTokenValid()) {
+                    showToast('Se requiere autorización de administrador para las líneas sin ITBIS.', 'warning');
+                    pendingSinItbis = cart.findIndex(i => i.sin_itbis);
+                    mostrarModalAutorizarAdmin();
+                    return;
+                }
             }
             if (validaStock && almacenes.length > 0 && !getAlmacenId()) {
                 showToast('Selecciona un almacén válido', 'danger');
@@ -3716,7 +3838,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         if (modoObras) {
             const existing = cart.find(x => x.id === id);
             if (existing) { showToast(`La obra "${p.nombre}" ya está en el carrito`, 'warning'); return; }
-            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', es_obra: true });
+            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', sin_itbis: false, es_obra: true });
             renderCart('add');
             cerrarModalProductos();
             return;
@@ -3726,7 +3848,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         if (existing) {
             existing.qty += qty;
         } else {
-            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: qty, stock: p.stock, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto' });
+            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: qty, stock: p.stock, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', sin_itbis: false });
         }
         renderCart('add');
         cerrarModalProductos();
@@ -3827,7 +3949,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             cart.push({
                 id: p.id, nombre: p.nombre, precio: p.precio,
                 itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url,
-                descuento: 0, descuento_tipo: 'monto', es_obra: true
+                descuento: 0, descuento_tipo: 'monto', sin_itbis: false, es_obra: true
             });
         } else if (existing) {
             existing.qty++;
@@ -3835,7 +3957,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             cart.push({
                 id: p.id, nombre: p.nombre, precio: p.precio,
                 itbis_p: p.itbis_p, qty: 1, stock: p.stock, imagen_url: p.imagen_url,
-                descuento: 0, descuento_tipo: 'monto'
+                descuento: 0, descuento_tipo: 'monto', sin_itbis: false
             });
         }
         if (fromScanner) {
@@ -3878,7 +4000,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     ? (subtotal * descuentoItem / 100) 
                     : descuentoItem;
                 const subtotalConDesc = Math.max(0, subtotal - descuentoAplicado);
-                const itbis = subtotalConDesc * (item.itbis_p / 100);
+                const itbis = subtotalConDesc * (item.sin_itbis ? 0 : item.itbis_p / 100);
                 return `
                 <div class="cart-item ${anim === 'add' && index === cart.length-1 ? 'adding' : ''}" data-index="${index}">
                     <img src="${escapeHtml(item.imagen_url)}" class="ci-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
@@ -3916,10 +4038,15 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                             </div>
                             ${descuentoAplicado > 0 ? `<small class="discount-applied">-${fmt(descuentoAplicado)}</small>` : ''}
                         </div>`}
+                        <div class="ci-sinitbis">
+                            <button type="button" class="sinitbis-toggle ${item.sin_itbis ? 'active' : ''}" data-action="toggle-sin-itbis" data-index="${index}" title="Quitar/aplicar ITBIS de esta línea" aria-label="Quitar ITBIS de la línea ${index + 1}">
+                                <i class="bi ${item.sin_itbis ? 'bi-slash-circle' : 'bi-receipt'}"></i>${item.sin_itbis ? 'Sin ITBIS' : 'ITBIS'}
+                            </button>
+                        </div>
                     </div>
                     <div class="ci-right">
                         <div class="ci-subtotal">${fmt(subtotalConDesc)}</div>
-                        <div class="ci-itbis">+ ITBIS ${fmt(itbis)}</div>
+                        <div class="ci-itbis">${item.sin_itbis ? '<span style="color:#fca5a5;font-weight:700;">Sin ITBIS</span>' : '+ ITBIS ' + fmt(itbis)}</div>
                     </div>
                     <button type="button" class="ci-remove" data-action="remove" data-index="${index}" title="Eliminar" aria-label="Eliminar producto del carrito">
                         <i class="bi bi-x-circle" aria-hidden="true"></i>
@@ -3933,6 +4060,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     <input type="hidden" name="descuento[]" value="${descuentoItem}">
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
                     <input type="hidden" name="itbis_porcentaje[]" value="${item.itbis_p}">
+                    <input type="hidden" name="sin_itbis[]" value="${item.sin_itbis ? 1 : 0}">
                 </div>`;
             }).join('');
         }
@@ -3952,7 +4080,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             const subtotalConDesc = Math.max(0, lineSub - descuentoAplicado);
             subtotal += lineSub;
             totalDescuentos += descuentoAplicado;
-            lineData.push({ subtotalConDesc, itbis_p: item.itbis_p });
+            lineData.push({ subtotalConDesc, itbis_p: item.sin_itbis ? 0 : item.itbis_p });
         });
         // Recalcular ITBIS proporcionalmente aplicando descuento general
         const baseImponibleTotal = lineData.reduce((s, ld) => s + ld.subtotalConDesc, 0);
@@ -4295,7 +4423,85 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 e.preventDefault();
                 POS.selectComprobante(target.dataset.comprobante);
                 break;
+            case 'toggle-sin-itbis':
+                e.preventDefault();
+                if (!isNaN(index)) POS.toggleSinItbis(index);
+                break;
         }
+    }
+
+    // ============ Autorización de administrador para quitar ITBIS ============
+    function mostrarModalAutorizarAdmin() {
+        const emailInput = $('auth-admin-email');
+        const errorBox = $('auth-admin-error');
+        if (emailInput && !emailInput.value) emailInput.value = currentUserEmail;
+        if (errorBox) errorBox.style.display = 'none';
+        $('auth-admin-password').value = '';
+        new bootstrap.Modal($('modalAutorizarAdmin')).show();
+        setTimeout(() => $('auth-admin-password').focus(), 400);
+    }
+
+    function enviarAutorizacionAdmin() {
+        const email = $('auth-admin-email').value.trim();
+        const password = $('auth-admin-password').value;
+        const errorBox = $('auth-admin-error');
+        const btn = $('btn-auth-admin-submit');
+
+        if (errorBox) errorBox.style.display = 'none';
+        if (!email || !password) {
+            showToast('Ingresa el email y la contraseña del administrador.', 'warning');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Validando...';
+
+        fetch('{{ route('ventas.autorizarAdmin') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: JSON.stringify({ email, password }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                adminToken = data.token;
+                adminTokenExp = Date.now() + (5 * 60 * 1000);
+                $('admin-token').value = adminToken;
+                bootstrap.Modal.getInstance($('modalAutorizarAdmin'))?.hide();
+                showToast(`Autorizado por ${data.admin}`, 'success');
+                if (pendingSinItbis !== null) {
+                    const idx = pendingSinItbis;
+                    pendingSinItbis = null;
+                    if (cart[idx]) {
+                        cart[idx].sin_itbis = true;
+                        renderCart();
+                    }
+                }
+            } else {
+                if (errorBox) {
+                    errorBox.textContent = data.error || 'Autorización rechazada.';
+                    errorBox.style.display = 'block';
+                }
+                showToast(data.error || 'Autorización rechazada.', 'danger');
+                playBeep('error');
+            }
+        })
+        .catch(() => {
+            if (errorBox) {
+                errorBox.textContent = 'Error al conectar con el servidor. Intenta de nuevo.';
+                errorBox.style.display = 'block';
+            }
+            showToast('Error al autorizar. Intenta de nuevo.', 'danger');
+            playBeep('error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-shield-check me-1"></i>Autorizar';
+        });
     }
 
     // ============ Atajos teclado ============
@@ -4327,6 +4533,19 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         loadDayStats();
         loadTurnoHistory();
         startTurnoTimer();
+
+        // Autorización admin para quitar ITBIS
+        $('btn-auth-admin-submit').addEventListener('click', enviarAutorizacionAdmin);
+        $('form-autorizar-admin').addEventListener('submit', (e) => {
+            e.preventDefault();
+            enviarAutorizacionAdmin();
+        });
+        $('auth-admin-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                enviarAutorizacionAdmin();
+            }
+        });
 
         // Refrescar estadísticas cada minuto
         window._statsInterval = setInterval(loadDayStats, 60000);

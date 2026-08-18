@@ -148,6 +148,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:ventas.create')->group(function () {
         Route::get('/ventas/create', [VentaController::class, 'create'])->name('ventas.create');
         Route::post('/ventas', [VentaController::class, 'store'])->name('ventas.store');
+        Route::post('/ventas/autorizar-admin', [VentaController::class, 'autorizarAdmin'])->name('ventas.autorizarAdmin');
     });
 
     Route::middleware('permission:ventas.view,ventas.view.own')->group(function () {

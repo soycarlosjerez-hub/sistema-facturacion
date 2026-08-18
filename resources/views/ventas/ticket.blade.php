@@ -137,6 +137,12 @@
                 <span>Impuestos (ITBIS):</span>
                 <span>RD{{ number_format($venta->impuestos, 2) }}</span>
             </div>
+            @if($venta->detalles->contains(fn($d) => $d->sin_itbis))
+            <div class="row" style="color:#dc3545;font-weight:700;">
+                <span>Incluye líneas sin ITBIS</span>
+                <span></span>
+            </div>
+            @endif
             @if($venta->descuento > 0)
             <div class="row">
                 <span>Descuento:</span>
