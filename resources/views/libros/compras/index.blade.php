@@ -227,7 +227,7 @@ $(document).ready(function() {
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
         language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
-        columnDefs: [{ orderable: false, targets: [4,5,6,7,8,9] }],
+        columnDefs: [{ orderable: false, targets: [0, 1, 2, 3, 9] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
 });

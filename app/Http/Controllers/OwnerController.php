@@ -84,13 +84,13 @@ class OwnerController extends Controller
             ->sortDesc();
 
         // Compute MRR with DB aggregation for active instances with plans
-        $mrrPlanos = BusinessInstance::where('activo', true)
+        $mrrPlanos = BusinessInstance::where('business_instances.activo', true)
             ->whereNotNull('plan_id')
             ->join('plans', 'business_instances.plan_id', '=', 'plans.id')
             ->sum('plans.precio_mensual');
 
         // Add MRR for active instances without plans (use costo_mensual as fallback)
-        $mrrSinPlan = BusinessInstance::where('activo', true)
+        $mrrSinPlan = BusinessInstance::where('business_instances.activo', true)
             ->whereNull('plan_id')
             ->whereNotNull('costo_mensual')
             ->sum('costo_mensual');
