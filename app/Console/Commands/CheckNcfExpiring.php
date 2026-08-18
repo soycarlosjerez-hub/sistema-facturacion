@@ -25,7 +25,8 @@ class CheckNcfExpiring extends Command
                 ncfNumber: $ncf->prefijo . '-' . str_pad($ncf->actual, 9, '0', STR_PAD_LEFT),
                 type: $ncf->nombre,
                 daysRemaining: max(0, $diasRestantes),
-                expiryDate: $ncf->fecha_vencimiento->format('Y-m-d')
+                expiryDate: $ncf->fecha_vencimiento->format('Y-m-d'),
+                businessInstanceId: $ncf->tenant_id
             ));
         }
 
@@ -38,7 +39,8 @@ class CheckNcfExpiring extends Command
                 ncfNumber: $ncf->prefijo . '-' . str_pad($ncf->actual, 9, '0', STR_PAD_LEFT),
                 type: $ncf->nombre,
                 daysRemaining: 0,
-                expiryDate: $ncf->fecha_vencimiento->format('Y-m-d')
+                expiryDate: $ncf->fecha_vencimiento->format('Y-m-d'),
+                businessInstanceId: $ncf->tenant_id
             ));
         }
 

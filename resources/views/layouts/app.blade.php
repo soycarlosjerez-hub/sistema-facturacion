@@ -409,12 +409,13 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         .notif-dropdown .notif-item:hover { background: #f8fafc; }
         .notif-dropdown .notif-item.unread { background: #eff6ff; }
         .notif-dropdown .notif-item.unread:hover { background: #dbeafe; }
-        .notif-dropdown .notif-icon {
+        .notif-dropdown .notif-icon, .notif-dropdown .notif-avatar {
             width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
             justify-content: center; flex-shrink: 0; font-size: 0.85rem;
         }
         .notif-dropdown .notif-body { flex: 1; min-width: 0; }
         .notif-dropdown .notif-title { font-size: 0.8rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .notif-dropdown .notif-title strong { font-weight: 700; }
         .notif-dropdown .notif-message { font-size: 0.75rem; color: #64748b; margin: 2px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .notif-dropdown .notif-time { font-size: 0.65rem; color: #94a3b8; margin-top: 2px; }
         .spin-loading { animation: spin 1s linear infinite; }
@@ -424,6 +425,15 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         body.dark-mode .notif-dropdown .notif-item.unread { background: #0c1529; }
         body.dark-mode .notif-dropdown .notif-item.unread:hover { background: #0f1d32; }
         body.dark-mode .notif-dropdown .notif-message { color: #94a3b8; }
+
+        /* Activity Feed */
+        .feed-day-divider small { font-size: 0.7rem; }
+        .feed-avatar {
+            width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; font-weight: 600;
+        }
+        .feed-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .notification-item.unread { background: #eff6ff !important; }
 
         body.dark-mode .list-group-item { background: #0f172a; border-color: #1e293b; color: #cbd5e1; }
         body.dark-mode .list-group-item.active { background: #38bdf8; border-color: #38bdf8; color: #0f172a; }
@@ -1072,103 +1082,8 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
 
     @stack('scripts')
 
-    <!-- Notification Widget -->
-    <script>
-    (function() {
-        'use strict';
-        const notifList = document.getElementById('notifList');
-        const notifBadge = document.getElementById('notifBadge');
-        const notifCount = document.getElementById('notifCount');
-        const bellIcon = document.getElementById('bellIcon');
-        if (!notifList) return;
-
-        let unreadCount = 0;
-        let pollingInterval = null;
-
-        function renderNotification(n) {
-            const iconBg = n.color || '#3b82f6';
-            const icon = n.icon || 'bi-bell';
-            const actionUrl = n.data?.action_url || n.action_url || '#';
-            const readClass = n.read || n.read_at ? '' : 'unread';
-            const time = n.created_at || '';
-            return '<a href="' + actionUrl + '" class="notif-item ' + readClass + '" data-id="' + n.id + '">' +
-                '<div class="notif-icon" style="background:' + iconBg + '20;color:' + iconBg + ';"><i class="bi ' + icon + '"></i></div>' +
-                '<div class="notif-body">' +
-                    '<p class="notif-title">' + (n.title || 'Notificación') + '</p>' +
-                    '<p class="notif-message">' + (n.body || '') + '</p>' +
-                    '<span class="notif-time">' + time + '</span>' +
-                '</div>' +
-            '</a>';
-        }
-
-        async function fetchNotifications() {
-            try {
-                const res = await fetch('/api/notifications/recent/5');
-                const data = await res.json();
-                const notifs = data.notifications || [];
-
-                unreadCount = notifs.filter(n => !n.read).length;
-
-                if (unreadCount > 0) {
-                    notifBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
-                    notifBadge.classList.remove('d-none');
-                    bellIcon.classList.add('bi-bell-fill');
-                    bellIcon.classList.remove('bi-bell');
-                } else {
-                    notifBadge.classList.add('d-none');
-                    bellIcon.classList.add('bi-bell');
-                    bellIcon.classList.remove('bi-bell-fill');
-                }
-
-                notifCount.textContent = unreadCount + ' nuevas';
-
-                if (notifs.length === 0) {
-                    notifList.innerHTML = '<div class="text-center py-4 text-muted"><i class="bi bi-bell-slash fs-4 d-block mb-2"></i><small>No hay notificaciones</small></div>';
-                    return;
-                }
-
-                notifList.innerHTML = notifs.map(renderNotification).join('');
-
-                // Click handlers
-                notifList.querySelectorAll('.notif-item').forEach(function(item) {
-                    item.addEventListener('click', function(e) {
-                        const id = this.getAttribute('data-id');
-                        if (!id) return;
-                        fetch('/api/notifications/' + id + '/read', {
-                            method: 'PUT',
-                            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
-                        }).then(() => {
-                            this.classList.remove('unread');
-                        });
-                    });
-                });
-            } catch (err) {
-                console.error('Error loading notifications:', err);
-            }
-        }
-
-        // Initial load
-        fetchNotifications();
-
-        // Poll every 30 seconds
-        pollingInterval = setInterval(fetchNotifications, 30000);
-
-        // Stop polling when tab is hidden
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                clearInterval(pollingInterval);
-            } else {
-                fetchNotifications();
-                pollingInterval = setInterval(fetchNotifications, 30000);
-            }
-        });
-
-        // Clear interval on page unload
-        window.addEventListener('beforeunload', function() {
-            clearInterval(pollingInterval);
-        });
-    })();
-    </script>
+    <!-- Notification / Activity Feed Widget -->
+    <script src="{{ asset('js/notifications.js') }}"></script>
 
     <script>
     (function() {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NotificationPreference;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -29,8 +30,9 @@ class NotificationController extends Controller
         }
 
         $notifications = $query->latest()->paginate($perPage);
+        $unreadCount = UserNotification::where('user_id', $user->id)->whereNull('read_at')->count();
 
-        return view('notifications.index', compact('notifications'));
+        return view('notifications.index', compact('notifications', 'unreadCount', 'status', 'filter'));
     }
 
     public function apiIndex(Request $request)
@@ -105,6 +107,30 @@ class NotificationController extends Controller
         ]);
     }
 
+    /**
+     * Feed de actividad para polling en tiempo real.
+     */
+    public function apiFeed(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $limit = min((int) $request->input('limit', 10), 50);
+        $sinceId = (int) $request->input('since_id', 0);
+
+        $query = UserNotification::where('user_id', $user->id);
+
+        if ($sinceId > 0) {
+            $query->where('id', '>', $sinceId);
+        }
+
+        $items = $query->latest()->limit($limit)->get()->map(fn ($n) => $this->serialize($n));
+
+        return response()->json([
+            'items' => $items,
+            'unread_count' => UserNotification::where('user_id', $user->id)->whereNull('read_at')->count(),
+            'has_new' => $sinceId > 0 && $items->isNotEmpty(),
+        ]);
+    }
+
     public function apiRecent(int $limit = 5): JsonResponse
     {
         $user = Auth::user();
@@ -114,21 +140,32 @@ class NotificationController extends Controller
             ->get();
 
         return response()->json([
-            'notifications' => $notifications->map(fn($n) => [
-                'id' => $n->id,
-                'title' => $n->title,
-                'body' => $n->body,
-                'category' => $n->category,
-                'icon' => $n->data['icon'] ?? 'bi-bell',
-                'color' => $n->data['color'] ?? '#3b82f6',
-                'category_icon' => $n->data['category_icon'] ?? 'bi-bell',
-                'category_label' => $n->data['category_label'] ?? 'Sistema',
-                'action_url' => $n->data['action_url'] ?? null,
-                'read' => !is_null($n->read_at),
-                'created_at' => $n->created_at->diffForHumans(),
-                'created_at_raw' => $n->created_at->toISOString(),
-            ]),
+            'notifications' => $notifications->map(fn ($n) => $this->serialize($n)),
+            'unread_count' => UserNotification::where('user_id', $user->id)->whereNull('read_at')->count(),
         ]);
+    }
+
+    protected function serialize(UserNotification $n): array
+    {
+        return [
+            'id' => $n->id,
+            'type' => $n->type,
+            'category' => $n->category,
+            'title' => $n->title,
+            'body' => $n->body,
+            'action' => $n->action ?? $n->data['verb'] ?? null,
+            'actor_id' => $n->actor_id,
+            'actor_name' => $n->actor_name,
+            'actor_avatar' => $n->actor_avatar,
+            'icon' => $n->data['icon'] ?? 'bi-bell',
+            'color' => $n->data['color'] ?? '#3b82f6',
+            'category_icon' => $n->data['category_icon'] ?? 'bi-bell',
+            'category_label' => $n->data['category_label'] ?? 'Sistema',
+            'action_url' => $n->data['action_url'] ?? null,
+            'read' => !is_null($n->read_at),
+            'created_at' => $n->created_at->diffForHumans(),
+            'created_at_raw' => $n->created_at->toISOString(),
+        ];
     }
 
     public function apiMarkAsRead($id): JsonResponse
@@ -180,6 +217,32 @@ class NotificationController extends Controller
             'success' => true,
             'message' => "{$deleted} notificaciones antiguas eliminadas",
             'deleted_count' => $deleted,
+        ]);
+    }
+
+    public function apiPreferences(): JsonResponse
+    {
+        $user = Auth::user();
+        $prefs = NotificationPreference::forUser($user);
+
+        return response()->json($prefs);
+    }
+
+    public function apiUpdatePreferences(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+        $prefs = NotificationPreference::forUser($user);
+        $allowed = (new NotificationPreference())->getFillable();
+
+        $data = $request->only($allowed);
+        foreach ($data as $key => $value) {
+            $prefs->{$key} = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+        }
+        $prefs->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Preferencias de notificación actualizadas',
         ]);
     }
 }

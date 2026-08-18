@@ -49,6 +49,56 @@ trait Auditable
             'user_agent'  => Request::userAgent(),
             'tenant_id'  => Auth::user()->business_instance_id ?? null,
         ]);
+
+        $this->pushFeedEntry($action, $description, $new);
+    }
+
+    /**
+     * Modelos con eventos de dominio dedicados (o internos) que no generan
+     * entrada genérica en el feed para evitar duplicados.
+     */
+    protected function getAuditableFeedExcluded(): array
+    {
+        return [
+            \App\Models\Venta::class,
+            \App\Models\Compra::class,
+            \App\Models\Orden::class,
+            \App\Models\BusinessInstance::class,
+        ];
+    }
+
+    /**
+     * Campos que no generan entrada en el feed (actualizaciones automáticas/contadores).
+     */
+    protected function getFeedIgnoredFields(): array
+    {
+        return ['stock', 'ventas_count', 'balance_pendiente', 'last_seen_at'];
+    }
+
+    protected function pushFeedEntry(string $action, string $description, array $new = []): void
+    {
+        try {
+            if (in_array(get_class($this), $this->getAuditableFeedExcluded(), true)) {
+                return;
+            }
+
+            if (!in_array($action, ['created', 'updated', 'deleted'], true)) {
+                return;
+            }
+
+            if ($action === 'updated') {
+                $ignored = $this->getFeedIgnoredFields();
+                $keys = array_keys($new);
+                $meaningful = array_filter($keys, fn ($k) => !in_array($k, $ignored, true));
+                if (empty($meaningful)) {
+                    return;
+                }
+            }
+
+            app(\App\Services\NotificationService::class)->feedFromAudit($action, $description, $this);
+        } catch (\Throwable $e) {
+            // El feed nunca debe romper la operación principal
+        }
     }
 
     protected function getAuditableValues(): array

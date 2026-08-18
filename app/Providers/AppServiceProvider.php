@@ -183,16 +183,5 @@ class AppServiceProvider extends ServiceProvider
         View::composer('dashboard', DashboardComposer::class);
 
         Event::listen(\Illuminate\Support\MessageLogged::class, \App\Listeners\LogErrorToDatabase::class);
-
-        // Notification events → listeners
-        Event::listen(\App\Events\SaleCreated::class, [\App\Listeners\NotifySaleCreated::class, 'handle']);
-        Event::listen(\App\Events\SalePaid::class, [\App\Listeners\NotifySalePaid::class, 'handle']);
-        Event::listen(\App\Events\SaleCancelled::class, [\App\Listeners\NotifySaleCancelled::class, 'handle']);
-        Event::listen(\App\Events\OrderStatusChanged::class, [\App\Listeners\NotifyOrderStatusChanged::class, 'handle']);
-        Event::listen(\App\Events\StockCritical::class, [\App\Listeners\NotifyStockCritical::class, 'handle']);
-        Event::listen(\App\Events\ShiftOpened::class, [\App\Listeners\NotifyShiftOpened::class, 'handle']);
-        Event::listen(\App\Events\ShiftClosed::class, [\App\Listeners\NotifyShiftClosed::class, 'handle']);
-        Event::listen(\App\Events\NcfExpiring::class, [\App\Listeners\NotifyNcfExpiring::class, 'handle']);
-        Event::listen(\App\Events\PaymentReceived::class, [\App\Listeners\NotifyPaymentReceived::class, 'handle']);
     }
 }

@@ -3,38 +3,31 @@
 namespace App\Listeners;
 
 use App\Events\PurchaseCreated;
-use App\Models\UserNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Services\NotificationService;
 
-class NotifyPurchaseCreated implements ShouldQueue
+class NotifyPurchaseCreated
 {
-    use InteractsWithQueue;
-
-    public function __construct() {}
+    public function __construct(private NotificationService $notifications) {}
 
     public function handle(PurchaseCreated $event): void
     {
         $compra = $event->compra;
-        $userIds = \App\Models\User::whereIn('role', ['admin', 'admin-business', 'root', 'gerente'])
-            ->pluck('id')
-            ->toArray();
 
-        foreach ($userIds as $userId) {
-            UserNotification::createNotification(
-                $userId,
-                'purchase_created',
-                'Compra registrada #' . str_pad($compra->id, 5, '0', STR_PAD_LEFT),
-                sprintf('Compra por RD$ %s a %s', number_format($compra->total, 2), $compra->proveedor->nombre ?? 'Proveedor'),
-                'inventory',
-                [
-                    'icon' => 'bi-truck',
-                    'color' => '#3b82f6',
-                    'action_url' => route('compras.show', $compra->id),
-                    'category_icon' => 'bi-box-seam',
-                    'category_label' => 'Inventario',
-                ]
-            );
-        }
+        $this->notifications->notifyInstance(
+            type: 'purchase_created',
+            category: 'inventory',
+            title: 'Compra registrada #' . str_pad($compra->id, 5, '0', STR_PAD_LEFT),
+            body: sprintf('Compra por RD$ %s a %s', number_format($compra->total, 2), $compra->proveedor->nombre ?? 'Proveedor'),
+            extra: [
+                'icon' => 'bi-truck',
+                'color' => '#3b82f6',
+                'action_url' => route('compras.show', $compra->id),
+                'category_icon' => 'bi-box-seam',
+                'category_label' => 'Inventario',
+                'verb' => 'registró la compra',
+            ],
+            tenantId: $compra->tenant_id,
+            actor: $compra->user,
+        );
     }
 }

@@ -14,6 +14,7 @@ class NcfExpiring
         public string $ncfNumber,
         public string $type,
         public string $expiryDate,
-        public int $daysRemaining
+        public int $daysRemaining,
+        public ?int $businessInstanceId = null
     ) {}
 }

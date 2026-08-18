@@ -3,15 +3,11 @@
 namespace App\Listeners;
 
 use App\Events\OrderStatusChanged;
-use App\Models\UserNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Services\NotificationService;
 
-class NotifyOrderStatusChanged implements ShouldQueue
+class NotifyOrderStatusChanged
 {
-    use InteractsWithQueue;
-
-    public function __construct() {}
+    public function __construct(private NotificationService $notifications) {}
 
     public function handle(OrderStatusChanged $event): void
     {
@@ -31,25 +27,21 @@ class NotifyOrderStatusChanged implements ShouldQueue
             'shipped' => '#f59e0b',
         ];
 
-        $userIds = \App\Models\User::whereIn('role', ['admin', 'admin-business', 'root', 'gerente'])
-            ->pluck('id')
-            ->toArray();
-
-        foreach ($userIds as $userId) {
-            UserNotification::createNotification(
-                $userId,
-                'order_status_changed',
-                'Orden #' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . ' → ' . ucfirst(str_replace('_', ' ', $to)),
-                sprintf('Estado cambiado de "%s" a "%s"', $from, $to),
-                'order',
-                [
-                    'icon' => $icons[$to] ?? 'bi-arrow-right-circle',
-                    'color' => $colors[$to] ?? '#6366f1',
-                    'action_url' => route('ordenes.show', $order->id),
-                    'category_icon' => 'bi-list-ul',
-                    'category_label' => 'Órdenes',
-                ]
-            );
-        }
+        $this->notifications->notifyInstance(
+            type: 'order_status_changed',
+            category: 'order',
+            title: 'Orden #' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . ' → ' . ucfirst(str_replace('_', ' ', $to)),
+            body: sprintf('Estado cambiado de "%s" a "%s"', $from, $to),
+            extra: [
+                'icon' => $icons[$to] ?? 'bi-arrow-right-circle',
+                'color' => $colors[$to] ?? '#6366f1',
+                'action_url' => route('ordenes.show', $order->id),
+                'category_icon' => 'bi-list-ul',
+                'category_label' => 'Órdenes',
+                'verb' => 'cambió el estado de la orden',
+            ],
+            tenantId: $order->tenant_id,
+            actor: $order->usuario,
+        );
     }
 }

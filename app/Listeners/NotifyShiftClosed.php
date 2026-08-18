@@ -3,39 +3,32 @@
 namespace App\Listeners;
 
 use App\Events\ShiftClosed;
-use App\Models\UserNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Services\NotificationService;
 
-class NotifyShiftClosed implements ShouldQueue
+class NotifyShiftClosed
 {
-    use InteractsWithQueue;
-
-    public function __construct() {}
+    public function __construct(private NotificationService $notifications) {}
 
     public function handle(ShiftClosed $event): void
     {
         $sesion = $event->sesion;
-        $userIds = \App\Models\User::whereIn('role', ['admin', 'admin-business', 'root', 'gerente'])
-            ->pluck('id')
-            ->toArray();
+        $totalTurno = $sesion->monto_inicial + $sesion->ventas_efectivo + $sesion->ventas_tarjeta + $sesion->ventas_transferencia;
 
-        foreach ($userIds as $userId) {
-            if ($userId === $sesion->user_id) continue;
-            UserNotification::createNotification(
-                $userId,
-                'shift_closed',
-                'Caja cerrada: ' . $sesion->caja->nombre,
-                sprintf('El usuario %s cerró la caja %s. Total del turno: RD$ %s', $sesion->user->name, $sesion->caja->nombre, number_format($sesion->monto_inicial + $sesion->ventas_efectivo + $sesion->ventas_tarjeta + $sesion->ventas_transferencia, 2)),
-                'cash',
-                [
-                    'icon' => 'bi-box-arrow-down',
-                    'color' => '#f59e0b',
-                    'action_url' => route('cajas.index'),
-                    'category_icon' => 'bi-cash-stack',
-                    'category_label' => 'Caja',
-                ]
-            );
-        }
+        $this->notifications->notifyInstance(
+            type: 'shift_closed',
+            category: 'cash',
+            title: 'Caja cerrada: ' . $sesion->caja->nombre,
+            body: sprintf('El usuario %s cerró la caja %s. Total del turno: RD$ %s', $sesion->user->name, $sesion->caja->nombre, number_format($totalTurno, 2)),
+            extra: [
+                'icon' => 'bi-box-arrow-down',
+                'color' => '#f59e0b',
+                'action_url' => route('cajas.index'),
+                'category_icon' => 'bi-cash-stack',
+                'category_label' => 'Caja',
+                'verb' => 'cerró la caja',
+            ],
+            tenantId: $sesion->tenant_id,
+            actor: $sesion->user,
+        );
     }
 }

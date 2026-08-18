@@ -1487,6 +1487,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'apiUnreadCount'])->name('api.notifications.unread-count');
     Route::get('/api/notifications/unread-by-category', [\App\Http\Controllers\NotificationController::class, 'apiUnreadByCategory'])->name('api.notifications.unread-by-category');
     Route::get('/api/notifications/recent/{limit?}', [\App\Http\Controllers\NotificationController::class, 'apiRecent'])->name('api.notifications.recent');
+    Route::get('/api/notifications/feed', [\App\Http\Controllers\NotificationController::class, 'apiFeed'])->name('api.notifications.feed');
     
     Route::put('/api/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'apiMarkAsRead'])->name('api.notifications.mark-read');
     Route::post('/api/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'apiMarkAllAsRead'])->name('api.notifications.mark-all-read');

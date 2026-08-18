@@ -3,38 +3,31 @@
 namespace App\Listeners;
 
 use App\Events\SalePaid;
-use App\Models\UserNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Services\NotificationService;
 
-class NotifySalePaid implements ShouldQueue
+class NotifySalePaid
 {
-    use InteractsWithQueue;
-
-    public function __construct() {}
+    public function __construct(private NotificationService $notifications) {}
 
     public function handle(SalePaid $event): void
     {
-        $sale = $event->sale;
-        $userIds = \App\Models\User::whereIn('role', ['admin', 'admin-business', 'root', 'gerente'])
-            ->pluck('id')
-            ->toArray();
+        $venta = $event->venta;
 
-        foreach ($userIds as $userId) {
-            UserNotification::createNotification(
-                $userId,
-                'sale_paid',
-                'Venta pagada #' . str_pad($sale->id, 5, '0', STR_PAD_LEFT),
-                sprintf('Venta de RD$ %s marcada como pagada', number_format($sale->total, 2)),
-                'payment',
-                [
-                    'icon' => 'bi-check-circle',
-                    'color' => '#10b981',
-                    'action_url' => route('ventas.show', $sale->id),
-                    'category_icon' => 'bi-wallet2',
-                    'category_label' => 'Pagos',
-                ]
-            );
-        }
+        $this->notifications->notifyInstance(
+            type: 'sale_paid',
+            category: 'payment',
+            title: 'Venta pagada #' . str_pad($venta->id, 5, '0', STR_PAD_LEFT),
+            body: sprintf('Venta de RD$ %s marcada como pagada', number_format($venta->total, 2)),
+            extra: [
+                'icon' => 'bi-check-circle',
+                'color' => '#10b981',
+                'action_url' => route('ventas.show', $venta->id),
+                'category_icon' => 'bi-wallet2',
+                'category_label' => 'Pagos',
+                'verb' => 'marcó como pagada la venta',
+            ],
+            tenantId: $venta->tenant_id,
+            actor: $venta->usuario,
+        );
     }
 }

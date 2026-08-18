@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Order;
+use App\Models\Orden;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -10,7 +10,7 @@ use Illuminate\Queue\SerializesModels;
 class OrderStatusChanged
 {
     public function __construct(
-        public Order $order,
+        public Orden $order,
         public string $fromStatus,
         public string $toStatus
     ) {}

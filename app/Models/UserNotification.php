@@ -12,6 +12,11 @@ class UserNotification extends Model
 
     protected $fillable = [
         'user_id',
+        'tenant_id',
+        'actor_id',
+        'actor_name',
+        'actor_avatar',
+        'action',
         'type',
         'category',
         'title',
@@ -30,6 +35,16 @@ class UserNotification extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(BusinessInstance::class, 'tenant_id');
+    }
+
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
+    }
+
     public function markAsRead(): void
     {
         $this->update(['read_at' => now()]);
@@ -38,6 +53,11 @@ class UserNotification extends Model
     public function scopeUnread($query)
     {
         return $query->whereNull('read_at');
+    }
+
+    public function scopeForInstance($query, ?int $tenantId)
+    {
+        return $query->where('tenant_id', $tenantId);
     }
 
     public function scopeByCategory($query, string $category)
@@ -51,7 +71,10 @@ class UserNotification extends Model
         string $title,
         string $body,
         string $category = 'system',
-        array $extraData = []
+        array $extraData = [],
+        ?int $tenantId = null,
+        ?int $actorId = null,
+        ?string $actorName = null
     ): self {
         $defaults = [
             'icon' => 'bi-bell',
@@ -59,15 +82,20 @@ class UserNotification extends Model
             'action_url' => null,
             'category_icon' => 'bi-bell',
             'category_label' => ucfirst($category),
+            'verb' => null,
         ];
 
-        return static::create(array_merge([
+        return static::create([
             'user_id' => $userId,
+            'tenant_id' => $tenantId,
+            'actor_id' => $actorId,
+            'actor_name' => $actorName,
+            'action' => $extraData['verb'] ?? null,
             'type' => $type,
             'category' => $category,
             'title' => $title,
             'body' => $body,
             'data' => array_merge($defaults, $extraData),
-        ], $extraData));
+        ]);
     }
 }
