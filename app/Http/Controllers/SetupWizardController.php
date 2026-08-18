@@ -119,10 +119,18 @@ class SetupWizardController extends Controller
         ]);
         $newUser->assignRole('admin-business');
 
+        // Do NOT send plaintext password. Create a reset token so the user can set their own password.
+        $token = Str::random(60);
+        \DB::table('password_reset_tokens')->insert([
+            'email' => $newUser->email,
+            'token' => Hash::make($token),
+            'created_at' => now(),
+        ]);
+
         try {
-            Mail::to($newUser->email)->send(new UserCreatedNotification($newUser, $data['password']));
+            Mail::to($newUser->email)->send(new UserCreatedNotification($newUser, $token));
         } catch (\Exception $e) {
-            Log::error('Failed to send user created email', [
+            Log::warning('Failed to send welcome email, token stored', [
                 'user_id' => $newUser->id,
                 'email' => $newUser->email,
                 'instance_id' => $instance->id,

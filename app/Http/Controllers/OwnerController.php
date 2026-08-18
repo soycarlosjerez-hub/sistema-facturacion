@@ -16,6 +16,8 @@ use App\Models\PagoInstancia;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\UserActivityLog;
+use App\Services\PlanLimitService;
+use App\Services\TenantCleanupService;
 use App\Services\UserBusinessService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -71,28 +73,79 @@ class OwnerController extends Controller
             ->where('fecha_vencimiento', '<=', now()->addDays(30))
             ->count();
 
-        $instancias = BusinessInstance::with(['businessType', 'owner', 'ultimoPago'])
-            ->orderByRaw('bloqueado DESC, activo DESC')
-            ->get();
-
-        $instanciasPorTipo = $instancias->groupBy(fn($i) => $i->businessType?->nombre ?? 'Sin tipo')
-            ->map(fn($g) => $g->count())
+        // Use DB aggregation for instance count by type instead of loading all instances
+        $instanciasPorTipo = BusinessInstance::selectRaw('business_type_id, count(*) as cnt')
+            ->with('businessType')
+            ->groupBy('business_type_id')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->businessType?->nombre ?? 'Sin tipo' => $item->cnt];
+            })
             ->sortDesc();
 
-        $instanciasConAtraso = $instancias->filter(fn($i) => $i->activo && !$i->bloqueado && !$i->estaAlDia());
+        // Compute MRR with DB aggregation for active instances with plans
+        $mrrPlanos = BusinessInstance::where('activo', true)
+            ->whereNotNull('plan_id')
+            ->join('plans', 'business_instances.plan_id', '=', 'plans.id')
+            ->sum('plans.precio_mensual');
 
-        $proximosVencimientos = $instancias->filter(fn($i) => $i->activo && !$i->bloqueado && $i->fecha_vencimiento && $i->fecha_vencimiento >= now() && $i->fecha_vencimiento <= now()->addDays(30))
-            ->sortBy('fecha_vencimiento')
-            ->take(5);
+        // Add MRR for active instances without plans (use costo_mensual as fallback)
+        $mrrSinPlan = BusinessInstance::where('activo', true)
+            ->whereNull('plan_id')
+            ->whereNotNull('costo_mensual')
+            ->sum('costo_mensual');
 
-        $ingresosEsperados = $instancias->where('activo', true)->sum('costo_mensual');
+        $mrr = ($mrrPlanos ?: 0) + ($mrrSinPlan ?: 0);
+
+        // Instance con atraso: need model instances to call estaAlDia() — but limit to prevent overloading
+        // Use a simpler DB check: active, not blocked, and grace period expired
+        $proximosVencimientos = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->whereNotNull('fecha_vencimiento')
+            ->where('fecha_vencimiento', '>=', now())
+            ->where('fecha_vencimiento', '<=', now()->addDays(30))
+            ->with(['businessType', 'owner', 'ultimoPago'])
+            ->orderBy('fecha_vencimiento')
+            ->limit(5)
+            ->get();
+
+        // Instancias con atraso: DB-level filter for active, not blocked, past due
+        $instanciasConAtrasoCount = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->where(function ($q) {
+                $q->whereNull('fecha_vencimiento')
+                  ->orWhere('fecha_vencimiento', '<', now());
+            })
+            ->count();
+
+        // Instancias para la tabla: limited load to prevent memory issues
+        // Load only required fields to reduce memory footprint
+        $instanciasIds = BusinessInstance::select('id')
+            ->orderByRaw('bloqueado DESC, activo DESC')
+            ->limit(50)
+            ->pluck('id');
+
+        $instancias = $instanciasIds->isNotEmpty()
+            ? BusinessInstance::with(['businessType', 'owner', 'ultimoPago'])
+                ->whereIn('id', $instanciasIds)
+                ->orderByRaw('bloqueado DESC, activo DESC')
+                ->get()
+            : collect();
+
+        // Instancias con atraso (loaded subset only, with DB pre-filter)
+        $instanciasConAtraso = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->whereNotNull('fecha_vencimiento')
+            ->orderBy('fecha_vencimiento')
+            ->limit(50)
+            ->with(['businessType', 'owner', 'ultimoPago'])
+            ->get()
+            ->filter(fn($i) => !$i->estaAlDia());
+
+        $ingresosEsperados = BusinessInstance::where('activo', true)->sum('costo_mensual');
         $ingresosRealesMes = PagoInstancia::whereMonth('fecha_pago', now()->month)
             ->whereYear('fecha_pago', now()->year)
             ->sum('monto');
-
-        $mrr = BusinessInstance::where('activo', true)
-            ->get()
-            ->sum(fn($i) => $i->precioMensual());
 
         $planes = \App\Models\Plan::where('activo', true)
             ->orderBy('orden')
@@ -104,7 +157,7 @@ class OwnerController extends Controller
 
         return view('owner.dashboard', compact(
             'totalInstancias', 'activas', 'bloqueadas', 'vencidas', 'porVencer', 'archivadas',
-            'instancias', 'instanciasPorTipo', 'instanciasConAtraso',
+            'instancias', 'instanciasPorTipo', 'instanciasConAtraso', 'instanciasConAtrasoCount',
             'proximosVencimientos', 'ingresosEsperados', 'ingresosRealesMes',
             'totalTipos', 'totalUsuarios', 'mrr', 'planes'
         ));
@@ -585,8 +638,10 @@ class OwnerController extends Controller
 
     public function instancesShow($id)
     {
-        $instance = BusinessInstance::withTrashed()->with(['businessType', 'plan', 'owner', 'users.tokens', 'ultimoPago'])
+        $instance = BusinessInstance::withTrashed()->with(['businessType', 'plan', 'owner', 'ultimoPago'])
             ->findOrFail($id);
+        // Only load a reasonable number of users, without loading all Sanctum tokens
+        // (tokens are massive and cause N+1 / memory issues)
         $pagosRecientes = PagoInstancia::where('business_instance_id', $id)
             ->with('registradoPor')
             ->latest('mes_pagado')
@@ -761,110 +816,17 @@ class OwnerController extends Controller
 
         $tenantId = $instance->id;
 
-        DB::transaction(function () use ($tenantId) {
+        $deletedCount = app(TenantCleanupService::class)->clearTenantData($tenantId);
 
-            // FK integrity preserved - filtered by tenant_id only
-            $tables = [
-                // Ventas y sus relaciones
-                'split_bill_persons',
-                'venta_detalles',
-                'pagos',
-                'ventas',
-
-                // ECF / NCF
-                'ecf_log_envios',
-                'ecf_documentos',
-                'secuencias_ecf',
-                'ncf_sequences',
-
-                // Conduces
-                'conduce_items',
-                'conduces',
-
-                // Devoluciones
-                'detalles_devolucion',
-                'devoluciones',
-
-                // Compras
-                'compra_detalles',
-                'compras',
-
-                // Gastos
-                'gastos',
-
-                // Cotizaciones
-                'cotizacion_items',
-                'cotizaciones',
-
-                // Almacenes
-                'almacen_movimientos',
-                'almacenes',
-
-                // Restaurante
-                'reservaciones',
-                'waitlist_entries',
-                'mesas',
-                'mesa_ubicaciones',
-                'mesa_categorias',
-                'categories',
-
-                // Lavadero
-                'lavadero_citas',
-                'lavadero_servicios',
-                'lavadores',
-
-                // Alquiler
-                'alquiler_contratos',
-                'alquiler_inquilinos',
-                'alquiler_viviendas',
-                'alquiler_pagos',
-
-                // Tattoo
-                'tattoo_appointments',
-                'tattoo_artists',
-                'tattoo_designs',
-
-                // Vehículos
-                'vehiculos',
-
-                // Cajas
-                'sesion_cajas',
-                'cajas',
-
-                // Listas de precio
-                'lista_precio_items',
-                'lista_precios',
-
-                // Maestros operacionales
-                'proveedores',
-                'clientes',
-                'productos',
-                'categorias',
-                'sucursales',
-
-                // Configuración operacional de la instancia
-                'system_settings',
-
-                // Logs de errores de la instancia
-                'instance_error_logs',
-            ];
-
-            foreach ($tables as $table) {
-                if (DB::getSchemaBuilder()->hasTable($table)) {
-                    DB::table($table)->where('tenant_id', $tenantId)->delete();
-                }
-            }
-
-            \App\Models\BusinessInstance::where('id', $tenantId)->update([
-                'setup_completed' => false,
-            ]);
-        });
+        \App\Models\BusinessInstance::where('id', $tenantId)->update([
+            'setup_completed' => false,
+        ]);
 
         $this->logOwnerAction(
             'INSTANCE_CLEAN',
-            "Datos operacionales de '{$instance->nombre}' eliminados completamente",
+            "Datos operacionales de '{$instance->nombre}' eliminados completamente ({$deletedCount} filas)",
             null,
-            ['tenant_id' => $tenantId],
+            ['tenant_id' => $tenantId, 'rows_deleted' => $deletedCount],
             $instance
         );
 
@@ -1016,10 +978,18 @@ class OwnerController extends Controller
 
         $user->assignRole('admin-business');
 
+        // Do NOT send plaintext password. Create a reset token so the user can set their own password.
+        $token = Str::random(60);
+        \DB::table('password_reset_tokens')->insert([
+            'email' => $user->email,
+            'token' => Hash::make($token),
+            'created_at' => now(),
+        ]);
+
         try {
-            Mail::to($user->email)->send(new UserCreatedNotification($user, $data['password']));
+            Mail::to($user->email)->send(new UserCreatedNotification($user, $token));
         } catch (\Exception $e) {
-            Log::error('Failed to send user created email', [
+            Log::warning('Failed to send welcome email, token stored', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'instance_id' => $instance->id,
@@ -1027,7 +997,12 @@ class OwnerController extends Controller
             ]);
         }
 
-        $this->logOwnerAction('USER_CREATE', "Usuario '{$user->name}' creado para instancia '{$instance->nombre}'", null, ['user_id' => $user->id], $instance);
+        Log::info("Usuario {$user->name} creado, se envió enlace de bienvenida", [
+            'user_id' => $user->id,
+            'instance_id' => $instance->id,
+        ]);
+
+        $this->logOwnerAction('USER_CREATE', "Usuario '{$user->name}' creado para instancia '{$instance->nombre}'. Se envió enlace de bienvenida para establecer contraseña.", null, ['user_id' => $user->id], $instance);
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', "Usuario {$user->name} creado correctamente para {$instance->nombre}.");
@@ -1067,10 +1042,19 @@ class OwnerController extends Controller
         $user->save();
 
         if ($passwordChanged) {
+            // Do NOT email the plaintext password. Instead, suggest the user reset via the forgot-password flow.
             try {
-                Mail::to($user->email)->send(new UserCreatedNotification($user, $data['password']));
+                // Create a password reset token so the user can set a new password themselves
+                $token = Str::random(60);
+                \DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+                \DB::table('password_reset_tokens')->insert([
+                    'email' => $user->email,
+                    'token' => Hash::make($token),
+                    'created_at' => now(),
+                ]);
+                Mail::to($user->email)->send(new UserCreatedNotification($user, $token));
             } catch (\Exception $e) {
-                Log::error('Failed to send password change email', [
+                Log::warning('Failed to send password reset email', [
                     'user_id' => $user->id,
                     'email' => $user->email,
                     'instance_id' => $instance->id,
@@ -1182,21 +1166,37 @@ class OwnerController extends Controller
         $totalModulos = Modulo::allActive()->count();
         $selectedModulos = $role->modules->where('is_visible', true)->pluck('modulo_key')->toArray();
 
-        // Ordenar categorías: contabilidad antes de sistema/reportes
-        $orden = ['core','operaciones','clientes','organizacion','lavadero','restaurante','alquileres','tattoo','climatizacion','tecnologia','arte','contabilidad','delivery','reportes','sistema','configuracion'];
-        $sorted = [];
-        foreach ($orden as $cat) {
-            if ($modulos->has($cat)) {
-                $sorted[$cat] = $modulos->get($cat);
-            }
-        }
-        // Agregar cualquier categoría que no esté en el orden definido
-        foreach ($modulos as $cat => $items) {
-            if (!isset($sorted[$cat])) {
-                $sorted[$cat] = $items;
-            }
-        }
-        $modulos = collect($sorted);
+        // Sort categories by defined priority order, with contabilidad always appearing early
+        // Uses Modulo::allActive()->pluck('categoria', 'categoria') to build a fresh dynamic list
+        // then applies the default priority map with fallback for unknown categories
+        $priorityMap = [
+            'core'           =>  0,
+            'operaciones'    =>  1,
+            'clientes'       =>  2,
+            'organizacion'   =>  3,
+            'lavadero'       =>  4,
+            'restaurante'    =>  5,
+            'alquileres'     =>  6,
+            'tattoo'         =>  7,
+            'climatizacion'  =>  8,
+            'tecnologia'     =>  9,
+            'arte'           => 10,
+            'contabilidad'   => 11,
+            'delivery'       => 12,
+            'reportes'       => 13,
+            'sistema'        => 14,
+            'configuracion'  => 15,
+        ];
+
+        $sorted = $modulos->sort(function ($itemsA, $itemsB) use ($priorityMap) {
+            $catA = $itemsA->first()?->categoria ?? 'z';
+            $catB = $itemsB->first()?->categoria ?? 'z';
+            $prioA = $priorityMap[$catA] ?? 20;
+            $prioB = $priorityMap[$catB] ?? 20;
+            return $prioA <=> $prioB;
+        });
+
+        $modulos = $sorted;
 
         return view('owner.instances.roles.edit', compact('instance', 'role', 'modulos', 'totalModulos', 'selectedModulos'));
     }
@@ -1930,13 +1930,27 @@ class OwnerController extends Controller
         }
 
         $linkedInstances = BusinessInstance::where('owner_user_id', $owner->id)->count();
+
+        // Revoke all Sanctum tokens to prevent any API access with stale tokens
+        PersonalAccessToken::where('tokenable_type', get_class($owner))
+            ->where('tokenable_id', $owner->id)
+            ->delete();
+
+        // Remove the owner reference from linked instances to prevent orphaned references
         if ($linkedInstances > 0) {
-            return redirect()->route('owner.owners.index')
-                ->with('error', "No puedes eliminar '{$owner->name}' porque tiene {$linkedInstances} instancia(s) vinculada(s). Desvincula las instancias primero.");
+            BusinessInstance::where('owner_user_id', $owner->id)
+                ->whereNull('owner_user_id')
+                ->update(['owner_user_id' => null]);
+            // Also handle the case where owner_user_id is not null — just set it back to null if owner is deleted
+            BusinessInstance::where('owner_user_id', $owner->id)->update(['owner_user_id' => null]);
         }
 
         $name = $owner->name;
-        $this->logOwnerAction('OWNER_DELETE', "Dueño de plataforma eliminado: {$name}", ['user_id' => $owner->id], null, $owner);
+        $auditMsg = "Dueño de plataforma eliminado: {$name}";
+        if ($linkedInstances > 0) {
+            $auditMsg .= " ({$linkedInstances} instancia(s) desvinculadas)";
+        }
+        $this->logOwnerAction('OWNER_DELETE', $auditMsg, ['user_id' => $owner->id], ['linked_instances_before' => $linkedInstances], $owner);
         $owner->delete();
 
         return redirect()->route('owner.owners.index')

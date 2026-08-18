@@ -101,14 +101,11 @@ class UserController extends Controller
             'role.required'      => 'Selecciona un rol.',
         ]);
 
-        // Capture plain password before hashing for email
-        $plainPassword = $request->password;
-
         // Create user with hashed password
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($plainPassword),
+            'password' => Hash::make($request->password),
             'sucursal_id' => $request->sucursal_id,
         ]);
 
@@ -117,8 +114,23 @@ class UserController extends Controller
         // Sync roles based on business type after creation
         UserBusinessService::syncRolesForUser($user);
 
-        // Send welcome email with credentials
-        Mail::to($user->email)->send(new UserCreatedNotification($user, $plainPassword));
+        // Do NOT send plaintext password. Create a reset token so the user can set their own password.
+        $token = \Illuminate\Support\Str::random(60);
+        \DB::table('password_reset_tokens')->insert([
+            'email' => $user->email,
+            'token' => \Illuminate\Support\Facades\Hash::make($token),
+            'created_at' => now(),
+        ]);
+
+        try {
+            Mail::to($user->email)->send(new UserCreatedNotification($user, $token));
+        } catch (\Exception $e) {
+            Log::warning('Failed to send welcome email, token stored', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return redirect()->route('usuarios.index')
             ->with('success', "Usuario \"{$user->name}\" creado con rol " . ucfirst($request->role) . ".");

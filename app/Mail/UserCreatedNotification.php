@@ -15,15 +15,15 @@ class UserCreatedNotification extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
-    public $plainPassword;
+    public $resetToken;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user, string $plainPassword)
+    public function __construct(User $user, ?string $resetToken = null)
     {
         $this->user = $user;
-        $this->plainPassword = $plainPassword;
+        $this->resetToken = $resetToken;
     }
 
     /**
@@ -42,14 +42,21 @@ class UserCreatedNotification extends Mailable
     public function content(): Content
     {
         $this->user->load('businessInstance');
+
+        // Use generic app URL if no BusinessInstance assigned (plan owner)
+        $instanceName = $this->user->businessInstance?->nombre ?? config('app.name');
+        $loginUrl = $this->user->business_instance_id ? route('login') : route('login');
+
         return new Content(
             view: 'emails.user_created',
             with: [
                 'name' => $this->user->name,
                 'email' => $this->user->email,
-                'password' => $this->plainPassword,
-                'instanceName' => $this->user->businessInstance?->nombre ?? config('app.name'),
-                'loginUrl' => route('login'),
+                'resetToken' => $this->resetToken,
+                'password' => null,
+                'setPasswordUrl' => $this->resetToken ? route('password.reset', ['token' => $this->resetToken, 'email' => urlencode($this->user->email)]) : $loginUrl,
+                'instanceName' => $instanceName,
+                'loginUrl' => $loginUrl,
             ],
         );
     }
