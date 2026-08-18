@@ -16,10 +16,10 @@ class KdsController extends Controller
     public function orders()
     {
         $ordenes = Venta::deSucursal()->whereIn('estado', ['abierta', 'completada'])
-            ->whereHas('detalles', fn($q) => $q->where('estado_cocina', '!=', 'servido'))
+            ->whereHas('detalles', fn($q) => $q->whereNotIn('estado_cocina', ['servido', 'no_enviado']))
             ->with([
                 'mesa:id,numero,nombre',
-                'detalles' => fn($q) => $q->where('estado_cocina', '!=', 'servido')->with('producto:id,nombre')
+                'detalles' => fn($q) => $q->whereNotIn('estado_cocina', ['servido', 'no_enviado'])->with('producto:id,nombre')
             ])
             ->orderBy('created_at')
             ->get()

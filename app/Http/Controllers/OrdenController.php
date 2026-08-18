@@ -191,6 +191,21 @@ class OrdenController extends Controller
         return response()->json($result);
     }
 
+    public function enviarCocina(Request $request, Mesa $mesa)
+    {
+        $request->validate([
+            'detalle_id' => 'nullable|exists:venta_detalles,id',
+        ]);
+
+        $result = $this->orderService->enviarACocina($mesa, $request->input('detalle_id'));
+
+        if (isset($result['error'])) {
+            return response()->json($result, $result['code']);
+        }
+
+        return response()->json($result);
+    }
+
     public function facturar(Request $request, Mesa $mesa)
     {
         $venta = \App\Models\Venta::with('cliente', 'detalles.producto')->findOrFail($request->input('venta_id'));

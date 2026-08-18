@@ -235,6 +235,12 @@
                 </button>
                 @endcan
             </div>
+            <div class="d-grid mb-2">
+                <button class="btn btn-warning w-100 rounded-pill py-2 fw-bold" onclick="enviarCocinaOrden()" id="btn-enviar-cocina">
+                    <i class="bi bi-fire me-1"></i> Enviar a cocina
+                    <span class="badge bg-dark rounded-pill ms-1" id="cocina-pendientes-count">0</span>
+                </button>
+            </div>
             <div class="row g-2">
                 <div class="col-6">
                     <button class="btn btn-outline-primary w-100 rounded-pill py-2" onclick="abrirModalProductos()" id="btn-agregar">
@@ -1318,6 +1324,15 @@
     font-size: 1rem;
 }
 /* ============ Toggle Sin ITBIS ============ */
+.cocina-send-btn { border-width: 2px !important; }
+.cocina-send-btn:hover { background: #f59e0b; border-color: #f59e0b; color: #fff !important; }
+.cocina-chip { font-size: .55rem; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; padding: 3px 7px; border-radius: 50px; white-space: nowrap; }
+.cocina-chip.cocina-pendiente { background: rgba(245,158,11,.15); color: #b45309; border: 1px solid rgba(245,158,11,.4); }
+.cocina-chip.cocina-preparando { background: rgba(59,130,246,.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,.4); }
+.cocina-chip.cocina-listo { background: rgba(34,197,94,.14); color: #15803d; border: 1px solid rgba(34,197,94,.4); }
+body.dark-mode .cocina-chip.cocina-pendiente { background: rgba(245,158,11,.18); color: #fbbf24; }
+body.dark-mode .cocina-chip.cocina-preparando { background: rgba(59,130,246,.18); color: #93c5fd; }
+body.dark-mode .cocina-chip.cocina-listo { background: rgba(34,197,94,.18); color: #86efac; }
 .sinitbis-toggle {
     width: 34px; height: 34px; border: none; border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center;
@@ -1975,6 +1990,12 @@ function renderOrden(orden) {
             const notasHtml = d.notas ? `<div class="small text-muted fst-italic mt-1" style="font-size:.65rem;"><i class="bi bi-chat-text me-1"></i>${escapeHtml(d.notas)}</div>` : '';
             const cursoLabel = d.curso && d.curso !== 'fuerte' ? ` <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill" style="font-size:.6rem;">${d.curso}</span>` : '';
             const stock = d.producto ? d.producto.stock : 999;
+            let cocinaHtml = '';
+            if (d.estado_cocina === 'no_enviado') {
+                cocinaHtml = `<button class="btn btn-sm btn-outline-warning rounded-pill cocina-send-btn" onclick="enviarCocinaDetalle(${d.id})" title="Enviar a cocina" style="width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;"><i class="bi bi-fire"></i></button>`;
+            } else if (d.estado_cocina && d.estado_cocina !== 'servido') {
+                cocinaHtml = `<span class="cocina-chip cocina-${d.estado_cocina}" title="Estado cocina: ${cocinaLabel(d.estado_cocina)}">${cocinaLabel(d.estado_cocina)}</span>`;
+            }
             html += `
             <div class="d-flex justify-content-between align-items-center p-2 rounded-3 mb-1 bg-light bg-opacity-50">
                 <div class="d-flex align-items-center gap-1 flex-grow-1" style="min-width:0;">
@@ -1990,6 +2011,7 @@ function renderOrden(orden) {
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    ${cocinaHtml}
                     <button class="sinitbis-toggle ${d.sin_itbis ? 'active' : ''}" onclick="toggleSinItbisItem(${d.id})" title="${d.sin_itbis ? 'Restaurar ITBIS' : 'Quitar ITBIS (requiere admin)'}">
                         <i class="bi ${d.sin_itbis ? 'bi-slash-circle' : 'bi-receipt'}"></i>
                     </button>
@@ -2007,6 +2029,12 @@ function renderOrden(orden) {
     document.getElementById('orden-subtotal').textContent = 'RD$ ' + Number(orden.subtotal).toFixed(2);
     document.getElementById('orden-itbis').textContent = 'RD$ ' + Number(orden.impuestos).toFixed(2);
     document.getElementById('orden-total').textContent = 'RD$ ' + Number(orden.total).toFixed(2);
+
+    const pendientesCocina = (orden.detalles || []).filter(d => d.estado_cocina === 'no_enviado').length;
+    const cocinaBtn = document.getElementById('btn-enviar-cocina');
+    const cocinaCount = document.getElementById('cocina-pendientes-count');
+    if (cocinaCount) cocinaCount.textContent = pendientesCocina;
+    if (cocinaBtn) cocinaBtn.classList.toggle('disabled', pendientesCocina === 0);
 
     const descLabel = document.getElementById('orden-descuento');
     if (orden.descuento && orden.descuento > 0) {
@@ -2116,6 +2144,44 @@ document.getElementById('form-autorizar-admin')?.addEventListener('submit', (e) 
 document.getElementById('auth-admin-password')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); enviarAutorizacionAdminMesa(); }
 });
+
+// ============ Enviar platos a cocina (KDS) ============
+function cocinaLabel(estado) {
+    return { pendiente: 'Pendiente', preparando: 'Preparando', listo: 'Listo', servido: 'Servido' }[estado] || estado || '';
+}
+
+function enviarCocinaDetalle(detalleId) {
+    apiFetch(`/restaurante/mesa/${mesaActual}/cocina`, {
+        method: 'POST', key: 'cocina-' + detalleId,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ detalle_id: detalleId })
+    })
+    .then(data => {
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+        ordenActual = data.orden;
+        renderOrden(data.orden);
+    });
+}
+
+function enviarCocinaOrden() {
+    const btn = document.getElementById('btn-enviar-cocina');
+    if (!btn || btn.classList.contains('disabled')) return;
+    btn.classList.add('disabled');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Enviando...';
+    apiFetch(`/restaurante/mesa/${mesaActual}/cocina`, {
+        method: 'POST', key: 'cocina-todos',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(data => {
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+        ordenActual = data.orden;
+        renderOrden(data.orden);
+        Swal.fire({icon:'success', title:'Enviado a cocina', text:(data.enviados || 0) + ' plato(s) enviado(s)', timer: 1500, showConfirmButton: false});
+    })
+    .finally(() => { btn.innerHTML = original; });
+}
 
 // Búsqueda de mesas en el panel lateral
 document.getElementById('buscar-mesa').addEventListener('input', function () {

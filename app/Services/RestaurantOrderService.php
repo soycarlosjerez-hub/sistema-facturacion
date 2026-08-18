@@ -236,6 +236,7 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
                     'almacen_id'      => $almacenId,
                     'notas'           => $notas,
                     'curso'           => $curso,
+                    'estado_cocina'   => 'no_enviado',
                     'tenant_id'       => Auth::user()->business_instance_id,
                 ]);
     
@@ -434,6 +435,27 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
         if (!$admin || (!in_array($admin->role, $rolesAdmin) && !$admin->hasAnyRole($rolesAdmin))) {
             throw new \Exception('El usuario autorizante ya no tiene rol de administrador.');
         }
+    }
+
+    public function enviarACocina(Mesa $mesa, ?int $detalleId = null): array
+    {
+        $orden = $mesa->ordenActiva;
+        if (!$orden) {
+            return ['error' => 'La mesa no tiene una orden abierta', 'code' => 422];
+        }
+
+        $query = VentaDetalle::where('venta_id', $orden->id)
+            ->where('estado_cocina', 'no_enviado');
+        if ($detalleId) {
+            $query->where('id', $detalleId);
+        }
+
+        $afectados = $query->update([
+            'estado_cocina'     => 'pendiente',
+            'cocina_updated_at' => now(),
+        ]);
+
+        return ['success' => true, 'enviados' => $afectados, 'orden' => $orden->fresh()->load('detalles.producto')];
     }
 
     public function cobrar(Mesa $mesa, array $data): array
