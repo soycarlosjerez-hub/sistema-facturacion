@@ -53,6 +53,18 @@ class KdsController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function limpiar()
+    {
+        $afectados = VentaDetalle::whereIn('estado_cocina', ['pendiente', 'preparando', 'listo'])
+            ->whereHas('venta', fn($q) => $q->deSucursal()->whereIn('estado', ['abierta', 'completada']))
+            ->update([
+                'estado_cocina'     => 'servido',
+                'cocina_updated_at' => now(),
+            ]);
+
+        return response()->json(['success' => true, 'limpiados' => $afectados]);
+    }
+
     public function audio()
     {
         $nuevos = VentaDetalle::where('estado_cocina', 'pendiente')

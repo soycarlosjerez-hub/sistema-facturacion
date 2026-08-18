@@ -2163,7 +2163,8 @@ function enviarCocinaDetalle(detalleId) {
         if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
         ordenActual = data.orden;
         renderOrden(data.orden);
-    });
+    })
+    .catch(err => Swal.fire({icon:'error', title:'No se pudo enviar a cocina', text: err.message}));
 }
 
 function enviarCocinaOrden() {
@@ -2183,6 +2184,7 @@ function enviarCocinaOrden() {
         renderOrden(data.orden);
         Swal.fire({icon:'success', title:'Enviado a cocina', text:(data.enviados || 0) + ' plato(s) enviado(s)', timer: 1500, showConfirmButton: false});
     })
+    .catch(err => Swal.fire({icon:'error', title:'No se pudo enviar a cocina', text: err.message}))
     .finally(() => { btn.innerHTML = original; });
 }
 

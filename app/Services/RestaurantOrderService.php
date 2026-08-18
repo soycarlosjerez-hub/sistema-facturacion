@@ -193,7 +193,7 @@ class RestaurantOrderService
         $producto = Producto::findOrFail($productoId);
         $notas = $notas;
         $curso = $curso ?? 'fuerte';
-        $estadoCocina = ($producto->incluir_kds === false) ? 'servido' : 'no_enviado';
+        $estadoCocina = ($producto->incluir_kds === false) ? 'servido' : 'pendiente';
     
         $detalleExistente = \App\Models\VentaDetalle::where('venta_id', $orden->id)
             ->where('producto_id', $producto->id)
@@ -221,6 +221,10 @@ class RestaurantOrderService
 $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
                 $detalleExistente->save();
 
+                if ($producto->incluir_kds !== false && in_array($detalleExistente->estado_cocina, ['pendiente', 'preparando', 'listo'])) {
+                    $detalleExistente->update(['estado_cocina' => 'pendiente', 'cocina_updated_at' => now()]);
+                }
+
                 $itbisItem = ($detalleExistente->sin_itbis ? 0 : ($producto->itbis_porcentaje ?? 0)) / 100 * $producto->precio * $cantidad;
                 $orden->increment('subtotal', $producto->precio * $cantidad);
                 $orden->increment('impuestos', $itbisItem);
@@ -238,7 +242,7 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
                     'notas'           => $notas,
                     'curso'           => $curso,
                     'estado_cocina'   => $estadoCocina,
-                    'cocina_updated_at' => $estadoCocina === 'servido' ? now() : null,
+                    'cocina_updated_at' => now(),
                     'tenant_id'       => Auth::user()->business_instance_id,
                 ]);
     
