@@ -429,11 +429,9 @@ class OrdenController extends Controller
 
     public function populares()
     {
-        $sucursalId = session('sucursal_id');
         $productos = Producto::where('tiene_almacen', true)
             ->where('activo', true)
             ->where('precio', '>', 0)
-            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
             ->orderBy('ventas_count', 'desc')
             ->take(12)
             ->get(['id', 'nombre', 'precio', 'imagen', 'stock'])
