@@ -40,10 +40,10 @@ class CajaController extends Controller
         $caja = new Caja();
         $sucursales = Sucursal::orderBy('nombre')->get();
 
-        $lastCode = Caja::max('codigo');
+        $lastCode = Caja::where('codigo', 'regexp', '^C[0-9]+$')->max('codigo');
         $nextCode = 'C01';
-        if ($lastCode) {
-            $num = intval(substr($lastCode, 1)) + 1;
+        if ($lastCode && preg_match('/(\d+)$/', $lastCode, $m)) {
+            $num = (int) $m[1] + 1;
             $nextCode = 'C' . str_pad($num, 2, '0', STR_PAD_LEFT);
         }
 
