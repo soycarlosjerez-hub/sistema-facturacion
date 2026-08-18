@@ -9,12 +9,15 @@ use App\Models\Cliente;
 use App\Models\EcfDocumento;
 use App\Models\Producto;
 use App\Models\SesionCaja;
+use App\Models\User;
 use App\Models\Venta;
 use App\Exports\VentasExport;
 use App\Services\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -120,6 +123,55 @@ class VentaController extends Controller
             }
             return back()->withErrors('Error: ' . $e->getMessage())->withInput();
         }
+    }
+
+    public function autorizarAdmin(Request $request)
+    {
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        $rolesAdmin = ['admin', 'admin-business', 'root', 'gerente'];
+
+        $user = User::where('email', $request->email)->first();
+
+        $esAdmin = $user && (
+            in_array($user->role, $rolesAdmin)
+            || $user->hasAnyRole($rolesAdmin)
+        );
+
+        if (!$user || !$esAdmin || !Hash::check($request->password, $user->password)) {
+            Log::warning('Autorización admin rechazada para quitar ITBIS', [
+                'email'     => $request->email,
+                'user_id'   => Auth::id(),
+                'tenant_id' => Auth::user()->business_instance_id,
+            ]);
+
+            return response()->json([
+                'error' => 'Credenciales inválidas o el usuario no tiene rol de administrador.',
+            ], 401);
+        }
+
+        $expira = now()->addMinutes(5);
+        $token = Crypt::encryptString(json_encode([
+            'email'     => $user->email,
+            'tenant_id' => Auth::user()->business_instance_id,
+            'exp'       => $expira->timestamp,
+        ]));
+
+        Log::info('Autorización admin emitida para quitar ITBIS', [
+            'autorizado_por' => $user->email,
+            'user_id'        => Auth::id(),
+            'tenant_id'      => Auth::user()->business_instance_id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'token'   => $token,
+            'admin'   => $user->name,
+            'expira'  => $expira->toDateTimeString(),
+        ]);
     }
 
     public function show($id)

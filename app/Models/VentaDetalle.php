@@ -10,7 +10,7 @@ class VentaDetalle extends Model
 {
     use HasFactory, TenantScope;
 
-    protected $fillable = ['venta_id', 'producto_id', 'obra_id', 'almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo', 'itbis_porcentaje', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
+    protected $fillable = ['venta_id', 'producto_id', 'obra_id', 'almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo', 'itbis_porcentaje', 'sin_itbis', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
 
     protected $casts = [
         'cantidad' => 'decimal:2',
@@ -18,6 +18,7 @@ class VentaDetalle extends Model
         'subtotal' => 'decimal:2',
         'descuento' => 'decimal:2',
         'itbis_porcentaje' => 'decimal:2',
+        'sin_itbis' => 'boolean',
     ];
 
     public function producto()
