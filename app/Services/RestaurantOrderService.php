@@ -193,6 +193,7 @@ class RestaurantOrderService
         $producto = Producto::findOrFail($productoId);
         $notas = $notas;
         $curso = $curso ?? 'fuerte';
+        $estadoCocina = ($producto->incluir_kds === false) ? 'servido' : 'no_enviado';
     
         $detalleExistente = \App\Models\VentaDetalle::where('venta_id', $orden->id)
             ->where('producto_id', $producto->id)
@@ -236,7 +237,8 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
                     'almacen_id'      => $almacenId,
                     'notas'           => $notas,
                     'curso'           => $curso,
-                    'estado_cocina'   => 'no_enviado',
+                    'estado_cocina'   => $estadoCocina,
+                    'cocina_updated_at' => $estadoCocina === 'servido' ? now() : null,
                     'tenant_id'       => Auth::user()->business_instance_id,
                 ]);
     

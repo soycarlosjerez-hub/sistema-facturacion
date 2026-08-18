@@ -154,6 +154,32 @@
             </div>
         </div>
     </div>
+
+    @php
+        $tipoNegocio = session('business_type_slug') ?? auth()->user()->businessInstance?->businessType?->slug;
+        $esNegocioRestaurante = in_array($tipoNegocio, ['restaurante', 'mixto']);
+    @endphp
+    @if($esNegocioRestaurante)
+    {{-- Section 5: Cocina / KDS --}}
+    <div class="mb-4 pb-3 border-bottom">
+        <h6 class="fw-bold mb-0" style="color: #f97316;">
+            <i class="bi bi-fire me-2"></i>Cocina / KDS
+        </h6>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-12">
+            <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(249,115,22,.06);">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input" type="checkbox" name="incluir_kds" value="1" id="chk-incluir-kds" {{ old('incluir_kds', !isset($producto->exists) || !$producto->exists ? true : $producto->incluir_kds) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
+                    <label class="form-check-label fw-semibold ms-2" for="chk-incluir-kds">
+                        Enviar a Cocina (KDS)
+                    </label>
+                </div>
+                <small class="text-muted">Con esta opción activa, el producto aparecerá en la pantalla de cocina cuando el mesero lo envíe. Desactívala para bebidas, panes, postres o productos que no necesitan preparación en cocina.</small>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 
 @push('scripts')

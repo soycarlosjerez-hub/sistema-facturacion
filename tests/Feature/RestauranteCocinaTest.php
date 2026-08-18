@@ -143,4 +143,84 @@ class RestauranteCocinaTest extends TestCase
         $this->assertContains($enviado->id, $idsKds);
         $this->assertNotContains($noEnviado->id, $idsKds);
     }
+
+    public function test_producto_sin_incluir_kds_queda_servido_y_no_aparece_en_kds(): void
+    {
+        $session = $this->createBasicTestData();
+        session(['sucursal_id' => $session['sucursal']->id]);
+        Auth::login($session['user']);
+
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18, 'stock' => 100, 'incluir_kds' => false]);
+
+        $mesa = Mesa::create([
+            'numero'      => '1',
+            'capacidad'   => 4,
+            'estado'      => 'disponible',
+            'sucursal_id' => $session['sucursal']->id,
+            'tenant_id'   => $session['businessInstance']->id,
+        ]);
+
+        $orden = Venta::create([
+            'user_id'             => $session['user']->id,
+            'sucursal_id'         => $session['sucursal']->id,
+            'mesa_id'             => $mesa->id,
+            'caja_id'             => $session['caja']->id,
+            'sesion_caja_id'      => $session['sesion']->id,
+            'cliente_id'          => $session['consumidorFinal']->id,
+            'tipo_venta_id'       => \App\Models\TipoVenta::RESTAURANTE,
+            'fecha'               => now(),
+            'subtotal'            => 0,
+            'impuestos'           => 0,
+            'total'               => 0,
+            'estado'              => 'abierta',
+            'tipo_orden'          => 'mesa',
+            'tenant_id'           => $session['businessInstance']->id,
+        ]);
+        $mesa->update(['estado' => 'ocupada']);
+
+        $this->actingAs($session['user'])
+            ->postJson(route('restaurante.mesa.agregar', $mesa), [
+                'producto_id' => $producto->id,
+                'cantidad'    => 1,
+                'curso'       => 'fuerte',
+                'notas'       => '',
+            ])->assertStatus(200);
+
+        $detalle = $orden->detalles()->first();
+        $this->assertSame('servido', $detalle->estado_cocina);
+
+        $response = $this->actingAs($session['user'])
+            ->get(route('restaurante.kds.orders'));
+        $response->assertOk();
+        $this->assertCount(0, $response->json('ordenes', []));
+
+        // "Enviar a cocina" no tiene nada pendiente por este producto
+        $response = $this->actingAs($session['user'])
+            ->postJson(route('restaurante.mesa.cocina', $mesa), []);
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true, 'enviados' => 0]);
+    }
+
+    public function test_producto_store_guarda_incluir_kds(): void
+    {
+        $session = $this->createBasicTestData();
+        Auth::login($session['user']);
+
+        $response = $this->actingAs($session['user'])
+            ->post(route('productos.store'), [
+                'nombre'        => 'Agua Embotellada',
+                'precio'        => 50,
+                'stock'         => 20,
+                'incluir_kds'   => '0',
+                'activo'        => '1',
+            ]);
+
+        $response->assertRedirect(route('productos.index'));
+
+        $this->assertDatabaseHas('productos', [
+            'nombre'      => 'Agua Embotellada',
+            'incluir_kds' => 0,
+        ]);
+    }
 }

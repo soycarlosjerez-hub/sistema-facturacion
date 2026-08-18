@@ -16,10 +16,15 @@ class KdsController extends Controller
     public function orders()
     {
         $ordenes = Venta::deSucursal()->whereIn('estado', ['abierta', 'completada'])
-            ->whereHas('detalles', fn($q) => $q->whereNotIn('estado_cocina', ['servido', 'no_enviado']))
+            ->whereHas('detalles', fn($q) => $q
+                ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
+                ->whereHas('producto', fn($pq) => $pq->where('incluir_kds', true)))
             ->with([
                 'mesa:id,numero,nombre',
-                'detalles' => fn($q) => $q->whereNotIn('estado_cocina', ['servido', 'no_enviado'])->with('producto:id,nombre')
+                'detalles' => fn($q) => $q
+                    ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
+                    ->whereHas('producto', fn($pq) => $pq->where('incluir_kds', true))
+                    ->with('producto:id,nombre')
             ])
             ->orderBy('created_at')
             ->get()
@@ -53,6 +58,7 @@ class KdsController extends Controller
         $nuevos = VentaDetalle::where('estado_cocina', 'pendiente')
             ->where('cocina_updated_at', '>=', now()->subMinutes(5))
             ->whereDoesntHave('venta', fn($q) => $q->whereIn('estado', ['anulada'])->deSucursal())
+            ->whereHas('producto', fn($q) => $q->where('incluir_kds', true))
             ->count();
         return response()->json(['nuevos' => $nuevos]);
     }

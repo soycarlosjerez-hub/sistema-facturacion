@@ -25,6 +25,7 @@ class StoreProductoRequest extends FormRequest
             'stock'           => 'required|integer|min:0',
             'stock_minimo'    => 'nullable|integer|min:0',
             'activo'          => 'boolean',
+            'incluir_kds'     => 'boolean',
             'imagen'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         ];
     }

@@ -1330,6 +1330,7 @@
 .cocina-chip.cocina-pendiente { background: rgba(245,158,11,.15); color: #b45309; border: 1px solid rgba(245,158,11,.4); }
 .cocina-chip.cocina-preparando { background: rgba(59,130,246,.12); color: #1d4ed8; border: 1px solid rgba(59,130,246,.4); }
 .cocina-chip.cocina-listo { background: rgba(34,197,94,.14); color: #15803d; border: 1px solid rgba(34,197,94,.4); }
+.cocina-chip.cocina-sin { background: rgba(148,163,184,.12); color: #64748b; border: 1px dashed rgba(148,163,184,.5); }
 body.dark-mode .cocina-chip.cocina-pendiente { background: rgba(245,158,11,.18); color: #fbbf24; }
 body.dark-mode .cocina-chip.cocina-preparando { background: rgba(59,130,246,.18); color: #93c5fd; }
 body.dark-mode .cocina-chip.cocina-listo { background: rgba(34,197,94,.18); color: #86efac; }
@@ -1991,7 +1992,9 @@ function renderOrden(orden) {
             const cursoLabel = d.curso && d.curso !== 'fuerte' ? ` <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill" style="font-size:.6rem;">${d.curso}</span>` : '';
             const stock = d.producto ? d.producto.stock : 999;
             let cocinaHtml = '';
-            if (d.estado_cocina === 'no_enviado') {
+            if (d.producto && d.producto.incluir_kds === false) {
+                cocinaHtml = `<span class="cocina-chip cocina-sin" title="Este producto no se envía a cocina">Sin cocina</span>`;
+            } else if (d.estado_cocina === 'no_enviado') {
                 cocinaHtml = `<button class="btn btn-sm btn-outline-warning rounded-pill cocina-send-btn" onclick="enviarCocinaDetalle(${d.id})" title="Enviar a cocina" style="width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;"><i class="bi bi-fire"></i></button>`;
             } else if (d.estado_cocina && d.estado_cocina !== 'servido') {
                 cocinaHtml = `<span class="cocina-chip cocina-${d.estado_cocina}" title="Estado cocina: ${cocinaLabel(d.estado_cocina)}">${cocinaLabel(d.estado_cocina)}</span>`;

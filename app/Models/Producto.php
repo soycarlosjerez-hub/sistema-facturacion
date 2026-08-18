@@ -37,6 +37,7 @@ class Producto extends Model
         'stock',
         'stock_minimo',
         'activo',
+        'incluir_kds',
         'imagen',
         'tenant_id',
     ];
@@ -53,6 +54,7 @@ class Producto extends Model
         'stock'            => 'integer',
         'stock_minimo'     => 'integer',
         'activo'            => 'boolean',
+        'incluir_kds'       => 'boolean',
         'capacidad_toneladas' => 'decimal:2',
         'capacidad_btu'    => 'integer',
         'eficiencia_seer'  => 'decimal:1',

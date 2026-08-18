@@ -226,6 +226,7 @@ class ProductoController extends Controller
     {
         $data = $request->validated();
         $data['activo'] = $request->boolean('activo');
+        $data['incluir_kds'] = $request->boolean('incluir_kds');
         $this->productoService->create($data, $request->file('imagen'));
 
         return redirect()->route('productos.index')
@@ -249,6 +250,7 @@ class ProductoController extends Controller
     {
         $data = $request->validated();
         $data['activo'] = $request->boolean('activo');
+        $data['incluir_kds'] = $request->boolean('incluir_kds');
         $this->productoService->update($producto, $data, $request->file('imagen'));
 
         return redirect()->route('productos.index')
