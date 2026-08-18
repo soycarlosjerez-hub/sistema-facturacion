@@ -34,7 +34,7 @@
 
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4">
-                    <form action="{{ route('sesiones.cerrar', $sesion->id) }}" method="POST">
+                    <form id="form-cierre" action="{{ route('sesiones.cerrar', $sesion->id) }}" method="POST">
                         @csrf
                         
                         <div class="row g-4 mb-4">
@@ -107,7 +107,7 @@
                                 </a>
                             </div>
                             <div class="col-6">
-                                <button type="button" class="btn btn-warning w-100 rounded-pill py-3 fw-bold shadow-sm" onclick="confirmAction({title:'Cerrar Caja', text:'¿Estás seguro de que deseas cerrar la caja? Esta acción no se puede deshacer.', icon:'warning', color:'#f59e0b', confirmText:'Sí, cerrar caja', onSubmit:function(){ this.closest('form').submit(); }})">
+                                <button type="button" class="btn btn-warning w-100 rounded-pill py-3 fw-bold shadow-sm" onclick="confirmAction({title:'Cerrar Caja', text:'¿Estás seguro de que deseas cerrar la caja? Esta acción no se puede deshacer.', icon:'warning', color:'#f59e0b', confirmText:'Sí, cerrar caja', onSubmit:function(){ document.getElementById('form-cierre').submit(); }})">
                                     <i class="bi bi-lock-fill me-1"></i>PROCESAR CIERRE
                                 </button>
                             </div>
