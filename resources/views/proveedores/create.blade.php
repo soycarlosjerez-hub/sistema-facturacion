@@ -93,7 +93,7 @@
                     </div>
                     <div class="col-lg-4">
                         <label class="ui-label">Tipo de Persona</label>
-                        <select name="tipo_persona" class="ui-select @error('tipo_persona') is-invalid @enderror">
+                        <select name="tipo_persona" class="ui-select @error('tipo_persona') is-invalid @enderror" required>
                             <option value="">Seleccionar</option>
                             <option value="fisica" {{ old('tipo_persona') === 'fisica' ? 'selected' : '' }}>Física</option>
                             <option value="juridica" {{ old('tipo_persona') === 'juridica' ? 'selected' : '' }}>Jurídica</option>

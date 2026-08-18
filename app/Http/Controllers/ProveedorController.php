@@ -50,10 +50,12 @@ class ProveedorController extends Controller
             'telefono'              => 'nullable|string|max:30',
             'direccion'             => 'nullable|string|max:255',
             'rnc'                   => 'nullable|string|max:20',
-            'tipo_persona'          => 'nullable|string|in:fisica,juridica',
+            'tipo_persona'          => 'required|string|in:fisica,juridica',
             'sujeto_retencion_isr'  => 'boolean',
             'sujeto_retencion_itbis' => 'boolean',
             'activo'                => 'boolean',
+        ], [
+            'tipo_persona.required' => 'Debe seleccionar el tipo de persona (Física o Jurídica).',
         ]);
 
         $this->proveedorService->create($data);
@@ -80,10 +82,12 @@ class ProveedorController extends Controller
             'telefono'              => 'nullable|string|max:30',
             'direccion'             => 'nullable|string|max:255',
             'rnc'                   => 'nullable|string|max:20',
-            'tipo_persona'          => 'nullable|string|in:fisica,juridica',
+            'tipo_persona'          => 'required|string|in:fisica,juridica',
             'sujeto_retencion_isr'  => 'boolean',
             'sujeto_retencion_itbis' => 'boolean',
             'activo'                => 'boolean',
+        ], [
+            'tipo_persona.required' => 'Debe seleccionar el tipo de persona (Física o Jurídica).',
         ]);
 
         $this->proveedorService->update($proveedore, $data);

@@ -32,9 +32,11 @@ class ProveedorController extends Controller
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:500',
             'rnc' => 'nullable|string|max:20',
-            'tipo_persona' => 'nullable|string|max:20',
+            'tipo_persona' => 'required|string|in:fisica,juridica',
             'sujeto_retencion_isr' => 'nullable|boolean',
             'sujeto_retencion_itbis' => 'nullable|boolean',
+        ], [
+            'tipo_persona.required' => 'Debe seleccionar el tipo de persona (Física o Jurídica).',
         ]);
 
         $validated['tenant_id'] = auth()->user()->business_instance_id;
@@ -59,10 +61,14 @@ class ProveedorController extends Controller
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:500',
             'rnc' => 'sometimes|string|max:20',
-            'tipo_persona' => 'nullable|string|max:20',
+            'tipo_persona' => 'sometimes|string|in:fisica,juridica',
             'sujeto_retencion_isr' => 'nullable|boolean',
             'sujeto_retencion_itbis' => 'nullable|boolean',
         ]);
+
+        if (isset($validated['tipo_persona']) && $validated['tipo_persona'] === '') {
+            $validated['tipo_persona'] = $proveedor->tipo_persona ?: 'juridica';
+        }
 
         $proveedor->update($validated);
 

@@ -43,6 +43,7 @@ class ProveedorService
     public function create(array $data): Proveedor
     {
         $this->validarRnc($data);
+        $data['tipo_persona'] = $data['tipo_persona'] ?? 'juridica';
         $data['sujeto_retencion_isr'] = $data['sujeto_retencion_isr'] ?? false;
         $data['sujeto_retencion_itbis'] = $data['sujeto_retencion_itbis'] ?? false;
         $data['activo'] = $data['activo'] ?? true;
@@ -53,6 +54,7 @@ class ProveedorService
     public function update(Proveedor $proveedor, array $data): Proveedor
     {
         $this->validarRnc($data);
+        $data['tipo_persona'] = $data['tipo_persona'] ?? ($proveedor->tipo_persona ?: 'juridica');
         $data['sujeto_retencion_isr'] = $data['sujeto_retencion_isr'] ?? false;
         $data['sujeto_retencion_itbis'] = $data['sujeto_retencion_itbis'] ?? false;
         $data['activo'] = $data['activo'] ?? false;
