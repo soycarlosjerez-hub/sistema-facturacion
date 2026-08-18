@@ -451,7 +451,8 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
         }
 
         $query = VentaDetalle::where('venta_id', $orden->id)
-            ->where('estado_cocina', 'no_enviado');
+            ->where('estado_cocina', 'no_enviado')
+            ->whereHas('producto', fn($q) => $q->where('incluir_kds', true));
         if ($detalleId) {
             $query->where('id', $detalleId);
         }
@@ -461,7 +462,9 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
             'cocina_updated_at' => now(),
         ]);
 
-        return ['success' => true, 'enviados' => $afectados, 'orden' => $orden->fresh()->load('detalles.producto')];
+        return ['success' => true, 'enviados' => $afectados, 'orden' => $orden->fresh()->load([
+            'detalles.producto'
+        ])];
     }
 
     public function cobrar(Mesa $mesa, array $data): array

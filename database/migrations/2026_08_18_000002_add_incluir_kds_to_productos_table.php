@@ -11,6 +11,8 @@ return new class extends Migration
         Schema::table('productos', function (Blueprint $table) {
             $table->boolean('incluir_kds')->default(true)->after('activo');
         });
+
+        DB::table('productos')->whereNull('incluir_kds')->update(['incluir_kds' => true]);
     }
 
     public function down(): void

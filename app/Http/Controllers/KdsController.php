@@ -26,12 +26,16 @@ class KdsController extends Controller
             }))
             ->whereHas('detalles', fn($q) => $q
                 ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
-                ->whereHas('producto', fn($pq) => $pq->where('incluir_kds', true)))
+                ->whereHas('producto', fn($pq) => $pq->where(function ($q) {
+                    $q->where('incluir_kds', true)->orWhereNull('incluir_kds');
+                }))
             ->with([
                 'mesa:id,numero,nombre',
                 'detalles' => fn($q) => $q
                     ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
-                    ->whereHas('producto', fn($pq) => $pq->where('incluir_kds', true))
+                    ->whereHas('producto', fn($pq) => $pq->where(function ($q) {
+                        $q->where('incluir_kds', true)->orWhereNull('incluir_kds');
+                    }))
                     ->with('producto:id,nombre')
             ])
             ->orderBy('created_at')
