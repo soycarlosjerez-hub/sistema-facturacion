@@ -24,18 +24,19 @@ class KdsController extends Controller
             ->when($sucursalId, fn($q) => $q->where(function ($w) use ($sucursalId) {
                 $w->where('sucursal_id', $sucursalId)->orWhereNull('sucursal_id');
             }))
-            ->whereHas('detalles', fn($q) => $q
-                ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
-                ->whereHas('producto', fn($pq) => $pq->where(function ($q) {
-                    $q->where('incluir_kds', true)->orWhereNull('incluir_kds');
-                }))
+            ->whereHas('detalles', function ($q) {
+                $q->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
+                    ->whereHas('producto', function ($pq) {
+                        $pq->where('incluir_kds', true)->orWhereNull('incluir_kds');
+                    });
+            })
             ->with([
                 'mesa:id,numero,nombre',
                 'detalles' => fn($q) => $q
                     ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
-                    ->whereHas('producto', fn($pq) => $pq->where(function ($q) {
-                        $q->where('incluir_kds', true)->orWhereNull('incluir_kds');
-                    }))
+                    ->whereHas('producto', function ($pq) {
+                        $pq->where('incluir_kds', true)->orWhereNull('incluir_kds');
+                    })
                     ->with('producto:id,nombre')
             ])
             ->orderBy('created_at')
