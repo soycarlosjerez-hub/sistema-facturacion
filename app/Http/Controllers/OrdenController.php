@@ -157,6 +157,7 @@ class OrdenController extends Controller
             'monto_tarjeta'        => 'nullable|numeric|min:0',
             'monto_transferencia'  => 'nullable|numeric|min:0',
             'propina'              => 'nullable|numeric|min:0',
+            'admin_token'          => 'nullable|string',
             'split'                => 'nullable|boolean',
             'personas'             => 'nullable|integer|min:2|max:10|required_if:split,true',
             'split_persons'        => 'nullable|array|required_if:split,true',
@@ -167,6 +168,21 @@ class OrdenController extends Controller
         ]);
 
         $result = $this->orderService->cobrar($mesa, $request->all());
+
+        if (isset($result['error'])) {
+            return response()->json($result, $result['code']);
+        }
+
+        return response()->json($result);
+    }
+
+    public function toggleSinItbis(Request $request, Mesa $mesa, VentaDetalle $detalle)
+    {
+        $request->validate([
+            'admin_token' => 'nullable|string',
+        ]);
+
+        $result = $this->orderService->toggleSinItbis($mesa, $detalle, $request->input('admin_token'));
 
         if (isset($result['error'])) {
             return response()->json($result, $result['code']);
@@ -187,6 +203,9 @@ class OrdenController extends Controller
         }
         if ($venta->ecf) {
             return response()->json(['error' => 'Esta venta ya tiene un e-CF generado', 'ecf_id' => $venta->ecf->id], 422);
+        }
+        if ($venta->detalles()->where('sin_itbis', true)->exists()) {
+            return response()->json(['error' => 'No se puede facturar un e-CF con líneas sin ITBIS. Aplica el ITBIS a todas las líneas antes de facturar.'], 422);
         }
 
         try {

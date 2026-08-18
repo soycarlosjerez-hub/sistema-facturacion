@@ -747,6 +747,58 @@
     </div>
 </div>
 
+{{-- Modal Autorización Admin para quitar ITBIS --}}
+<div class="modal fade" id="modalAutorizarAdmin" tabindex="-1" aria-labelledby="authAdminTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="admin-header modal-header">
+                <div class="bubble b1"></div>
+                <div class="bubble b2"></div>
+                <div class="bubble b3"></div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="admin-shield">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color:#fff;">Autorización de Administrador</h5>
+                        <small style="color:rgba(255,255,255,.85);">Acción sensible · Quitar ITBIS</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="admin-body">
+                <div class="admin-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>Para quitar el <strong>ITBIS</strong> de esta línea se requiere autorización de un usuario con rol de administrador. Solo aplica a ventas <strong>Sin Comprobante</strong>.</span>
+                </div>
+                <form id="form-autorizar-admin" autocomplete="off">
+                    <div class="admin-field">
+                        <label for="auth-admin-email">Email del administrador</label>
+                        <div class="admin-input-wrap">
+                            <i class="bi bi-envelope"></i>
+                            <input type="email" class="admin-input" id="auth-admin-email" placeholder="admin@empresa.com" autocomplete="off" required>
+                        </div>
+                    </div>
+                    <div class="admin-field mb-0">
+                        <label for="auth-admin-password">Contraseña</label>
+                        <div class="admin-input-wrap">
+                            <i class="bi bi-lock"></i>
+                            <input type="password" class="admin-input" id="auth-admin-password" placeholder="••••••••" autocomplete="off" required>
+                        </div>
+                    </div>
+                    <div id="auth-admin-error" class="admin-error" style="display:none;"></div>
+                </form>
+            </div>
+            <div class="admin-footer">
+                <button type="button" class="btn-admin-cancel" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-admin-submit" id="btn-auth-admin-submit">
+                    <i class="bi bi-shield-check me-1"></i>Autorizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('styles')
 @include('partials.premium-ui')
 <style>
@@ -1265,6 +1317,55 @@
     font-weight: 700;
     font-size: 1rem;
 }
+/* ============ Toggle Sin ITBIS ============ */
+.sinitbis-toggle {
+    width: 34px; height: 34px; border: none; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #ffffff; color: #64748b; font-size: 0.95rem; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: all 0.2s ease; flex-shrink: 0;
+}
+.sinitbis-toggle:hover { color: #d97706; transform: scale(1.08); box-shadow: 0 3px 10px rgba(0,0,0,0.14); }
+.sinitbis-toggle.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
+    box-shadow: 0 3px 10px rgba(245,158,11,0.4);
+}
+/* ============ Modal Autorización Admin (quitar ITBIS) ============ */
+@keyframes adminGradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes adminBubbleFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-14px) scale(1.08); } }
+#modalAutorizarAdmin .modal-content { border-radius: 20px; overflow: hidden; border: 0; background: #ffffff; color: #1e293b; box-shadow: 0 25px 60px rgba(15,23,42,0.18); }
+#modalAutorizarAdmin .admin-header { position: relative; overflow: hidden; background: linear-gradient(135deg, #1d4ed8, #3b82f6, #60a5fa, #1d4ed8); background-size: 300% 300%; animation: adminGradientShift 6s ease infinite; padding: 22px 24px 18px; color: #fff; border: 0; }
+#modalAutorizarAdmin .admin-header .bubble { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.12); animation: adminBubbleFloat 5s ease-in-out infinite; }
+#modalAutorizarAdmin .admin-header .bubble.b1 { width: 70px; height: 70px; top: -22px; right: 18px; animation-delay: 0s; }
+#modalAutorizarAdmin .admin-header .bubble.b2 { width: 40px; height: 40px; bottom: -14px; left: 30px; animation-delay: 1.2s; }
+#modalAutorizarAdmin .admin-header .bubble.b3 { width: 22px; height: 22px; top: 14px; right: 130px; animation-delay: 2s; }
+#modalAutorizarAdmin .admin-shield { width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); flex-shrink: 0; }
+#modalAutorizarAdmin .admin-body { background: #ffffff; padding: 20px 24px; }
+#modalAutorizarAdmin .admin-warning { display: flex; align-items: flex-start; gap: 10px; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; }
+#modalAutorizarAdmin .admin-warning i { color: #ef4444; font-size: 1.1rem; margin-top: 1px; }
+#modalAutorizarAdmin .admin-warning span { font-size: 0.8rem; color: #475569; line-height: 1.4; }
+#modalAutorizarAdmin .admin-field { margin-bottom: 14px; }
+#modalAutorizarAdmin .admin-field label { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px; display: block; }
+#modalAutorizarAdmin .admin-input-wrap { position: relative; }
+#modalAutorizarAdmin .admin-input-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 1rem; pointer-events: none; }
+#modalAutorizarAdmin .admin-input { width: 100%; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; color: #1e293b; padding: 11px 14px 11px 42px; font-size: 0.95rem; transition: all 0.15s; }
+#modalAutorizarAdmin .admin-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); background: #ffffff; }
+#modalAutorizarAdmin .admin-input::placeholder { color: #94a3b8; opacity: 0.7; }
+#modalAutorizarAdmin .admin-footer { border-top: 1px solid #e2e8f0; padding: 14px 24px; background: #ffffff; display: flex; justify-content: flex-end; gap: 10px; }
+#modalAutorizarAdmin .btn-admin-cancel { border: 1px solid #cbd5e1; background: transparent; color: #475569; border-radius: 50px; padding: 8px 20px; font-weight: 600; font-size: 0.85rem; transition: all 0.15s; }
+#modalAutorizarAdmin .btn-admin-cancel:hover { background: #f1f5f9; border-color: #94a3b8; color: #1e293b; }
+#modalAutorizarAdmin .btn-admin-submit { background: linear-gradient(135deg, #2563eb, #3b82f6); border: 0; border-radius: 50px; padding: 9px 22px; font-weight: 700; font-size: 0.85rem; color: #fff; transition: all 0.2s; box-shadow: 0 4px 16px rgba(59,130,246,0.35); }
+#modalAutorizarAdmin .btn-admin-submit:hover { box-shadow: 0 6px 24px rgba(59,130,246,0.5); transform: translateY(-1px); color: #fff; }
+#modalAutorizarAdmin .btn-admin-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+#modalAutorizarAdmin .admin-error { background: #fee2e2; border: 0; border-left: 4px solid #dc2626; border-radius: 10px; color: #991b1b; padding: 10px 12px; font-size: 0.82rem; margin-top: 6px; }
+body.dark-mode #modalAutorizarAdmin .modal-content { background: #1e293b; color: #f1f5f9; box-shadow: 0 25px 60px rgba(0,0,0,0.5); }
+body.dark-mode #modalAutorizarAdmin .admin-body { background: #1e293b; }
+body.dark-mode #modalAutorizarAdmin .admin-input { background: rgba(255,255,255,0.06); border-color: #334155; color: #f1f5f9; }
+body.dark-mode #modalAutorizarAdmin .admin-input:focus { background: rgba(255,255,255,0.09); border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.18); }
+body.dark-mode #modalAutorizarAdmin .admin-warning { background: rgba(239,68,68,0.08); }
+body.dark-mode #modalAutorizarAdmin .admin-warning span { color: #cbd5e1; }
+body.dark-mode #modalAutorizarAdmin .admin-footer { background: rgba(255,255,255,0.02); border-top-color: #334155; }
+body.dark-mode #modalAutorizarAdmin .btn-admin-cancel { border-color: #334155; color: #cbd5e1; }
+body.dark-mode #modalAutorizarAdmin .btn-admin-cancel:hover { background: rgba(255,255,255,0.06); border-color: #64748b; color: #f1f5f9; }
 </style>
 @endpush
 
@@ -1279,6 +1380,10 @@ let productosData = [];
 let categoriasData = [];
 let pendingRequests = {};
 let isOpeningFromReservation = false;
+const currentUserEmail = {!! json_encode(auth()->user()->email) !!};
+let adminTokenMesa = '';
+let adminTokenExpMesa = 0;
+let pendingSinItbisId = null;
 
 function apiFetch(url, options = {}) {
     const controller = new AbortController();
@@ -1885,6 +1990,9 @@ function renderOrden(orden) {
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    <button class="sinitbis-toggle ${d.sin_itbis ? 'active' : ''}" onclick="toggleSinItbisItem(${d.id})" title="${d.sin_itbis ? 'Restaurar ITBIS' : 'Quitar ITBIS (requiere admin)'}">
+                        <i class="bi ${d.sin_itbis ? 'bi-slash-circle' : 'bi-receipt'}"></i>
+                    </button>
                     <span class="fw-bold small">RD$ ${Number(d.subtotal).toFixed(2)}</span>
                     <button class="btn btn-sm btn-light rounded-pill" onclick="quitarItem(${d.id})" title="Quitar" style="width:38px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;">
                         <i class="bi bi-x text-danger fs-5"></i>
@@ -1918,6 +2026,96 @@ function renderOrden(orden) {
         deliveryFeeLabel.classList.add('d-none');
     }
 }
+
+// ============ Quitar ITBIS por línea (autorización admin) ============
+function adminTokenValidoMesa() {
+    return adminTokenMesa !== '' && Date.now() < adminTokenExpMesa;
+}
+
+function toggleSinItbisItem(detalleId) {
+    const detalle = ordenActual?.detalles?.find(d => d.id === detalleId);
+    if (!detalle) return;
+    if (!detalle.sin_itbis && !adminTokenValidoMesa()) {
+        pendingSinItbisId = detalleId;
+        mostrarModalAutorizarAdminMesa();
+        return;
+    }
+    enviarToggleSinItbis(detalleId);
+}
+
+function enviarToggleSinItbis(detalleId) {
+    apiFetch(`/restaurante/mesa/${mesaActual}/sin-itbis/${detalleId}`, {
+        method: 'POST', key: 'sin-itbis-' + detalleId,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_token: adminTokenValidoMesa() ? adminTokenMesa : null })
+    })
+    .then(data => {
+        if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
+        ordenActual = data.orden;
+        renderOrden(data.orden);
+    });
+}
+
+function mostrarModalAutorizarAdminMesa() {
+    const emailInput = document.getElementById('auth-admin-email');
+    const errorBox = document.getElementById('auth-admin-error');
+    if (emailInput && !emailInput.value) emailInput.value = currentUserEmail;
+    if (errorBox) errorBox.style.display = 'none';
+    document.getElementById('auth-admin-password').value = '';
+    new bootstrap.Modal(document.getElementById('modalAutorizarAdmin')).show();
+    setTimeout(() => document.getElementById('auth-admin-password').focus(), 400);
+}
+
+function enviarAutorizacionAdminMesa() {
+    const email = document.getElementById('auth-admin-email').value.trim();
+    const password = document.getElementById('auth-admin-password').value;
+    const errorBox = document.getElementById('auth-admin-error');
+    const btn = document.getElementById('btn-auth-admin-submit');
+
+    if (errorBox) errorBox.style.display = 'none';
+    if (!email || !password) {
+        Swal.fire({icon:'warning', title:'Campos requeridos', text:'Ingresa el email y la contraseña del administrador.'});
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Validando...';
+
+    apiFetch('{{ route('ventas.autorizarAdmin') }}', {
+        method: 'POST', key: 'autorizar-admin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    })
+    .then(data => {
+        adminTokenMesa = data.token;
+        adminTokenExpMesa = Date.now() + (5 * 60 * 1000);
+        bootstrap.Modal.getInstance(document.getElementById('modalAutorizarAdmin'))?.hide();
+        Swal.fire({icon:'success', title:'Autorizado', text:'Autorizado por ' + data.admin, timer: 1500, showConfirmButton: false});
+        if (pendingSinItbisId !== null) {
+            const pid = pendingSinItbisId;
+            pendingSinItbisId = null;
+            enviarToggleSinItbis(pid);
+        }
+    })
+    .catch(err => {
+        const msg = err.message || 'Error al autorizar. Intenta de nuevo.';
+        if (errorBox) {
+            errorBox.textContent = msg;
+            errorBox.style.display = 'block';
+        }
+        Swal.fire({icon:'error', title:'Autorización rechazada', text: msg});
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-shield-check me-1"></i>Autorizar';
+    });
+}
+
+document.getElementById('btn-auth-admin-submit')?.addEventListener('click', enviarAutorizacionAdminMesa);
+document.getElementById('form-autorizar-admin')?.addEventListener('submit', (e) => { e.preventDefault(); enviarAutorizacionAdminMesa(); });
+document.getElementById('auth-admin-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); enviarAutorizacionAdminMesa(); }
+});
 
 // Búsqueda de mesas en el panel lateral
 document.getElementById('buscar-mesa').addEventListener('input', function () {
@@ -2395,7 +2593,7 @@ document.querySelectorAll('#mixto-efectivo, #mixto-tarjeta, #mixto-transferencia
 function procesarPago() {
     const metodo = document.querySelector('.metodo-btn.active-metodo').dataset.metodo;
     const propina = parseFloat(document.getElementById('propina-input').value) || 0;
-    let payload = { metodo_pago: metodo, propina: propina, cargo_servicio: document.getElementById('cargo-servicio-check')?.checked || false };
+    let payload = { metodo_pago: metodo, propina: propina, cargo_servicio: document.getElementById('cargo-servicio-check')?.checked || false, admin_token: adminTokenValidoMesa() ? adminTokenMesa : null };
 
     // Split bill data
     if (window.splitData?.activo) {
@@ -2479,9 +2677,9 @@ function facturarMesa() {
             btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Facturado';
         }
     })
-    .catch(() => {
+    .catch(err => {
         document.getElementById('factura-status').classList.remove('d-none');
-        document.getElementById('factura-status').innerHTML = '<div class="alert alert-danger rounded-3 py-1 small mb-0">Error de conexión</div>';
+        document.getElementById('factura-status').innerHTML = `<div class="alert alert-danger rounded-3 py-1 small mb-0">${err.message || 'Error de conexión'}</div>`;
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Facturar (e-CF)';
     });

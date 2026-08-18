@@ -17,6 +17,7 @@ use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -216,10 +217,10 @@ class RestaurantOrderService
             if ($detalleExistente) {
                 $nuevaCantidad = $detalleExistente->cantidad + $cantidad;
                 $detalleExistente->cantidad = $nuevaCantidad;
-                $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
+$detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
                 $detalleExistente->save();
-    
-                $itbisItem = ($producto->itbis_porcentaje ?? 0) / 100 * $producto->precio * $cantidad;
+
+                $itbisItem = ($detalleExistente->sin_itbis ? 0 : ($producto->itbis_porcentaje ?? 0)) / 100 * $producto->precio * $cantidad;
                 $orden->increment('subtotal', $producto->precio * $cantidad);
                 $orden->increment('impuestos', $itbisItem);
                 $orden->increment('total', ($producto->precio * $cantidad) + $itbisItem);
@@ -287,7 +288,7 @@ class RestaurantOrderService
         DB::beginTransaction();
         try {
             $subtotal = $detalle->subtotal;
-            $itbisItem = ($detalle->producto->itbis_porcentaje ?? 0) / 100 * $subtotal;
+            $itbisItem = ($detalle->sin_itbis ? 0 : ($detalle->producto->itbis_porcentaje ?? 0)) / 100 * $subtotal;
 
             $orden->decrement('subtotal', $subtotal);
             $orden->decrement('impuestos', $itbisItem);
@@ -332,7 +333,7 @@ class RestaurantOrderService
         DB::beginTransaction();
         try {
             $nuevoSubtotal = $precioUnitario * $nuevaCantidad;
-            $itbisPorcentaje = ($producto->itbis_porcentaje ?? 0) / 100;
+            $itbisPorcentaje = ($detalle->sin_itbis ? 0 : ($producto->itbis_porcentaje ?? 0)) / 100;
             $itbisAnterior = $detalle->subtotal * $itbisPorcentaje;
             $itbisNuevo = $nuevoSubtotal * $itbisPorcentaje;
 
@@ -363,11 +364,91 @@ class RestaurantOrderService
         }
     }
 
+    public function toggleSinItbis(Mesa $mesa, VentaDetalle $detalle, ?string $adminToken): array
+    {
+        $orden = $mesa->ordenActiva;
+        if (!$orden || $detalle->venta_id !== $orden->id) {
+            return ['error' => 'El detalle no pertenece a esta orden', 'code' => 422];
+        }
+
+        if (!$detalle->sin_itbis) {
+            try {
+                $this->verificarTokenAdmin($adminToken);
+            } catch (\Exception $e) {
+                return ['error' => $e->getMessage(), 'code' => 422];
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $detalle->update(['sin_itbis' => !$detalle->sin_itbis]);
+            $this->recalcularTotalesOrden($orden);
+            DB::commit();
+
+            return ['success' => true, 'orden' => $orden->fresh()->load('detalles.producto')];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ['error' => $e->getMessage(), 'code' => 500];
+        }
+    }
+
+    private function recalcularTotalesOrden(Venta $orden): void
+    {
+        $impuestos = 0.0;
+        foreach ($orden->detalles as $d) {
+            $tasa = $d->sin_itbis ? 0 : ($d->producto?->itbis_porcentaje ?? 0);
+            $impuestos += (float) $d->subtotal * ($tasa / 100);
+        }
+        $impuestos = round($impuestos, 2);
+        $subtotal = round((float) $orden->subtotal, 2);
+        $total = round($subtotal + $impuestos, 2);
+        $orden->update(['impuestos' => $impuestos, 'total' => $total]);
+    }
+
+    private function verificarTokenAdmin(?string $token): void
+    {
+        if (empty($token)) {
+            throw new \Exception('Se requiere autorización de un administrador para quitar el ITBIS.');
+        }
+
+        try {
+            $payload = json_decode(Crypt::decryptString($token), true);
+        } catch (\Throwable $e) {
+            throw new \Exception('Token de autorización inválido o expirado. Solicita nuevamente la autorización del administrador.');
+        }
+
+        if (!is_array($payload) || empty($payload['email']) || empty($payload['tenant_id']) || empty($payload['exp'])) {
+            throw new \Exception('Token de autorización inválido. Solicita nuevamente la autorización del administrador.');
+        }
+
+        if ((int) $payload['exp'] < now()->timestamp) {
+            throw new \Exception('La autorización del administrador expiró. Solicítala nuevamente.');
+        }
+
+        if ((int) $payload['tenant_id'] !== (int) Auth::user()->business_instance_id) {
+            throw new \Exception('La autorización no corresponde a este negocio.');
+        }
+
+        $rolesAdmin = ['admin', 'admin-business', 'root', 'gerente'];
+        $admin = \App\Models\User::where('email', $payload['email'])->first();
+        if (!$admin || (!in_array($admin->role, $rolesAdmin) && !$admin->hasAnyRole($rolesAdmin))) {
+            throw new \Exception('El usuario autorizante ya no tiene rol de administrador.');
+        }
+    }
+
     public function cobrar(Mesa $mesa, array $data): array
     {
         $orden = $mesa->ordenActiva;
         if (!$orden) {
             return ['error' => 'La mesa no tiene una orden abierta', 'code' => 422];
+        }
+
+        if ($orden->detalles()->where('sin_itbis', true)->exists()) {
+            try {
+                $this->verificarTokenAdmin($data['admin_token'] ?? null);
+            } catch (\Exception $e) {
+                return ['error' => $e->getMessage(), 'code' => 422];
+            }
         }
 
         $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])

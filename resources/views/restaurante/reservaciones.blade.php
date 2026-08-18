@@ -5,75 +5,66 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.status-badge {
-    padding: 0.4em 0.8em;
-    border-radius: 2rem;
-    font-weight: 500;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-}
-.btn-icon-hover {
-    width: 32px; height: 32px;
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s;
-}
-.btn-icon-hover:hover { transform: scale(1.15); }
-.table > :not(caption) > * > * { padding: 0.85rem 0.5rem; }
-.table thead th { font-weight: 700; letter-spacing: 0.03em; border-bottom: 1px solid #e2e8f0; }
-.table .dropdown-menu { z-index: 1050 !important; position: absolute !important; }
-.table tbody td .dropdown { position: relative; }
+.ui-table .dropdown-menu { z-index: 1050 !important; position: absolute !important; }
+.ui-table tbody td .dropdown { position: relative; }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
-                    <i class="bi bi-cup-straw"></i>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-calendar-check"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Reservaciones</h2>
-                    <p class="text-white text-opacity-75 mb-0">Gestión de reservaciones de mesas</p>
+                    <h4 class="ui-header-title">Reservaciones</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-calendar-check me-1"></i>Gestión de reservaciones de mesas
+                        <span class="divider">·</span>
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $reservaciones->total() }} registro(s)</span>
+                    </div>
                 </div>
             </div>
-            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#reservaModal">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Reservación
-            </button>
+            <div class="ui-header-actions">
+                <button type="button" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#reservaModal">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Reservación
+                </button>
+            </div>
         </div>
     </div>
 
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible rounded-4 border-0 shadow-sm fade show" role="alert">
+    <div class="alert alert-success alert-dismissible rounded-4 border-0 shadow-sm fade show mb-4" role="alert" style="border-left:4px solid #10b981 !important;">
         <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
     @if(session('error'))
-    <div class="alert alert-danger alert-dismissible rounded-4 border-0 shadow-sm fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible rounded-4 border-0 shadow-sm fade show mb-4" role="alert" style="border-left:4px solid #dc3545 !important;">
         <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
 
-    <div class="premium-card mb-4">
-        <div class="card-accent green"></div>
-        <div class="card-body p-3 bg-light bg-opacity-50">
+    <div class="ui-card mb-4">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body">
             <form method="GET" action="{{ route('restaurante.reservaciones.index') }}" id="filtros-form" class="row g-2 align-items-center">
                 <div class="col-lg-4">
-                    <div class="input-group input-group-merge border-0 shadow-none">
-                        <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="busqueda" class="form-control border-0 bg-white"
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="busqueda" class="ui-input"
                                placeholder="Buscar por cliente o mesa..." value="{{ request('busqueda') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-2">
-                    <select name="estado" class="form-select border-0 shadow-none bg-white">
+                    <select name="estado" class="ui-select">
                         <option value="">Todos los estados</option>
                         <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
                         <option value="confirmada" {{ request('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
@@ -82,19 +73,19 @@
                     </select>
                 </div>
                 <div class="col-lg-4 d-flex gap-2">
-                    <button class="btn btn-primary rounded-pill px-3 flex-grow-1"><i class="bi bi-funnel"></i> Filtrar</button>
-                    <a href="{{ route('restaurante.reservaciones.index') }}" class="btn btn-light rounded-pill px-3"><i class="bi bi-x-lg"></i></a>
+                    <button class="ui-btn ui-btn-solid rounded-pill px-3 flex-grow-1"><i class="bi bi-funnel"></i> Filtrar</button>
+                    <a href="{{ route('restaurante.reservaciones.index') }}" class="ui-btn ui-btn-ghost rounded-pill px-3"><i class="bi bi-x-lg"></i></a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="premium-card" style="overflow:visible;">
-        <div class="card-accent green"></div>
+    <div class="ui-card" style="overflow:visible;">
+        <div class="ui-card-accent"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr class="text-muted text-uppercase small">
+            <table class="ui-table align-middle mb-0">
+                <thead>
+                    <tr>
                         <th class="ps-4">Mesa</th>
                         <th>Cliente</th>
                         <th>Teléfono</th>
@@ -122,26 +113,26 @@
                         <td>{{ $r->personas }}</td>
                         <td>{{ $r->fecha_hora->format('d/m/Y h:i A') }}</td>
                         <td>
-                            <span class="badge rounded-pill px-3
-                                {{ $r->estado === 'pendiente' ? 'bg-warning text-dark' : '' }}
-                                {{ $r->estado === 'confirmada' ? 'bg-success' : '' }}
-                                {{ $r->estado === 'cancelada' ? 'bg-secondary' : '' }}
-                                {{ $r->estado === 'cumplida' ? 'bg-info' : '' }}
+                            <span class="ui-badge
+                                {{ $r->estado === 'pendiente' ? 'ui-badge-warning' : '' }}
+                                {{ $r->estado === 'confirmada' ? 'ui-badge-success' : '' }}
+                                {{ $r->estado === 'cancelada' ? 'ui-badge-neutral' : '' }}
+                                {{ $r->estado === 'cumplida' ? 'ui-badge-info' : '' }}
                             ">{{ ucfirst($r->estado) }}</span>
                         </td>
                         <td><small class="text-muted">{{ Str::limit($r->notas, 30) ?: '—' }}</small></td>
                         <td class="text-end pe-4">
                             <div class="d-inline-flex gap-1 align-items-center">
-                                 <a class="premium-btn-edit" href="#" title="Ver detalles"
+                                 <a class="ui-action ui-action-view" href="#" title="Ver detalles"
                                     onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono ?: $r->cliente?->telefono), @js($r->cliente_email ?: $r->cliente?->email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
                                       <i class="bi bi-eye"></i>
                                   </a>
-                                  <a class="premium-btn-edit" href="#" title="Editar"
+                                  <a class="ui-action ui-action-edit" href="#" title="Editar"
                                      onclick="editarReservacion({{ $r->id }}, {{ $r->mesa_id }}, @js($r->cliente_nombre), @js($r->cliente_telefono ?: $r->cliente?->telefono), @js($r->cliente_email ?: $r->cliente?->email), {{ $r->personas }}, @js($r->fecha_hora->format('Y-m-d\TH:i')), @js($r->notas)); return false;">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary rounded-pill dropdown-toggle px-2" data-bs-toggle="dropdown" title="Cambiar estado">
+                                    <button class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill dropdown-toggle px-2" type="button" data-bs-toggle="dropdown" title="Cambiar estado">
                                         <i class="bi bi-arrow-repeat"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0">
@@ -154,7 +145,7 @@
                                 <form action="{{ route('restaurante.reservaciones.destroy', $r) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar la reservación de ' + @js($r->cliente_nombre) + '? Esta acción no se puede deshacer.')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="premium-btn-delete" title="Eliminar">
+                                    <button type="submit" class="ui-action ui-action-delete" title="Eliminar">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -163,12 +154,14 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-5">
-                            <i class="bi bi-calendar-x display-1 text-muted opacity-25"></i>
-                            <p class="text-muted mt-3">No se encontraron reservaciones.</p>
-                            <button class="btn btn-primary rounded-pill mt-2" data-bs-toggle="modal" data-bs-target="#reservaModal">
-                                <i class="bi bi-plus-lg me-1"></i> Crear primera reservación
-                            </button>
+                        <td colspan="8">
+                            <div class="ui-empty-state">
+                                <i class="bi bi-calendar-x"></i>
+                                <p>No se encontraron reservaciones.</p>
+                                <button type="button" class="ui-btn ui-btn-solid rounded-pill mt-2" data-bs-toggle="modal" data-bs-target="#reservaModal">
+                                    <i class="bi bi-plus-lg me-1"></i> Crear primera reservación
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     @endforelse
@@ -187,14 +180,14 @@
     <div class="modal-dialog modal-dialog-centered">
         <form method="POST" action="{{ route('restaurante.reservaciones.store') }}" class="modal-content rounded-4 border-0 shadow">
             @csrf
-            <div class="modal-header border-0">
-                <h5 class="fw-bold"><i class="bi bi-plus-circle me-2"></i>Nueva Reservación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#10b981,#059669);border-radius:1rem 1rem 0 0;">
+                <h5 class="fw-bold text-white"><i class="bi bi-plus-circle me-2"></i>Nueva Reservación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Mesa <span class="text-danger">*</span></label>
-                    <select name="mesa_id" class="form-select rounded-3" required>
+                    <label class="ui-label">Mesa <span class="text-danger">*</span></label>
+                    <select name="mesa_id" class="ui-select" required>
                         <option value="">Seleccionar mesa</option>
                         @foreach($mesas as $m)
                             <option value="{{ $m->id }}">{{ $m->nombre ?? 'Mesa '.$m->numero }} (Cap. {{ $m->capacidad }})</option>
@@ -202,37 +195,37 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Nombre del cliente <span class="text-danger">*</span></label>
-                    <input type="text" name="cliente_nombre" class="form-control rounded-3" required maxlength="200">
+                    <label class="ui-label">Nombre del cliente <span class="text-danger">*</span></label>
+                    <input type="text" name="cliente_nombre" class="ui-input" required maxlength="200">
                 </div>
                 <div class="row g-2">
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Teléfono</label>
-                        <input type="text" name="cliente_telefono" class="form-control rounded-3" maxlength="30">
+                        <label class="ui-label">Teléfono</label>
+                        <input type="text" name="cliente_telefono" class="ui-input" maxlength="30">
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Email</label>
-                        <input type="email" name="cliente_email" class="form-control rounded-3" maxlength="200">
+                        <label class="ui-label">Email</label>
+                        <input type="email" name="cliente_email" class="ui-input" maxlength="200">
                     </div>
                 </div>
                 <div class="row g-2 mt-2">
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Personas <span class="text-danger">*</span></label>
-                        <input type="number" name="personas" class="form-control rounded-3" value="2" min="1" required>
+                        <label class="ui-label">Personas <span class="text-danger">*</span></label>
+                        <input type="number" name="personas" class="ui-input" value="2" min="1" required>
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Fecha y Hora <span class="text-danger">*</span></label>
-                        <input type="datetime-local" name="fecha_hora" class="form-control rounded-3" required>
+                        <label class="ui-label">Fecha y Hora <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="fecha_hora" class="ui-input" required>
                     </div>
                 </div>
                 <div class="mb-3 mt-2">
-                    <label class="form-label small fw-bold">Notas</label>
-                    <textarea name="notas" class="form-control rounded-3" rows="2" maxlength="500"></textarea>
+                    <label class="ui-label">Notas</label>
+                    <textarea name="notas" class="ui-textarea" rows="2" maxlength="500"></textarea>
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary rounded-pill">Crear Reservación</button>
+                <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="ui-btn ui-btn-solid rounded-pill">Crear Reservación</button>
             </div>
         </form>
     </div>
@@ -244,14 +237,14 @@
         <form method="POST" class="modal-content rounded-4 border-0 shadow" id="form-editar-reserva">
             @csrf
             @method('PUT')
-            <div class="modal-header border-0">
-                <h5 class="fw-bold"><i class="bi bi-pencil me-2"></i>Editar Reservación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#10b981,#059669);border-radius:1rem 1rem 0 0;">
+                <h5 class="fw-bold text-white"><i class="bi bi-pencil me-2"></i>Editar Reservación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Mesa <span class="text-danger">*</span></label>
-                    <select name="mesa_id" id="edit-mesa-id" class="form-select rounded-3" required>
+                    <label class="ui-label" for="edit-mesa-id">Mesa <span class="text-danger">*</span></label>
+                    <select name="mesa_id" id="edit-mesa-id" class="ui-select" required>
                         <option value="">Seleccionar mesa</option>
                         @foreach($mesas as $m)
                             <option value="{{ $m->id }}">{{ $m->nombre ?? 'Mesa '.$m->numero }} (Cap. {{ $m->capacidad }})</option>
@@ -259,37 +252,37 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Nombre del cliente <span class="text-danger">*</span></label>
-                    <input type="text" name="cliente_nombre" id="edit-cliente-nombre" class="form-control rounded-3" required maxlength="200">
+                    <label class="ui-label" for="edit-cliente-nombre">Nombre del cliente <span class="text-danger">*</span></label>
+                    <input type="text" name="cliente_nombre" id="edit-cliente-nombre" class="ui-input" required maxlength="200">
                 </div>
                 <div class="row g-2">
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Teléfono</label>
-                        <input type="text" name="cliente_telefono" id="edit-cliente-telefono" class="form-control rounded-3" maxlength="30">
+                        <label class="ui-label" for="edit-cliente-telefono">Teléfono</label>
+                        <input type="text" name="cliente_telefono" id="edit-cliente-telefono" class="ui-input" maxlength="30">
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Email</label>
-                        <input type="email" name="cliente_email" id="edit-cliente-email" class="form-control rounded-3" maxlength="200">
+                        <label class="ui-label" for="edit-cliente-email">Email</label>
+                        <input type="email" name="cliente_email" id="edit-cliente-email" class="ui-input" maxlength="200">
                     </div>
                 </div>
                 <div class="row g-2 mt-2">
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Personas <span class="text-danger">*</span></label>
-                        <input type="number" name="personas" id="edit-personas" class="form-control rounded-3" min="1" required>
+                        <label class="ui-label" for="edit-personas">Personas <span class="text-danger">*</span></label>
+                        <input type="number" name="personas" id="edit-personas" class="ui-input" min="1" required>
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Fecha y Hora <span class="text-danger">*</span></label>
-                        <input type="datetime-local" name="fecha_hora" id="edit-fecha-hora" class="form-control rounded-3" required>
+                        <label class="ui-label" for="edit-fecha-hora">Fecha y Hora <span class="text-danger">*</span></label>
+                        <input type="datetime-local" name="fecha_hora" id="edit-fecha-hora" class="ui-input" required>
                     </div>
                 </div>
                 <div class="mb-3 mt-2">
-                    <label class="form-label small fw-bold">Notas</label>
-                    <textarea name="notas" id="edit-notas" class="form-control rounded-3" rows="2" maxlength="500"></textarea>
+                    <label class="ui-label" for="edit-notas">Notas</label>
+                    <textarea name="notas" id="edit-notas" class="ui-textarea" rows="2" maxlength="500"></textarea>
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary rounded-pill">Guardar Cambios</button>
+                <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="ui-btn ui-btn-solid rounded-pill">Guardar Cambios</button>
             </div>
         </form>
     </div>

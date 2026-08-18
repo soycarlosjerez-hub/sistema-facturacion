@@ -5,22 +5,7 @@
 @include('partials.premium-ui')
 @include('partials.datatable-ui')
 <style>
-:root {
-    --dt-accent: #10b981;
-    --dt-accent-gradient: linear-gradient(135deg, #10b981, #06b6d4);
-    --dt-accent-rgb: 16,185,129;
-}
-.premium-header {
-    background: linear-gradient(135deg, #10b981, #059669, #06b6d4, #10b981);
-    background-size: 300% 300%;
-    box-shadow: 0 8px 32px rgba(16,185,129,.25);
-}
-.premium-header::before {
-    background:
-        radial-gradient(circle at 30% 40%, rgba(255,255,255,.12) 0%, transparent 50%),
-        radial-gradient(circle at 70% 60%, rgba(255,255,255,.08) 0%, transparent 50%);
-}
-.premium-card .form-check-input:checked {
+#activa:checked {
     background-color: #10b981;
     border-color: #10b981;
 }
@@ -28,26 +13,31 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-geo-alt"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Ubicaciones de Mesas</h4>
-                    <small class="text-white opacity-75">
+                    <h4 class="ui-header-title">Ubicaciones de Mesas</h4>
+                    <div class="ui-header-meta">
                         <i class="bi bi-info-circle me-1"></i>Gestiona las áreas o zonas del restaurante
-                    </small>
+                        <span class="divider">·</span>
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $ubicaciones->count() }} ubicación(es)</span>
+                    </div>
                 </div>
             </div>
-            <button type="button" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#ubicacionModal" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Ubicación
-            </button>
+            <div class="ui-header-actions">
+                <button type="button" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#ubicacionModal">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Ubicación
+                </button>
+            </div>
         </div>
     </div>
 
@@ -63,9 +53,9 @@
         </div>
     @endif
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent green"></div>
-        <div class="card-body p-0">
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
             <table id="ubicaciones-table" class="table dt-table nowrap no-footer" style="width:100%">
                 <thead>
                     <tr>
@@ -102,14 +92,14 @@
                 <input type="hidden" name="ubicacion_id" id="ubicacionId">
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Nombre <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" id="nombre" class="form-control form-control-lg" required placeholder="Ej. Terraza, Salón Principal, VIP">
+                        <label class="ui-label" for="nombre">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" id="nombre" class="ui-input" required placeholder="Ej. Terraza, Salón Principal, VIP">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Descripción</label>
-                        <textarea name="descripcion" id="descripcion" class="form-control" rows="2" placeholder="Descripción opcional"></textarea>
+                        <label class="ui-label" for="descripcion">Descripción</label>
+                        <textarea name="descripcion" id="descripcion" class="ui-textarea" rows="2" placeholder="Descripción opcional"></textarea>
                     </div>
-                    <div class="p-3 bg-light rounded-3">
+                    <div class="p-3 rounded-3" style="background:rgba(16,185,129,.05);">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="activa" value="1" id="activa" checked role="switch" style="width:3rem;height:1.5rem;cursor:pointer;">
                             <label class="form-check-label fw-semibold ms-2" for="activa" style="cursor:pointer;">
@@ -119,8 +109,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal" style="font-weight:600;">Cancelar</button>
-                    <button type="submit" class="btn rounded-pill px-4 text-white" id="btnSave" style="background:linear-gradient(135deg,#10b981,#059669);font-weight:600;">
+                    <button type="button" class="ui-btn ui-btn-ghost rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4" id="btnSave">
                         <i class="bi bi-check-lg me-1"></i>Guardar
                     </button>
                 </div>
@@ -170,7 +160,7 @@ $(function() {
                 className: 'text-center',
                 render: function(data) {
                     const count = parseInt(data || 0);
-                    return '<span class="badge bg-light text-secondary border rounded-pill">' +
+                    return '<span class="ui-badge ui-badge-neutral">' +
                         '<i class="bi bi-table me-1"></i> ' + count + ' mesas</span>';
                 }
             },
@@ -179,9 +169,9 @@ $(function() {
                 className: 'text-center',
                 render: function(data) {
                     return data
-                        ? '<span class="badge rounded-pill" style="background:rgba(34,197,94,.1);color:#16a34a;font-weight:600;">' +
+                        ? '<span class="ui-badge ui-badge-success">' +
                             '<i class="bi bi-check-circle-fill me-1"></i> Activa</span>'
-                        : '<span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary" style="font-weight:600;">' +
+                        : '<span class="ui-badge ui-badge-danger">' +
                             '<i class="bi bi-x-circle-fill me-1"></i> Inactiva</span>';
                 }
             },
@@ -192,12 +182,12 @@ $(function() {
                 searchable: false,
                 render: function(data) {
                     let html = '<div class="d-flex justify-content-end gap-1">';
-                    html += '<button type="button" class="premium-btn-edit" title="Editar" onclick="editar(' + data.id + ')">' +
+                    html += '<button type="button" class="ui-action ui-action-edit" title="Editar" onclick="editar(' + data.id + ')">' +
                         '<i class="bi bi-pencil"></i></button>';
                     html += '<form action="/restaurante/ubicaciones/' + data.id + '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar la ubicación ' + escapeHtml(data.nombre) + '? Solo es posible si no tiene mesas asociadas.\');">' +
                         '<input type="hidden" name="_token" value="' + csrfToken + '">' +
                         '<input type="hidden" name="_method" value="DELETE">' +
-                        '<button type="submit" class="premium-btn-delete border-0" title="Eliminar">' +
+                        '<button type="submit" class="ui-action ui-action-delete border-0" title="Eliminar">' +
                         '<i class="bi bi-trash"></i></button></form>';
                     html += '</div>';
                     return html;

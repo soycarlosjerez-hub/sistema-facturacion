@@ -2,58 +2,49 @@
 @section('title', 'Categorías de Mesas')
 @push('styles')
 @include('partials.premium-ui')
-<style>
-.status-badge {
-    padding: 0.4em 0.8em;
-    border-radius: 2rem;
-    font-weight: 500;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-}
-.btn-icon-hover {
-    width: 32px; height: 32px;
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s;
-}
-.btn-icon-hover:hover { transform: scale(1.15); }
-</style>
 @endpush
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index: 2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-cup-straw"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Categorías de Mesas</h2>
-                    <p class="text-white text-opacity-75 mb-0">Organiza las mesas por categorías</p>
+                    <h4 class="ui-header-title">Categorías de Mesas</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-diagram-3 me-1"></i>Organiza las mesas por categorías
+                        <span class="divider">·</span>
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $categorias->count() }} categoría(s)</span>
+                    </div>
                 </div>
             </div>
-            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#categoriaModal">
-                <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
-            </button>
+            <div class="ui-header-actions">
+                <button type="button" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#categoriaModal">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent green"></div>
-        <div class="card-body p-0">
+    <div class="ui-card">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="ui-table mb-0">
+                    <thead>
                         <tr>
                             <th>Color</th>
                             <th>Nombre</th>
                             <th>Icono</th>
                             <th>Orden</th>
                             <th>Mesas</th>
-                            <th></th>
+                            <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,16 +56,23 @@
                             <td>{{ $cat->orden }}</td>
                             <td>{{ $cat->mesas->count() }}</td>
                             <td class="text-end">
-                                <button class="premium-btn-edit" onclick="editarCategoria({{ $cat->id }})"><i class="bi bi-pencil"></i></button>
+                                <button type="button" class="ui-action ui-action-edit" onclick="editarCategoria({{ $cat->id }})" title="Editar"><i class="bi bi-pencil"></i></button>
                                 <form action="{{ route('restaurante.categorias.destroy', $cat) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta categoría? Las mesas quedarán sin categoría.')">
                                     @csrf @method('DELETE')
-                                    <button class="premium-btn-delete"><i class="bi bi-trash"></i></button>
+                                    <button type="submit" class="ui-action ui-action-delete" title="Eliminar"><i class="bi bi-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
                         @endforeach
                         @if($categorias->isEmpty())
-                        <tr><td colspan="6" class="text-center text-muted py-4">No hay categorías creadas</td></tr>
+                        <tr>
+                            <td colspan="6">
+                                <div class="ui-empty-state">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <p>No hay categorías creadas</p>
+                                </div>
+                            </td>
+                        </tr>
                         @endif
                     </tbody>
                 </table>
@@ -89,35 +87,35 @@
         <form method="POST" class="modal-content rounded-4 border-0 shadow" id="categoriaForm">
             @csrf
             <input type="hidden" name="_method" value="POST" id="cat-method">
-            <div class="modal-header border-0">
-                <h5 class="fw-bold" id="catModalTitle">Nueva Categoría</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#10b981,#059669);border-radius:1rem 1rem 0 0;">
+                <h5 class="fw-bold text-white" id="catModalTitle">Nueva Categoría</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Nombre</label>
-                    <input type="text" name="nombre" class="form-control rounded-3" required maxlength="100">
+                    <label class="ui-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" name="nombre" class="ui-input" required maxlength="100">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Color</label>
+                    <label class="ui-label">Color</label>
                     <div class="d-flex align-items-center gap-2">
-                        <input type="color" name="color" class="form-control form-control-color rounded-3" value="#6b7280" style="width:60px;height:40px;padding:3px;">
-                        <input type="text" class="form-control rounded-3" id="color-hex" value="#6b7280" maxlength="7" oninput="this.previousElementSibling.value=this.value">
+                        <input type="color" name="color" class="form-control form-control-color" value="#6b7280" style="width:60px;height:40px;padding:3px;">
+                        <input type="text" class="ui-input" id="color-hex" value="#6b7280" maxlength="7" oninput="this.previousElementSibling.value=this.value">
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Icono (clase Bootstrap Icon)</label>
-                    <input type="text" name="icono" class="form-control rounded-3" placeholder="ej: bi-tree" maxlength="50">
+                    <label class="ui-label">Icono (clase Bootstrap Icon)</label>
+                    <input type="text" name="icono" class="ui-input" placeholder="ej: bi-tree" maxlength="50">
                     <div class="form-text">Ej: <code>bi-tree</code>, <code>bi-sun</code>, <code>bi-star</code></div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Orden</label>
-                    <input type="number" name="orden" class="form-control rounded-3" value="0" min="0">
+                    <label class="ui-label">Orden</label>
+                    <input type="number" name="orden" class="ui-input" value="0" min="0">
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary rounded-pill">Guardar</button>
+                <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="ui-btn ui-btn-solid rounded-pill">Guardar</button>
             </div>
         </form>
     </div>

@@ -5,9 +5,9 @@
 @include('partials.datatable-ui')
 <style>
 :root {
-    --dt-accent: #f97316;
-    --dt-accent-gradient: linear-gradient(135deg, #f97316, #f59e0b);
-    --dt-accent-rgb: 249,115,22;
+    --dt-accent: #10b981;
+    --dt-accent-gradient: linear-gradient(135deg, #10b981, #059669);
+    --dt-accent-rgb: 16,185,129;
 }
 #mesas-table { width: 100% !important; margin: 0; }
 #mesas-table thead th {
@@ -29,7 +29,7 @@
 }
 #mesas-table tbody tr:last-child td { border-bottom: none; }
 #mesas-table tbody tr { transition: background .15s; }
-#mesas-table tbody tr:hover { background: rgba(249,115,22,.03); }
+#mesas-table tbody tr:hover { background: rgba(16,185,129,.03); }
 .mesa-badge-cat {
     padding: .35em .7em;
     border-radius: 2rem;
@@ -45,18 +45,8 @@
     cursor: pointer;
 }
 .form-switch-mesa:checked {
-    background-color: var(--dt-accent, #f97316) !important;
-    border-color: var(--dt-accent, #f97316) !important;
-}
-.premium-btn-edit {
-    background: rgba(249,115,22,.1);
-    color: #f97316;
-    border: 1.5px solid rgba(249,115,22,.2);
-}
-.premium-btn-edit:hover {
-    background: #f97316;
-    color: #fff;
-    border-color: #f97316;
+    background-color: var(--dt-accent, #10b981) !important;
+    border-color: var(--dt-accent, #10b981) !important;
 }
 body.dark-mode #mesas-table thead th {
     background: rgba(15,23,42,.5);
@@ -68,31 +58,33 @@ body.dark-mode #mesas-table tbody td {
     color: #cbd5e1;
 }
 body.dark-mode #mesas-table tbody tr:hover {
-    background: rgba(249,115,22,.05);
+    background: rgba(16,185,129,.05);
 }
 </style>
 @endpush
 @section('content')
-<div class="container-fluid px-4 py-3 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
                     <i class="bi bi-cup-straw"></i>
                 </div>
                 <div>
-                    <h4 class="fw-bold mb-1 text-white">Gestión de Mesas</h4>
-                    <small class="text-white opacity-75">
-                        <i class="bi bi-grid me-1"></i>
-                        Administra las mesas del restaurante
-                    </small>
+                    <h4 class="ui-header-title">Gestión de Mesas</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-grid me-1"></i>Administra las mesas del restaurante
+                        <span class="divider">·</span>
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $mesasAll->count() }} mesa(s)</span>
+                    </div>
                 </div>
             </div>
-            <div>
-                <button class="btn btn-light rounded-pill px-4 shadow-sm fw-bold" style="backdrop-filter:blur(8px);background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.35);" data-bs-toggle="modal" data-bs-target="#mesaModal" onclick="abrirModalCrear()">
+            <div class="ui-header-actions">
+                <button type="button" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#mesaModal" onclick="abrirModalCrear()">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Mesa
                 </button>
             </div>
@@ -100,30 +92,30 @@ body.dark-mode #mesas-table tbody tr:hover {
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success border-0 rounded-3 shadow-sm d-flex align-items-center mb-4">
+        <div class="alert alert-success rounded-4 shadow-sm border-0 d-flex align-items-center mb-4" style="border-left:4px solid #10b981 !important;">
             <i class="bi bi-check-circle-fill me-2"></i><div>{{ session('success') }}</div>
         </div>
     @endif
     @if(session('error'))
-        <div class="alert alert-danger border-0 rounded-3 shadow-sm d-flex align-items-center mb-4">
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 d-flex align-items-center mb-4" style="border-left:4px solid #dc3545 !important;">
             <i class="bi bi-exclamation-triangle-fill me-2"></i><div>{{ session('error') }}</div>
         </div>
     @endif
 
-    <div class="premium-card mb-4" style="animation-delay:.1s;">
-        <div class="card-accent" style="background:var(--dt-accent-gradient);"></div>
-        <div class="card-body p-3">
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body">
             <form id="filtros-form" class="row g-2 align-items-end">
                 <div class="col-lg-4">
-                    <label class="form-label small fw-bold text-muted">Buscar mesa</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                        <input type="text" id="busqueda-mesa" class="form-control bg-light border-0" placeholder="Número, nombre..." autocomplete="off">
+                    <label class="ui-label" for="busqueda-mesa">Buscar mesa</label>
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="busqueda-mesa" class="ui-input" placeholder="Número, nombre..." autocomplete="off">
                     </div>
                 </div>
                 <div class="col-lg-3">
-                    <label class="form-label small fw-bold text-muted">Estado</label>
-                    <select id="filter-estado" class="form-select">
+                    <label class="ui-label" for="filter-estado">Estado</label>
+                    <select id="filter-estado" class="ui-select">
                         <option value="">Todos</option>
                         <option value="disponible">Disponible</option>
                         <option value="ocupada">Ocupada</option>
@@ -132,8 +124,8 @@ body.dark-mode #mesas-table tbody tr:hover {
                     </select>
                 </div>
                 <div class="col-lg-3">
-                    <label class="form-label small fw-bold text-muted">Ubicación</label>
-                    <select id="filter-ubicacion" class="form-select">
+                    <label class="ui-label" for="filter-ubicacion">Ubicación</label>
+                    <select id="filter-ubicacion" class="ui-select">
                         <option value="">Todas</option>
                         @foreach($ubicaciones as $ubi)
                             <option value="{{ $ubi->nombre }}">{{ $ubi->nombre }}</option>
@@ -141,16 +133,16 @@ body.dark-mode #mesas-table tbody tr:hover {
                     </select>
                 </div>
                 <div class="col-lg-2 d-flex gap-2 align-items-end">
-                    <button type="submit" class="btn btn-primary flex-grow-1" style="background:var(--dt-accent-gradient);border:none;"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('restaurante.mesas.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+                    <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                    <a href="{{ route('restaurante.mesas.index') }}" class="ui-btn ui-btn-ghost" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="premium-card" style="animation-delay:.15s;">
-        <div class="card-accent" style="background:var(--dt-accent-gradient);"></div>
-        <div class="card-body p-0">
+    <div class="ui-card" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
             <table id="mesas-table" class="table dt-table nowrap no-footer" style="width:100%">
                 <thead>
                     <tr>
@@ -178,27 +170,27 @@ body.dark-mode #mesas-table tbody tr:hover {
             <form id="mesa-form" method="POST" action="{{ route('restaurante.mesa.store') }}">
                 @csrf
                 <input type="hidden" name="_method" id="mesa-method" value="POST">
-                <div class="modal-header border-0">
-                    <h6 class="modal-title fw-bold" id="mesa-modal-title">Nueva Mesa</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-0" style="background:linear-gradient(135deg,#10b981,#059669);border-radius:1rem 1rem 0 0;">
+                    <h6 class="modal-title fw-bold text-white" id="mesa-modal-title">Nueva Mesa</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Número <span class="text-danger">*</span></label>
-                        <input type="text" name="numero" id="mesa-numero" class="form-control rounded-3" required placeholder="01">
+                        <label class="ui-label" for="mesa-numero">Número <span class="text-danger">*</span></label>
+                        <input type="text" name="numero" id="mesa-numero" class="ui-input" required placeholder="01">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Nombre</label>
-                        <input type="text" name="nombre" id="mesa-nombre" class="form-control rounded-3" placeholder="Ej. Terraza, VIP">
+                        <label class="ui-label" for="mesa-nombre">Nombre</label>
+                        <input type="text" name="nombre" id="mesa-nombre" class="ui-input" placeholder="Ej. Terraza, VIP">
                     </div>
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label small fw-bold">Capacidad <span class="text-danger">*</span></label>
-                            <input type="number" name="capacidad" id="mesa-capacidad" class="form-control rounded-3" value="4" min="1" required>
+                            <label class="ui-label" for="mesa-capacidad">Capacidad <span class="text-danger">*</span></label>
+                            <input type="number" name="capacidad" id="mesa-capacidad" class="ui-input" value="4" min="1" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small fw-bold">Ubicación</label>
-                            <select name="ubicacion_id" id="mesa-ubicacion" class="form-select rounded-3">
+                            <label class="ui-label" for="mesa-ubicacion">Ubicación</label>
+                            <select name="ubicacion_id" id="mesa-ubicacion" class="ui-select">
                                 <option value="">Sin ubicación</option>
                                 @foreach($ubicaciones as $ubi)
                                     <option value="{{ $ubi->id }}">{{ $ubi->nombre }}</option>
@@ -207,8 +199,8 @@ body.dark-mode #mesas-table tbody tr:hover {
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Categoría</label>
-                        <select name="categoria_id" id="mesa-categoria" class="form-select rounded-3">
+                        <label class="ui-label" for="mesa-categoria">Categoría</label>
+                        <select name="categoria_id" id="mesa-categoria" class="ui-select">
                             <option value="">Sin categoría</option>
                             @foreach($categorias as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
@@ -216,8 +208,8 @@ body.dark-mode #mesas-table tbody tr:hover {
                         </select>
                     </div>
                     <div class="mb-3 d-none" id="mesa-estado-group">
-                        <label class="form-label small fw-bold">Estado</label>
-                        <select name="estado" id="mesa-estado" class="form-select rounded-3">
+                        <label class="ui-label" for="mesa-estado">Estado</label>
+                        <select name="estado" id="mesa-estado" class="ui-select">
                             <option value="disponible">Disponible</option>
                             <option value="ocupada">Ocupada</option>
                             <option value="reservada">Reservada</option>
@@ -226,8 +218,8 @@ body.dark-mode #mesas-table tbody tr:hover {
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4" style="background:var(--dt-accent-gradient);border:none;">
+                    <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4">
                         <i class="bi bi-check-lg me-1"></i>Guardar
                     </button>
                 </div>
@@ -338,13 +330,13 @@ $(function() {
                 className: 'text-center',
                 render: function(data) {
                     const estados = {
-                        disponible: { label: 'Disponible', cls: 'bg-success' },
-                        ocupada:    { label: 'Ocupada', cls: 'bg-danger' },
-                        reservada:  { label: 'Reservada', cls: 'bg-warning text-dark' },
-                        inactiva:   { label: 'Inactiva', cls: 'bg-secondary' },
+                        disponible: { label: 'Disponible', cls: 'ui-badge-success' },
+                        ocupada:    { label: 'Ocupada', cls: 'ui-badge-danger' },
+                        reservada:  { label: 'Reservada', cls: 'ui-badge-warning' },
+                        inactiva:   { label: 'Inactiva', cls: 'ui-badge-neutral' },
                     };
                     const e = estados[data] || estados.disponible;
-                    return '<span class="badge ' + e.cls + ' rounded-pill">' + e.label + '</span>';
+                    return '<span class="ui-badge ' + e.cls + '">' + e.label + '</span>';
                 }
             },
             {
@@ -367,15 +359,15 @@ $(function() {
                 render: function(data) {
                     const id = data.id;
                     let html = '<div class="d-flex justify-content-end gap-1">';
-                    html += '<button class="premium-btn-edit btn-editar-mesa" data-id="' + id + '" title="Editar">' +
+                    html += '<button type="button" class="ui-action ui-action-edit btn-editar-mesa" data-id="' + id + '" title="Editar">' +
                         '<i class="bi bi-pencil"></i></button>';
                     if (data.estado !== 'ocupada') {
                         html += '<form action="/restaurante/mesa/' + id + '" method="POST" class="d-inline form-eliminar-mesa" data-numero="' + escapeHtml(data.numero) + '">' +
                             '@csrf<input type="hidden" name="_method" value="DELETE">' +
-                            '<button type="submit" class="premium-btn-delete border-0" title="Eliminar">' +
+                            '<button type="submit" class="ui-action ui-action-delete border-0" title="Eliminar">' +
                             '<i class="bi bi-trash"></i></button></form>';
                     } else {
-                        html += '<button class="premium-btn-delete border-0" disabled title="No se puede eliminar una mesa ocupada">' +
+                        html += '<button type="button" class="ui-action ui-action-delete border-0" disabled title="No se puede eliminar una mesa ocupada">' +
                             '<i class="bi bi-trash"></i></button>';
                     }
                     html += '</div>';

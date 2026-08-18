@@ -1,14 +1,15 @@
 <div class="p-3">
     <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Historial — {{ $mesa->nombre ?? 'Mesa '.$mesa->numero }}</h6>
     @forelse($ordenes as $orden)
-    <div class="card border-0 bg-light rounded-3 mb-2">
-        <div class="card-body p-3">
+    <div class="ui-card rounded-3 mb-2" style="--delay:0s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-3">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <div>
-                    <span class="badge bg-primary rounded-pill">#{{ $orden->id }}</span>
+                    <span class="ui-badge ui-badge-primary">#{{ $orden->id }}</span>
                     <small class="text-muted ms-2">{{ $orden->created_at->format('d/m/Y h:i A') }}</small>
                 </div>
-                <span class="fw-bold text-primary">RD$ {{ number_format($orden->total, 2) }}</span>
+                <span class="fw-bold" style="color:#10b981;">RD$ {{ number_format($orden->total, 2) }}</span>
             </div>
             <div class="d-flex gap-2 flex-wrap">
                 <small class="text-muted">
@@ -20,7 +21,7 @@
                 </small>
                 <small class="text-muted">·</small>
                 <small class="text-muted">
-                    <span class="badge {{ $orden->estado === 'facturada' ? 'bg-success' : 'bg-secondary' }} rounded-pill">{{ $orden->estado }}</span>
+                    <span class="ui-badge {{ $orden->estado === 'facturada' ? 'ui-badge-success' : 'ui-badge-neutral' }}">{{ $orden->estado }}</span>
                 </small>
             </div>
             @if($orden->detalles->count() > 0)
@@ -34,19 +35,19 @@
             </div>
             @endif
             <div class="mt-2 d-flex gap-1">
-                <a href="{{ route('restaurante.mesa.ticket', ['mesa' => $mesa, 'venta_id' => $orden->id]) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill">
+                <a href="{{ route('restaurante.mesa.ticket', ['mesa' => $mesa, 'venta_id' => $orden->id]) }}" target="_blank" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">
                     <i class="bi bi-receipt"></i> Ticket
                 </a>
-                <button class="btn btn-sm btn-outline-dark rounded-pill" onclick="reimprimirTicket({{ $mesa->id }}, {{ $orden->id }})">
+                <button type="button" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill" onclick="reimprimirTicket({{ $mesa->id }}, {{ $orden->id }})">
                     <i class="bi bi-printer"></i> Reimprimir
                 </button>
             </div>
         </div>
     </div>
     @empty
-    <div class="text-center text-muted py-4">
-        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-        <small>Esta mesa no tiene órdenes cerradas</small>
+    <div class="ui-empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Esta mesa no tiene órdenes cerradas</p>
     </div>
     @endforelse
 </div>
