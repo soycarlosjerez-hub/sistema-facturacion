@@ -53,4 +53,16 @@ class DriverEarningDetail extends Model
     {
         return $this->belongsTo(DeliveryDriver::class);
     }
+
+    // Alias para la vista: monto_base = monto_ganancia
+    public function getMontoBaseAttribute()
+    {
+        return $this->monto_ganancia;
+    }
+
+    // Total calculado: ganancia + propina
+    public function getTotalAttribute()
+    {
+        return round(floatval($this->monto_ganancia) + floatval($this->propina), 2);
+    }
 }

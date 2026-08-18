@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DeliveryTracking;
+use App\Services\DriverAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,7 +34,67 @@ class DeliveryTrackingController extends Controller
     {
         $tracking = DeliveryTracking::with(['orden.driver', 'orden.cliente', 'driver', 'creador'])->findOrFail($id);
 
-        return view('delivery-tracking.show', compact('tracking'));
+        // Construir línea de tiempo de eventos basada en el estado del tracking
+        $events = [
+            (object)[
+                'descripcion'   => 'Seguimiento creado',
+                'created_at'    => $tracking->created_at,
+                'completed'     => true,
+                'is_current'    => false,
+                'nota'          => null,
+                'usuario'       => $tracking->creador->name ?? $tracking->creador->email ?? 'Sistema',
+            ],
+            (object)[
+                'descripcion'   => 'En camino',
+                'created_at'    => $tracking->updated_at,
+                'completed'     => false,
+                'is_current'    => $tracking->status === 'en_camino',
+                'nota'          => $tracking->notas ?: null,
+                'usuario'       => $tracking->creador->name ?? $tracking->creador->email ?? 'Sistema',
+            ],
+        ];
+
+        switch ($tracking->status) {
+            case 'entregado':
+                $events[] = (object)[
+                    'descripcion'   => 'Entrega confirmada',
+                    'created_at'    => $tracking->updated_at,
+                    'completed'     => true,
+                    'is_current'    => true,
+                    'nota'          => $tracking->notas ?: null,
+                    'usuario'       => $tracking->creador->name ?? $tracking->creador->email ?? 'Sistema',
+                ];
+                break;
+
+            case 'fallido':
+                $events[] = (object)[
+                    'descripcion'   => 'Entrega fallida',
+                    'created_at'    => $tracking->updated_at,
+                    'completed'     => true,
+                    'is_current'    => true,
+                    'nota'          => $tracking->notas ?: null,
+                    'usuario'       => $tracking->creador->name ?? $tracking->creador->email ?? 'Sistema',
+                ];
+                break;
+
+            case 'cancelado':
+                $events[] = (object)[
+                    'descripcion'   => 'Seguimiento cancelado',
+                    'created_at'    => $tracking->updated_at,
+                    'completed'     => true,
+                    'is_current'    => true,
+                    'nota'          => $tracking->notas ?: null,
+                    'usuario'       => $tracking->creador->name ?? $tracking->creador->email ?? 'Sistema',
+                ];
+                break;
+        }
+
+        // Recalcular "completado" del evento "En camino": si el tracking ya tiene estado final, está completado
+        if (in_array($tracking->status, ['entregado', 'fallido', 'cancelado'])) {
+            $events[1]->completed = true;
+        }
+
+        return view('delivery-tracking.show', compact('tracking', 'events'));
     }
 
     public function store(Request $request)
@@ -127,6 +188,54 @@ class DeliveryTrackingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Entrega confirmada correctamente.',
+        ]);
+    }
+
+    /**
+     * Asigna un delivery driver a una orden
+     */
+    public function asignarDriver(Request $request, $ordenId)
+    {
+        $data = $request->validate([
+            'driver_id' => 'nullable|integer|exists:delivery_drivers,id',
+        ]);
+
+        $result = app(DriverAssignmentService::class)->asignarDriver($ordenId, $data['driver_id'] ?? null);
+
+        if (isset($result['error'])) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['error'],
+            ], $result['code'] ?? 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Driver asignado correctamente.',
+            'data' => [
+                'orden' => $result['orden'],
+                'driver' => $result['driver'],
+            ],
+        ]);
+    }
+
+    /**
+     * Libera la asignación del driver de una orden
+     */
+    public function liberarDriver($ordenId)
+    {
+        $result = app(DriverAssignmentService::class)->liberarDriver($ordenId);
+
+        if (isset($result['error'])) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['error'],
+            ], $result['code'] ?? 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Driver liberado correctamente.',
         ]);
     }
 }

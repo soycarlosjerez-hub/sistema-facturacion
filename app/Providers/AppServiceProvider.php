@@ -22,6 +22,7 @@ use App\Models\User;
 use App\Models\Venta;
 use App\Observers\PlanLimitObserver;
 use App\Policies\BusinessInstancePolicy;
+use App\Policies\BusinessTypePolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\TipoClimaPolicy;
 use App\Policies\InstalacionPolicy;

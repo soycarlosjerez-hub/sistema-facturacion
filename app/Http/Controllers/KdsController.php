@@ -152,4 +152,118 @@ class KdsController extends Controller
 
         return response()->json(['nuevos' => $nuevosMesa + $nuevosOrden]);
     }
+
+    /**
+     * Historial de órdenes servidas/entregadas (últimas 100).
+     */
+    public function historial()
+    {
+        $sucursalId = session('sucursal_id') ?? Auth::user()?->sucursal_id;
+        $corte     = now()->subMinutes(30);
+
+        // ── Mesas: detalles con estado_cocina = 'servido' ─────────────
+        $mesas = Venta::where(function ($q) use ($sucursalId) {
+                $q->where('sucursal_id', $sucursalId)->orWhereNull('sucursal_id');
+            })
+            ->where('estado', 'completada')
+            ->whereHas('detalles', fn($q) => $q
+                ->where('estado_cocina', 'servido')
+                ->where('cocina_updated_at', '>=', $corte)
+                ->whereHas('producto', function ($pq) {
+                    $pq->where('incluir_kds', true)->orWhereNull('incluir_kds');
+                })
+            )
+            ->with([
+                'mesa:id,numero,nombre',
+                'detalles' => fn($q) => $q
+                    ->where('estado_cocina', 'servido')
+                    ->whereHas('producto', function ($pq) {
+                        $pq->where('incluir_kds', true)->orWhereNull('incluir_kds');
+                    })
+                    ->with('producto:id,nombre')
+            ])
+            ->orderByDesc(function ($q) {
+                $q->select('cocina_updated_at')
+                  ->from('venta_detalles')
+                  ->whereColumn('venta_detalles.venta_id', 'ventas.id')
+                  ->where('estado_cocina', 'servido')
+                  ->orderByDesc('cocina_updated_at')
+                  ->limit(1);
+            })
+            ->limit(100)
+            ->get()
+            ->map(function ($v) {
+                $productos = $v->detalles->map(fn($d) => [
+                    'nombre'   => $d->producto?->nombre ?? '—',
+                    'cantidad' => $d->cantidad,
+                    'notas'    => $d->notas,
+                ]);
+
+                $servidoEn = $v->detalles->whereNotNull('cocina_updated_at')
+                    ->max('cocina_updated_at');
+
+                return [
+                    'origen'      => 'mesa',
+                    'id'          => $v->id,
+                    'mesa'        => $v->mesa?->nombre ?? 'Mesa ' . ($v->mesa?->numero ?? '—'),
+                    'total'       => (float) $v->total,
+                    'items_count' => $productos->sum('cantidad'),
+                    'servido_at'  => $servidoEn?->format('d/m/Y h:i A'),
+                    'tiempo'      => $servidoEn?->diffForHumans(null, true),
+                    'productos'   => $productos->toArray(),
+                ];
+            });
+
+        // ── Órdenes API: estado_cocina = 'entregado' ─────────────────
+        $ordenes = Orden::deSucursal()
+            ->where(function ($q) {
+                $q->where('estado', 'entregada')
+                  ->orWhere('estado', 'completada');
+            })
+            ->whereHas('detalles', fn($q) => $q->where('estado_cocina', 'entregado'))
+            ->where(function ($q) use ($corte) {
+                $q->whereHas('detalles', fn($d) => $d->where('cocina_updated_at', '>=', $corte))
+                  ->orWhere('updated_at', '>=', $corte);
+            })
+            ->with([
+                'detalles' => fn($q) => $q->where('estado_cocina', 'entregado')
+                    ->with('producto:id,nombre')
+            ])
+            ->orderByDesc('updated_at')
+            ->limit(100)
+            ->get()
+            ->map(function ($o) {
+                $productos = $o->detalles->map(fn($d) => [
+                    'nombre'   => $d->producto?->nombre ?? '—',
+                    'cantidad' => $d->cantidad,
+                    'notas'    => $d->notas,
+                ]);
+
+                $entregadoEn = $o->detalles->whereNotNull('cocina_updated_at')
+                    ->max('cocina_updated_at');
+
+                return [
+                    'origen'      => 'orden',
+                    'id'          => $o->id,
+                    'tipo_orden'  => $o->tipo_orden,
+                    'cliente'     => $o->cliente?->nombre ?? '—',
+                    'total'       => (float) $o->total,
+                    'items_count' => $productos->sum('cantidad'),
+                    'servido_at'  => $entregadoEn?->format('d/m/Y h:i A'),
+                    'tiempo'      => $entregadoEn?->diffForHumans(null, true),
+                    'productos'   => $productos->toArray(),
+                ];
+            });
+
+        $todo = $mesas->concat($ordenes)->sortByDesc(function ($i) {
+            return strtotime($i['servido_at'] ?? '9999');
+        })->values()->take(100);
+
+        return response()->json([
+            'ordenes' => $todo->toArray(),
+            'total'   => $todo->count(),
+            'total_$' => round($todo->sum('total'), 2),
+            'corte'   => 'Últimos 30 minutos',
+        ]);
+    }
 }

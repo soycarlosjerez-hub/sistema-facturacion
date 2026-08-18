@@ -29,8 +29,7 @@ class UserBusinessService
         }
 
         // Admin-business has restricted roles
-        if ($user->hasRole('admin-business') || 
-            ($businessTypeSlug && $businessTypeSlug === 'while-pone-el-restaurante')) {
+        if ($user->hasRole('admin-business')) {
             return $configRoles['admin-business'] ?? [];
         }
 

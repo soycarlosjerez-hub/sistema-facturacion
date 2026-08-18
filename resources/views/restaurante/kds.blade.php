@@ -153,6 +153,90 @@
         .kds-btn-group { justify-content: flex-start; }
         .kds-count-badge { font-size: .75rem; padding: .45rem .85rem; }
     }
+
+    /* ============================================================
+       Historial — pestaña de órdenes servidas/entregadas
+       ============================================================ */
+    .kds-tab-row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+    .kds-tab-btn {
+        font-size: .82rem; font-weight: 600; padding: .4rem 1rem; border-radius: .5rem;
+        border: 1.5px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08);
+        color: var(--foreground-muted, #64748b); cursor: pointer; transition: all .2s;
+        display: inline-flex; align-items: center; gap: .35rem;
+    }
+    .kds-tab-btn:hover { background: rgba(255,255,255,.16); color: var(--foreground, #0f172a); }
+    .kds-tab-btn.active {
+        background: var(--accent, #10b981); border-color: var(--accent, #10b981);
+        color: #fff; box-shadow: 0 2px 10px rgba(16,185,129,.3);
+    }
+    .kds-tab-btn.active i { font-size: .9rem; }
+    .kds-tab-label { font-size: .72rem; color: var(--foreground-muted, #94a3b8); margin-left: .5rem; }
+
+    /* Tarjetas de historial */
+    .kds-hist-card {
+        border-left: 4px solid #8b5cf6; background: rgba(255,255,255,.45);
+        backdrop-filter: blur(8px); border-radius: .75rem; overflow: hidden;
+        transition: all .2s ease;
+    }
+    .kds-hist-card:hover { box-shadow: 0 4px 20px rgba(139,92,246,.15); transform: translateY(-2px); }
+
+    .kds-hist-head {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: .65rem .85rem; background: rgba(139,92,246,.08);
+        border-bottom: 1px solid rgba(139,92,246,.12);
+    }
+    .kds-hist-head h6 { color: #0f172a; font-size: .85rem; font-weight: 700; margin: 0; }
+    .kds-hist-badge {
+        font-size: .7rem; font-weight: 700; padding: .2rem .6rem; border-radius: 999px;
+        background: rgba(139,92,246,.12); color: #7c3aed;
+        border: 1px solid rgba(139,92,246,.2);
+    }
+    .kds-hist-meta {
+        display: flex; gap: .75rem; padding: .5rem .85rem; font-size: .72rem; color: #64748b;
+        border-bottom: 1px solid rgba(241,245,249,.6);
+    }
+    .kds-hist-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: .3rem .85rem .3rem 2.5rem; font-size: .8rem; color: #334155;
+        border-bottom: 1px solid rgba(241,245,249,.4);
+    }
+    .kds-hist-item:last-child { border-bottom: none; }
+    .kds-hist-item strong { color: #0f172a; font-weight: 600; }
+    .kds-hist-total {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: .5rem .85rem; font-size: .82rem; background: rgba(139,92,246,.04);
+        border-top: 2px dashed rgba(139,92,246,.15);
+    }
+    .kds-hist-total strong { color: #7c3aed; }
+    .kds-hist-tipo {
+        font-size: .62rem; padding: .15rem .45rem; border-radius: 999px;
+        background: rgba(59,130,246,.1); color: #2563eb; font-weight: 600;
+    }
+
+    /* Animación de entrada */
+    .kds-hist-card { animation: uiFadeIn .3s ease both; }
+
+    /* Empty state historial */
+    .kds-hist-empty { border-left-color: #94a3b8; }
+
+    /* Dark mode historial */
+    body.dark-mode .kds-hist-card { background: rgba(15,23,42,.7); border-color: rgba(255,255,255,.08); }
+    body.dark-mode .kds-hist-head { background: rgba(139,92,246,.12); border-bottom-color: rgba(139,92,246,.2); }
+    body.dark-mode .kds-hist-head h6 { color: #f1f5f9; }
+    body.dark-mode .kds-hist-badge { background: rgba(139,92,246,.2); color: #a78bfa; border-color: rgba(139,92,246,.3); }
+    body.dark-mode .kds-hist-meta { color: #94a3b8; border-bottom-color: rgba(255,255,255,.06); }
+    body.dark-mode .kds-hist-item { color: #cbd5e1; border-bottom-color: rgba(255,255,255,.05); }
+    body.dark-mode .kds-hist-item strong { color: #f1f5f9; }
+    body.dark-mode .kds-hist-total { background: rgba(139,92,246,.08); border-top-color: rgba(139,92,246,.2); }
+    body.dark-mode .kds-hist-total strong { color: #a78bfa; }
+    body.dark-mode .kds-hist-tipo { background: rgba(59,130,246,.2); color: #60a5fa; }
+
+    /* Responsivo historial */
+    @media (max-width: 575.98px) {
+        .kds-hist-card { font-size: .78rem; }
+        .kds-hist-item { padding-left: .85rem; }
+        .kds-tab-btn { font-size: .75rem; padding: .35rem .75rem; }
+    }
 </style>
 @endpush
 @section('content')
@@ -177,7 +261,17 @@
                 </div>
             </div>
             <div class="ui-header-actions">
-                <span class="badge kds-count-badge rounded-pill" id="kds-count">0 pendientes</span>
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="kds-tab-row">
+                        <button class="kds-tab-btn active" data-tab="active" onclick="mostrarTabKds('active')">
+                            <i class="bi bi-fire"></i> Activas
+                        </button>
+                        <button class="kds-tab-btn" data-tab="historial" onclick="mostrarTabKds('historial')">
+                            <i class="bi bi-clock-history"></i> Historial
+                        </button>
+                    </div>
+                    <span class="badge kds-count-badge rounded-pill" id="kds-count">0 pendientes</span>
+                </div>
                 <button class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" onclick="limpiarKds()">
                     <i class="bi bi-eraser me-1"></i> Limpiar
                 </button>
@@ -188,6 +282,23 @@
         </div>
     </div>
     <div class="row g-3" id="kds-orders"></div>
+
+    <!-- Historial -->
+    <div id="kds-historial-section" style="display:none;">
+        <div class="ui-card mb-3" style="background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);">
+            <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-time-history" style="color:#8b5cf6;"></i>
+                    <strong style="color:#0f172a;">Órdenes servidas / entregadas</strong>
+                    <span class="kds-tab-label" id="kds-hist-count">0 órdenes · RD$ 0.00</span>
+                </div>
+                <button class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill" onclick="cargarHistorial()" style="font-size:.72rem;">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+                </button>
+            </div>
+        </div>
+        <div class="row g-3" id="kds-historial"></div>
+    </div>
 </div>
 <script>
 let kdsUltimoConteo = 0;
@@ -364,5 +475,119 @@ document.addEventListener('DOMContentLoaded', function () {
     cargarKds();
     setInterval(cargarKds, 10000);
 });
+
+/* ============================================================
+   Historial — pestaña de órdenes servidas/entregadas
+   ============================================================ */
+function mostrarTabKds(tab) {
+    const ordersDiv  = document.getElementById('kds-orders');
+    const histSection = document.getElementById('kds-historial-section');
+    const btns        = document.querySelectorAll('.kds-tab-btn');
+
+    btns.forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tab);
+    });
+
+    if (tab === 'active') {
+        ordersDiv.style.display = '';
+        histSection.style.display = 'none';
+    } else {
+        ordersDiv.style.display = 'none';
+        histSection.style.display = '';
+        if (!window._kdsHistorialCargado) {
+            cargarHistorial();
+            window._kdsHistorialCargado = true;
+        }
+    }
+}
+
+function cargarHistorial() {
+    fetch('{{ route("restaurante.kds.historial") }}')
+        .then(r => r.json())
+        .then(function(data) {
+            const ordenes = data.ordenes || [];
+            const total   = data.total || 0;
+            const totalM  = data['total$'] ?? data['total_$'] ?? 0;
+
+            // Actualizar resumen
+            const countEl = document.getElementById('kds-hist-count');
+            if (countEl) {
+                countEl.textContent = total + ' órdenes · Rd$ ' + renderMoneda(totalM);
+            }
+
+            const container = document.getElementById('kds-historial');
+            if (ordenes.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="ui card kds-hist-card kds-hist-empty" style="max-width:560px;margin:2rem auto;text-align:center;">
+                            <div class="card-body py-5">
+                                <i class="bi bi-inbox" style="font-size:2.5rem;color:#cbd5e1;"></i>
+                                <p class="text-muted mt-3 mb-0">No hay órdenes servidas en el último período</p>
+                            </div>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = ordenes.map(function(o, idx) {
+                const esMesa = o.origen === 'mesa';
+                const titulo = esMesa
+                    ? (o.mesa || 'Mesa —')
+                    : ('Orden #' + o.id + (o.tipo_orden ? ' · ' + o.tipo_orden : ''));
+
+                let subInfo = '';
+                if (!esMesa && o.cliente && o.cliente !== '—') {
+                    subInfo = ' · Cliente: ' + o.cliente;
+                } else if (esMesa && o.mesa) {
+                    subInfo = ' · ' + o.mesa;
+                }
+
+                let tipoBadge = '';
+                if (!esMesa) {
+                    tipoBadge = o.tipo_orden ? `<span class="kds-hist-tipo">${o.tipo_orden}</span>` : '';
+                }
+
+                const productosHtml = o.productos.map(function(p) {
+                    return `
+                        <div class="kds-hist-item">
+                            <span><strong>${p.cantidad}x</strong> ${p.nombre}</span>
+                            ${p.notas ? '<small class="text-muted fst-italic">📝 ' + p.notas + '</small>' : ''}
+                        </div>`;
+                }).join('');
+
+                return `
+                <div class="col-xl-3 col-lg-4 col-md-6" style="animation-delay:${(idx % 8) * .05}s;">
+                    <div class="kds-hist-card">
+                        <div class="kds-hist-head">
+                            <div>
+                                <h6>${titulo}</h6>
+                                ${subInfo ? '<small class="kds-card-meta">' + subInfo + '</small>' : ''}
+                            </div>
+                            <span class="kds-hist-badge">${esMesa ? '🍽 Mesa' : '🛵 Entrega'}</span>
+                        </div>
+                        <div class="kds-hist-meta">
+                            <div><i class="bi bi-clock me-1"></i>${o.servido_at || '—'}</div>
+                            <div><i class="bi bi-hourglass-split me-1"></i>${o.tiempo || '-'}</div>
+                            ${tipoBadge ? '<div>' + tipoBadge + '</div>' : ''}
+                        </div>
+                        <div>${productosHtml}</div>
+                        <div class="kds-hist-total">
+                            <span class="fw-medium">${o.items_count} artículo(s)</span>
+                            <strong>Rd$ ${renderMoneda(o.total)}</strong>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        })
+        .catch(function(err) {
+            console.error('Error cargando historial KDS:', err);
+            document.getElementById('kds-historial').innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger py-2 mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Error al cargar el historial
+                    </div>
+                </div>`;
+        });
+}
 </script>
 @endsection

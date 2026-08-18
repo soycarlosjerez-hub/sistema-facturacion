@@ -44,4 +44,30 @@ class DriverEarning extends Model
     {
         return $this->hasMany(DriverEarningDetail::class);
     }
+
+    // Accesor: suma de ganancias de todos los detalles (equivalente al 'base' por entrega)
+    public function getMontoBaseAttribute()
+    {
+        return $this->attributes['monto_base']
+            ?? ($this->details?->sum('monto_ganancia') ?? 0);
+    }
+
+    // Accesor: suma de propinas de todos los detalles
+    public function getPropinasAttribute()
+    {
+        return $this->attributes['propinas']
+            ?? ($this->details?->sum('propina') ?? 0);
+    }
+
+    // Accesor: comisión de plataforma (no se registra, siempre 0)
+    public function getComisionPlataformaAttribute()
+    {
+        return 0;
+    }
+
+    // Accesor: nota (no existe en la tabla, siempre vacío)
+    public function getNotaAttribute()
+    {
+        return '';
+    }
 }

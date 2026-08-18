@@ -38,8 +38,9 @@ class DriverEarningsController extends Controller
     public function show($id)
     {
         $earning = DriverEarning::with(['driver', 'details.orden', 'details.venta'])->findOrFail($id);
+        $details = $earning->details;
 
-        return view('driver-earnings.show', compact('earning'));
+        return view('driver-earnings.show', compact('earning', 'details'));
     }
 
     public function store(Request $request)

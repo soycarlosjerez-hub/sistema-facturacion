@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Roles disponibles por tipo de negocio.
+ *
+ * Cada tipo tiene 3 niveles de roles (owner, root, admin-business) y
+ * una lista de roles específicos del tipo. Cuando un tipo no tiene
+ * módulo especializado (ej. embutidos), se usan los roles genéricos.
+ *
+ * Uso: config('business_type_roles.restaurante')
+ */
 return [
     'restaurante' => [
         'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
@@ -31,15 +40,25 @@ return [
         'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'reponedor', 'instance-admin'],
         'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'reponedor', 'instance-admin'],
     ],
-    'while-pone-el-restaurante' => [
-        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
-        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
-        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'mesero', 'cocinero', 'delivery', 'bartender', 'cajero', 'instance-admin'],
+    'climatizacion' => [
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'tecnico', 'vendedor-tecnico', 'cotizador', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'tecnico', 'vendedor-tecnico', 'cotizador', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'tecnico', 'vendedor-tecnico', 'cotizador', 'instance-admin'],
+    ],
+    'tecnologia' => [
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'instance-admin'],
     ],
     'mecanica' => [
         'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
         'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
         'admin-business' => ['gerente', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
+    ],
+    'arte_escultura' => [
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'curador', 'artista', 'logista', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'curador', 'artista', 'logista', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'curador', 'artista', 'logista', 'instance-admin'],
     ],
     'embutidos' => [
         'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'cajero', 'reponedor', 'instance-admin'],
