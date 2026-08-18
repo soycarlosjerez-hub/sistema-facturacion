@@ -18,7 +18,11 @@ class KdsController extends Controller
     public function orders()
     {
         // Órdenes de mesa (terminal de mesas) — solo las enviadas a cocina
-        $mesas = Venta::deSucursal()->whereIn('estado', ['abierta', 'completada'])
+        $sucursalId = session('sucursal_id') ?? Auth::user()?->sucursal_id;
+        $mesas = Venta::whereIn('estado', ['abierta', 'completada'])
+            ->when($sucursalId, fn($q) => $q->where(function ($w) use ($sucursalId) {
+                $w->where('sucursal_id', $sucursalId)->orWhereNull('sucursal_id');
+            }))
             ->whereHas('detalles', fn($q) => $q
                 ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
                 ->whereHas('producto', fn($pq) => $pq->where('incluir_kds', true)))
@@ -111,7 +115,7 @@ class KdsController extends Controller
     public function limpiar()
     {
         $afectadosMesa = VentaDetalle::whereIn('estado_cocina', ['pendiente', 'preparando', 'listo'])
-            ->whereHas('venta', fn($q) => $q->deSucursal()->whereIn('estado', ['abierta', 'completada']))
+            ->whereHas('venta', fn($q) => $q->whereIn('estado', ['abierta', 'completada']))
             ->update([
                 'estado_cocina'     => 'servido',
                 'cocina_updated_at' => now(),
@@ -131,7 +135,7 @@ class KdsController extends Controller
     {
         $nuevosMesa = VentaDetalle::where('estado_cocina', 'pendiente')
             ->where('cocina_updated_at', '>=', now()->subMinutes(5))
-            ->whereDoesntHave('venta', fn($q) => $q->whereIn('estado', ['anulada'])->deSucursal())
+            ->whereDoesntHave('venta', fn($q) => $q->whereIn('estado', ['anulada']))
             ->whereHas('producto', fn($q) => $q->where('incluir_kds', true))
             ->count();
 
