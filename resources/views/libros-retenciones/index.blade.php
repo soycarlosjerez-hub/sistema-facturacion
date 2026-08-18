@@ -198,7 +198,7 @@ body.dark-mode .nav-tabs-custom .nav-link:hover:not(.active) { color:#a78bfa;bac
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($compras as $i => $c)
+                    @foreach($compras as $i => $c)
                     <tr>
                         <td class="ps-4 font-monospace small">{{ $compras->firstItem() + $i }}</td>
                         <td><small>{{ $c->fecha?->format('d/m/Y') ?? '' }}</small></td>
@@ -210,14 +210,7 @@ body.dark-mode .nav-tabs-custom .nav-link:hover:not(.active) { color:#a78bfa;bac
                         <td class="text-end text-warning">RD$ {{ number_format($c->retencion_itbis ?? 0, 2) }}</td>
                         <td class="text-end pe-4 fw-bold">RD$ {{ number_format(($c->retencion_isr ?? 0) + ($c->retencion_itbis ?? 0), 2) }}</td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="9" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            Sin retenciones en compras para este período
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -290,7 +283,7 @@ body.dark-mode .nav-tabs-custom .nav-link:hover:not(.active) { color:#a78bfa;bac
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($ventas as $i => $v)
+                    @foreach($ventas as $i => $v)
                     <tr>
                         <td class="ps-4 font-monospace small">{{ $ventas->firstItem() + $i }}</td>
                         <td><small>{{ $v->created_at?->format('d/m/Y') ?? '' }}</small></td>
@@ -301,14 +294,7 @@ body.dark-mode .nav-tabs-custom .nav-link:hover:not(.active) { color:#a78bfa;bac
                         <td class="text-end text-warning">RD$ {{ number_format($v->retencion_itbis ?? 0, 2) }}</td>
                         <td class="text-end pe-4 fw-bold">RD$ {{ number_format(($v->retencion_isr ?? 0) + ($v->retencion_itbis ?? 0), 2) }}</td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                            Sin retenciones en ventas para este período
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -328,7 +314,10 @@ $(document).ready(function() {
         responsive: true,
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
+            emptyTable: 'Sin retenciones en compras para este período'
+        },
         columnDefs: [{ orderable: false, targets: [4,5,6,7,8] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
@@ -336,7 +325,10 @@ $(document).ready(function() {
         responsive: true,
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
+            emptyTable: 'Sin retenciones en ventas para este período'
+        },
         columnDefs: [{ orderable: false, targets: [4,5,6,7] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });

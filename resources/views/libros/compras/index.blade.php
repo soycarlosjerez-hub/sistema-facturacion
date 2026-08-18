@@ -187,7 +187,7 @@ body.dark-mode #comprasTable tfoot td { background:rgba(15,23,42,.6);border-top-
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($compras as $i => $c)
+                    @foreach($compras as $i => $c)
                     <tr>
                         <td class="ps-4 font-monospace small">{{ $compras->firstItem() + $i }}</td>
                         <td><small>{{ $c->fecha->format('d/m/Y') }}</small></td>
@@ -200,14 +200,7 @@ body.dark-mode #comprasTable tfoot td { background:rgba(15,23,42,.6);border-top-
                         <td class="text-end fw-bold">RD$ {{ number_format($c->total, 2) }}</td>
                         <td class="text-end pe-4">RD$ {{ number_format($c->total_neto ?? $c->total, 2) }}</td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="10" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1"></i>
-                            <p class="mt-2 mb-0">No hay compras registradas en este período</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -226,8 +219,11 @@ $(document).ready(function() {
         responsive: true,
         pageLength: 25,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Todos']],
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' },
-        columnDefs: [{ orderable: false, targets: [0, 1, 2, 3, 9] }],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json',
+            emptyTable: 'No hay compras registradas en este período'
+        },
+        columnDefs: [{ orderable: false, targets: [4,5,6,7,8,9] }],
         dom: '<"d-flex flex-wrap justify-content-between align-items-center"lf>t<"d-flex flex-wrap justify-content-between align-items-center"ip>',
     });
 });
