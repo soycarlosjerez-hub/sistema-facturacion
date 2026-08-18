@@ -71,6 +71,7 @@
                                         <span class="fw-bold text-success small">EFECTIVO ESPERADO EN CAJA:</span>
                                         <span class="fs-5 fw-bold text-success">RD${{ number_format($totalEsperado, 2) }}</span>
                                     </div>
+                                    <input type="hidden" name="total_esperado" value="{{ $totalEsperado }}">
                                 </div>
                             </div>
                             
