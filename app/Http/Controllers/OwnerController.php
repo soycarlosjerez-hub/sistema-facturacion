@@ -777,6 +777,8 @@ class OwnerController extends Controller
             'backup_completed' => 'nullable|boolean',
             'backup_failed' => 'nullable|boolean',
             'user_registered' => 'nullable|boolean',
+            'subscription_expiring' => 'nullable|boolean',
+            'subscription_suspended' => 'nullable|boolean',
         ]);
 
         $data['restaurante_valida_stock'] = $request->has('restaurante_valida_stock') ? '1' : '0';
@@ -795,6 +797,7 @@ class OwnerController extends Controller
             'shift_opened', 'shift_closed', 'cash_shortage', 'daily_report',
             'ncff_expiring', 'ecf_certificate_expiring',
             'backup_completed', 'backup_failed', 'user_registered',
+            'subscription_expiring', 'subscription_suspended',
         ])->toArray();
 
         InstanceNotificationSetting::updateOrCreate(
@@ -933,6 +936,53 @@ class OwnerController extends Controller
 
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Pago registrado correctamente.');
+    }
+
+    /**
+     * Confirma un pago reportado por el cliente desde el portal de suscripción.
+     */
+    public function confirmPayment($id, $pagoId)
+    {
+        $instance = BusinessInstance::with('plan')->findOrFail($id);
+
+        $pago = PagoInstancia::where('business_instance_id', $instance->id)
+            ->where('id', $pagoId)
+            ->where('estado_pago', 'pendiente')
+            ->firstOrFail();
+
+        $pago->update([
+            'estado_pago' => 'completado',
+            'fecha_pago' => now(),
+            'notas' => ($pago->notas ? $pago->notas . ' | ' : '') . 'Pago confirmado por ' . auth()->user()->name,
+            'registrado_por' => auth()->id(),
+        ]);
+
+        $nuevoVencimiento = $pago->mes_pagado?->startOfMonth()->addMonth() ?? now()->addMonth();
+        $unblocked = $instance->bloqueado;
+
+        $instance->update([
+            'fecha_vencimiento' => $nuevoVencimiento,
+            'bloqueado' => false,
+            'motivo_bloqueo' => null,
+            'bloqueado_en' => null,
+        ]);
+
+        $this->logOwnerAction(
+            'PAYMENT_CONFIRM',
+            "Pago de RD$ " . number_format($pago->monto, 2) . " confirmado para la instancia '{$instance->nombre}' (mes " . $pago->mes_pagado?->format('m/Y') . ').',
+            null,
+            ['pago_id' => $pago->id, 'monto' => $pago->monto],
+            $instance
+        );
+
+        try {
+            app(\App\Services\BillingNotificationService::class)->pagoConfirmado($instance, $pago);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('confirmPayment: no se pudo notificar el pago: ' . $e->getMessage());
+        }
+
+        return redirect()->route('owner.instances.pagos', $instance->id)
+            ->with('success', 'Pago confirmado correctamente.' . ($unblocked ? ' La instancia fue desbloqueada.' : ''));
     }
 
     public function instanceUserCreate($id)
@@ -1390,10 +1440,10 @@ class OwnerController extends Controller
 
     private function getMesesDisponibles(BusinessInstance $instance): array
     {
-        $ultimo = $instance->ultimoPago()->first();
+        $ultimo = $instance->ultimoPagoConfirmado()->first();
         $desde = $ultimo
             ? $ultimo->mes_pagado->startOfMonth()->addMonth()
-            : $instance->created_at->startOfMonth();
+            : ($instance->trial_ends_at ?? $instance->created_at)->startOfMonth();
 
         $meses = [];
         $actual = now()->startOfMonth();

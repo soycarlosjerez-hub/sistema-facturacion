@@ -2,17 +2,21 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\SubscriptionSuspendedMail;
 use App\Models\BusinessInstance;
 use App\Models\InstanceErrorLog;
+use App\Services\BillingNotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class BillingVerify extends Command
 {
     protected $signature = 'billing:verificar {--dry-run : Muestra qué instancias serían bloqueadas sin ejecutar el bloqueo}';
-    protected $description = 'Verifica las suscripciones y bloquea automáticamente las instancias con pagos vencidos';
+    protected $description = 'Verifica las suscripciones, envía recordatorios y bloquea automáticamente las instancias con pagos vencidos';
+
+    public function __construct(protected BillingNotificationService $billing)
+    {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -23,18 +27,19 @@ class BillingVerify extends Command
             ->get();
 
         $blocked = 0;
-        $skipped = 0;
+        $reminders = 0;
         $dryRun = (bool) $this->option('dry-run');
 
         foreach ($instances as $instance) {
             try {
+                $reminders += $this->sendReminders($instance);
+
                 if (! $instance->bloqueablePorImpago()) {
                     continue;
                 }
 
                 if ($dryRun) {
                     $this->line("  [DRY-RUN] Se bloquearía: {$instance->nombre} (deuda: RD\$" . number_format($instance->deudaEstimada(), 2) . ')');
-                    $skipped++;
                     continue;
                 }
 
@@ -53,7 +58,7 @@ class BillingVerify extends Command
                     'tenant_id' => null,
                 ]);
 
-                $this->sendSuspensionNotification($instance);
+                $this->billing->suspension($instance);
                 $blocked++;
             } catch (\Throwable $e) {
                 Log::error('billing:verificar — error procesando instancia ' . $instance->id . ': ' . $e->getMessage());
@@ -67,25 +72,64 @@ class BillingVerify extends Command
             }
         }
 
-        $this->info("Proceso completado. Instancias bloqueadas: {$blocked}." . ($dryRun ? " (DRY-RUN, no se ejecutó ningún cambio)" : ''));
+        $this->info("Proceso completado. Recordatorios enviados: {$reminders}. Instancias bloqueadas: {$blocked}." . ($dryRun ? " (DRY-RUN, no se ejecutó ningún cambio)" : ''));
 
         return Command::SUCCESS;
     }
 
-    private function sendSuspensionNotification(BusinessInstance $instance): void
+    private function sendReminders(BusinessInstance $instance): int
     {
-        $recipients = collect([$instance->owner_email])
-            ->merge($instance->users()->pluck('email'))
-            ->filter()
-            ->unique()
-            ->take(3);
+        $sent = 0;
 
-        foreach ($recipients as $email) {
-            try {
-                Mail::to($email)->send(new SubscriptionSuspendedMail($instance));
-            } catch (\Throwable $e) {
-                Log::warning("billing:verificar — no se pudo notificar a {$email}: " . $e->getMessage());
+        if ($instance->enPeriodoPrueba()) {
+            $dias = $instance->diasPruebaRestantes();
+
+            if ($dias === 3 && $this->marcar($instance, 'billing_trial_3')) {
+                $this->billing->recordatorioPrueba($instance);
+                $this->line("  [OK] Recordatorio de prueba (3 días) → {$instance->nombre}");
+                $sent++;
+            }
+
+            if ($dias === 1 && $this->marcar($instance, 'billing_trial_1')) {
+                $this->billing->recordatorioPrueba($instance);
+                $this->line("  [OK] Recordatorio de prueba (1 día) → {$instance->nombre}");
+                $sent++;
+            }
+
+            return $sent;
+        }
+
+        if ($instance->estaAlDia() && $instance->ultimoPagoConfirmado()->exists()) {
+            $proximo = $instance->proximoPagoEsperado();
+            if ($proximo) {
+                $diasParaVencer = max(0, (int) now()->startOfDay()->diffInDays($proximo->copy()->startOfDay()));
+                $marker = 'billing_renewal_' . $proximo->format('Y-m');
+
+                if ($diasParaVencer === 3 && $this->marcar($instance, $marker)) {
+                    $this->billing->recordatorioRenovacion($instance);
+                    $this->line("  [OK] Recordatorio de renovación → {$instance->nombre}");
+                    $sent++;
+                }
             }
         }
+
+        return $sent;
+    }
+
+    /**
+     * Marca un hito de facturación en la configuración JSON de la instancia.
+     * Devuelve true si la marca es nueva (permite enviar la notificación una sola vez).
+     */
+    private function marcar(BusinessInstance $instance, string $key): bool
+    {
+        $cfg = $instance->configuracion ?? [];
+        if (array_key_exists($key, $cfg)) {
+            return false;
+        }
+
+        $cfg[$key] = now()->toDateString();
+        $instance->update(['configuracion' => $cfg]);
+
+        return true;
     }
 }

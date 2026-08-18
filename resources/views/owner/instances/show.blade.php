@@ -47,11 +47,14 @@
                 <div>
                     <h4 class="ui-header-title">
                         {{ $instance->nombre }}
+                        @php $subEstado = $instance->estadoSuscripcion(); @endphp
                         @if(!$instance->activo)
                             <span class="ui-badge ui-badge-neutral" style="font-size:.65rem;margin-left:.5rem;">Inactiva</span>
-                        @elseif($instance->bloqueado)
-                            <span class="ui-badge ui-badge-danger" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-lock-fill me-1"></i>Bloqueada</span>
-                        @elseif($instance->estaAlDia())
+                        @elseif($subEstado === 'suspendida')
+                            <span class="ui-badge ui-badge-danger" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-lock-fill me-1"></i>Suspendida</span>
+                        @elseif($subEstado === 'prueba')
+                            <span class="ui-badge ui-badge-primary" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-rocket-takeoff me-1"></i>Prueba — termina {{ optional($instance->trial_ends_at)->format('d/m/Y') }}</span>
+                        @elseif($subEstado === 'activa')
                             <span class="ui-badge ui-badge-success" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
                         @else
                             <span class="ui-badge ui-badge-warning" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es) atrasado</span>

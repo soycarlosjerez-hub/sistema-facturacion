@@ -82,6 +82,8 @@ class RegisteredUserController extends Controller
                 ]);
                 $user->assignRole('admin-business');
 
+                $trialEnds = now()->addDays((int) config('system.suscripcion.trial_days', 15));
+
                 $instance = BusinessInstance::create([
                     'nombre' => $data['negocio_nombre'],
                     'slug' => $this->uniqueSlug($data['negocio_nombre']),
@@ -95,7 +97,9 @@ class RegisteredUserController extends Controller
                     'owner_email' => $data['email'],
                     'owner_nombre' => $data['name'],
                     'costo_mensual' => $plan->precio_mensual,
-                    'fecha_vencimiento' => now()->addMonth(),
+                    'fecha_vencimiento' => $trialEnds,
+                    'trial_started_at' => now(),
+                    'trial_ends_at' => $trialEnds,
                     'activo' => true,
                     'setup_completed' => false,
                     'configuracion' => [],
@@ -115,7 +119,7 @@ class RegisteredUserController extends Controller
                     'metodo_pago' => 'transferencia',
                     'referencia_externa' => 'REGISTRO-AUTOSERVICIO',
                     'estado_pago' => 'pendiente',
-                    'notas' => 'Registro autoservicio — pendiente de confirmación (implementación + primer mes)',
+                    'notas' => 'Registro autoservicio — implementación + primer mes pendientes de pago (periodo de prueba activo)',
                     'registrado_por' => $user->id,
                 ]);
 
@@ -135,6 +139,12 @@ class RegisteredUserController extends Controller
                 $user->update([
                     'instance_role_id' => $adminRole->id,
                 ]);
+
+                try {
+                    app(\App\Services\BillingNotificationService::class)->bienvenida($instance);
+                } catch (\Throwable $e) {
+                    Log::warning('No se pudo enviar la bienvenida de suscripción: ' . $e->getMessage());
+                }
             });
         } catch (\Throwable $e) {
             Log::error('Error al registrar instancia por autoservicio', [

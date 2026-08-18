@@ -772,6 +772,47 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                 </div>
             </header>
 
+            @php
+                $subBannerUser = auth()->user();
+                $subBannerInstance = ($subBannerUser && $subBannerUser->business_instance_id && ! $subBannerUser->hasRole('owner') && ! $subBannerUser->hasRole('root'))
+                    ? $subBannerUser->businessInstance
+                    : null;
+                $subBannerEstado = $subBannerInstance ? $subBannerInstance->estadoSuscripcion() : null;
+            @endphp
+            @if($subBannerInstance && $subBannerEstado !== 'activa')
+                @php
+                    $bannerCfg = [
+                        'prueba' => ['icon' => 'bi-rocket-takeoff', 'color' => 'info',
+                            'titulo' => 'Estás en tu periodo de prueba gratuita',
+                            'texto' => 'Tu prueba termina el ' . optional($subBannerInstance->trial_ends_at)->format('d/m/Y') . '. Quedan ' . $subBannerInstance->diasPruebaRestantes() . ' día(s). Paga tu suscripción para no interrumpir el servicio.',
+                            'btn' => 'Ver Suscripción'],
+                        'atrasada' => ['icon' => 'bi-exclamation-triangle-fill', 'color' => 'warning',
+                            'titulo' => 'Tu suscripción está vencida',
+                            'texto' => 'Debes pagar RD$ ' . number_format($subBannerInstance->deudaEstimada(), 2) . ' para continuar usando el sistema.',
+                            'btn' => 'Pagar Ahora'],
+                        'suspendida' => ['icon' => 'bi-lock-fill', 'color' => 'danger',
+                            'titulo' => 'Suscripción suspendida',
+                            'texto' => 'Tu acceso ha sido restringido por falta de pago. Regulariza tu mensualidad para desbloquear el sistema.',
+                            'btn' => 'Regularizar Pago'],
+                    ];
+                    $cfg = $bannerCfg[$subBannerEstado] ?? null;
+                @endphp
+                @if($cfg)
+                <div class="px-4 px-lg-5 pt-3">
+                    <div class="alert alert-{{ $cfg['color'] }} d-flex flex-wrap align-items-center gap-3 rounded-4 shadow-sm mb-0">
+                        <i class="bi {{ $cfg['icon'] }} fs-3"></i>
+                        <div class="flex-grow-1">
+                            <strong>{{ $cfg['titulo'] }}.</strong>
+                            <span class="d-block small">{{ $cfg['texto'] }}</span>
+                        </div>
+                        <a href="{{ route('suscripcion.index') }}" class="btn btn-{{ $cfg['color'] }} btn-sm rounded-pill px-3 fw-bold">
+                            <i class="bi bi-credit-card me-1"></i>{{ $cfg['btn'] }}
+                        </a>
+                    </div>
+                </div>
+                @endif
+            @endif
+
             @hasSection('fullbleed')
                 @yield('fullbleed')
             @else

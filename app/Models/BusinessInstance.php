@@ -29,6 +29,8 @@ class BusinessInstance extends Model
         'configuracion',
         'activo',
         'fecha_vencimiento',
+        'trial_started_at',
+        'trial_ends_at',
         'costo_mensual',
         'bloqueado',
         'motivo_bloqueo',
@@ -43,6 +45,8 @@ class BusinessInstance extends Model
         'bloqueado' => 'boolean',
         'setup_completed' => 'boolean',
         'fecha_vencimiento' => 'datetime',
+        'trial_started_at' => 'datetime',
+        'trial_ends_at' => 'datetime',
         'bloqueado_en' => 'datetime',
         'costo_mensual' => 'decimal:2',
         'deleted_at' => 'datetime',
@@ -97,6 +101,17 @@ class BusinessInstance extends Model
         return $this->hasOne(PagoInstancia::class, 'business_instance_id')->latestOfMany('mes_pagado');
     }
 
+    /**
+     * Último pago confirmado (completado/pagado). Los pagos pendientes NO
+     * mantienen la suscripción al día.
+     */
+    public function ultimoPagoConfirmado(): HasOne
+    {
+        return $this->hasOne(PagoInstancia::class, 'business_instance_id')
+            ->whereIn('estado_pago', ['completado', 'pagado'])
+            ->latestOfMany('mes_pagado');
+    }
+
     public function modules(): HasMany
     {
         return $this->hasMany(BusinessInstanceModule::class);
@@ -144,30 +159,112 @@ class BusinessInstance extends Model
         return (int) config('system.suscripcion.grace_days', 3);
     }
 
+    public function trialDays(): int
+    {
+        return (int) config('system.suscripcion.trial_days', 15);
+    }
+
+    /**
+     * ¿La instancia está dentro de su periodo de prueba (15 días) y aún no
+     * tiene ningún pago confirmado?
+     */
+    public function enPeriodoPrueba(): bool
+    {
+        if (!$this->trial_started_at) {
+            return false;
+        }
+
+        if ($this->ultimoPagoConfirmado()->exists()) {
+            return false;
+        }
+
+        $ends = $this->trial_ends_at
+            ? $this->trial_ends_at
+            : $this->trial_started_at->copy()->addDays($this->trialDays());
+
+        return now()->lessThan($ends);
+    }
+
+    public function diasPruebaRestantes(): int
+    {
+        if (!$this->trial_ends_at || $this->trial_ends_at->lte(now())) {
+            return 0;
+        }
+
+        return max(0, (int) now()->startOfDay()->diffInDays($this->trial_ends_at->copy()->startOfDay()));
+    }
+
+    /**
+     * Estado de la suscripción para UI: prueba | activa | atrasada | suspendida.
+     */
+    public function estadoSuscripcion(): string
+    {
+        if ($this->bloqueado) {
+            return 'suspendida';
+        }
+
+        if (!$this->ultimoPagoConfirmado()->exists() && $this->enPeriodoPrueba()) {
+            return 'prueba';
+        }
+
+        if ($this->estaAlDia()) {
+            return 'activa';
+        }
+
+        return 'atrasada';
+    }
+
     public function estaAlDia(): bool
     {
         if ($this->bloqueado) {
             return false;
         }
 
-        return $this->proximoPagoEsperado()->startOfDay()
-            ->addDays($this->graceDays())
-            ->gte(now()->startOfDay());
+        $ultimo = $this->ultimoPagoConfirmado()->first();
+        if ($ultimo) {
+            return $this->proximoPagoEsperado()->startOfDay()
+                ->addDays($this->graceDays())
+                ->gte(now()->startOfDay());
+        }
+
+        // Sin pagos confirmados: durante la prueba el sistema sigue activo.
+        if ($this->enPeriodoPrueba()) {
+            return true;
+        }
+
+        // Instancias legacy (sin prueba) con vencimiento futuro explícito.
+        if ($this->trial_ends_at === null && $this->fecha_vencimiento) {
+            return $this->fecha_vencimiento->startOfDay()->gte(now()->startOfDay());
+        }
+
+        return false;
     }
 
+    /**
+     * Meses atrasados calculados desde el primer mes sin pagar (pagos confirmados
+     * o fin de la prueba).
+     */
     public function mesesAtrasados(): int
     {
         if ($this->estaAlDia()) {
             return 0;
         }
 
-        $ultimo = $this->ultimoPago()->first();
-        if (!$ultimo) {
-            $creado = $this->created_at ? $this->created_at->startOfMonth() : now()->startOfMonth()->subMonth();
-            return (int) $creado->diffInMonths(now()->startOfMonth()) + 1;
+        $ultimo = $this->ultimoPagoConfirmado()->first();
+        if ($ultimo) {
+            $base = $ultimo->mes_pagado->startOfMonth()->addMonth();
+        } elseif ($this->trial_ends_at) {
+            $base = $this->trial_ends_at->startOfMonth()->addMonth();
+        } else {
+            $base = ($this->fecha_vencimiento ?: $this->created_at)->startOfMonth()->addMonth();
         }
-        $siguiente = $ultimo->mes_pagado->startOfMonth()->addMonth();
-        return max(0, (int) $siguiente->diffInMonths(now()->startOfMonth()));
+
+        $now = now()->startOfMonth();
+        if ($base->gt($now)) {
+            return 0;
+        }
+
+        return max(0, (int) $base->diffInMonths($now) + 1);
     }
 
     public function deudaEstimada(): float
@@ -175,15 +272,25 @@ class BusinessInstance extends Model
         if (!$this->precioMensual()) {
             return 0;
         }
+
         return $this->mesesAtrasados() * $this->precioMensual();
     }
 
     public function proximoPagoEsperado(): ?Carbon
     {
-        $ultimo = $this->ultimoPago()->first();
+        $ultimo = $this->ultimoPagoConfirmado()->first();
         if ($ultimo) {
             return $ultimo->mes_pagado->startOfMonth()->addMonth();
         }
+
+        if ($this->trial_ends_at) {
+            return $this->trial_ends_at->copy();
+        }
+
+        if ($this->fecha_vencimiento) {
+            return $this->fecha_vencimiento->copy();
+        }
+
         return $this->created_at->startOfMonth();
     }
 
@@ -213,10 +320,10 @@ class BusinessInstance extends Model
     {
         return $query->where('activo', true)
             ->where('bloqueado', false)
-            ->whereHas('ultimoPago', function ($q) {
+            ->whereHas('ultimoPagoConfirmado', function ($q) {
                 $q->where('mes_pagado', '<', now()->startOfMonth());
             })
-            ->orWhereDoesntHave('ultimoPago');
+            ->orWhereDoesntHave('ultimoPagoConfirmado');
     }
 
     public function scopeBloqueadas($query)

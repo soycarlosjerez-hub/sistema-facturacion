@@ -43,8 +43,9 @@
                         <th>Monto</th>
                         <th>M&eacute;todo</th>
                         <th>Fecha de Pago</th>
+                        <th>Estado</th>
                         <th>Registrado por</th>
-                        <th class="pe-4">Notas</th>
+                        <th class="pe-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,12 +56,30 @@
                         <td>{{ $systemMoneda ?? 'RD$' }} {{ number_format($pago->monto, 2) }}</td>
                         <td>{{ $pago->metodo_pago ?? '—' }}</td>
                         <td>{{ $pago->fecha_pago->format('d/m/Y h:i A') }}</td>
+                        <td>
+                            @if(in_array($pago->estado_pago, ['completado', 'pagado']))
+                                <span class="badge bg-success rounded-pill">Confirmado</span>
+                            @elseif($pago->estado_pago === 'pendiente')
+                                <span class="badge bg-warning text-dark rounded-pill">Pendiente</span>
+                            @else
+                                <span class="badge bg-secondary rounded-pill">{{ ucfirst($pago->estado_pago) }}</span>
+                            @endif
+                        </td>
                         <td>{{ $pago->registradoPor?->name ?? '—' }}</td>
-                        <td class="pe-4"><small class="text-muted">{{ $pago->notas ?? '—' }}</small></td>
+                        <td class="pe-4">
+                            @if($pago->estado_pago === 'pendiente')
+                                <form method="POST" action="{{ route('owner.instances.pagos.confirmar', [$instance, $pago]) }}" class="d-inline">
+                                    @csrf
+                                    <button class="btn btn-success btn-sm rounded-pill" onclick="return confirm('¿Confirmar este pago? La instancia quedará al día.')">
+                                        <i class="bi bi-check2-circle me-1"></i>Confirmar
+                                    </button>
+                                </form>
+                            @endif
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No hay pagos registrados.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No hay pagos registrados.</td>
                     </tr>
                     @endforelse
                 </tbody>

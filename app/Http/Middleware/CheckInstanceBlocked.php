@@ -16,11 +16,16 @@ class CheckInstanceBlocked
             return $next($request);
         }
 
+        // Las rutas de suscripción y la pantalla de bloqueo siempre deben ser accesibles.
+        if ($request->routeIs('suscripcion.*') || $request->routeIs('instancia-bloqueada')) {
+            return $next($request);
+        }
+
         if ($user->business_instance_id) {
             $instance = $user->businessInstance;
             if ($instance && $instance->bloqueado) {
                 return redirect()->route('instancia-bloqueada')
-                    ->with('error', 'Esta instancia ha sido bloqueada. Motivo: ' . ($instance->motivo_bloqueo ?? 'Sin especificar'));
+                    ->with('error', 'Esta instancia ha sido bloqueada por falta de pago. Motivo: ' . ($instance->motivo_bloqueo ?? 'Suscripción vencida'));
             }
         }
 

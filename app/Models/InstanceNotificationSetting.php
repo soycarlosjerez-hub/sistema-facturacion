@@ -33,6 +33,8 @@ class InstanceNotificationSetting extends Model
         'backup_completed',
         'backup_failed',
         'user_registered',
+        'subscription_expiring',
+        'subscription_suspended',
     ];
 
     protected $casts = [
@@ -58,6 +60,8 @@ class InstanceNotificationSetting extends Model
         'backup_completed' => 'boolean',
         'backup_failed' => 'boolean',
         'user_registered' => 'boolean',
+        'subscription_expiring' => 'boolean',
+        'subscription_suspended' => 'boolean',
     ];
 
     public function businessInstance(): BelongsTo
@@ -98,6 +102,8 @@ class InstanceNotificationSetting extends Model
             'backup_completed' => false,
             'backup_failed' => true,
             'user_registered' => true,
+            'subscription_expiring' => true,
+            'subscription_suspended' => true,
         ];
     }
 

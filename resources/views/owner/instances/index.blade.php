@@ -111,11 +111,16 @@
                             @endif
                         </td>
                         <td class="text-center">
+                            @php $subEstado = $instance->estadoSuscripcion(); @endphp
                             @if(!$instance->activo)
                                 <span class="badge bg-secondary rounded-pill px-2">Inactiva</span>
-                            @elseif($instance->bloqueado)
-                                <span class="badge bg-danger rounded-pill px-2">Bloqueada</span>
-                            @elseif($instance->estaAlDia())
+                            @elseif($subEstado === 'suspendida')
+                                <span class="badge bg-danger rounded-pill px-2">Suspendida</span>
+                            @elseif($subEstado === 'prueba')
+                                <span class="badge bg-primary rounded-pill px-2" title="Prueba gratuita — termina el {{ optional($instance->trial_ends_at)->format('d/m/Y') }}">
+                                    <i class="bi bi-rocket-takeoff me-1"></i>Prueba ({{ $instance->diasPruebaRestantes() }}d)
+                                </span>
+                            @elseif($subEstado === 'activa')
                                 <span class="badge bg-success rounded-pill px-2"><i class="bi bi-check-circle me-1"></i>Al día</span>
                             @else
                                 <span class="badge bg-warning text-dark rounded-pill px-2"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es)</span>

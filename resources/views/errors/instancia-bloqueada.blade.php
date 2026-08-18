@@ -16,9 +16,16 @@
                 Esta instancia ha sido bloqueada. Comuníquese con el administrador del sistema para más información.
             @endif
         </p>
-        <a href="{{ route('login') }}" class="btn btn-primary rounded-pill px-5 fw-bold">
-            <i class="bi bi-box-arrow-right me-2"></i>Ir al Login
-        </a>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+            @auth
+                <a href="{{ route('suscripcion.index') }}" class="btn btn-success rounded-pill px-5 fw-bold">
+                    <i class="bi bi-credit-card me-2"></i>Ver Suscripción y Pagar
+                </a>
+            @endauth
+            <a href="{{ route('login') }}" class="btn btn-primary rounded-pill px-5 fw-bold">
+                <i class="bi bi-box-arrow-right me-2"></i>Ir al Login
+            </a>
+        </div>
     </div>
 </div>
 @endsection

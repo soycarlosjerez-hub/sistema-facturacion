@@ -677,6 +677,7 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'paymentHistory'])->name('instances.pagos');
     Route::get('/instances/{instance}/pagos/create', [\App\Http\Controllers\OwnerController::class, 'registerPayment'])->name('instances.pagos.create');
     Route::post('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'storePayment'])->name('instances.pagos.store');
+    Route::post('/instances/{instance}/pagos/{pago}/confirmar', [\App\Http\Controllers\OwnerController::class, 'confirmPayment'])->name('instances.pagos.confirmar');
     // Instance user management
     Route::get('/instances/{instance}/users/create', [\App\Http\Controllers\OwnerController::class, 'instanceUserCreate'])->name('instances.users.create');
     Route::post('/instances/{instance}/users', [\App\Http\Controllers\OwnerController::class, 'instanceUserStore'])->name('instances.users.store');
@@ -1128,6 +1129,13 @@ Route::middleware(['auth'])->prefix('arte')->name('arte.')->group(function () {
 Route::get('/instancia-bloqueada', function () {
     return view('errors.instancia-bloqueada');
 })->name('instancia-bloqueada');
+
+// Suscripción autoservicio — exenta del bloqueo por impago
+Route::middleware(['auth'])->prefix('suscripcion')->name('suscripcion.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\SuscripcionController::class, 'index'])->name('index');
+    Route::post('/pagar', [\App\Http\Controllers\SuscripcionController::class, 'pagar'])->name('pagar');
+    Route::get('/pagos', [\App\Http\Controllers\SuscripcionController::class, 'pagos'])->name('pagos');
+});
 
 // Setup Wizard
 Route::middleware(['auth', 'instance.blocked'])->prefix('setup')->name('setup.')->group(function () {
