@@ -7,6 +7,7 @@ use App\Models\OrdenDetalle;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class KdsController extends Controller
 {
