@@ -62,5 +62,10 @@ th, td { padding: 2px 0; text-align: left; }
     @endif
     <div class="sep"></div>
     <div class="text-center">Gracias por su visita</div>
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() { window.print(); }, 300);
+        });
+    </script>
 </body>
 </html>

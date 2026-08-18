@@ -375,107 +375,254 @@
     </div>
 </div>
 
-{{-- Modal Pago Premium --}}
-<div class="modal fade cobrar-premium" id="pagoModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
-        <div class="modal-content">
-            <!-- Premium Animated Header -->
-            <div class="cobrar-header text-white position-relative" style="z-index:2;">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="bg-white bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px;">
-                            <i class="bi bi-cash-coin" style="font-size:1.6rem;"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-0" style="font-size:1.25rem;">Cobrar Mesa</h5>
-                            <small class="text-white text-opacity-75" style="font-size:.8rem;" id="pago-mesa-label">Mesa #--</small>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" style="width:32px;height:32px;" data-bs-dismiss="modal"></button>
+{{-- Bottom Sheet Pago (Mobile) --}}
+<div class="cobrar-sheet-overlay" id="cobrarSheetOverlay" aria-hidden="true" onclick="cerrarCobrarSheet()"></div>
+
+<div class="cobrar-sheet" id="cobrarSheet" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="cobrar-sheet-handle"></div>
+
+    <div class="cobrar-sheet-header">
+        <h5 class="cobrar-sheet-title" id="cobrarSheetTitle">Cobrar Mesa</h5>
+        <button type="button" class="cobrar-sheet-close" onclick="cerrarCobrarSheet()" aria-label="Cerrar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="cobrar-sheet-body">
+        <!-- Total -->
+        <div class="cobrar-section">
+            <div class="cobrar-total-card">
+                <h2 class="fw-bold mb-0" id="pago-total">RD$ 0.00</h2>
+            </div>
+        </div>
+
+        <!-- Metodos de pago -->
+        <div class="cobrar-section">
+            <div class="row g-2" id="pago-metodos">
+                <div class="col-3">
+                    <button type="button" class="metodo-btn efectivo active-metodo w-100" data-metodo="efectivo" onclick="seleccionarMetodoPago('efectivo')">
+                        <i class="bi bi-cash-stack"></i> Efectivo
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="metodo-btn tarjeta w-100" data-metodo="tarjeta" onclick="seleccionarMetodoPago('tarjeta')">
+                        <i class="bi bi-credit-card-2-front"></i> Tarjeta
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="metodo-btn transferencia w-100" data-metodo="transferencia" onclick="seleccionarMetodoPago('transferencia')">
+                        <i class="bi bi-bank2"></i> Transf.
+                    </button>
+                </div>
+                <div class="col-3">
+                    <button type="button" class="metodo-btn mixto w-100" data-metodo="mixto" onclick="seleccionarMetodoPago('mixto')">
+                        <i class="bi bi-coin"></i> Mixto
+                    </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Body -->
-            <div class="cobrar-body px-4 pt-4 pb-3">
+        <!-- Efectivo -->
+        <div id="pago-efectivo" class="cobrar-section">
+            <div class="pago-detalle">
+                <label>Monto Recibido</label>
+                <input type="number" id="monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="" inputmode="decimal">
 
-                <!-- Total Card -->
-                <div class="cobrar-total-card mb-4">
-                    <small class="text-muted d-block mb-1" style="font-size:.72rem;letter-spacing:.5px;text-transform:uppercase;">Total a Cobrar</small>
-                    <h2 class="fw-bold mb-0" style="font-size:2rem;color:#059669;" id="pago-total">RD$ 0.00</h2>
+                <!-- Denominaciones RD$ -->
+                <div class="row g-2 mt-2 mb-2">
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(50)">RD$50</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(100)">RD$100</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(200)">RD$200</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(500)">RD$500</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(1000)">RD$1,000</button></div>
+                    <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(2000)">RD$2,000</button></div>
                 </div>
 
-                <!-- Payment Methods -->
-                <div class="d-flex gap-2 mb-4 flex-wrap" id="pago-metodos">
-                    <button class="metodo-btn efectivo active-metodo flex-fill" data-metodo="efectivo">
-                        <i class="bi bi-cash me-1"></i> Efectivo
-                    </button>
-                    <button class="metodo-btn tarjeta flex-fill" data-metodo="tarjeta">
-                        <i class="bi bi-credit-card me-1"></i> Tarjeta
-                    </button>
-                    <button class="metodo-btn transferencia flex-fill" data-metodo="transferencia">
-                        <i class="bi bi-phone me-1"></i> Transferencia
-                    </button>
-                    <button class="metodo-btn mixto flex-fill" data-metodo="mixto">
-                        <i class="bi bi-layers me-1"></i> Mixto
-                    </button>
+                <div id="cambio-info" class="mt-2 cambio-display positivo d-none">
+                    Cambio: <span class="fw-bold" id="cambio-monto">RD$ 0.00</span>
                 </div>
+            </div>
+        </div>
 
-                <!-- Efectivo Section -->
-                <div id="pago-efectivo" class="pago-detalle">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small text-muted" style="font-size:.78rem;">MONTO RECIBIDO</label>
-                        <div class="input-group">
-                            <span class="input-prefix">RD$</span>
-                            <input type="number" id="monto-recibido" class="form-control input-premium" step="0.01" min="0" placeholder="0.00">
-                        </div>
-                    </div>
-                    <div id="cambio-info" class="d-none">
-                        <div class="cambio-card">
-                            <small class="text-muted d-block" style="font-size:.72rem;">Cambio</small>
-                            <span class="fw-bold" style="font-size:1.5rem;color:#059669;" id="cambio-monto">RD$ 0.00</span>
-                        </div>
-                    </div>
+        <!-- Mixto -->
+        <div id="pago-mixto" class="cobrar-section" style="display:none;">
+            <div class="pago-detalle">
+                <div class="mb-2">
+                    <label>Efectivo</label>
+                    <input type="number" id="mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
                 </div>
+                <div class="mb-2">
+                    <label>Tarjeta</label>
+                    <input type="number" id="mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                </div>
+                <div class="mb-2">
+                    <label>Transferencia</label>
+                    <input type="number" id="mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                </div>
+                <small class="text-muted" id="mixto-restante"></small>
+            </div>
+        </div>
 
-                <!-- Mixto Section -->
-                <div id="pago-mixto" class="pago-detalle" style="display:none;">
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <label class="form-label fw-bold small text-muted" style="font-size:.75rem;">EFECTIVO</label>
-                            <input type="number" id="mixto-efectivo" class="form-control input-premium" style="font-size:1rem;padding:.65rem .75rem;" step="0.01" min="0" placeholder="0.00">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-bold small text-muted" style="font-size:.75rem;">TARJETA</label>
-                            <input type="number" id="mixto-tarjeta" class="form-control input-premium" style="font-size:1rem;padding:.65rem .75rem;" step="0.01" min="0" placeholder="0.00">
-                        </div>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <label class="form-label fw-bold small text-muted" style="font-size:.75rem;">TRANSFERENCIA</label>
-                            <input type="number" id="mixto-transferencia" class="form-control input-premium" style="font-size:1rem;padding:.65rem .75rem;" step="0.01" min="0" placeholder="0.00">
-                        </div>
-                        <div class="col-6 d-flex align-items-end pb-1">
-                            <small class="text-muted" id="mixto-restante" style="font-size:.78rem;"></small>
-                        </div>
+        <!-- Propina -->
+        <div class="cobrar-section">
+            <div class="pago-detalle">
+                <label>Propina</label>
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="number" id="propina-input" step="0.01" min="0" value="0" inputmode="decimal" oninput="actualizarTotalPago()">
+                    <button type="button" class="propina-btn" onclick="asignarPropina(0, this)">0%</button>
+                    <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
+                    <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
+                    <button type="button" class="propina-btn" onclick="asignarPropina(18, this)">18%</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dividir cuenta + Cargo servicio -->
+        <div class="cobrar-section">
+            <div class="pago-detalle">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="mb-0">Dividir Cuenta</label>
+                    <div class="d-flex gap-1">
+                        <button class="split-btn" onclick="abrirSplitBill(2)">2</button>
+                        <button class="split-btn" onclick="abrirSplitBill(3)">3</button>
+                        <button class="split-btn" onclick="abrirSplitBill(4)">4</button>
+                        <button class="split-btn" onclick="abrirSplitBill(5)">5</button>
                     </div>
                 </div>
+                <div id="cargo-servicio-row" class="servicio-check mt-2" style="display:none;">
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" id="cargo-servicio-check" onchange="actualizarTotalPago()">
+                        <label class="form-check-label small fw-bold ms-2" for="cargo-servicio-check" style="font-size:.8rem;">
+                            Aplicar cargo por servicio (<span id="cargo-servicio-pct">0</span>%)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <!-- Propina & Dividir -->
-                <div class="mt-3 pt-3" style="border-top:1px solid rgba(0,0,0,0.06);">
-                    <div class="row g-3 mb-2">
-                        <div class="col-6">
-                            <label class="form-label fw-bold small text-muted" style="font-size:.75rem;">PROPINA</label>
-                            <div class="d-flex gap-1 mb-2">
-                                <input type="number" id="propina-input" class="form-control input-premium" style="font-size:.95rem;padding:.55rem .65rem;" step="0.01" min="0" value="0" placeholder="0.00" oninput="actualizarTotalPago()">
-                            </div>
-                            <div class="d-flex gap-1">
-                                <button class="propina-btn" onclick="document.getElementById('propina-input').value=(parseFloat(ordenActual?.total||0)*0.10).toFixed(2);actualizarTotalPago()">10%</button>
-                                <button class="propina-btn" onclick="document.getElementById('propina-input').value=(parseFloat(ordenActual?.total||0)*0.15).toFixed(2);actualizarTotalPago()">15%</button>
-                                <button class="propina-btn" onclick="document.getElementById('propina-input').value=(parseFloat(ordenActual?.total||0)*0.18).toFixed(2);actualizarTotalPago()">18%</button>
-                            </div>
+        <!-- Boton Cobrar -->
+        <div class="cobrar-section mt-1">
+            <button type="button" class="btn-cobrar-touch w-100" onclick="procesarPago()">
+                <span class="shine"></span>
+                <i class="bi bi-check2-circle me-1"></i> Cobrar
+            </button>
+        </div>
+    </div>
+
+    <div class="cobrar-sheet-footer">
+        <button type="button" class="btn btn-sm btn-link text-muted w-100" onclick="cerrarCobrarSheet()">
+            Cancelar
+        </button>
+    </div>
+</div>
+
+{{-- Modal Pago Premium (Desktop) --}}
+<div class="modal fade cobrar-premium" id="pagoModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+        <div class="modal-content">
+            <div class="cobrar-header d-flex align-items-center gap-3">
+                <div class="icon-circle"><i class="bi bi-cash-stack"></i></div>
+                <div class="flex-grow-1">
+                    <h5 class="fw-bold mb-0">Cobrar Mesa</h5>
+                    <small class="text-white-50" id="pago-mesa-label">Mesa #--</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+
+                <!-- Total -->
+                <div class="cobrar-section">
+                    <div class="cobrar-total-card">
+                        <h2 class="fw-bold mb-0" id="md-pago-total">RD$ 0.00</h2>
+                    </div>
+                </div>
+
+                <!-- Metodos de pago -->
+                <div class="cobrar-section">
+                    <div class="row g-2" id="md-pago-metodos">
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn efectivo active-metodo w-100" data-metodo="efectivo" onclick="seleccionarMetodoPago('efectivo')">
+                                <i class="bi bi-cash-stack"></i> Efectivo
+                            </button>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label fw-bold small text-muted" style="font-size:.75rem;">DIVIDIR CUENTA</label>
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn tarjeta w-100" data-metodo="tarjeta" onclick="seleccionarMetodoPago('tarjeta')">
+                                <i class="bi bi-credit-card-2-front"></i> Tarjeta
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn transferencia w-100" data-metodo="transferencia" onclick="seleccionarMetodoPago('transferencia')">
+                                <i class="bi bi-bank2"></i> Transf.
+                            </button>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="metodo-btn mixto w-100" data-metodo="mixto" onclick="seleccionarMetodoPago('mixto')">
+                                <i class="bi bi-coin"></i> Mixto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Efectivo -->
+                <div id="md-pago-efectivo" class="cobrar-section">
+                    <div class="pago-detalle">
+                        <label>Monto Recibido</label>
+                        <input type="number" id="md-monto-recibido" class="input-premium" step="0.01" min="0" placeholder="0.00" value="" inputmode="decimal">
+
+                        <!-- Denominaciones RD$ -->
+                        <div class="row g-2 mt-2 mb-2">
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(50)">RD$50</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(100)">RD$100</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(200)">RD$200</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(500)">RD$500</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(1000)">RD$1,000</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-success w-100 rounded-3 py-2 fw-bold btn-pos-denom" onclick="addRecibido(2000)">RD$2,000</button></div>
+                        </div>
+
+                        <div id="md-cambio-info" class="mt-2 cambio-display positivo d-none">
+                            Cambio: <span class="fw-bold" id="md-cambio-monto">RD$ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mixto -->
+                <div id="md-pago-mixto" class="cobrar-section" style="display:none;">
+                    <div class="pago-detalle">
+                        <div class="mb-2">
+                            <label>Efectivo</label>
+                            <input type="number" id="md-mixto-efectivo" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                        </div>
+                        <div class="mb-2">
+                            <label>Tarjeta</label>
+                            <input type="number" id="md-mixto-tarjeta" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                        </div>
+                        <div class="mb-2">
+                            <label>Transferencia</label>
+                            <input type="number" id="md-mixto-transferencia" class="input-premium" step="0.01" min="0" placeholder="0.00" inputmode="decimal" oninput="actualizarTotalPago()">
+                        </div>
+                        <small class="text-muted" id="md-mixto-restante"></small>
+                    </div>
+                </div>
+
+                <!-- Propina -->
+                <div class="cobrar-section">
+                    <div class="pago-detalle">
+                        <label>Propina</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="number" id="md-propina-input" step="0.01" min="0" value="0" inputmode="decimal" oninput="actualizarTotalPago()">
+                            <button type="button" class="propina-btn" onclick="asignarPropina(0, this)">0%</button>
+                            <button type="button" class="propina-btn" onclick="asignarPropina(10, this)">10%</button>
+                            <button type="button" class="propina-btn" onclick="asignarPropina(15, this)">15%</button>
+                            <button type="button" class="propina-btn" onclick="asignarPropina(18, this)">18%</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dividir cuenta + Cargo servicio -->
+                <div class="cobrar-section">
+                    <div class="pago-detalle">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="mb-0">Dividir Cuenta</label>
                             <div class="d-flex gap-1">
                                 <button class="split-btn" onclick="abrirSplitBill(2)">2</button>
                                 <button class="split-btn" onclick="abrirSplitBill(3)">3</button>
@@ -483,64 +630,63 @@
                                 <button class="split-btn" onclick="abrirSplitBill(5)">5</button>
                             </div>
                         </div>
-                    </div>
-                    <div id="cargo-servicio-row" class="servicio-check mt-2" style="display:none;">
-                        <div class="form-check form-switch m-0">
-                            <input class="form-check-input" type="checkbox" id="cargo-servicio-check" onchange="actualizarTotalPago()">
-                            <label class="form-check-label small fw-bold ms-2" for="cargo-servicio-check" style="font-size:.8rem;">
-                                Aplicar cargo por servicio (<span id="cargo-servicio-pct">0</span>%)
-                            </label>
+                        <div id="md-cargo-servicio-row" class="servicio-check mt-2" style="display:none;">
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="md-cargo-servicio-check" onchange="actualizarTotalPago()">
+                                <label class="form-check-label small fw-bold ms-2" for="md-cargo-servicio-check" style="font-size:.8rem;">
+                                    Aplicar cargo por servicio (<span id="md-cargo-servicio-pct">0</span>%)
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Footer -->
-            <div class="px-4 py-3 d-flex justify-content-between align-items-center" style="background:rgba(248,250,252,0.9);border-top:1px solid rgba(0,0,0,0.04);">
-                <button type="button" class="btn btn-cancelar-premium" data-bs-dismiss="modal">
-                    <i class="bi bi-x-lg me-1"></i>Cancelar
-                </button>
-                <button type="button" class="btn btn-cobrar-premium" onclick="procesarPago()">
-                    <i class="bi bi-check-circle me-1"></i> Cobrar
-                </button>
+                <!-- Boton Cobrar -->
+                <div class="cobrar-section mt-1">
+                    <button type="button" class="btn-cobrar-touch w-100" onclick="procesarPago()">
+                        <span class="shine"></span>
+                        <i class="bi bi-check2-circle me-1"></i> Cobrar
+                    </button>
+                </div>
+
+                <!-- Cancelar -->
+                <div class="text-center">
+                    <button type="button" class="btn btn-sm btn-link text-muted" data-bs-dismiss="modal" style="text-decoration:none;">
+                        Cancelar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 {{-- Modal Post-Pago --}}
-<div class="modal fade" id="postPagoModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-0 bg-success text-white rounded-top-4">
-                <h6 class="modal-title fw-bold"><i class="bi bi-check-circle me-2"></i>Pago Exitoso</h6>
+<div class="modal fade cobrar-premium" id="postPagoModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white border-0" style="background:linear-gradient(135deg,#059669,#10b981)!important;">
+                <h5 class="modal-title fw-bold"><i class="bi bi-check-circle me-2"></i>Pago Exitoso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                </div>
-                <h4 class="fw-bold" id="post-mesa-info">Mesa #1</h4>
+            <div class="modal-body text-center py-4" style="background:var(--pos-bg);color:var(--pos-text);">
+                <div class="display-4 text-success mb-3"><i class="bi bi-check-circle-fill"></i></div>
+                <h5 id="post-mesa-info" class="fw-bold">Mesa #1</h5>
                 <p class="text-muted" id="post-cliente">Cliente: Consumidor Final</p>
-                <div class="bg-light rounded-3 p-3 mb-3">
-                    <small class="text-muted d-block">Total Cobrado</small>
-                    <span class="fs-2 fw-bold text-success" id="post-total">RD$ 0.00</span>
-                    <small class="text-muted d-block mt-1" id="post-metodo">Efectivo</small>
-                </div>
-                <div class="d-flex gap-2 justify-content-center flex-wrap">
-                    <a href="#" class="btn btn-outline-primary rounded-pill" id="btn-ticket" target="_blank">
-                        <i class="bi bi-receipt me-1"></i> Ticket
-                    </a>
-                    <button class="btn btn-outline-dark rounded-pill" id="btn-imprimir" onclick="imprimirTicket()">
-                        <i class="bi bi-printer me-1"></i> Imprimir
+                <div class="fs-2 fw-bold text-success mb-3" id="post-total">RD$ 0.00</div>
+                <span class="badge bg-secondary rounded-pill px-3 py-2 mb-3" id="post-metodo">Efectivo</span>
+
+                <div class="d-grid gap-2 mt-3">
+                    <button type="button" id="btn-imprimir" class="btn btn-success btn-lg rounded-pill" onclick="imprimirTicket()">
+                        <i class="bi bi-printer me-1"></i> Imprimir Ticket
                     </button>
-                    <button class="btn btn-primary rounded-pill" id="btn-facturar" onclick="facturarMesa()">
+                    <button type="button" id="btn-facturar" class="btn btn-outline-light rounded-pill" onclick="facturarMesa()">
                         <i class="bi bi-shield-check me-1"></i> Facturar (e-CF)
                     </button>
                 </div>
                 <div id="factura-status" class="mt-2 small d-none"></div>
             </div>
-            <div class="modal-footer border-0 justify-content-center">
-                <button type="button" class="btn btn-success rounded-pill px-5" data-bs-dismiss="modal">
+            <div class="modal-footer border-0 justify-content-center" style="background:var(--pos-bg);">
+                <button type="button" class="btn btn-success rounded-pill px-4" data-bs-dismiss="modal">
                     <i class="bi bi-check-lg me-1"></i> Cerrar
                 </button>
             </div>
@@ -808,220 +954,352 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-/* ============ Premium Cobrar Modal ============ */
+/* ============ POS Payment UI (Mesa) ============ */
+:root {
+    --pos-bg: #f8fafc;
+    --pos-card: rgba(255,255,255,0.03);
+    --pos-text: #1e293b;
+    --pos-text-muted: #64748b;
+    --pos-border: rgba(0,0,0,0.1);
+    --pos-accent: #3b82f6;
+    --pos-success: #10b981;
+    --pos-warning: #f59e0b;
+    --pos-danger: #ef4444;
+    --pos-accent-soft: rgba(59,130,246,0.1);
+    --pos-success-soft: rgba(16,185,129,0.1);
+}
+body.dark-mode {
+    --pos-bg: #020617;
+    --pos-card: rgba(255,255,255,0.08);
+    --pos-text: #f1f5f9;
+    --pos-text-muted: #94a3b8;
+    --pos-border: rgba(255,255,255,0.15);
+}
+
+/* ---------- Bottom Sheet ---------- */
+.cobrar-sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--pos-bg);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+    z-index: 1060;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+    color: var(--pos-text);
+}
+.cobrar-sheet.open { transform: translateY(0); }
+.cobrar-sheet-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 1055;
+}
+.cobrar-sheet-overlay.visible { opacity: 1; visibility: visible; }
+.cobrar-sheet-handle {
+    width: 40px; height: 5px;
+    background: var(--pos-border);
+    border-radius: 3px;
+    margin: 10px auto 4px;
+    cursor: grab;
+}
+.cobrar-sheet-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--pos-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.cobrar-sheet-title { font-size: 1rem; font-weight: 700; color: var(--pos-text); }
+.cobrar-sheet-close {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--pos-card);
+    border: 1px solid var(--pos-border);
+    color: var(--pos-text);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+}
+.cobrar-sheet-close:active { background: var(--pos-accent-soft); color: var(--pos-accent); }
+.cobrar-sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 16px 16px;
+    -webkit-overflow-scrolling: touch;
+}
+.cobrar-sheet-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--pos-border);
+    background: var(--pos-card);
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+.cobrar-sheet.open { animation: mesaSheetSlideUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+@keyframes mesaSheetSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* ---------- Modal premium (Desktop) ---------- */
 @keyframes cobrarGradientShift {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
-@keyframes cobrarPulse {
-    0%, 100% { transform: scale(1); opacity: 0.6; }
-    50%      { transform: scale(1.2); opacity: 1; }
-}
 @keyframes cobrarSlideUp {
     from { opacity: 0; transform: translateY(24px) scale(0.96); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-@keyframes cobrarShine {
-    0%   { left: -100%; }
-    100% { left: 200%; }
-}
 .cobrar-premium .modal-content {
-    border: none;
-    border-radius: 1.25rem;
+    border-radius: 20px;
+    border: 0;
     overflow: hidden;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.08);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
     animation: cobrarSlideUp 0.35s ease-out;
 }
 .cobrar-premium .cobrar-header {
-    background: linear-gradient(135deg, #059669, #10b981, #06b6d4, #059669);
+    background: linear-gradient(135deg, #059669, #10b981, #3b82f6, #059669);
     background-size: 300% 300%;
     animation: cobrarGradientShift 6s ease infinite;
-    padding: 1.75rem 1.5rem 2.25rem;
+    padding: 20px 24px 16px;
+    color: #fff;
     position: relative;
     overflow: hidden;
 }
-.cobrar-premium .cobrar-header::before {
-    content: '';
-    position: absolute;
-    top: -40%;
-    right: -15%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-    animation: cobrarPulse 4s ease-in-out infinite;
+.cobrar-premium .cobrar-header .icon-circle {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; backdrop-filter: blur(8px);
 }
-.cobrar-premium .cobrar-header::after {
-    content: '';
-    position: absolute;
-    bottom: -50%;
-    left: -10%;
-    width: 160px;
-    height: 160px;
-    background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-}
-.cobrar-premium .cobrar-body {
-    background: rgba(248,250,252,0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-}
-.cobrar-premium .cobrar-total-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.5);
-    border-radius: 1rem;
-    padding: 1.25rem;
+
+/* ---------- Shared components (modal + sheet) ---------- */
+.cobrar-premium .cobrar-total-card,
+.cobrar-sheet .cobrar-total-card {
+    background: var(--pos-card);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 16px 20px;
     text-align: center;
-    position: relative;
-    overflow: hidden;
+    border: 1px solid var(--pos-border);
 }
-.cobrar-premium .cobrar-total-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 60%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: cobrarShine 4s ease-in-out infinite;
+.cobrar-premium .cobrar-total-card h2,
+.cobrar-sheet .cobrar-total-card h2 {
+    font-size: 2.6rem;
+    font-weight: 900;
+    color: var(--pos-text);
+    font-variant-numeric: tabular-nums;
 }
-.cobrar-premium .metodo-btn {
-    border-radius: 1rem;
-    padding: 0.75rem 0.5rem;
+.cobrar-premium .cobrar-total-card::after { display: none; }
+
+.cobrar-premium .metodo-btn,
+.cobrar-sheet .metodo-btn {
+    border: 2px solid var(--pos-border);
+    border-radius: 14px;
+    padding: 12px 4px;
+    background: var(--pos-card);
+    color: var(--pos-text);
     font-weight: 700;
-    font-size: 0.88rem;
-    border: 2px solid transparent;
-    transition: all 0.25s ease;
-    position: relative;
-    overflow: hidden;
-}
-.cobrar-premium .metodo-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-.cobrar-premium .metodo-btn:active {
-    transform: translateY(0) scale(0.97);
-}
-.cobrar-premium .metodo-btn.active-metodo {
-    border-color: currentColor;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    transform: translateY(-1px);
-}
-.cobrar-premium .metodo-btn.efectivo { background: rgba(16,185,129,0.08); color: #059669; }
-.cobrar-premium .metodo-btn.efectivo.active-metodo { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
-.cobrar-premium .metodo-btn.tarjeta { background: rgba(59,130,246,0.08); color: #2563eb; }
-.cobrar-premium .metodo-btn.tarjeta.active-metodo { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
-.cobrar-premium .metodo-btn.transferencia { background: rgba(6,182,212,0.08); color: #0891b2; }
-.cobrar-premium .metodo-btn.transferencia.active-metodo { background: linear-gradient(135deg, #06b6d4, #0891b2); color: #fff; }
-.cobrar-premium .metodo-btn.mixto { background: rgba(245,158,11,0.08); color: #d97706; }
-.cobrar-premium .metodo-btn.mixto.active-metodo { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
-.cobrar-premium .input-premium {
-    border: 2px solid #e2e8f0;
-    border-radius: 0.75rem;
-    padding: 0.85rem 1rem;
-    font-size: 1.15rem;
-    font-weight: 700;
-    text-align: center;
-    transition: all 0.25s ease;
-    background: rgba(255,255,255,0.8);
-}
-.cobrar-premium .input-premium:focus {
-    border-color: #10b981;
-    box-shadow: 0 0 0 4px rgba(16,185,129,0.1), 0 4px 12px rgba(16,185,129,0.06);
-    background: #fff;
-    outline: none;
-}
-.cobrar-premium .input-prefix {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    border: none;
-    border-radius: 0.75rem 0 0 0.75rem;
-    padding: 0.85rem 1rem;
-    font-weight: 700;
-    font-size: 1rem;
+    font-size: .82rem;
+    transition: all .15s;
     display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    min-height: 68px;
 }
-.cobrar-premium .cambio-card {
-    background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,182,212,0.06));
-    border: 1px solid rgba(16,185,129,0.2);
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
+.cobrar-premium .metodo-btn:hover,
+.cobrar-sheet .metodo-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
-.cobrar-premium .propina-btn {
-    border-radius: 2rem;
-    padding: 0.4rem 0.75rem;
+.cobrar-premium .metodo-btn i,
+.cobrar-sheet .metodo-btn i { font-size: 1.5rem; }
+.cobrar-premium .metodo-btn.active-metodo.efectivo,
+.cobrar-sheet .metodo-btn.active-metodo.efectivo { border-color: #10b981; background: rgba(16,185,129,0.12); color: #059669; }
+.cobrar-premium .metodo-btn.active-metodo.tarjeta,
+.cobrar-sheet .metodo-btn.active-metodo.tarjeta { border-color: #3b82f6; background: rgba(59,130,246,0.12); color: #2563eb; }
+.cobrar-premium .metodo-btn.active-metodo.transferencia,
+.cobrar-sheet .metodo-btn.active-metodo.transferencia { border-color: #6366f1; background: rgba(99,102,241,0.12); color: #4f46e5; }
+.cobrar-premium .metodo-btn.active-metodo.mixto,
+.cobrar-sheet .metodo-btn.active-metodo.mixto { border-color: #f59e0b; background: rgba(245,158,11,0.12); color: #d97706; }
+
+.cobrar-premium .input-premium,
+.cobrar-sheet .input-premium {
+    width: 100%;
+    background: var(--pos-card);
+    border: 2px solid var(--pos-border);
+    border-radius: 12px;
+    color: var(--pos-text);
+    padding: 12px 16px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+.cobrar-premium .input-premium:focus,
+.cobrar-sheet .input-premium:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+}
+.cobrar-premium .input-premium::placeholder,
+.cobrar-sheet .input-premium::placeholder {
+    font-weight: 400;
+    font-size: 1rem;
+    color: var(--pos-text-muted);
+    opacity: 0.5;
+}
+
+.cobrar-premium .pago-detalle,
+.cobrar-sheet .pago-detalle { margin-top: 12px; }
+.cobrar-premium .pago-detalle label,
+.cobrar-sheet .pago-detalle label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
     font-weight: 700;
-    font-size: 0.78rem;
-    border: 1.5px solid rgba(16,185,129,0.25);
-    background: rgba(255,255,255,0.7);
-    color: #059669;
-    transition: all 0.2s ease;
+    color: var(--pos-text-muted);
+    margin-bottom: 4px;
+    display: block;
 }
-.cobrar-premium .propina-btn:hover {
-    background: rgba(16,185,129,0.1);
-    border-color: rgba(16,185,129,0.5);
+
+.cobrar-premium .cambio-display,
+.cobrar-sheet .cambio-display {
+    text-align: center;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+.cobrar-premium .cambio-display.positivo,
+.cobrar-sheet .cambio-display.positivo { background: #dcfce7; color: #166534; }
+.cobrar-premium .cambio-display.negativo,
+.cobrar-sheet .cambio-display.negativo { background: #fee2e2; color: #991b1b; }
+
+.cobrar-premium .propina-btn,
+.cobrar-sheet .propina-btn {
+    border-radius: 50px;
+    border: 2px solid #059669;
+    background: transparent;
+    color: #059669;
+    font-weight: 700;
+    padding: 10px 20px;
+    font-size: .9rem;
+    transition: all .15s;
+    cursor: pointer;
+    min-height: 44px;
+}
+.cobrar-premium .propina-btn:hover,
+.cobrar-sheet .propina-btn:hover {
+    background: rgba(5,150,105,0.1);
+    border-color: #047857;
+    color: #047857;
     transform: scale(1.05);
 }
-.cobrar-premium .split-btn {
-    border-radius: 2rem;
-    width: 38px;
-    height: 38px;
+.cobrar-premium .propina-btn.active,
+.cobrar-sheet .propina-btn.active { background: #059669; border-color: #059669; color: #fff; }
+.cobrar-premium #propina-input,
+.cobrar-premium #md-propina-input,
+.cobrar-sheet #propina-input {
+    height: 44px;
+    text-align: center;
+    background: var(--pos-card);
+    border: 2px solid var(--pos-border);
+    border-radius: 12px;
+    color: var(--pos-text);
     font-weight: 700;
-    font-size: 0.85rem;
-    border: 1.5px solid rgba(99,102,241,0.2);
-    background: rgba(255,255,255,0.7);
-    color: #6366f1;
-    transition: all 0.2s ease;
+    font-size: 1.1rem;
+    width: 100px;
 }
-.cobrar-premium .split-btn:hover {
-    background: rgba(99,102,241,0.1);
-    border-color: rgba(99,102,241,0.4);
+.cobrar-premium #propina-input:focus,
+.cobrar-premium #md-propina-input:focus,
+.cobrar-sheet #propina-input:focus { outline: none; border-color: #10b981; }
+
+.cobrar-premium .split-btn,
+.cobrar-sheet .split-btn {
+    border-radius: 2rem;
+    width: 38px; height: 38px;
+    font-weight: 700;
+    font-size: .85rem;
+    border: 1.5px solid rgba(99,102,241,0.35);
+    background: var(--pos-card);
+    color: #6366f1;
+    transition: all .2s ease;
+    cursor: pointer;
+}
+.cobrar-premium .split-btn:hover,
+.cobrar-sheet .split-btn:hover {
+    background: rgba(99,102,241,0.12);
+    border-color: rgba(99,102,241,0.5);
     transform: scale(1.08);
 }
-.cobrar-premium .btn-cobrar-premium {
-    background: linear-gradient(135deg, #059669, #10b981);
-    border: none;
-    border-radius: 2rem;
-    padding: 0.85rem 2.5rem;
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: white;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 16px rgba(16,185,129,0.3);
-    position: relative;
-    overflow: hidden;
-}
-.cobrar-premium .btn-cobrar-premium:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(16,185,129,0.4);
-    background: linear-gradient(135deg, #047857, #059669);
-}
-.cobrar-premium .btn-cobrar-premium:active {
-    transform: translateY(0);
-}
-.cobrar-premium .btn-cancelar-premium {
-    background: rgba(255,255,255,0.8);
-    border: 1.5px solid #e2e8f0;
-    border-radius: 2rem;
-    padding: 0.85rem 2rem;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #64748b;
-    transition: all 0.2s ease;
-}
-.cobrar-premium .btn-cancelar-premium:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-}
-.cobrar-premium .servicio-check {
-    background: rgba(16,185,129,0.06);
-    border: 1px solid rgba(16,185,129,0.15);
+
+.cobrar-premium .servicio-check,
+.cobrar-sheet .servicio-check {
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
     border-radius: 0.75rem;
     padding: 0.6rem 0.75rem;
+}
+.cobrar-premium .servicio-check .form-check-label,
+.cobrar-sheet .servicio-check .form-check-label { color: var(--pos-text); }
+
+.btn-cobrar-touch {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border: none;
+    border-radius: 16px;
+    padding: 16px 24px;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #fff;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    min-height: 56px;
+    cursor: pointer;
+}
+.btn-cobrar-touch:hover {
+    box-shadow: 0 8px 30px rgba(16,185,129,0.4);
+    transform: translateY(-1px);
+    color: #fff;
+}
+.btn-cobrar-touch .shine {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: cobrarShine 3s ease-in-out infinite;
+}
+@keyframes cobrarShine {
+    0%   { left: -60%; }
+    100% { left: 160%; }
+}
+.btn-cobrar-touch:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+.btn-cobrar-touch:disabled .shine { display: none; }
+.cobrar-section { margin-bottom: 14px; }
+
+.cobrar-premium .modal-body,
+.cobrar-sheet .modal-body { background: var(--pos-bg); color: var(--pos-text); }
+.cobrar-premium .modal-header,
+.cobrar-sheet .modal-header { background: var(--pos-bg); }
+.cobrar-premium .modal-footer,
+.cobrar-sheet .modal-footer { background: var(--pos-bg); }
+
+.btn-pos-denom { font-variant-numeric: tabular-nums; }
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+@media (max-width: 767.98px) {
+    .cobrar-premium .metodo-btn,
+    .cobrar-sheet .metodo-btn { min-height: 56px; font-size: .78rem; }
+    .cobrar-premium .cobrar-total-card h2,
+    .cobrar-sheet .cobrar-total-card h2 { font-size: 2.2rem; }
 }
 
 .restaurant-pos .mesa-btn {
@@ -1392,6 +1670,7 @@ const restauranteValidaStock = {{ $restauranteValidaStock ? 'true' : 'false' }};
 let sesionCajaActiva = null;
 let postPagoData = null;
 let totalPagoFinal = 0;
+let metodoPagoActual = 'efectivo';
 let productosData = [];
 let categoriasData = [];
 let pendingRequests = {};
@@ -2398,15 +2677,12 @@ function confirmarSplitBill() {
     
     window.splitData = { activo: true, personas: splitPersonas, totales, itemsPorPersona };
     
-    const pagoModal = document.getElementById('pagoModal');
-    if (!pagoModal.classList.contains('show')) {
-        document.querySelector('.metodo-btn[data-metodo="mixto"]')?.click();
-        const propina = parseFloat(document.getElementById('propina-input').value) || 0;
-        const totalConPropina = suma + propina;
-        const porPersona = totalConPropina / splitPersonas;
-        document.getElementById('mixto-efectivo').value = porPersona.toFixed(2);
-        new bootstrap.Modal(pagoModal).show();
-    }
+    const propina = parseFloat($p('propina-input').value) || 0;
+    const totalConPropina = suma + propina;
+    const porPersona = totalConPropina / splitPersonas;
+    mostrarPago('mixto');
+    $p('mixto-efectivo').value = porPersona.toFixed(2);
+    actualizarTotalPago();
 }
 
 function mostrarDescuento() {
@@ -2578,93 +2854,143 @@ function enviarCambiarCantidad(detalleId, cantidad) {
     });
 }
 
-function mostrarPago() {
-    if (!ordenActual || ordenActual.total <= 0) { Swal.fire({icon:'warning', title:'Orden vacía', text:'La orden está vacía'}); return; }
-    document.getElementById('pago-total').textContent = 'RD$ ' + Number(ordenActual.total).toFixed(2);
-    document.getElementById('pago-mesa-label').textContent = 'Mesa #' + (mesaActual || '--');
-    document.getElementById('propina-input').value = '0';
-    document.getElementById('monto-recibido').value = ordenActual.total;
-    document.getElementById('cambio-info').classList.add('d-none');
-    document.getElementById('mixto-efectivo').value = '';
-    document.getElementById('mixto-tarjeta').value = '';
-    document.getElementById('mixto-transferencia').value = '';
-    document.getElementById('pago-efectivo').style.display = 'block';
-    document.getElementById('pago-mixto').style.display = 'none';
-    document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active-metodo'));
-    document.querySelector('.metodo-btn[data-metodo="efectivo"]').classList.add('active-metodo');
-    // Cargo por servicio
+function $p(id) {
+    const prefix = getModalPrefix();
+    return document.getElementById(prefix + id) || document.getElementById(id);
+}
+
+function getModalPrefix() {
+    const bsSheet = document.getElementById('cobrarSheet');
+    return (bsSheet && bsSheet.classList.contains('open')) ? '' : 'md-';
+}
+
+function cerrarCobrarSheet() {
+    const bsSheet = document.getElementById('cobrarSheet');
+    if (bsSheet) bsSheet.classList.remove('open');
+    document.getElementById('cobrarSheetOverlay')?.classList.remove('visible');
+}
+
+function seleccionarMetodoPago(metodo) {
+    metodoPagoActual = metodo;
+    const prefix = getModalPrefix();
+    document.querySelectorAll('#' + prefix + 'pago-metodos .metodo-btn').forEach(b => b.classList.remove('active-metodo'));
+    document.querySelector('#' + prefix + 'pago-metodos .metodo-btn[data-metodo="' + metodo + '"]')?.classList.add('active-metodo');
+    $p('pago-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
+    $p('pago-mixto').style.display = metodo === 'mixto' ? 'block' : 'none';
+    if (metodo === 'efectivo') {
+        $p('cambio-info').classList.add('d-none');
+        setTimeout(() => $p('monto-recibido')?.focus(), 200);
+    }
+    actualizarTotalPago();
+}
+
+function addRecibido(monto) {
+    const input = $p('monto-recibido');
+    const actual = parseFloat(input.value) || 0;
+    input.value = (actual + monto).toFixed(2);
+    actualizarTotalPago();
+}
+
+function asignarPropina(porcentaje, btn) {
+    const total = parseFloat(ordenActual?.total || 0);
+    $p('propina-input').value = (total * porcentaje / 100).toFixed(2);
+    document.querySelectorAll('.propina-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    actualizarTotalPago();
+}
+
+function setupCargoServicio() {
     const mesaBtn = document.querySelector(`.mesa-btn[data-mesa-id="${mesaActual}"]`);
     const capacidadTexto = mesaBtn?.querySelector('small')?.textContent || '';
     const capMatch = capacidadTexto.match(/Cap\.\s*(\d+)/);
     const capacidad = capMatch ? parseInt(capMatch[1]) : 0;
-    const row = document.getElementById('cargo-servicio-row');
-    const pctEl = document.getElementById('cargo-servicio-pct');
+    const row = $p('cargo-servicio-row');
+    const pctEl = $p('cargo-servicio-pct');
+    const check = $p('cargo-servicio-check');
     if (servicioPorcentaje > 0 && capacidad >= servicioMinPersonas) {
         pctEl.textContent = servicioPorcentaje;
-        document.getElementById('cargo-servicio-check').checked = true;
+        check.checked = true;
         row.style.display = 'block';
     } else {
-        document.getElementById('cargo-servicio-check').checked = false;
+        check.checked = false;
         row.style.display = 'none';
     }
-    new bootstrap.Modal(document.getElementById('pagoModal')).show();
+}
+
+function mostrarPago(metodo) {
+    if (!ordenActual || ordenActual.total <= 0) { Swal.fire({icon:'warning', title:'Orden vacía', text:'La orden está vacía'}); return; }
+    const isMobile = window.innerWidth < 992;
+    if (isMobile) {
+        const sheet = document.getElementById('cobrarSheet');
+        sheet.classList.add('open');
+        document.getElementById('cobrarSheetOverlay').classList.add('visible');
+    } else {
+        document.getElementById('pago-mesa-label').textContent = 'Mesa #' + (mesaActual || '--');
+        new bootstrap.Modal(document.getElementById('pagoModal')).show();
+    }
+    document.getElementById('cobrarSheetTitle').textContent = 'Cobrar Mesa #' + (mesaActual || '--');
+    $p('pago-total').textContent = 'RD$ ' + Number(ordenActual.total).toFixed(2);
+    $p('propina-input').value = '0';
+    $p('monto-recibido').value = Number(ordenActual.total).toFixed(2);
+    $p('cambio-info').classList.add('d-none');
+    $p('mixto-efectivo').value = '';
+    $p('mixto-tarjeta').value = '';
+    $p('mixto-transferencia').value = '';
+    seleccionarMetodoPago(metodo || 'efectivo');
+    setupCargoServicio();
     actualizarTotalPago();
+    setTimeout(() => $p('monto-recibido')?.focus(), 400);
 }
 
 function actualizarTotalPago() {
     const totalBase = parseFloat(ordenActual?.total || 0);
-    const propina = parseFloat(document.getElementById('propina-input').value) || 0;
-    const cargoServicio = document.getElementById('cargo-servicio-check')?.checked
-        ? totalBase * (parseFloat(document.getElementById('cargo-servicio-pct').textContent) || 0) / 100
+    const propina = parseFloat($p('propina-input').value) || 0;
+    const cargoServicio = $p('cargo-servicio-check')?.checked
+        ? totalBase * (parseFloat($p('cargo-servicio-pct').textContent) || 0) / 100
         : 0;
     totalPagoFinal = totalBase + propina + cargoServicio;
-    document.getElementById('pago-total').textContent = 'RD$ ' + totalPagoFinal.toFixed(2);
-    document.getElementById('monto-recibido').value = '';
-    document.getElementById('cambio-info').classList.add('d-none');
+    $p('pago-total').textContent = 'RD$ ' + totalPagoFinal.toFixed(2);
+
+    if (metodoPagoActual === 'efectivo') {
+        const recibido = parseFloat($p('monto-recibido').value) || 0;
+        const cambio = recibido - totalPagoFinal;
+        const cambioInfo = $p('cambio-info');
+        const cambioMonto = $p('cambio-monto');
+        if (recibido > 0 && cambio >= 0) {
+            cambioInfo.classList.remove('d-none');
+            cambioMonto.textContent = 'RD$ ' + cambio.toFixed(2);
+        } else {
+            cambioInfo.classList.add('d-none');
+        }
+    } else if (metodoPagoActual === 'mixto') {
+        const eff = parseFloat($p('mixto-efectivo').value) || 0;
+        const card = parseFloat($p('mixto-tarjeta').value) || 0;
+        const trans = parseFloat($p('mixto-transferencia').value) || 0;
+        const suma = eff + card + trans;
+        const restante = totalPagoFinal - suma;
+        const label = $p('mixto-restante');
+        if (restante > 0.01) {
+            label.innerHTML = `<span class="text-warning fw-bold">Faltan RD$ ${restante.toFixed(2)}</span>`;
+        } else if (restante < -0.01) {
+            label.innerHTML = `<span class="text-danger fw-bold">Sobran RD$ ${Math.abs(restante).toFixed(2)}</span>`;
+        } else {
+            label.textContent = '✓ Montos correctos';
+            label.className = 'text-success fw-bold';
+        }
+    }
 }
 
-document.querySelectorAll('.metodo-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active-metodo'));
-        this.classList.add('active-metodo');
-        const metodo = this.dataset.metodo;
-        document.querySelectorAll('.pago-detalle').forEach(d => d.style.display = 'none');
-        if (metodo === 'efectivo') {
-            document.getElementById('pago-efectivo').style.display = 'block';
-            document.getElementById('monto-recibido').value = totalPagoFinal || ordenActual?.total || 0;
-        } else if (metodo === 'mixto') {
-            document.getElementById('pago-mixto').style.display = 'block';
-        }
-    });
-});
-
-document.getElementById('monto-recibido').addEventListener('input', function () {
-    const recibido = parseFloat(this.value) || 0;
-    const total = totalPagoFinal || parseFloat(ordenActual?.total || 0);
-    if (recibido >= total) {
-        document.getElementById('cambio-monto').textContent = 'RD$ ' + (recibido - total).toFixed(2);
-        document.getElementById('cambio-info').classList.remove('d-none');
-    } else {
-        document.getElementById('cambio-info').classList.add('d-none');
+// Delegated input listener (works for sheet + desktop modal)
+document.addEventListener('input', function (e) {
+    if (e.target.closest('#cobrarSheet, #pagoModal')) {
+        if (e.target.matches('#monto-recibido, #md-monto-recibido')) actualizarTotalPago();
     }
 });
 
-document.querySelectorAll('#mixto-efectivo, #mixto-tarjeta, #mixto-transferencia').forEach(inp => {
-    inp.addEventListener('input', function () {
-        const total = totalPagoFinal || parseFloat(ordenActual?.total || 0);
-        const efec = parseFloat(document.getElementById('mixto-efectivo').value) || 0;
-        const tarj = parseFloat(document.getElementById('mixto-tarjeta').value) || 0;
-        const tran = parseFloat(document.getElementById('mixto-transferencia').value) || 0;
-        const suma = efec + tarj + tran;
-        const restante = total - suma;
-        document.getElementById('mixto-restante').textContent = restante > 0 ? 'Faltan: RD$ ' + restante.toFixed(2) : 'Sobrante: RD$ ' + Math.abs(restante).toFixed(2);
-    });
-});
-
 function procesarPago() {
-    const metodo = document.querySelector('.metodo-btn.active-metodo').dataset.metodo;
-    const propina = parseFloat(document.getElementById('propina-input').value) || 0;
-    let payload = { metodo_pago: metodo, propina: propina, cargo_servicio: document.getElementById('cargo-servicio-check')?.checked || false, admin_token: adminTokenValidoMesa() ? adminTokenMesa : null };
+    const metodo = metodoPagoActual;
+    const propina = parseFloat($p('propina-input').value) || 0;
+    let payload = { metodo_pago: metodo, propina: propina, cargo_servicio: $p('cargo-servicio-check')?.checked || false, admin_token: adminTokenValidoMesa() ? adminTokenMesa : null };
 
     // Split bill data
     if (window.splitData?.activo) {
@@ -2685,11 +3011,27 @@ function procesarPago() {
     }
 
     if (metodo === 'efectivo') {
-        payload.monto_recibido = document.getElementById('monto-recibido').value;
+        payload.monto_recibido = $p('monto-recibido').value;
     } else if (metodo === 'mixto') {
-        payload.monto_recibido = document.getElementById('mixto-efectivo').value || 0;
-        payload.monto_tarjeta = document.getElementById('mixto-tarjeta').value || 0;
-        payload.monto_transferencia = document.getElementById('mixto-transferencia').value || 0;
+        payload.monto_recibido = $p('mixto-efectivo').value || 0;
+        payload.monto_tarjeta = $p('mixto-tarjeta').value || 0;
+        payload.monto_transferencia = $p('mixto-transferencia').value || 0;
+    }
+
+    const btn = document.querySelector('.btn-cobrar-touch');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Procesando...';
+    }
+
+    const pagoModal = document.getElementById('pagoModal');
+    if (pagoModal && pagoModal.classList.contains('show')) {
+        bootstrap.Modal.getInstance(pagoModal)?.hide();
+    }
+    const bsSheet = document.getElementById('cobrarSheet');
+    if (bsSheet && bsSheet.classList.contains('open')) {
+        bsSheet.classList.remove('open');
+        document.getElementById('cobrarSheetOverlay')?.classList.remove('visible');
     }
 
     apiFetch(`/restaurante/mesa/${mesaActual}/cobrar`, {
@@ -2699,7 +3041,6 @@ function procesarPago() {
     })
     .then(data => {
         if (data.error) { Swal.fire({icon:'error', title:'Error', text: data.error}); return; }
-        bootstrap.Modal.getInstance(document.getElementById('pagoModal')).hide();
         postPagoData = data.venta;
         mostrarPostPago(data.venta);
         actualizarGridMesa(mesaActual, 'disponible');
@@ -2709,6 +3050,15 @@ function procesarPago() {
         document.getElementById('orden-footer').classList.add('d-none');
         document.getElementById('orden-actions').classList.add('d-none');
         document.getElementById('productos-search-bar').classList.add('d-none');
+    })
+    .catch(err => {
+        Swal.fire({icon:'error', title:'Error', text: err.message || 'No se pudo conectar con el servidor'});
+    })
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="shine"></span><i class="bi bi-check2-circle me-1"></i> Cobrar';
+        }
     });
 }
 
@@ -2716,12 +3066,13 @@ function mostrarPostPago(venta) {
     document.getElementById('post-mesa-info').textContent = venta.mesa_nombre || 'Mesa #' + venta.mesa_numero;
     document.getElementById('post-cliente').textContent = 'Cliente: ' + (venta.cliente || 'Consumidor Final');
     document.getElementById('post-total').textContent = 'RD$ ' + Number(venta.total).toFixed(2);
-    document.getElementById('post-metodo').textContent = venta.metodo_pago.charAt(0).toUpperCase() + venta.metodo_pago.slice(1);
+    const metodoMap = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia', mixto: 'Mixto' };
+    document.getElementById('post-metodo').textContent = metodoMap[venta.metodo_pago] || venta.metodo_pago;
     document.getElementById('factura-status').classList.add('d-none');
     document.getElementById('btn-facturar').disabled = false;
     document.getElementById('btn-facturar').innerHTML = '<i class="bi bi-shield-check me-1"></i> Facturar (e-CF)';
-    const ticketUrl = `/restaurante/mesa/${mesaActual}/ticket?venta_id=${venta.id}`;
-    document.getElementById('btn-ticket').href = ticketUrl;
+    document.getElementById('btn-imprimir').disabled = false;
+    document.getElementById('btn-imprimir').innerHTML = '<i class="bi bi-printer me-1"></i> Imprimir Ticket';
     new bootstrap.Modal(document.getElementById('postPagoModal')).show();
 }
 
@@ -2758,55 +3109,13 @@ function facturarMesa() {
 
 function imprimirTicket() {
     if (!postPagoData || !mesaActual) return;
-    const btn = document.getElementById('btn-imprimir');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Imprimiendo...';
-
-    apiFetch(`/restaurante/mesa/${mesaActual}/ticket/print`, {
-        method: 'POST', key: 'print-ticket-' + postPagoData.id,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ venta_id: postPagoData.id })
-    })
-    .then(data => {
-        if (data.error) {
-            Swal.fire({icon:'error', title:'Error de impresión', text: data.error});
-        } else {
-            Swal.fire({icon:'success', title:'Impreso', text: data.message, timer: 1500, showConfirmButton: false});
-        }
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-printer me-1"></i> Imprimir';
-    })
-    .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-printer me-1"></i> Imprimir';
-        Swal.fire({icon:'error', title:'Error', text: err.message || 'No se pudo conectar con el servidor'});
-    });
+    const ticketUrl = `/restaurante/mesa/${mesaActual}/ticket?venta_id=${postPagoData.id}`;
+    window.open(ticketUrl, '_blank');
 }
 
 function reimprimirTicket(mesaId, ventaId) {
-    const btn = event.target;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-    apiFetch(`/restaurante/mesa/${mesaId}/ticket/print`, {
-        method: 'POST', key: 'print-ticket-' + ventaId,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ venta_id: ventaId })
-    })
-    .then(data => {
-        if (data.error) {
-            Swal.fire({icon:'error', title:'Error de impresión', text: data.error});
-        } else {
-            Swal.fire({icon:'success', title:'Impreso', text: data.message, timer: 1500, showConfirmButton: false});
-        }
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-printer"></i> Reimprimir';
-    })
-    .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-printer"></i> Reimprimir';
-        Swal.fire({icon:'error', title:'Error', text: err.message || 'No se pudo conectar con el servidor'});
-    });
+    const ticketUrl = `/restaurante/mesa/${mesaId}/ticket?venta_id=${ventaId}`;
+    window.open(ticketUrl, '_blank');
 }
 
 // Waitlist functions
@@ -2999,18 +3308,15 @@ document.addEventListener('keydown', function (e) {
     }
     if (e.key === 'F4' && ordenActual && ordenActual.total > 0) {
         e.preventDefault();
-        document.querySelector('.metodo-btn[data-metodo="efectivo"]')?.click();
-        mostrarPago();
+        mostrarPago('efectivo');
     }
     if (e.key === 'F5' && ordenActual && ordenActual.total > 0) {
         e.preventDefault();
-        document.querySelector('.metodo-btn[data-metodo="tarjeta"]')?.click();
-        mostrarPago();
+        mostrarPago('tarjeta');
     }
     if (e.key === 'F9' && ordenActual && ordenActual.total > 0) {
         e.preventDefault();
-        document.querySelector('.metodo-btn[data-metodo="transferencia"]')?.click();
-        mostrarPago();
+        mostrarPago('transferencia');
     }
 });
 

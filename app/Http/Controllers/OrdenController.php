@@ -312,7 +312,8 @@ class OrdenController extends Controller
 
     public function imprimirTicket(Request $request, Mesa $mesa)
     {
-        return back()->with('error', 'Configuración de impresoras ha sido removida. Use la vista de ticket.');
+        $venta = \App\Models\Venta::findOrFail($request->input('venta_id'));
+        return redirect()->route('restaurante.mesa.ticket', ['mesa' => $mesa, 'venta_id' => $venta->id]);
     }
 
     public function ticketText(Mesa $mesa, Request $request)
