@@ -193,7 +193,7 @@ class RestaurantOrderService
         $producto = Producto::findOrFail($productoId);
         $notas = $notas;
         $curso = $curso ?? 'fuerte';
-        $estadoCocina = ($producto->incluir_kds === false) ? 'servido' : 'pendiente';
+        $estadoCocina = ($producto->incluir_kds === false) ? 'servido' : 'no_enviado';
     
         $detalleExistente = \App\Models\VentaDetalle::where('venta_id', $orden->id)
             ->where('producto_id', $producto->id)

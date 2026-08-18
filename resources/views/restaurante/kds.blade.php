@@ -249,9 +249,9 @@ function cargarKds() {
 
             container.innerHTML = ordenes.map(o => {
                 let cursosHtml = '';
-                const cursoOrden = ['entrada', 'fuerte', 'postre', 'bebida'];
-                const cursoLabels = { entrada: 'Entradas', fuerte: 'Platos Fuertes', postre: 'Postres', bebida: 'Bebidas' };
-                const cursoColors = { entrada: '#3b82f6', fuerte: '#eab308', postre: '#ec4899', bebida: '#06b6d4' };
+                const cursoOrden = ['entrada', 'fuerte', 'postre', 'bebida', 'General'];
+                const cursoLabels = { entrada: 'Entradas', fuerte: 'Platos Fuertes', postre: 'Postres', bebida: 'Bebidas', General: 'General' };
+                const cursoColors = { entrada: '#3b82f6', fuerte: '#eab308', postre: '#ec4899', bebida: '#06b6d4', General: '#64748b' };
                 cursoOrden.forEach(cur => {
                     const items = o.cursos[cur];
                     if (!items || items.length === 0) return;
@@ -260,7 +260,12 @@ function cargarKds() {
                             <small class="fw-bold text-muted text-uppercase d-flex align-items-center gap-1 mb-1" style="font-size:.65rem;">
                                 <span class="kds-curso-dot" style="background:${cursoColors[cur] || '#64748b'}"></span>${cursoLabels[cur] || cur}
                             </small>
-                            ${items.map(d => `
+                            ${items.map(d => {
+                                const progBtn = o.origen === 'orden' ? 'en_preparacion' : 'preparando';
+                                const finBtn   = o.origen === 'orden' ? 'entregado' : 'servido';
+                                const preLabel = o.origen === 'orden' ? 'Preparar' : 'Preparando';
+                                const finLabel = o.origen === 'orden' ? 'Entregar' : 'Servido';
+                                return `
                                 <div class="kds-item ${cur}">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
@@ -268,19 +273,25 @@ function cargarKds() {
                                             ${d.notas ? `<br><small class="text-muted fst-italic">📝 ${d.notas}</small>` : ''}
                                         </div>
                                         <div class="kds-btn-group">
-                                            ${d.estado_cocina === 'pendiente' ? `<button class="ui-btn kds-btn-preparando ui-btn-sm rounded-pill" onclick="kdsActualizar(${d.id}, 'preparando')"><i class="bi bi-fire me-1"></i>Preparando</button>` : ''}
-                                            ${d.estado_cocina === 'preparando' ? `<span class="ui-badge ui-badge-warning"><i class="bi bi-fire me-1"></i>Preparando</span> <button class="ui-btn kds-btn-listo ui-btn-sm rounded-pill" onclick="kdsActualizar(${d.id}, 'listo')"><i class="bi bi-check-lg me-1"></i>Listo</button>` : ''}
-                                            ${d.estado_cocina === 'listo' ? `<span class="ui-badge ui-badge-success"><i class="bi bi-check-circle me-1"></i>Listo</span> <button class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill" onclick="kdsActualizar(${d.id}, 'servido')"><i class="bi bi-hand-thumbs-up me-1"></i>Servido</button>` : ''}
+                                            ${d.estado_cocina === 'pendiente' ? `<button class="ui-btn kds-btn-preparando ui-btn-sm rounded-pill" onclick="kdsActualizar('${o.origen}', ${d.id}, '${progBtn}')"><i class="bi bi-fire me-1"></i>${preLabel}</button>` : ''}
+                                            ${d.estado_cocina === progBtn ? `<span class="ui-badge ui-badge-warning"><i class="bi bi-fire me-1"></i>Preparando</span> <button class="ui-btn kds-btn-listo ui-btn-sm rounded-pill" onclick="kdsActualizar('${o.origen}', ${d.id}, 'listo')"><i class="bi bi-check-lg me-1"></i>Listo</button>` : ''}
+                                            ${d.estado_cocina === 'listo' ? `<span class="ui-badge ui-badge-success"><i class="bi bi-check-circle me-1"></i>Listo</span> <button class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill" onclick="kdsActualizar('${o.origen}', ${d.id}, '${finBtn}')"><i class="bi bi-hand-thumbs-up me-1"></i>${finLabel}</button>` : ''}
                                         </div>
                                     </div>
-                                </div>
-                            `).join('')}
+                                </div>`;
+                            }).join('')}
                         </div>`;
                 });
 
                 const totalItems = Object.values(o.cursos || {}).flat().length;
                 const tienePendientes = Object.values(o.cursos || {}).flat().some(d => d.estado_cocina === 'pendiente');
-                const todosListos = Object.values(o.cursos || {}).flat().every(d => d.estado_cocina === 'listo' || d.estado_cocina === 'servido');
+                const todosListos = Object.values(o.cursos || {}).flat().every(d => d.estado_cocina === 'listo' || d.estado_cocina === 'servido' || d.estado_cocina === 'entregado');
+
+                const esMesa = o.origen === 'mesa';
+                const titulo = esMesa ? (o.mesa || 'Mesa —') : `Orden ${o.tipo_orden ? '· ' + o.tipo_orden : ''}`;
+                const subInfo = esMesa
+                    ? `<i class="bi bi-clock"></i>${o.time} · ${totalItems} items`
+                    : `<i class="bi bi-clock"></i>${o.time} · ${totalItems} items ${o.cliente_nombre && o.cliente_nombre !== '—' ? '· ' + o.cliente_nombre : ''}`;
 
                 return `
                 <div class="col-xl-3 col-lg-4 col-md-6">
@@ -288,8 +299,8 @@ function cargarKds() {
                         <div class="ui-card-accent"></div>
                         <div class="kds-card-head">
                             <div>
-                                <h5 class="fw-bold mb-0">${o.mesa}</h5>
-                                <small class="kds-card-meta"><i class="bi bi-clock"></i>${o.time} · ${totalItems} items</small>
+                                <h5 class="fw-bold mb-0">${titulo}</h5>
+                                <small class="kds-card-meta">${subInfo}</small>
                             </div>
                             <span class="kds-card-num">#${o.id}</span>
                         </div>
@@ -302,8 +313,8 @@ function cargarKds() {
         });
 }
 
-function kdsActualizar(detalleId, estado) {
-    fetch(`/restaurante/kds/update/${detalleId}`, {
+function kdsActualizar(origen, detalleId, estado) {
+    fetch(`/restaurante/kds/update/${origen}/${detalleId}`, {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado })

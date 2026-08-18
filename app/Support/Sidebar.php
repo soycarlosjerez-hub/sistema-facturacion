@@ -226,7 +226,7 @@ class Sidebar
             if ($mod('ordenes') && $can('ordenes.view')) {
                 $items[] = ['route' => 'ordenes.index', 'icon' => 'bi-receipt-cutoff', 'label' => 'Órdenes POS', 'is_route' => 'ordenes.*', 'exact_route' => 'ordenes.index'];
             }
-            if ($mod('ordenes-kds') && $can('kds.view')) {
+            if ($mod('ordenes-kds') && $can('kds.view') && !$mod('restaurante-kds')) {
                 $items[] = ['route' => 'kds.index', 'icon' => 'bi-display', 'label' => 'Pantalla Cocina (KDS)', 'is_route' => 'kds.*', 'exact_route' => 'kds.index'];
             }
         }

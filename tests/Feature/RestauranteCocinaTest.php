@@ -70,19 +70,18 @@ class RestauranteCocinaTest extends TestCase
         return $session;
     }
 
-    public function test_agregar_item_queda_pendiente_y_aparece_en_kds(): void
+    public function test_agregar_item_queda_no_enviado_y_no_aparece_en_kds_hasta_enviar(): void
     {
         $session = $this->setupMesaAbierta();
         $detalle = $session['orden']->detalles()->first();
 
-        $this->assertSame('pendiente', $detalle->estado_cocina);
+        $this->assertSame('no_enviado', $detalle->estado_cocina);
 
         $response = $this->actingAs($session['user'])
             ->get(route('restaurante.kds.orders'));
 
         $response->assertOk();
-        $response->assertJsonCount(1, 'ordenes');
-        $this->assertSame($session['orden']->id, $response->json('ordenes.0.id'));
+        $this->assertCount(0, $response->json('ordenes', []));
     }
 
     public function test_enviar_cocina_por_detalle_reenvia_no_enviado_y_aparece_en_kds(): void
@@ -111,12 +110,23 @@ class RestauranteCocinaTest extends TestCase
         $this->assertSame($session['orden']->id, $response->json('ordenes.0.id'));
     }
 
-    public function test_agregar_item_envia_automaticamente_todos_los_platos(): void
+    public function test_agregar_item_no_envia_automaticamente_hasta_enviar_a_cocina(): void
     {
         $session = $this->setupMesaAbierta(2);
 
-        $this->assertSame(2, VentaDetalle::where('venta_id', $session['orden']->id)->where('estado_cocina', 'pendiente')->count());
-        $this->assertSame(0, VentaDetalle::where('venta_id', $session['orden']->id)->where('estado_cocina', 'no_enviado')->count());
+        $this->assertSame(0, VentaDetalle::where('venta_id', $session['orden']->id)->where('estado_cocina', 'pendiente')->count());
+        $this->assertSame(2, VentaDetalle::where('venta_id', $session['orden']->id)->where('estado_cocina', 'no_enviado')->count());
+
+        $response = $this->actingAs($session['user'])
+            ->get(route('restaurante.kds.orders'));
+        $response->assertOk();
+        $this->assertCount(0, $response->json('ordenes', []));
+
+        // Enviar a cocina
+        $response = $this->actingAs($session['user'])
+            ->postJson(route('restaurante.mesa.cocina', $session['mesa']));
+        $response->assertOk();
+        $response->assertJson(['success' => true, 'enviados' => 2]);
 
         $response = $this->actingAs($session['user'])
             ->get(route('restaurante.kds.orders'));
@@ -124,9 +134,12 @@ class RestauranteCocinaTest extends TestCase
         $this->assertNotEmpty($response->json('ordenes'));
     }
 
-    public function test_kds_muestra_todos_los_platos_enviados_automaticamente(): void
+    public function test_kds_muestra_todos_los_platos_enviados_a_cocina(): void
     {
         $session = $this->setupMesaAbierta(2);
+
+        $this->actingAs($session['user'])
+            ->postJson(route('restaurante.mesa.cocina', $session['mesa']));
 
         $response = $this->actingAs($session['user'])
             ->get(route('restaurante.kds.orders'));
@@ -196,9 +209,53 @@ class RestauranteCocinaTest extends TestCase
         $response->assertJson(['success' => true, 'enviados' => 0]);
     }
 
+    public function test_kds_muestra_ordenes_api_pendientes(): void
+    {
+        $session = $this->createBasicTestData();
+        session(['sucursal_id' => $session['sucursal']->id]);
+        Auth::login($session['user']);
+
+        $producto = $session['producto'];
+        $producto->update(['precio' => 100.00, 'itbis_porcentaje' => 18, 'stock' => 100]);
+
+        $orden = \App\Models\Orden::create([
+            'user_id'       => $session['user']->id,
+            'sucursal_id'   => $session['sucursal']->id,
+            'cliente_id'    => $session['consumidorFinal']->id,
+            'tipo_orden'    => 'delivery',
+            'subtotal'      => 100,
+            'impuestos'     => 18,
+            'total'         => 118,
+            'estado'        => 'pendiente',
+            'tenant_id'     => $session['businessInstance']->id,
+        ]);
+
+        \App\Models\OrdenDetalle::create([
+            'orden_id'       => $orden->id,
+            'producto_id'    => $producto->id,
+            'cantidad'       => 1,
+            'precio_unitario'=> 100,
+            'subtotal'       => 100,
+            'curso'          => 'fuerte',
+            'estado_cocina'  => 'pendiente',
+            'tenant_id'      => $session['businessInstance']->id,
+        ]);
+
+        $response = $this->actingAs($session['user'])
+            ->get(route('restaurante.kds.orders'));
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'ordenes');
+        $this->assertSame('orden', $response->json('ordenes.0.origen'));
+        $this->assertSame($orden->id, $response->json('ordenes.0.id'));
+    }
+
     public function test_limpiar_kds_marca_todo_como_servido(): void
     {
         $session = $this->setupMesaAbierta(2);
+
+        $this->actingAs($session['user'])
+            ->postJson(route('restaurante.mesa.cocina', $session['mesa']));
 
         $response = $this->actingAs($session['user'])
             ->postJson(route('restaurante.kds.limpiar'));

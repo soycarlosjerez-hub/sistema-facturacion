@@ -979,7 +979,7 @@ Route::middleware(['auth'])->group(function () {
     // KDS (Kitchen Display System)
     Route::get('/restaurante/kds', [KdsController::class, 'index'])->name('restaurante.kds.index')->middleware('permission:restaurante.view');
     Route::get('/restaurante/kds/orders', [KdsController::class, 'orders'])->name('restaurante.kds.orders')->middleware('permission:restaurante.view');
-    Route::post('/restaurante/kds/update/{detalle}', [KdsController::class, 'updateEstado'])->name('restaurante.kds.update')->middleware('permission:restaurante.view');
+    Route::post('/restaurante/kds/update/{origen}/{detalle}', [KdsController::class, 'updateEstado'])->name('restaurante.kds.update')->middleware('permission:restaurante.view');
     Route::post('/restaurante/kds/limpiar', [KdsController::class, 'limpiar'])->name('restaurante.kds.limpiar')->middleware('permission:restaurante.view');
     Route::get('/restaurante/kds/audio', [KdsController::class, 'audio'])->name('restaurante.kds.audio')->middleware('permission:restaurante.view');
 });
