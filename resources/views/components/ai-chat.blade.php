@@ -565,6 +565,9 @@ body.dark-mode .ai-chat-error {
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
+    // Base path for Laravel subdirectory deployment
+    const basePath = "{!! url('') !!}/";
+
     const widget = document.getElementById('ai-chat-widget');
     if (!widget) return;
 
@@ -673,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
         abortController = new AbortController();
 
         try {
-            const response = await fetch('/api/ai/chat', {
+            const response = await fetch(basePath + 'api/ai/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -749,7 +752,7 @@ document.addEventListener('DOMContentLoaded', function() {
         abortController = new AbortController();
 
         try {
-            const response = await fetch('/api/ai/chat?stream=1', {
+            const response = await fetch(basePath + 'api/ai/chat?stream=1', {
                 method: 'POST',
                 headers: {
                     'Accept': 'text/event-stream',
