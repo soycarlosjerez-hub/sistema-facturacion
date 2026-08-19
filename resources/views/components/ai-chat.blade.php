@@ -565,8 +565,11 @@ body.dark-mode .ai-chat-error {
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
-    // Base path for Laravel subdirectory deployment
     const basePath = "{!! url('') !!}/";
+
+    // Debug: log basePath in console
+    console.log('[AI Chat] BasePath:', basePath);
+    console.log('[AI Chat] Fetch URL:', basePath + 'api/ai/chat');
 
     const widget = document.getElementById('ai-chat-widget');
     if (!widget) return;
