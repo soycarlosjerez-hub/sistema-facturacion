@@ -18,7 +18,8 @@ class AiChatMethodGuard
                 'method' => $request->method(),
                 'timestamp' => now()->toIso8601String(),
             ]);
-            return response('Method Not Allowed', 405);
+            return response('Method Not Allowed', 405)
+                ->header('Allow', 'POST');
         }
 
         return $next($request);
