@@ -55,4 +55,14 @@ class DeliveryTracking extends Model
     {
         return $this->belongsTo(BusinessInstance::class, 'tenant_id');
     }
+
+    /**
+     * Acceso al tiempo estimado de la zona de delivery asociada.
+     * Nota: No existe delivery_zone_id en 'ordenes' ni 'delivery_tracking'.
+     * El valor siempre será 0 mientras no se agregue la columna a la tabla 'ordenes'.
+     */
+    public function getTiempoEstimadoMinutosAttribute()
+    {
+        return $this->deliveryZone?->tiempo_estimado_minutos ?? 0;
+    }
 }

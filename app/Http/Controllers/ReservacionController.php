@@ -34,9 +34,29 @@ class ReservacionController extends Controller
             $query->where('estado', $estado);
         }
 
+        if ($fecha = request('fecha')) {
+            $query->whereDate('fecha_hora', $fecha);
+        }
+
         $reservaciones = $query->orderBy('fecha_hora')->paginate(20);
         $mesas = Mesa::deSucursal()->orderBy('numero')->get();
-        return view('restaurante.reservaciones', compact('reservaciones', 'mesas'));
+
+        // Stats
+        $stats = [
+            'total_hoy' => Reservacion::whereDate('fecha_hora', today())->deSucursal()->count(),
+            'pendientes' => Reservacion::whereIn('estado', ['pendiente', 'confirmada'])->deSucursal()->count(),
+            'confirmadas' => Reservacion::where('estado', 'confirmada')->deSucursal()->count(),
+            'canceladas' => Reservacion::where('estado', 'cancelada')->deSucursal()->count(),
+        ];
+
+        return view('restaurante.reservaciones', compact('reservaciones', 'mesas', 'stats'));
+    }
+
+    public function show(Reservacion $reservacion)
+    {
+        $reservacion->load(['mesa.categoria', 'mesa.ubicacion', 'cliente', 'user']);
+        $mesas = Mesa::deSucursal()->orderBy('numero')->get();
+        return view('restaurante.reservaciones-show', compact('reservacion', 'mesas'));
     }
 
     public function store(Request $request)

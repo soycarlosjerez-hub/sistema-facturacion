@@ -808,6 +808,7 @@ Route::middleware(['auth', 'permission:sucursales.delete'])->group(function () {
 Route::middleware(['auth', 'permission:delivery-companies.view'])->group(function () {
     Route::get('delivery-companies', [DeliveryCompanyController::class, 'index'])->name('delivery-companies.index');
     Route::get('delivery-companies/listar-activas', [DeliveryCompanyController::class, 'listarActivas'])->name('delivery-companies.listar-activas');
+    Route::get('delivery-companies/{deliveryCompany}', [DeliveryCompanyController::class, 'show'])->name('delivery-companies.show');
 });
 Route::middleware(['auth', 'permission:delivery-companies.create'])->group(function () {
     Route::get('delivery-companies/create', [DeliveryCompanyController::class, 'create'])->name('delivery-companies.create');
@@ -966,6 +967,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Reservaciones
     Route::get('/restaurante/reservaciones', [ReservacionController::class, 'index'])->name('restaurante.reservaciones.index')->middleware('permission:restaurante.reservaciones');
+    Route::get('/restaurante/reservaciones/{reservacion}', [ReservacionController::class, 'show'])->name('restaurante.reservaciones.show')->middleware('permission:restaurante.reservaciones');
     Route::post('/restaurante/reservaciones', [ReservacionController::class, 'store'])->name('restaurante.reservaciones.store')->middleware('permission:restaurante.reservaciones');
     Route::put('/restaurante/reservaciones/{reservacion}', [ReservacionController::class, 'update'])->name('restaurante.reservaciones.update')->middleware('permission:restaurante.reservaciones');
     Route::patch('/restaurante/reservaciones/{reservacion}/estado', [ReservacionController::class, 'estado'])->name('restaurante.reservaciones.estado')->middleware('permission:restaurante.reservaciones');

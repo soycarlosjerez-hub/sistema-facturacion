@@ -37,6 +37,30 @@ class DeliveryCompanyController extends Controller
             ->with('success', 'Empresa de delivery creada correctamente.');
     }
 
+    public function show(DeliveryCompany $deliveryCompany)
+    {
+        $ventasConDelivery = $deliveryCompany->ventas()
+            ->with(['cliente'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $totalVentas = $deliveryCompany->ventas()->count();
+        $totalDeliveryFees = $deliveryCompany->ventas()->sum('delivery_fee');
+        $totalComisiones = round(
+            $totalDeliveryFees * ($deliveryCompany->comision_porcentaje / 100),
+            2
+        );
+
+        return view('delivery-companies.show', [
+            'company' => $deliveryCompany,
+            'ventasConDelivery' => $ventasConDelivery,
+            'totalVentas' => $totalVentas,
+            'totalDeliveryFees' => $totalDeliveryFees,
+            'totalComisiones' => $totalComisiones,
+        ]);
+    }
+
     public function edit(DeliveryCompany $deliveryCompany)
     {
         return view('delivery-companies.edit', ['company' => $deliveryCompany]);
