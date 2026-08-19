@@ -1113,6 +1113,9 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
     })();
     </script>
 
+    <!-- AI Chat Assistant -->
+    <x-ai-chat />
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- DataTables JS -->
@@ -1130,6 +1133,21 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
     (function() {
         'use strict';
         const input = document.getElementById('globalSearchInput');
+        if (!input) return;
+        const results = document.getElementById('globalSearchResults');
+        let timer = null;
+        let selectedIdx = -1;
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && results.style.display !== 'none') {
+                results.style.display = 'none';
+            }
+        });
+
+        if (!results) return;
+    })();
+    </script>
+
 </body>
 
 </html>

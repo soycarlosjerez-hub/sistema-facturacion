@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.cliente'       => \App\Http\Middleware\AuthenticateCliente::class,
             'tenant.mail'      => \App\Http\Middleware\TenantMailConfig::class,
             'plan.limits'      => \App\Http\Middleware\EnforcePlanLimits::class,
+            'ai'               => \App\Http\Middleware\AiMiddleware::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
