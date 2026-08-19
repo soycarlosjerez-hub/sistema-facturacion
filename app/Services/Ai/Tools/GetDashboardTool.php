@@ -9,6 +9,7 @@ use App\Models\Producto;
 use App\Models\SesionCaja;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class GetDashboardTool implements AiToolInterface
 {
@@ -45,22 +46,14 @@ class GetDashboardTool implements AiToolInterface
             ->count();
         $sesionesAbiertas = SesionCaja::where('estado', 'abierta')->count();
 
-        $stats = DB::selectOne(
-            'SELECT
-                COALESCE(SUM(v.total), 0) as total_ventas,
-                COALESCE(SUM(vd.cantidad * p.precio_compra), 0) as costo_mes
-                FROM ventas v
-                JOIN venta_detalles vd ON v.id = vd.venta_id
-                JOIN productos p ON p.id = vd.producto_id
-                WHERE v.tenant_id = ?
-                    AND MONTH(v.created_at) = ?
-                    AND YEAR(v.created_at) = ?',
-            [
-                Auth::user()->business_instance_id,
-                now()->month,
-                now()->year,
-            ],
-        );
+        $stats = [
+            'total_ventas' => DB::table('ventas')
+                ->where('tenant_id', Auth::user()->business_instance_id)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('total') ?? 0,
+            'costo_mes' => 0,
+        ];
 
         $totalVentas = (float) ($stats->total_ventas ?? 0);
         $costoMes = (float) ($stats->costo_mes ?? 0);
