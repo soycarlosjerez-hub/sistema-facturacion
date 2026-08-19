@@ -36,7 +36,25 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->dontReport([
+            \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException::class,
+            \Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class,
+        ]);
+
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+            if ($e->getStatusCode() === 405) {
+                $allow = $e instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException
+                    ? $e->getHeaders()['Allow'] ?? 'GET, HEAD'
+                    : 'GET, HEAD';
+
+                if ($request->is('api/*')) {
+                    return response()->json(['error' => 'Method Not Allowed'], 405)
+                        ->header('Allow', $allow);
+                }
+
+                return response('Method Not Allowed', 405)
+                    ->header('Allow', $allow);
+            }
             if ($e->getStatusCode() === 403) {
                 return response()->view('errors.403', ['message' => $e->getMessage()], 403);
             }

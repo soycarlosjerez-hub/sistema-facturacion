@@ -141,7 +141,11 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             static $itbis = null;
             if ($itbis === null) {
-                $itbis = SystemSetting::itbisDefault();
+                try {
+                    $itbis = SystemSetting::itbisDefault();
+                } catch (\Throwable $e) {
+                    $itbis = 18;
+                }
             }
             $view->with('systemItbis', $itbis);
         });
