@@ -37,7 +37,8 @@ class GetSuppliersTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $query = Proveedor::query()->select('id', 'nombre', 'email', 'telefono', 'rnc', 'activo');
+        $query = Proveedor::query()->select('id', 'nombre', 'email', 'telefono', 'rnc', 'activo')
+            ->where('tenant_id', $user->business_instance_id);
 
         if (!empty($input['buscar'])) {
             $query->where(function ($q) use ($input) {

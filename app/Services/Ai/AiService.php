@@ -7,6 +7,7 @@ use App\Models\AiMessage;
 use App\Services\Ai\Tools\AiToolsManager;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -47,6 +48,8 @@ class AiService
 
             $assistantContent = '';
             $pendingToolCalls = [];
+            $toolResponses = [];
+            $hasReasoning = false;
 
             if (isset($response['choices'])) {
                 foreach ($response['choices'] as $choice) {
@@ -56,6 +59,10 @@ class AiService
 
                     if (isset($choice['message']['content'])) {
                         $assistantContent .= $choice['message']['content'];
+                    }
+
+                    if (!empty($choice['message']['reasoning'])) {
+                        $hasReasoning = true;
                     }
 
                     if (isset($choice['delta']['tool_calls'])) {
@@ -74,6 +81,28 @@ class AiService
 
                             if (isset($tc['function']['arguments'])) {
                                 $pendingToolCalls[$tc['index']]['arguments'] .= $tc['function']['arguments'];
+                            }
+                        }
+                    }
+
+                    if (isset($choice['message']['tool_calls'])) {
+                        foreach ($choice['message']['tool_calls'] as $tc) {
+                            $index = $tc['index'] ?? count($pendingToolCalls);
+
+                            if (!isset($pendingToolCalls[$index])) {
+                                $pendingToolCalls[$index] = [
+                                    'id' => $tc['id'] ?? '',
+                                    'function_name' => '',
+                                    'arguments' => '',
+                                ];
+                            }
+
+                            if (isset($tc['function']['name'])) {
+                                $pendingToolCalls[$index]['function_name'] = $tc['function']['name'];
+                            }
+
+                            if (isset($tc['function']['arguments'])) {
+                                $pendingToolCalls[$index]['arguments'] .= $tc['function']['arguments'];
                             }
                         }
                     }
@@ -121,6 +150,10 @@ class AiService
                 if (isset($response['choices'])) {
                     foreach ($response['choices'] as $choice) {
                         $assistantContent .= $choice['message']['content'] ?? '';
+
+                        if (!empty($choice['message']['reasoning'])) {
+                            $hasReasoning = true;
+                        }
                     }
                 }
             }
@@ -128,7 +161,11 @@ class AiService
             $this->saveMessageInternal($conversationId, 'assistant', trim($assistantContent));
 
             if (empty($assistantContent)) {
-                $assistantContent = 'No pude obtener una respuesta. Por favor, intenta de nuevo con una pregunta diferente.';
+                if ($hasReasoning) {
+                    $assistantContent = 'El modelo agoto el limite de tokens durante el razonamiento y no genero respuesta. Intenta con una pregunta mas especifica.';
+                } else {
+                    $assistantContent = 'No pude obtener una respuesta. Por favor, intenta de nuevo con una pregunta diferente.';
+                }
                 $this->saveMessageInternal($conversationId, 'assistant', $assistantContent);
             }
 
@@ -173,6 +210,9 @@ class AiService
                 $buffer = '';
                 $pendingToolCalls = [];
                 $fullAssistantContent = '';
+                $reasoningBuffer = '';
+                $lastSentReasoning = 0;
+                $finishReason = null;
 
                 try {
                     echo "data: " . json_encode(['type' => 'conversation_start', 'conversation_id' => $conversationId]) . "\n\n";
@@ -181,7 +221,7 @@ class AiService
                     $ch = $this->buildCurlHandle($promptMessages, $tools, true);
 
                     curl_setopt_array($ch, [
-                        CURLOPT_WRITEFUNCTION => function ($curlHandle, $data) use (&$buffer, &$pendingToolCalls, &$fullAssistantContent) {
+                        CURLOPT_WRITEFUNCTION => function ($curlHandle, $data) use (&$buffer, &$pendingToolCalls, &$fullAssistantContent, &$reasoningBuffer, &$lastSentReasoning, &$finishReason) {
                             $buffer .= $data;
                             $lines = explode("\n", $buffer);
 
@@ -205,8 +245,22 @@ class AiService
 
                                     foreach ($decoded['choices'] as $choice) {
                                         $delta = $choice['delta'] ?? [];
+                                        $finishReason = $choice['finish_reason'] ?? $finishReason;
+
+                                        if (isset($delta['reasoning']) && $delta['reasoning']) {
+                                            $reasoningBuffer .= $delta['reasoning'];
+                                            if (strlen($reasoningBuffer) - $lastSentReasoning >= 100) {
+                                                echo "data: " . json_encode(['type' => 'thinking']) . "\n\n";
+                                                flush();
+                                                $lastSentReasoning = strlen($reasoningBuffer);
+                                            }
+                                        }
 
                                         if (isset($delta['content']) && $delta['content']) {
+                                            if ($reasoningBuffer !== '' && $fullAssistantContent === '') {
+                                                echo "data: " . json_encode(['type' => 'thinking_done']) . "\n\n";
+                                                flush();
+                                            }
                                             $fullAssistantContent .= $delta['content'];
                                             echo "data: " . json_encode(['type' => 'text', 'content' => $delta['content']]) . "\n\n";
                                             flush();
@@ -245,6 +299,11 @@ class AiService
                     curl_close($ch);
 
                     if ($httpCode >= 400) {
+                        Log::error('AI stream HTTP error', [
+                            'conversation_id' => $conversationId,
+                            'http_code' => $httpCode,
+                        ]);
+
                         echo "data: " . json_encode(['type' => 'error', 'message' => 'Error al comunicarse con el servicio de IA. HTTP: ' . $httpCode]) . "\n\n";
                         flush();
 
@@ -253,10 +312,28 @@ class AiService
                     }
 
                     if ($curlError) {
+                        Log::error('AI stream curl error', [
+                            'conversation_id' => $conversationId,
+                            'error' => $curlError,
+                        ]);
+
                         echo "data: " . json_encode(['type' => 'error', 'message' => 'Error de conexion con el servicio de IA.']) . "\n\n";
                         flush();
 
                         $this->saveMessageInternal($conversationId, 'assistant', 'Error de conexion con el servicio de IA.');
+                        return;
+                    }
+
+                    if ($finishReason === 'length' && trim($fullAssistantContent) === '' && count($pendingToolCalls) === 0) {
+                        Log::warning('AI stream truncated by token limit', [
+                            'conversation_id' => $conversationId,
+                            'reasoning_chars' => strlen($reasoningBuffer),
+                        ]);
+
+                        echo "data: " . json_encode(['type' => 'error', 'message' => 'El modelo agoto el limite de tokens durante el razonamiento y no genero respuesta. Intenta con una pregunta mas especifica.']) . "\n\n";
+                        flush();
+
+                        $this->saveMessageInternal($conversationId, 'assistant', 'El modelo agoto el limite de tokens durante el razonamiento y no genero respuesta.');
                         return;
                     }
 
@@ -304,9 +381,44 @@ class AiService
                         flush();
 
                         $finalCh = $this->buildCurlHandle($promptMessages, [], false);
+                        curl_setopt($finalCh, CURLOPT_RETURNTRANSFER, true);
 
-                        curl_exec($finalCh);
+                        $finalBody = curl_exec($finalCh);
+                        $finalCurlError = curl_error($finalCh);
+                        $finalHttpCode = curl_getinfo($finalCh, CURLINFO_RESPONSE_CODE);
                         curl_close($finalCh);
+
+                        if ($finalHttpCode >= 400 || $finalCurlError || !$finalBody) {
+                            Log::error('AI stream final response failed', [
+                                'conversation_id' => $conversationId,
+                                'http_code' => $finalHttpCode,
+                                'curl_error' => $finalCurlError,
+                            ]);
+
+                            echo "data: " . json_encode(['type' => 'error', 'message' => 'Error al procesar la respuesta final de la herramienta.']) . "\n\n";
+                            flush();
+                        } else {
+                            $finalDecoded = json_decode($finalBody, true);
+                            $finalContent = $finalDecoded['choices'][0]['message']['content'] ?? '';
+                            $finalFinish = $finalDecoded['choices'][0]['finish_reason'] ?? null;
+
+                            if ($finalContent === '' && $finalFinish === 'length') {
+                                Log::warning('AI stream final response truncated', [
+                                    'conversation_id' => $conversationId,
+                                ]);
+
+                                echo "data: " . json_encode(['type' => 'error', 'message' => 'El modelo agoto el limite de tokens durante el razonamiento y no genero respuesta.']) . "\n\n";
+                                flush();
+                            }
+
+                            if ($finalContent !== '') {
+                                foreach (str_split($finalContent, 80) as $chunk) {
+                                    $fullAssistantContent .= $chunk;
+                                    echo "data: " . json_encode(['type' => 'text', 'content' => $chunk]) . "\n\n";
+                                    flush();
+                                }
+                            }
+                        }
 
                         echo "data: " . json_encode(['type' => 'done']) . "\n\n";
                         flush();
@@ -315,10 +427,21 @@ class AiService
                         flush();
                     }
 
-                    $this->saveMessageInternal($conversationId, 'assistant', trim($fullAssistantContent));
+                    $savedContent = trim($fullAssistantContent);
+                    if ($savedContent === '') {
+                        $savedContent = 'No pude obtener una respuesta. Por favor, intenta de nuevo.';
+                    }
+                    $this->saveMessageInternal($conversationId, 'assistant', $savedContent);
                     AiConversation::where('conversation_id', $conversationId)->update(['updated_at' => now()]);
 
                 } catch (\Exception $e) {
+                    Log::error('AI stream failed', [
+                        'conversation_id' => $conversationId,
+                        'exception' => get_class($e),
+                        'message' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+
                     echo "data: " . json_encode(['type' => 'error', 'message' => $e->getMessage()]) . "\n\n";
                     flush();
 
@@ -449,6 +572,22 @@ class AiService
 
         $ch = curl_init();
 
+        $payload = [
+            'model' => $model,
+            'messages' => $messages,
+            'temperature' => config('ai.temperature', 0.3),
+            'max_tokens' => config('ai.max_tokens', 2000),
+            'stream' => false,
+        ];
+
+        if (config('ai.disable_thinking')) {
+            $payload['chat_template_kwargs'] = ['enable_thinking' => false];
+        }
+
+        if (count($tools) > 0) {
+            $payload['tools'] = $tools;
+        }
+
         curl_setopt_array($ch, $this->sslOptions() + [
             CURLOPT_URL => $url,
             CURLOPT_POST => true,
@@ -458,14 +597,7 @@ class AiService
                 'Authorization: Bearer ' . $apiKey,
                 'Content-Type: application/json',
             ],
-            CURLOPT_POSTFIELDS => json_encode([
-                'model' => $model,
-                'messages' => $messages,
-                'temperature' => config('ai.temperature', 0.3),
-                'max_tokens' => config('ai.max_tokens', 2000),
-                'stream' => false,
-                'tools' => $tools,
-            ]),
+            CURLOPT_POSTFIELDS => json_encode($payload),
         ]);
 
         $response = curl_exec($ch);
@@ -492,6 +624,22 @@ class AiService
     {
         $ch = curl_init();
 
+        $payload = [
+            'model' => config('ai.model'),
+            'messages' => $messages,
+            'temperature' => config('ai.temperature', 0.3),
+            'max_tokens' => config('ai.max_tokens', 2000),
+            'stream' => $stream,
+        ];
+
+        if (config('ai.disable_thinking')) {
+            $payload['chat_template_kwargs'] = ['enable_thinking' => false];
+        }
+
+        if (count($tools) > 0) {
+            $payload['tools'] = $tools;
+        }
+
         curl_setopt_array($ch, $this->sslOptions() + [
             CURLOPT_URL => $this->resolveApiUrl(),
             CURLOPT_POST => true,
@@ -501,14 +649,7 @@ class AiService
                 'Authorization: Bearer ' . config('ai.api_key'),
                 'Content-Type: application/json',
             ],
-            CURLOPT_POSTFIELDS => json_encode([
-                'model' => config('ai.model'),
-                'messages' => $messages,
-                'temperature' => config('ai.temperature', 0.3),
-                'max_tokens' => config('ai.max_tokens', 2000),
-                'stream' => $stream,
-                'tools' => $tools,
-            ]),
+            CURLOPT_POSTFIELDS => json_encode($payload),
         ]);
 
         return $ch;

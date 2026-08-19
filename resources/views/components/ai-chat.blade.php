@@ -739,6 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let assistantContentEl = null;
         let assistantContent = '';
+        let showingThinking = false;
 
         // Create message bubble for assistant
         messagesContainer.classList.add('ai-messages-visible');
@@ -814,13 +815,34 @@ document.addEventListener('DOMContentLoaded', function() {
                                 currentConversationId = data.conversation_id;
                             }
 
+                            if (data.type === 'thinking' && !assistantContent) {
+                                if (!showingThinking) {
+                                    showingThinking = true;
+                                    assistantContentEl.textContent = 'Analizando...';
+                                    scrollToBottom();
+                                }
+                            }
+
+                            if (data.type === 'thinking_done' && showingThinking) {
+                                showingThinking = false;
+                                assistantContentEl.textContent = '';
+                            }
+
                             if (data.type === 'text' && data.content) {
+                                if (showingThinking) {
+                                    showingThinking = false;
+                                    assistantContentEl.textContent = '';
+                                }
                                 assistantContent += data.content;
                                 assistantContentEl.textContent = assistantContent;
                                 scrollToBottom();
                             }
 
                             if (data.type === 'error') {
+                                if (showingThinking) {
+                                    showingThinking = false;
+                                    assistantContentEl.textContent = '';
+                                }
                                 showError(data.message);
                             }
                         } catch (e) {

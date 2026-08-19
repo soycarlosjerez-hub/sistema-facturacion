@@ -44,7 +44,7 @@ class GetSaleTool implements AiToolInterface
             'caja:id,nombre',
             'pagos',
             'detalles.producto:id,nombre,precio,precio_compra',
-        ]);
+        ])->where('tenant_id', $user->business_instance_id);
 
         if (!empty($input['venta_id'])) {
             $query->where('id', $input['venta_id']);

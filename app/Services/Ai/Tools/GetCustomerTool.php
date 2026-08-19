@@ -42,7 +42,8 @@ class GetCustomerTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $query = Cliente::query()->select('id', 'nombre', 'rnc_cedula', 'rnc', 'email', 'telefono', 'direccion', 'balance_pendiente', 'limite_credito', 'activo', 'tipo_cliente', 'moneda', 'tipo_documento');
+        $query = Cliente::query()->select('id', 'nombre', 'rnc_cedula', 'rnc', 'email', 'telefono', 'direccion', 'balance_pendiente', 'limite_credito', 'activo', 'tipo_cliente', 'moneda', 'tipo_documento')
+            ->where('tenant_id', $user->business_instance_id);
 
         if (!empty($input['cliente_id'])) {
             $query->where('id', $input['cliente_id']);
@@ -61,8 +62,8 @@ class GetCustomerTool implements AiToolInterface
             return ['error' => 'Cliente no encontrado.'];
         }
 
-        $ventasCount =  \App\Models\Venta::where('cliente_id', $cliente->id)->count();
-        $totalVentas =  \App\Models\Venta::where('cliente_id', $cliente->id)->sum('total');
+        $ventasCount =  \App\Models\Venta::where('tenant_id', $user->business_instance_id)->where('cliente_id', $cliente->id)->count();
+        $totalVentas =  \App\Models\Venta::where('tenant_id', $user->business_instance_id)->where('cliente_id', $cliente->id)->sum('total');
         $pendiente = (float) $cliente->balance_pendiente;
 
         return [

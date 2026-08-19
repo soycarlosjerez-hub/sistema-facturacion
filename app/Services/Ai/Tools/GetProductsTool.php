@@ -45,7 +45,8 @@ class GetProductsTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $query = Producto::query()->select('id', 'nombre', 'codigo_barras', 'descripcion', 'precio', 'precio_compra', 'stock', 'stock_minimo', 'categoria_id', 'activo');
+        $query = Producto::query()->select('id', 'nombre', 'codigo_barras', 'descripcion', 'precio', 'precio_compra', 'stock', 'stock_minimo', 'categoria_id', 'activo')
+            ->where('tenant_id', $user->business_instance_id);
 
         if (!empty($input['buscar'])) {
             $query->where(function ($q) use ($input) {

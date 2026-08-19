@@ -36,6 +36,7 @@ class GetAccountsPayableTool implements AiToolInterface
     {
         $query = Proveedor::query()
             ->select('id', 'nombre', 'rnc', 'activo')
+            ->where('tenant_id', $user->business_instance_id)
             ->withCount(['compras as total_compras' => function ($q) {
                 // Todas las compras de este proveedor
             }]);
@@ -50,7 +51,7 @@ class GetAccountsPayableTool implements AiToolInterface
         $totalDeuda = 0;
 
         foreach ($proveedores as $proveedor) {
-            $totalCompras = Compra::where('proveedor_id', $proveedor->id)->sum('total');
+            $totalCompras = Compra::where('tenant_id', $user->business_instance_id)->where('proveedor_id', $proveedor->id)->sum('total');
             if ($totalCompras > 0) {
                 $cuentas[] = [
                     'proveedor_id' => $proveedor->id,

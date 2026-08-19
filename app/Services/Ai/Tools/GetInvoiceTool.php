@@ -39,6 +39,7 @@ class GetInvoiceTool implements AiToolInterface
     public function execute(array $input, Authenticatable $user): array
     {
         $query = Venta::query()
+            ->where('tenant_id', $user->business_instance_id)
             ->where('tipo_comprobante', 'factura')
             ->with([
                 'cliente:id,nombre,rnc_cedula',

@@ -41,7 +41,7 @@ class GetPurchasesTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $query = Compra::query()->with('proveedor:id,nombre,rnc', 'user:id,name');
+        $query = Compra::query()->where('tenant_id', $user->business_instance_id)->with('proveedor:id,nombre,rnc', 'user:id,name');
 
         if (!empty($input['desde'])) {
             $query->whereDate('fecha', '>=', $input['desde']);

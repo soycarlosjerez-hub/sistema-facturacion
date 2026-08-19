@@ -42,7 +42,8 @@ class GetProductTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $query = Producto::query()->select('id', 'nombre', 'codigo_barras', 'descripcion', 'marca', 'modelo', 'precio', 'precio_compra', 'stock', 'stock_minimo', 'unidad_medida', 'itbis_porcentaje', 'activo');
+        $query = Producto::query()->select('id', 'nombre', 'codigo_barras', 'descripcion', 'marca', 'modelo', 'precio', 'precio_compra', 'stock', 'stock_minimo', 'unidad_medida', 'itbis_porcentaje', 'activo')
+            ->where('tenant_id', $user->business_instance_id);
 
         if (!empty($input['producto_id'])) {
             $query->where('id', $input['producto_id']);

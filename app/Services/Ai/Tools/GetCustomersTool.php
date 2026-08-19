@@ -41,7 +41,8 @@ class GetCustomersTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $query = Cliente::query()->select('id', 'nombre', 'rnc_cedula', 'rnc', 'email', 'telefono', 'balance_pendiente', 'limite_credito', 'activo');
+        $query = Cliente::query()->select('id', 'nombre', 'rnc_cedula', 'rnc', 'email', 'telefono', 'balance_pendiente', 'limite_credito', 'activo')
+            ->where('tenant_id', $user->business_instance_id);
 
         if (!empty($input['buscar'])) {
             $query->where(function ($q) use ($input) {

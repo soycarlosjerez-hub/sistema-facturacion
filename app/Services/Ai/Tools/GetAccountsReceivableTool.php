@@ -40,6 +40,7 @@ class GetAccountsReceivableTool implements AiToolInterface
     {
         $query = Cliente::query()
             ->select('id', 'nombre', 'rnc_cedula', 'balance_pendiente')
+            ->where('tenant_id', $user->business_instance_id)
             ->where('balance_pendiente', '>', 0);
 
         if (!empty($input['buscar'])) {

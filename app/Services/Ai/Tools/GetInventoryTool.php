@@ -35,7 +35,7 @@ class GetInventoryTool implements AiToolInterface
     public function execute(array $input, Authenticatable $user): array
     {
         $filtros = $input['filtro'] ?? 'todos';
-        $query = Producto::query();
+        $query = Producto::query()->where('tenant_id', $user->business_instance_id);
 
         if ($filtros === 'bajo_stock') {
             $query->where('stock', '>', 0)->whereColumn('stock', '<=', 'stock_minimo');

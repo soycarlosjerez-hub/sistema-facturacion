@@ -28,6 +28,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Disable Thinking (vLLM/Qwen3)
+    |--------------------------------------------------------------------------
+    |
+    | Los modelos de razonamiento (Qwen3) consumen gran parte del presupuesto
+    | de tokens "pensando" antes de responder, lo que agota max_tokens y
+    | produce respuestas vacias. Al desactivar el razonamiento las respuestas
+    | son directas y confiables. Solo aplica a backends vLLM compatibles.
+    |
+    */
+    'disable_thinking' => (bool) env('AI_DISABLE_THINKING', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | SSL Verification
     |--------------------------------------------------------------------------
     |

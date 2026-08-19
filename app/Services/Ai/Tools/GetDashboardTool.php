@@ -8,8 +8,6 @@ use App\Models\Gasto;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class GetDashboardTool implements AiToolInterface
 {
@@ -34,30 +32,25 @@ class GetDashboardTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $ventasHoy = Venta::whereDate('created_at', today())->sum('total');
-        $ventasMes = Venta::whereMonth('created_at', now()->month)
+        $tenantId = $user->business_instance_id;
+
+        $ventasHoy = Venta::where('tenant_id', $tenantId)->whereDate('created_at', today())->sum('total');
+        $ventasMes = Venta::where('tenant_id', $tenantId)
+            ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('total');
-        $comprasMes = Compra::whereMonth('fecha', now()->month)
+        $comprasMes = Compra::where('tenant_id', $tenantId)
+            ->whereMonth('fecha', now()->month)
             ->whereYear('fecha', now()->year)
             ->sum('total');
-        $productosBajoStock = Producto::where('stock', '>', 0)
+        $productosBajoStock = Producto::where('tenant_id', $tenantId)
+            ->where('stock', '>', 0)
             ->whereColumn('stock', '<=', 'stock_minimo')
             ->count();
-        $sesionesAbiertas = SesionCaja::where('estado', 'abierta')->count();
+        $sesionesAbiertas = SesionCaja::where('tenant_id', $tenantId)->where('estado', 'abierta')->count();
 
-        $stats = [
-            'total_ventas' => DB::table('ventas')
-                ->where('tenant_id', Auth::user()->business_instance_id)
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->sum('total') ?? 0,
-            'costo_mes' => 0,
-        ];
-
-        $totalVentas = (float) ($stats->total_ventas ?? 0);
-        $costoMes = (float) ($stats->costo_mes ?? 0);
-        $utilidadMes = $totalVentas - $costoMes;
+        $costoMes = 0;
+        $utilidadMes = $ventasMes - $costoMes;
 
         return [
             'ventas_hoy' => number_format($ventasHoy, 2, '.', ','),

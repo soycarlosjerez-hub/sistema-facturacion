@@ -52,35 +52,39 @@ class GetReportsTool implements AiToolInterface
         $tipo = $input['tipo'] ?? 'resumen';
 
         if ($tipo === 'stock') {
-            return $this->stockReport();
+            return $this->stockReport($tenantId);
         }
 
-        return $this->resumenReport($input);
+        return $this->resumenReport($input, $tenantId);
     }
 
-    private function resumenReport(array $input): array
+    private function resumenReport(array $input, int $tenantId): array
     {
         $desde = $input['desde'] ?? now()->startOfMonth()->format('Y-m-d');
         $hasta = $input['hasta'] ?? now()->endOfMonth()->format('Y-m-d');
 
-        $ventasMes = Venta::whereMonth('created_at', now()->month)
+        $ventasMes = Venta::where('tenant_id', $tenantId)
+            ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('total');
 
-        $comprasMes = Compra::whereMonth('fecha', now()->month)
+        $comprasMes = Compra::where('tenant_id', $tenantId)
+            ->whereMonth('fecha', now()->month)
             ->whereYear('fecha', now()->year)
             ->sum('total');
 
-        $gastosMes = Gasto::whereMonth('fecha_gasto', now()->month)
+        $gastosMes = Gasto::where('tenant_id', $tenantId)
+            ->whereMonth('fecha_gasto', now()->month)
             ->whereYear('fecha_gasto', now()->year)
             ->sum('monto');
 
-        $productosBajoStock = Producto::where('stock', '>', 0)
+        $productosBajoStock = Producto::where('tenant_id', $tenantId)
+            ->where('stock', '>', 0)
             ->whereColumn('stock', '<=', 'stock_minimo')
             ->count();
 
-        $ventasHoy = Venta::whereDate('created_at', today())->sum('total');
-        $comprasHoy = Compra::whereDate('fecha', today())->sum('total');
+        $ventasHoy = Venta::where('tenant_id', $tenantId)->whereDate('created_at', today())->sum('total');
+        $comprasHoy = Compra::where('tenant_id', $tenantId)->whereDate('fecha', today())->sum('total');
 
         $utilidadBruta = $ventasMes - $comprasMes - $gastosMes;
 
@@ -98,12 +102,13 @@ class GetReportsTool implements AiToolInterface
         ];
     }
 
-    private function stockReport(): array
+    private function stockReport(int $tenantId): array
     {
-        $totalProductos = Producto::count();
-        $conStock = Producto::where('stock', '>', 0)->count();
-        $sinStock = Producto::where('stock', '<=', 0)->count();
-        $bajoStock = Producto::where('stock', '>', 0)
+        $totalProductos = Producto::where('tenant_id', $tenantId)->count();
+        $conStock = Producto::where('tenant_id', $tenantId)->where('stock', '>', 0)->count();
+        $sinStock = Producto::where('tenant_id', $tenantId)->where('stock', '<=', 0)->count();
+        $bajoStock = Producto::where('tenant_id', $tenantId)
+            ->where('stock', '>', 0)
             ->whereColumn('stock', '<=', 'stock_minimo')
             ->count();
 

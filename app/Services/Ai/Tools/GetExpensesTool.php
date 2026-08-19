@@ -41,7 +41,7 @@ class GetExpensesTool implements AiToolInterface
 
     public function execute(array $input, Authenticatable $user): array
     {
-        $query = Gasto::query()->with('user:id,name');
+        $query = Gasto::query()->where('tenant_id', $user->business_instance_id)->with('user:id,name');
 
         if (!empty($input['desde'])) {
             $query->whereDate('fecha_gasto', '>=', $input['desde']);

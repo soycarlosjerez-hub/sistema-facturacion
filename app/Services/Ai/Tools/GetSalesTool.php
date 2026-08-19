@@ -47,7 +47,8 @@ class GetSalesTool implements AiToolInterface
     public function execute(array $input, Authenticatable $user): array
     {
         $query = Venta::query()
-            ->with('cliente:id,nombre,rnc_cedula', 'usuario:id,name,caja:id,nombre', 'pagos');
+            ->where('tenant_id', $user->business_instance_id)
+            ->with('cliente:id,nombre,rnc_cedula', 'usuario:id,name', 'caja:id,nombre', 'pagos');
 
         if (isset($input['desde'])) {
             $query->whereDate('created_at', '>=', $input['desde']);
