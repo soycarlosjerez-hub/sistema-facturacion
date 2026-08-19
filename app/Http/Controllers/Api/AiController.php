@@ -68,6 +68,42 @@ class AiController extends Controller
         return response()->json($messages);
     }
 
+    public function debug(): \Illuminate\Http\JsonResponse
+    {
+        $errors = [];
+        
+        // Check all tool classes exist
+        foreach (config('ai.tools', []) as $name => $class) {
+            if (!class_exists($class)) {
+                $errors[] = "Tool class '{$class}' does NOT exist";
+            }
+        }
+        
+        // Check imports in files
+        $toolsDir = base_path('app/Services/Ai/Tools');
+        foreach (glob("{$toolsDir}/*.php") as $file) {
+            $content = file_get_contents($file);
+            if (strpos($content, 'Auth::') !== false && strpos($content, 'use Illuminate\\Support\\Facades\\Auth') === false) {
+                $errors[] = basename($file) . " uses Auth:: without import";
+            }
+        }
+        
+        return response()->json([
+            'base_path' => base_path(),
+            'ai_config_loaded' => config('ai.api_url') !== null,
+            'tools_count' => count(config('ai.tools', [])),
+            'auth_check' => auth()->check(),
+            'user_data' => auth()->check() ? [
+                'id' => auth()->id(),
+                'name' => auth()->user()->name,
+                'business_instance_id' => auth()->user()->business_instance_id,
+            ] : null,
+            'errors' => $errors,
+            'php_version' => PHP_VERSION,
+            'db_connection' => config('database.connections.mysql.database'),
+        ]);
+    }
+
     public function tools(): JsonResponse
     {
         return response()->json([
