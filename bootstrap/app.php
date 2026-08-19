@@ -27,8 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'ai.chat.method'   => \App\Http\Middleware\AiChatMethodGuard::class,
         ]);
 
-        $middleware->web([], [], \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
-        $middleware->prependToGroup('web', \App\Http\Middleware\VerifyCsrfToken::class);
+        $middleware->web([], [], [], [
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class
+                => \App\Http\Middleware\VerifyCsrfToken::class,
+        ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckInstanceBlocked::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSetupWizard::class);
