@@ -1512,7 +1512,9 @@ Route::middleware(['auth'])->group(function () {
     // AI Assistant Routes (Protected by auth + tenant)
     // ========================================
     Route::prefix('api/ai')->middleware(['ai'])->group(function () {
-        Route::post('/chat', [\App\Http\Controllers\Api\AiController::class, 'chat'])->name('ai.chat');
+        Route::post('/chat', [\App\Http\Controllers\Api\AiController::class, 'chat'])
+            ->middleware(['ai.chat.method'])
+            ->name('ai.chat');
         Route::get('/conversations', [\App\Http\Controllers\Api\AiController::class, 'conversations'])->name('ai.conversations');
         Route::get('/conversations/{conversation}', [\App\Http\Controllers\Api\AiController::class, 'showConversation'])->name('ai.conversation.show');
         Route::get('/tools', [\App\Http\Controllers\Api\AiController::class, 'tools'])->name('ai.tools');

@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.mail'      => \App\Http\Middleware\TenantMailConfig::class,
             'plan.limits'      => \App\Http\Middleware\EnforcePlanLimits::class,
             'ai'               => \App\Http\Middleware\AiMiddleware::class,
+            'ai.chat.method'   => \App\Http\Middleware\AiChatMethodGuard::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
