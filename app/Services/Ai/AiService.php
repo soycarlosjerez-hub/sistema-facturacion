@@ -241,7 +241,16 @@ class AiService
 
                     curl_exec($ch);
                     $curlError = curl_error($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
                     curl_close($ch);
+
+                    if ($httpCode >= 400) {
+                        echo "data: " . json_encode(['type' => 'error', 'message' => 'Error al comunicarse con el servicio de IA. HTTP: ' . $httpCode]) . "\n\n";
+                        flush();
+
+                        $this->saveMessageInternal($conversationId, 'assistant', 'Error al comunicarse con el servicio de IA. HTTP: ' . $httpCode);
+                        return;
+                    }
 
                     if ($curlError) {
                         echo "data: " . json_encode(['type' => 'error', 'message' => 'Error de conexion con el servicio de IA.']) . "\n\n";
@@ -425,7 +434,7 @@ class AiService
 
     private function callLLM(array $messages, array $tools): array
     {
-        $url = config('ai.api_url');
+        $url = $this->resolveApiUrl();
         if (!$url) {
             throw new \RuntimeException('AI_API_URL no esta configurada en .env');
         }
@@ -464,7 +473,16 @@ class AiService
         curl_close($ch);
 
         if ($httpCode !== 200) {
-            throw new \RuntimeException('Error al comunicarse con el servicio de IA. HTTP: ' . $httpCode);
+            $body = is_string($response) ? substr($response, 0, 500) : '';
+
+            throw new \RuntimeException(
+                sprintf(
+                    'Error al comunicarse con el servicio de IA. HTTP: %d. URL: %s. Respuesta: %s',
+                    $httpCode,
+                    $url,
+                    $body
+                )
+            );
         }
 
         return json_decode($response, true);
@@ -475,7 +493,7 @@ class AiService
         $ch = curl_init();
 
         curl_setopt_array($ch, [
-            CURLOPT_URL => config('ai.api_url'),
+            CURLOPT_URL => $this->resolveApiUrl(),
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_TIMEOUT => config('ai.timeout', 60),
@@ -494,5 +512,16 @@ class AiService
         ]);
 
         return $ch;
+    }
+
+    private function resolveApiUrl(): string
+    {
+        $url = (string) config('ai.api_url');
+
+        if ($url !== '' && !str_ends_with(rtrim($url, '/'), '/chat/completions')) {
+            $url = rtrim($url, '/') . '/chat/completions';
+        }
+
+        return $url;
     }
 }
