@@ -10,7 +10,9 @@ class AiChatMethodGuard
 {
     public function handle(Request $request, Closure $next)
     {
-        if ($request->is('api/ai/chat') && $request->method() !== 'POST') {
+        $uri = $request->path();
+
+        if ($uri === 'ai/chat' && $request->method() !== 'POST') {
             Log::warning('AI Chat blocked non-POST request', [
                 'ip' => $request->ip(),
                 'referer' => $request->headers->get('referer', 'none'),

@@ -565,11 +565,10 @@ body.dark-mode .ai-chat-error {
 document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
-    const basePath = "{!! url('') !!}/";
+    const API_BASE = "/api/ai";
 
-    // Debug: log basePath in console
-    console.log('[AI Chat] BasePath:', basePath);
-    console.log('[AI Chat] Fetch URL:', basePath + 'api/ai/chat');
+    // Debug: log API base in console
+    console.log('[AI Chat] API Base:', API_BASE);
 
     const widget = document.getElementById('ai-chat-widget');
     if (!widget) return;
@@ -679,11 +678,13 @@ document.addEventListener('DOMContentLoaded', function() {
         abortController = new AbortController();
 
         try {
-            const response = await fetch(basePath + 'api/ai/chat', {
+            const response = await fetch(API_BASE + '/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({
                     message: text,
@@ -760,12 +761,13 @@ document.addEventListener('DOMContentLoaded', function() {
         abortController = new AbortController();
 
         try {
-            const response = await fetch(basePath + 'api/ai/chat?stream=1', {
+            const response = await fetch(API_BASE + '/chat?stream=1', {
                 method: 'POST',
                 headers: {
                     'Accept': 'text/event-stream',
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({
                     message: text,
