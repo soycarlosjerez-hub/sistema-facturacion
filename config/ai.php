@@ -28,6 +28,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | SSL Verification
+    |--------------------------------------------------------------------------
+    |
+    | Verify the LLM endpoint TLS certificate. Disable only if the endpoint
+    | uses a private/internal certificate (e.g. WAMP without CA bundle) and
+    | you trust the network. Optionally point to a CA bundle file.
+    |
+    */
+    'ssl_verify' => (bool) env('AI_SSL_VERIFY', true),
+
+    'ca_bundle' => env('AI_CA_BUNDLE'),
+
+    /*
+    |--------------------------------------------------------------------------
     | System Prompt
     |--------------------------------------------------------------------------
     |

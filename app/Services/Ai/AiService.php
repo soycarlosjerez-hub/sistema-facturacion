@@ -449,7 +449,7 @@ class AiService
 
         $ch = curl_init();
 
-        curl_setopt_array($ch, [
+        curl_setopt_array($ch, $this->sslOptions() + [
             CURLOPT_URL => $url,
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
@@ -492,7 +492,7 @@ class AiService
     {
         $ch = curl_init();
 
-        curl_setopt_array($ch, [
+        curl_setopt_array($ch, $this->sslOptions() + [
             CURLOPT_URL => $this->resolveApiUrl(),
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => false,
@@ -512,6 +512,23 @@ class AiService
         ]);
 
         return $ch;
+    }
+
+    private function sslOptions(): array
+    {
+        $options = [];
+
+        if (config('ai.ssl_verify') === false) {
+            $options[CURLOPT_SSL_VERIFYPEER] = false;
+            $options[CURLOPT_SSL_VERIFYHOST] = 0;
+        } else {
+            $caBundle = config('ai.ca_bundle');
+            if ($caBundle) {
+                $options[CURLOPT_CAINFO] = $caBundle;
+            }
+        }
+
+        return $options;
     }
 
     private function resolveApiUrl(): string

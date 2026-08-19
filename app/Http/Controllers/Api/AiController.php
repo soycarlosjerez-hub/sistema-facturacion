@@ -10,6 +10,7 @@ use App\Services\Ai\AiService;
 use App\Services\Ai\Tools\AiToolsManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AiController extends Controller
@@ -24,11 +25,22 @@ class AiController extends Controller
         $user = auth()->user();
 
         if (config('ai.stream', true) && $request->boolean('stream')) {
-            return $this->aiService->streamChat(
-                $request->input('message'),
-                $request->input('conversation_id'),
-                $user
-            );
+            try {
+                return $this->aiService->streamChat(
+                    $request->input('message'),
+                    $request->input('conversation_id'),
+                    $user
+                );
+            } catch (\Throwable $e) {
+                Log::error('AI stream init failed', [
+                    'user_id' => $user?->id,
+                    'exception' => get_class($e),
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                return response()->json(['error' => 'Error interno del servidor.'], 500);
+            }
         }
 
         try {
@@ -40,8 +52,20 @@ class AiController extends Controller
 
             return response()->json($result);
         } catch (\RuntimeException $e) {
+            Log::warning('AI chat failed: ' . $e->getMessage(), [
+                'user_id' => $user?->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
+            Log::error('AI chat internal error', [
+                'user_id' => $user?->id,
+                'exception' => get_class($e),
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return response()->json(['error' => 'Error interno del servidor.'], 500);
         }
     }
