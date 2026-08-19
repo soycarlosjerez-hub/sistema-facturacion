@@ -23,7 +23,7 @@ class AiController extends Controller
     {
         $user = auth()->user();
 
-        if (config('ai.stream', true) && $request->wantsStreaming()) {
+        if (config('ai.stream', true) && $request->boolean('stream')) {
             return $this->aiService->streamChat(
                 $request->input('message'),
                 $request->input('conversation_id'),

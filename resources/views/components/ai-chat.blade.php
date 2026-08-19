@@ -693,8 +693,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || error.error || 'Error al procesar tu mensaje');
+                let errorData = {};
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    errorData = { error: 'Error al procesar tu mensaje (' + response.status + ')' };
+                }
+                throw new Error(errorData.message || errorData.error || 'Error al procesar tu mensaje');
             }
 
             const data = await response.json();
@@ -759,6 +764,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Accept': 'text/event-stream',
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
@@ -767,6 +773,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }),
                 signal: abortController.signal
             });
+
+            if (!response.ok) {
+                let errorData = {};
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    errorData = { error: 'Error al procesar tu mensaje (' + response.status + ')' };
+                }
+                showTyping(false);
+                showError(errorData.error || errorData.message || 'Error al procesar tu mensaje');
+                isProcessing = false;
+                sendBtn.disabled = false;
+                return;
+            }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
