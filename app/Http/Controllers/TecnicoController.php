@@ -38,12 +38,11 @@ class TecnicoController extends Controller
         // Soporte DataTables AJAX
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->copy()->count();
-            $tecnicos = $query->latest()->paginate(
-                request('length', 10),
-                ['*'],
-                'page',
-                request('start', 0)
-            );
+            $perPage = max(1, (int) request('length', 10));
+            $start = max(0, (int) request('start', 0));
+            $page = (int) floor($start / $perPage) + 1;
+
+            $tecnicos = $query->latest()->paginate($perPage, ['*'], 'page', $page);
 
             $rows = $tecnicos->map(function ($tecnico) {
                 return [
@@ -80,7 +79,8 @@ class TecnicoController extends Controller
      */
     public function create()
     {
-        return view('tecnicos.create');
+        $especialidades = TecnicaEspecialidad::orderBy('orden')->orderBy('nombre')->get();
+        return view('tecnicos.create', compact('especialidades'));
     }
 
     /**
@@ -98,12 +98,15 @@ class TecnicoController extends Controller
             'tarifa_fija'   => 'nullable|numeric|min:0',
             'activo'        => 'boolean',
             'notas'         => 'nullable|string|max:2000',
+            'especialidades' => 'nullable|array',
+            'especialidades.*' => 'exists:tecnica_especialidades,id',
         ]);
 
         $data['activo'] = $request->has('activo') ? true : false;
 
         try {
             $tecnico = Tecnico::create($data);
+            $tecnico->especialidades()->sync($request->especialidades ?? []);
 
             return redirect()->route('tecnicos.show', $tecnico)
                 ->with('success', 'Técnico registrado correctamente.');
@@ -126,7 +129,9 @@ class TecnicoController extends Controller
      */
     public function edit(Tecnico $tecnico)
     {
-        return view('tecnicos.edit', compact('tecnico'));
+        $especialidades = TecnicaEspecialidad::orderBy('orden')->orderBy('nombre')->get();
+        $tecnicoEspecialidadIds = $tecnico->especialidades->pluck('id')->all();
+        return view('tecnicos.edit', compact('tecnico', 'especialidades', 'tecnicoEspecialidadIds'));
     }
 
     /**
@@ -144,12 +149,15 @@ class TecnicoController extends Controller
             'tarifa_fija'   => 'nullable|numeric|min:0',
             'activo'        => 'boolean',
             'notas'         => 'nullable|string|max:2000',
+            'especialidades' => 'nullable|array',
+            'especialidades.*' => 'exists:tecnica_especialidades,id',
         ]);
 
         $data['activo'] = $request->has('activo') ? true : false;
 
         try {
             $tecnico->update($data);
+            $tecnico->especialidades()->sync($request->especialidades ?? []);
 
             return redirect()->route('tecnicos.show', $tecnico)
                 ->with('success', 'Técnico actualizado correctamente.');
