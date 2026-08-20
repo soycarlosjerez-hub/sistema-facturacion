@@ -44,8 +44,16 @@ class ProveedorController extends Controller
 
     public function store(Request $request)
     {
+        $tenantId = auth()->user()->business_instance_id;
+        $nombreRules = 'required|string|max:255';
+        if ($tenantId) {
+            $nombreRules .= '|unique:proveedores,nombre,NULL,id,tenant_id,' . $tenantId;
+        } else {
+            $nombreRules .= '|unique:proveedores,nombre';
+        }
+
         $data = $request->validate([
-            'nombre'                => 'required|string|max:255',
+            'nombre'                => $nombreRules,
             'email'                 => 'nullable|email|max:255',
             'telefono'              => 'nullable|string|max:30',
             'direccion'             => 'nullable|string|max:255',
@@ -76,8 +84,16 @@ class ProveedorController extends Controller
 
     public function update(Request $request, Proveedor $proveedore)
     {
+        $tenantId = auth()->user()->business_instance_id;
+        $nombreRules = 'required|string|max:255';
+        if ($tenantId) {
+            $nombreRules .= '|unique:proveedores,nombre,' . $proveedore->id . ',id,tenant_id,' . $tenantId;
+        } else {
+            $nombreRules .= '|unique:proveedores,nombre,' . $proveedore->id;
+        }
+
         $data = $request->validate([
-            'nombre'                => 'required|string|max:255',
+            'nombre'                => $nombreRules,
             'email'                 => 'nullable|email|max:255',
             'telefono'              => 'nullable|string|max:30',
             'direccion'             => 'nullable|string|max:255',
