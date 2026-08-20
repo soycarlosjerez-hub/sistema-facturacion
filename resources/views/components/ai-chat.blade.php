@@ -131,6 +131,10 @@
     display: none;
 }
 
+.ai-chat-widget.ai-chat-widget-open .ai-chat-toggle-btn {
+    display: none;
+}
+
 @media (min-width: 768px) {
     .ai-chat-btn-text {
         display: inline;
@@ -591,11 +595,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function openChat() {
         chatWindow.classList.add('ai-chat-open');
+        widget.classList.add('ai-chat-widget-open');
         input.focus();
     }
 
     function closeChat() {
         chatWindow.classList.remove('ai-chat-open');
+        widget.classList.remove('ai-chat-widget-open');
     }
 
     function toggleChat() {
