@@ -105,6 +105,7 @@ class TecnicoController extends Controller
         ]);
 
         $data['activo'] = $request->has('activo') ? true : false;
+        $data['tenant_id'] = auth()->user()->business_instance_id;
 
         try {
             $tecnico = Tecnico::create($data);
@@ -156,6 +157,7 @@ class TecnicoController extends Controller
         ]);
 
         $data['activo'] = $request->has('activo') ? true : false;
+        $data['tenant_id'] = auth()->user()->business_instance_id;
 
         try {
             $tecnico->update($data);

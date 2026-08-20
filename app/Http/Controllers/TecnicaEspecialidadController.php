@@ -71,6 +71,7 @@ class TecnicaEspecialidadController extends Controller
 
         $data['activo'] = $request->has('activo');
         $data['orden'] = $data['orden'] ?? 0;
+        $data['tenant_id'] = auth()->user()->business_instance_id;
 
         try {
             TecnicaEspecialidad::create($data);
@@ -105,6 +106,7 @@ class TecnicaEspecialidadController extends Controller
 
         $data['activo'] = $request->has('activo');
         $data['orden'] = $data['orden'] ?? 0;
+        $data['tenant_id'] = auth()->user()->business_instance_id;
 
         try {
             $tecnicaEspecialidad->update($data);
