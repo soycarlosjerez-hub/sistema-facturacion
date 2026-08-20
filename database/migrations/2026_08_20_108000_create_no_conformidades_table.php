@@ -26,9 +26,11 @@ return new class extends Migration
             $table->date('fecha_contencion')->nullable();
             $table->unsignedBigInteger('asignado_a')->nullable();
             $table->unsignedBigInteger('detector_id')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_nc_dsgc_id')->onDelete('set null');
-            $table->foreignId('auditoria_id')->nullable()->constrained('auditorias_internas', 'fk_nc_ai_id')->onDelete('set null');
-            $table->foreignId('mejora_continua_id')->nullable()->constrained('mejoras_continuas', 'fk_nc_mc_id')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable();
+            $table->foreign('documento_sgc_id', 'fk_nc_dsgc_id')->references('id')->on('documentos_sgc')->onDelete('set null');
+            $table->foreignId('auditoria_id')->nullable();
+            $table->foreign('auditoria_id', 'fk_nc_ai_id')->references('id')->on('auditorias_internas')->onDelete('set null');
+            $table->foreignId('mejora_continua_id')->nullable();
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
             $table->softDeletes();

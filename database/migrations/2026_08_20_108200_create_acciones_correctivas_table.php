@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('acciones_correctivas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('no_conformidad_id')->constrained('no_conformidades', 'fk_acr_nc_id')->cascadeOnDelete();
+            $table->foreignId('no_conformidad_id');
+            $table->foreign('no_conformidad_id', 'fk_acr_nc_id')->references('id')->on('no_conformidades')->onDelete('cascade');
             $table->string('titulo_accion', 255);
             $table->text('descripcion_accion');
             $table->date('fecha_asignacion');
@@ -25,7 +26,8 @@ return new class extends Migration
             $table->text('evidencia_ejecucion')->nullable();
             $table->unsignedBigInteger('aprobado_por')->nullable();
             $table->text('observaciones')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_acr_dsgc_id')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable();
+            $table->foreign('documento_sgc_id', 'fk_acr_dsgc_id')->references('id')->on('documentos_sgc')->onDelete('set null');
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 

@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('verificaciones_accion', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('accion_correctiva_id')->constrained('acciones_correctivas', 'fk_va_acr_id')->cascadeOnDelete();
+            $table->foreignId('accion_correctiva_id');
+            $table->foreign('accion_correctiva_id', 'fk_va_acr_id')->references('id')->on('acciones_correctivas')->onDelete('cascade');
             $table->text('descripcion_verificacion');
             $table->date('fecha_verificacion');
             $table->boolean('efectiva')->default(true);

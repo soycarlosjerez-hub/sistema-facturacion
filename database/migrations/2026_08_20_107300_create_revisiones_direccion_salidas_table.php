@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('revisiones_direccion_salidas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('revision_direccion_id')->constrained('revisiones_direccion', 'fk_rds_d_id')->cascadeOnDelete();
+            $table->foreignId('revision_direccion_id');
+            $table->foreign('revision_direccion_id', 'fk_rds_d_id')->references('id')->on('revisiones_direccion')->onDelete('cascade');
             $table->string('titulo', 255);
             $table->text('descripcion')->nullable();
             $table->text('documento_resultado')->nullable();

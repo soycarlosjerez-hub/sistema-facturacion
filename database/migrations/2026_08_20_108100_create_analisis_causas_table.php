@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('analisis_causas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('no_conformidad_id')->constrained('no_conformidades', 'fk_ac_nc_id')->cascadeOnDelete();
+            $table->foreignId('no_conformidad_id');
+            $table->foreign('no_conformidad_id', 'fk_ac_nc_id')->references('id')->on('no_conformidades')->onDelete('cascade');
             $table->text('causa_raiz');
             $table->text('metodo_analisis')->nullable()->comment('5 why, Ishikawa, etc.');
             $table->string('resultado', 255)->nullable();

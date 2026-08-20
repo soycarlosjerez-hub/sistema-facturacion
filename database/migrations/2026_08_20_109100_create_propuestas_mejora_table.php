@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('propuestas_mejora', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mejora_continua_id')->constrained('mejoras_continuas', 'fk_pm_mc_id')->cascadeOnDelete();
+            $table->foreignId('mejora_continua_id');
+            $table->foreign('mejora_continua_id', 'fk_pm_mc_id')->references('id')->on('mejoras_continuas')->onDelete('cascade');
             $table->string('titulo', 255);
             $table->text('descripcion');
             $table->text('accion_realizada');

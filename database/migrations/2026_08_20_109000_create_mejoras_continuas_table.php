@@ -32,7 +32,8 @@ return new class extends Migration
             $table->unsignedBigInteger('aprobado_por')->nullable();
             $table->string('vinculada_a', 50)->nullable()->comment('riesgo, nc, mejora, auditoria');
             $table->unsignedBigInteger('vinculado_id')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_mcc_dsgc_id')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable();
+            $table->foreign('documento_sgc_id', 'fk_mcc_dsgc_id')->references('id')->on('documentos_sgc')->onDelete('set null');
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
