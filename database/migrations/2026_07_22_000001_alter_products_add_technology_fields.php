@@ -12,18 +12,46 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('productos', function (Blueprint $table) {
-            $table->enum('especializacion', ['celular', 'accesorio', 'domotica', 'servicio', 'pieza'])
-                ->default('accesorio');
+            if (!Schema::hasColumn('productos', 'especializacion')) {
+                $table->enum('especializacion', ['celular', 'accesorio', 'domotica', 'servicio', 'pieza'])
+                    ->default('accesorio');
+            }
 
-            $table->boolean('vendible_imei')->default(false);
-            $table->boolean('requiere_imei')->default(false);
-            $table->string('marca', 100)->nullable();
-            $table->string('modelo', 200)->nullable();
-            $table->string('almacenamiento_gb', 20)->nullable();
-            $table->string('color', 50)->nullable();
-            $table->decimal('precio_servicio', 10, 2)->default(0);
-            $table->unsignedInteger('duracion_servicio_horas')->default(0);
-            $table->unsignedInteger('garantia_dias')->default(30);
+            if (!Schema::hasColumn('productos', 'vendible_imei')) {
+                $table->boolean('vendible_imei')->default(false);
+            }
+
+            if (!Schema::hasColumn('productos', 'requiere_imei')) {
+                $table->boolean('requiere_imei')->default(false);
+            }
+
+            if (!Schema::hasColumn('productos', 'marca')) {
+                $table->string('marca', 100)->nullable();
+            }
+
+            if (!Schema::hasColumn('productos', 'modelo')) {
+                $table->string('modelo', 200)->nullable();
+            }
+
+            if (!Schema::hasColumn('productos', 'almacenamiento_gb')) {
+                $table->string('almacenamiento_gb', 20)->nullable();
+            }
+
+            if (!Schema::hasColumn('productos', 'color')) {
+                $table->string('color', 50)->nullable();
+            }
+
+            if (!Schema::hasColumn('productos', 'precio_servicio')) {
+                $table->decimal('precio_servicio', 10, 2)->default(0);
+            }
+
+            if (!Schema::hasColumn('productos', 'duracion_servicio_horas')) {
+                $table->unsignedInteger('duracion_servicio_horas')->default(0);
+            }
+
+            if (!Schema::hasColumn('productos', 'garantia_dias')) {
+                $table->unsignedInteger('garantia_dias')->default(30);
+            }
         });
     }
 

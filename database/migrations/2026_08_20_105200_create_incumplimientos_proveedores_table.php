@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('incumplimientos_proveedores')) {
+            return;
+        }
+
         Schema::create('incumplimientos_proveedores', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('evaluacion_proveedor_id')->nullable();
@@ -19,7 +23,7 @@ return new class extends Migration
             $table->text('accion_inmediata')->nullable();
             $table->string('estado', 20)->default('abierta');
             $table->unsignedBigInteger('tenant_id')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_ip_dsgc_id')->onDelete('set null');
             $table->timestamps();
         });
     }

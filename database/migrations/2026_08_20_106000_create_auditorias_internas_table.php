@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('auditorias_internas')) {
+            return;
+        }
+
         Schema::create('auditorias_internas', function (Blueprint $table) {
             $table->id();
             $table->string('codigo', 30)->unique();
@@ -23,16 +27,16 @@ return new class extends Migration
             $table->text('metodologia')->nullable();
             $table->unsignedBigInteger('creado_por')->nullable();
             $table->unsignedBigInteger('aprobado_por')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_ai_dsgc_id')->onDelete('set null');
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->index('estado');
-            $table->foreign('coordinador_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('auditor_lider_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('creado_por')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('aprobado_por')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('coordinador_id', 'fk_ai_coordinador_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('auditor_lider_id', 'fk_ai_auditor_lider_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('creado_por', 'fk_ai_creado_por_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('aprobado_por', 'fk_ai_aprobado_por_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

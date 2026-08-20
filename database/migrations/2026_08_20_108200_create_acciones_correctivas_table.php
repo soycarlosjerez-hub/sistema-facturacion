@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('acciones_correctivas')) {
+            return;
+        }
+
         Schema::create('acciones_correctivas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('no_conformidad_id')->constrained('no_conformidades')->cascadeOnDelete();
+            $table->foreignId('no_conformidad_id')->constrained('no_conformidades', 'fk_acr_nc_id')->cascadeOnDelete();
             $table->string('titulo_accion', 255);
             $table->text('descripcion_accion');
             $table->date('fecha_asignacion');
@@ -21,12 +25,12 @@ return new class extends Migration
             $table->text('evidencia_ejecucion')->nullable();
             $table->unsignedBigInteger('aprobado_por')->nullable();
             $table->text('observaciones')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_acr_dsgc_id')->onDelete('set null');
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('responsable_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('aprobado_por')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('responsable_id', 'fk_acr_responsable_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('aprobado_por', 'fk_acr_aprobado_por_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

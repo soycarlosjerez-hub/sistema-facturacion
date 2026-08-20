@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('hallazgos_auditoria')) {
+            return;
+        }
+
         Schema::create('hallazgos_auditoria', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas')->cascadeOnDelete();
+            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas', 'fk_ha_ai_id')->cascadeOnDelete();
             $table->string('descripcion');
             $table->text('evidencia_objetiva')->nullable();
             $table->string('tipo', 50)->default('no_conformidad');
@@ -24,8 +28,8 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('asignado_a')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('creado_por')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('asignado_a', 'fk_ha_asignado_a_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('creado_por', 'fk_ha_creado_por_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

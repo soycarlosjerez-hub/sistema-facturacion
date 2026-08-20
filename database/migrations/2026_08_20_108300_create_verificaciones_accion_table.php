@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('verificaciones_accion')) {
+            return;
+        }
+
         Schema::create('verificaciones_accion', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('accion_correctiva_id')->constrained('acciones_correctivas')->cascadeOnDelete();
+            $table->foreignId('accion_correctiva_id')->constrained('acciones_correctivas', 'fk_va_acr_id')->cascadeOnDelete();
             $table->text('descripcion_verificacion');
             $table->date('fecha_verificacion');
             $table->boolean('efectiva')->default(true);
@@ -20,7 +24,7 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('verificador_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('verificador_id', 'fk_va_verificador_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

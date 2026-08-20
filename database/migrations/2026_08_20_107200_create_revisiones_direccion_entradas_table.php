@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('revisiones_direccion_entradas')) {
+            return;
+        }
+
         Schema::create('revisiones_direccion_entradas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('revision_direccion_id')->constrained('revisiones_direccion')->cascadeOnDelete();
+            $table->foreignId('revision_direccion_id')->constrained('revisiones_direccion', 'fk_rde_d_id')->cascadeOnDelete();
             $table->string('titulo', 255);
             $table->text('descripcion')->nullable();
             $table->text('documento_referencia')->nullable();

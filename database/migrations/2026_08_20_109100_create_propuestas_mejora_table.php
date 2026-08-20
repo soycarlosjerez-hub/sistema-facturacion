@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('propuestas_mejora')) {
+            return;
+        }
+
         Schema::create('propuestas_mejora', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mejora_continua_id')->constrained('mejoras_continuas')->cascadeOnDelete();
+            $table->foreignId('mejora_continua_id')->constrained('mejoras_continuas', 'fk_pm_mc_id')->cascadeOnDelete();
             $table->string('titulo', 255);
             $table->text('descripcion');
             $table->text('accion_realizada');
@@ -26,8 +30,8 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('proponen_por')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('aprobado_por')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('proponen_por', 'fk_pm_proponen_por_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('aprobado_por', 'fk_pm_aprobado_por_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

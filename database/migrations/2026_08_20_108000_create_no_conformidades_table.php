@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('no_conformidades')) {
+            return;
+        }
+
         Schema::create('no_conformidades', function (Blueprint $table) {
             $table->id();
             $table->string('codigo', 30)->unique();
@@ -22,15 +26,15 @@ return new class extends Migration
             $table->date('fecha_contencion')->nullable();
             $table->unsignedBigInteger('asignado_a')->nullable();
             $table->unsignedBigInteger('detector_id')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc')->onDelete('set null');
-            $table->foreignId('auditoria_id')->nullable()->constrained('auditorias_internas')->onDelete('set null');
-            $table->foreignId('mejora_continua_id')->nullable()->constrained('mejoras_continuas')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_nc_dsgc_id')->onDelete('set null');
+            $table->foreignId('auditoria_id')->nullable()->constrained('auditorias_internas', 'fk_nc_ai_id')->onDelete('set null');
+            $table->foreignId('mejora_continua_id')->nullable()->constrained('mejoras_continuas', 'fk_nc_mc_id')->onDelete('set null');
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('asignado_a')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('detector_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('asignado_a', 'fk_nc_asignado_a_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('detector_id', 'fk_nc_detector_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

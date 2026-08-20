@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('evaluaciones_proveedores_documentos')) {
+            return;
+        }
+
         Schema::create('evaluaciones_proveedores_documentos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('evaluacion_proveedor_id')->constrained('evaluaciones_proveedores')->cascadeOnDelete();
+            $table->foreignId('evaluacion_proveedor_id')->constrained('evaluaciones_proveedores', 'fk_epd_ep_id')->cascadeOnDelete();
             $table->string('nombre_doc', 200);
             $table->string('archivo_path')->nullable();
             $table->string('archivo_original_name')->nullable();

@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('programas_auditoria')) {
+            return;
+        }
+
         Schema::create('programas_auditoria', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas')->cascadeOnDelete();
+            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas', 'fk_pa_ai_id')->cascadeOnDelete();
             $table->string('area_auditada', 100);
             $table->text('criterios_auditoria')->nullable();
             $table->unsignedBigInteger('auditor_id')->nullable();
@@ -21,8 +25,8 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('auditor_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('creado_por')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('auditor_id', 'fk_pa_auditor_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('creado_por', 'fk_pa_creado_por_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('revisiones_direccion')) {
+            return;
+        }
+
         Schema::create('revisiones_direccion', function (Blueprint $table) {
             $table->id();
             $table->string('codigo', 30)->unique();
@@ -24,14 +28,14 @@ return new class extends Migration
             $table->unsignedBigInteger('secretario_id')->nullable();
             $table->string('archivo_acta')->nullable();
             $table->unsignedBigInteger('creado_por')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_rd_dsgc_id')->onDelete('set null');
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('presidente_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('secretario_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('creado_por')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('presidente_id', 'fk_rd_presidente_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('secretario_id', 'fk_rd_secretario_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('creado_por', 'fk_rd_creado_por_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

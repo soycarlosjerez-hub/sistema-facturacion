@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('analisis_causas')) {
+            return;
+        }
+
         Schema::create('analisis_causas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('no_conformidad_id')->constrained('no_conformidades')->cascadeOnDelete();
+            $table->foreignId('no_conformidad_id')->constrained('no_conformidades', 'fk_ac_nc_id')->cascadeOnDelete();
             $table->text('causa_raiz');
             $table->text('metodo_analisis')->nullable()->comment('5 why, Ishikawa, etc.');
             $table->string('resultado', 255)->nullable();
@@ -19,7 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('analista_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('analista_id', 'fk_ac_analista_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

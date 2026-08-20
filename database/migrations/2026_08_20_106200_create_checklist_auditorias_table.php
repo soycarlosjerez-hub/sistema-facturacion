@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('checklist_auditorias')) {
+            return;
+        }
+
         Schema::create('checklist_auditorias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas')->cascadeOnDelete();
+            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas', 'fk_ca_ai_id')->cascadeOnDelete();
             $table->string('item', 255);
             $table->text('criterio')->nullable();
             $table->integer('orden')->default(0);
@@ -21,7 +25,7 @@ return new class extends Migration
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
 
-            $table->foreign('auditor_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('auditor_id', 'fk_ca_auditor_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 

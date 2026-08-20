@@ -8,9 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('evaluaciones_periodicas_proveedores')) {
+            return;
+        }
+
         Schema::create('evaluaciones_periodicas_proveedores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->foreignId('proveedor_id')->constrained('proveedores', 'fk_epp_prov_id')->onDelete('cascade');
             $table->integer('periodo');
             $table->integer('evaluacion_general')->default(1)->comment('1-5');
             $table->integer('cumplimiento_ncf')->default(1)->comment('1-5');
