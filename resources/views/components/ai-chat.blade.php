@@ -101,22 +101,29 @@
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: rgba(15, 23, 42, 0.55);
+    border: 1px solid transparent;
     border-radius: 50px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    box-shadow: none;
     transition: all 0.3s ease;
     position: relative;
     z-index: 10001;
 }
 
 .ai-chat-toggle-btn:hover {
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.1);
     box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    transform: translateY(-2px);
+}
+
+body.dark-mode .ai-chat-toggle-btn {
+    color: rgba(241, 245, 249, 0.6);
 }
 
 .ai-chat-toggle-btn:hover .ai-chat-btn-text {
