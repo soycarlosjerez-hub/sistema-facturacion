@@ -24,7 +24,7 @@ class TicketGarantiaController extends Controller
         if ($request->filled('tipo_garantia')) {
             $query->where('tipo_garantia', $request->tipo_garantia);
         }
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('codigo', 'like', "%{$search}%")
                   ->orWhereHas('cliente', fn($q) => $q->where('nombre', 'like', "%{$search}%"))
@@ -34,7 +34,7 @@ class TicketGarantiaController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = (clone $query)->count();
-            $tickets = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $tickets = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $tickets->map(function ($t) {
                 $badgeColor = match ($t->estado) {
@@ -222,7 +222,7 @@ class TicketGarantiaController extends Controller
         if ($request->filled('tipo_garantia')) {
             $query->where('tipo_garantia', $request->tipo_garantia);
         }
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('codigo', 'like', "%{$search}%")
                   ->orWhereHas('cliente', fn($q) => $q->where('nombre', 'like', "%{$search}%"));
@@ -249,7 +249,7 @@ class TicketGarantiaController extends Controller
         }
         if (!in_array($t->estado, ['abierto'])) {
             $html .= '<form action="' . route('climatizacion.garantias.destroy', $t) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

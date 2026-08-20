@@ -17,7 +17,7 @@ class EvaluacionProveedorController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = $this->dtSearch($request);
         $estado = $request->input('estado');
 
         $query = \App\Models\EvaluacionProveedor::query()
@@ -104,7 +104,7 @@ class EvaluacionProveedorController extends Controller
     public function periodico(Request $request)
     {
         $periodo = $request->input('periodo');
-        $search  = $request->input('search');
+        $search  = $this->dtSearch($request);
 
         $query = \App\Models\EvaluacionPeriodicaProveedor::query()
             ->with(['proveedor', 'evaluadoPor']);

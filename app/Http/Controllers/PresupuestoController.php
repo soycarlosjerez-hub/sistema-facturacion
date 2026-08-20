@@ -18,7 +18,7 @@ class PresupuestoController extends Controller
             $query->where('estado', $request->estado);
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('numero', 'like', "%{$search}%")
                     ->orWhereHas('cliente', function ($q2) use ($search) {
@@ -29,7 +29,7 @@ class PresupuestoController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->count();
-            $presupuestos = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $presupuestos = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $presupuestos->map(function ($presupuesto) {
                 return [
@@ -214,7 +214,7 @@ class PresupuestoController extends Controller
 
         if ($presupuesto->estado === 'borrador') {
             $html .= '<form action="' . route('presupuestos.destroy', $presupuesto) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar este presupuesto?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

@@ -25,7 +25,7 @@ class TecnicoController extends Controller
         }
 
         // Búsqueda
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
                     ->orWhere('cedula', 'like', "%{$search}%")

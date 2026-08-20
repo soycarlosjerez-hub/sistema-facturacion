@@ -18,7 +18,7 @@ class NoConformidadController extends Controller
      */
     public function index(Request $request)
     {
-        $search   = $request->input('search');
+        $search   = $this->dtSearch($request);
         $estado   = $request->input('estado');
         $gravedad = $request->input('gravedad');
         $origen   = $request->input('origen');

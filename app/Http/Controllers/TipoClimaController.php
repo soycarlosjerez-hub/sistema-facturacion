@@ -17,7 +17,7 @@ class TipoClimaController extends Controller
         if ($request->filled('activo')) {
             $query->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN));
         }
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
                   ->orWhere('slug', 'like', "%{$search}%");
@@ -26,7 +26,7 @@ class TipoClimaController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = (clone $query)->count();
-            $tipos = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $tipos = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $tipos->map(function ($tipo) {
                 return [
@@ -130,7 +130,7 @@ class TipoClimaController extends Controller
         $html .= '<a href="' . route('climatizacion.tipos-equipos.show', $tipo) . '" class="btn btn-outline-info" title="Ver"><i class="bi bi-eye"></i></a>';
         $html .= '<a href="' . route('climatizacion.tipos-equipos.edit', $tipo) . '" class="btn btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
         $html .= '<form action="' . route('climatizacion.tipos-equipos.destroy', $tipo) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar este tipo de equipo?\');">';
-        $html .= '@csrf @method("DELETE")';
+        $html .= csrf_field() . method_field('DELETE');
         $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
         $html .= '</form>';
         $html .= '</div>';

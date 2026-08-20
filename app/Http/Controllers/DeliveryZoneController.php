@@ -12,7 +12,7 @@ class DeliveryZoneController extends Controller
     {
         $query = DeliveryZone::query();
 
-        if ($search = $request->input('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where('nombre', 'like', "%{$search}%");
         }
 

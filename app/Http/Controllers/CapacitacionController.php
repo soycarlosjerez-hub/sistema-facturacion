@@ -18,7 +18,7 @@ class CapacitacionController extends Controller
      */
     public function index(Request $request)
     {
-        $search   = $request->input('search');
+        $search   = $this->dtSearch($request);
         $estado   = $request->input('estado');
         $modalidad = $request->input('modalidad');
 

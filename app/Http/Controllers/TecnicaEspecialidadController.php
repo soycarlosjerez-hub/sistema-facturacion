@@ -19,7 +19,7 @@ class TecnicaEspecialidadController extends Controller
             $query->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN));
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
                     ->orWhere('descripcion', 'like', "%{$search}%");
@@ -28,7 +28,7 @@ class TecnicaEspecialidadController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->count();
-            $especialidades = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $especialidades = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $especialidades->map(function ($esp) {
                 return [
@@ -177,7 +177,7 @@ class TecnicaEspecialidadController extends Controller
 
         if ($esp->tecnicos()->count() === 0) {
             $html .= '<form action="' . route('tecnica-especialidades.destroy', $esp) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta especialidad?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

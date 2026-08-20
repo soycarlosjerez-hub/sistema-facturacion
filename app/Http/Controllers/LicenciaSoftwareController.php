@@ -22,7 +22,7 @@ class LicenciaSoftwareController extends Controller
             $query->where('tipo_licencia', $request->tipo_licencia);
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('clave_licencia', 'like', "%{$search}%")
                     ->orWhere('usuario_asignado', 'like', "%{$search}%")
@@ -34,7 +34,7 @@ class LicenciaSoftwareController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->count();
-            $licencias = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $licencias = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $licencias->map(function ($licencia) {
                 $estado = 'Activa';
@@ -174,7 +174,7 @@ class LicenciaSoftwareController extends Controller
             . '<i class="bi bi-' . ($licencia->licencia_activa ? 'pause-circle' : 'play-circle') . '"></i></a>';
 
         $html .= '<form action="' . route('licencias-software.destroy', $licencia) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta licencia?\');">';
-        $html .= '@csrf @method("DELETE")';
+        $html .= csrf_field() . method_field('DELETE');
         $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
         $html .= '</form>';
 

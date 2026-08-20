@@ -20,7 +20,7 @@ class MarcaTecnologicaController extends Controller
             $query->where('pais', 'like', "%{$request->pais}%");
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
                     ->orWhere('website', 'like', "%{$search}%")
@@ -30,7 +30,7 @@ class MarcaTecnologicaController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->count();
-            $marcas = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $marcas = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $marcas->map(function ($marca) {
                 return [
@@ -164,7 +164,7 @@ class MarcaTecnologicaController extends Controller
 
         if ($marca->productos()->count() === 0) {
             $html .= '<form action="' . route('marcas-tecnologicas.destroy', $marca) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta marca?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

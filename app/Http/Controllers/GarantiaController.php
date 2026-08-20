@@ -44,7 +44,7 @@ class GarantiaController extends Controller
         }
 
         // Búsqueda
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('cobertura', 'like', "%{$search}%")
                     ->orWhereHas('equipo', function ($q) use ($search) {
@@ -60,11 +60,12 @@ class GarantiaController extends Controller
         // Soporte DataTables AJAX
         if ($request->ajax() || $request->wantsJson()) {
             $total = (clone $query)->count();
+            $perPage = max(1, (int) request('length', 10));
             $garantias = $query->latest()->paginate(
-                request('length', 10),
+                $perPage,
                 ['*'],
                 'page',
-                request('start', 0)
+                (int) floor(request('start', 0) / $perPage) + 1
             );
 
             $rows = $garantias->map(function ($garantia) {
@@ -339,7 +340,7 @@ class GarantiaController extends Controller
 
         if (!in_array($garantia->estado, ['reclamada', 'cancelada'])) {
             $html .= '<form action="' . route('garantias.destroy', $garantia) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta garantía?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

@@ -37,7 +37,7 @@ class OrdenReparacionController extends Controller
             $query->whereDate('fecha_recibo', '<=', $request->hasta);
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('numero_orden', 'like', "%{$search}%")
                     ->orWhereHas('cliente', function ($q) use ($search) {
@@ -49,12 +49,9 @@ class OrdenReparacionController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = (clone $query)->count();
-            $ordenes = $query->latest()->paginate(
-                request('length', 10),
-                ['*'],
-                'page',
-                request('start', 0)
-            );
+            $perPage = max(1, (int) request('length', 10));
+            $page = (int) floor(request('start', 0) / $perPage) + 1;
+            $ordenes = $query->latest()->paginate($perPage, ['*'], 'page', $page);
 
             $rows = $ordenes->map(function ($orden) {
                 return [
@@ -333,7 +330,7 @@ class OrdenReparacionController extends Controller
 
         if (!in_array($orden->estado, ['entregado', 'cancelado'])) {
             $html .= '<form action="' . route('tecnicas.destroy', $orden) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta orden?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

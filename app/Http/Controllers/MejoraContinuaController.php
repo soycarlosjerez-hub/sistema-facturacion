@@ -17,7 +17,7 @@ class MejoraContinuaController extends Controller
      */
     public function index(Request $request)
     {
-        $search  = $request->input('search');
+        $search  = $this->dtSearch($request);
         $fase    = $request->input('fase');
         $origen  = $request->input('origen');
 
@@ -106,7 +106,7 @@ class MejoraContinuaController extends Controller
      */
     public function propuestas(Request $request)
     {
-        $search = $request->input('search');
+        $search = $this->dtSearch($request);
         $estado = $request->input('estado');
 
         $query = \App\Models\PropuestaMejora::query()

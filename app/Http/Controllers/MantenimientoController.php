@@ -29,7 +29,7 @@ class MantenimientoController extends Controller
         if ($request->filled('tecnico_id')) {
             $query->where('tecnico_id', $request->tecnico_id);
         }
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('numero', 'like', "%{$search}%")
                   ->orWhereHas('cliente', fn($q) => $q->where('nombre', 'like', "%{$search}%"))
@@ -38,8 +38,8 @@ class MantenimientoController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = clone $query;
-            $mantenimientos = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $total = (clone $query)->count();
+            $mantenimientos = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $mantenimientos->map(function ($mtto) {
                 $badgeColor = match ($mtto->estado) {
@@ -160,7 +160,7 @@ class MantenimientoController extends Controller
         if ($request->filled('estado')) {
             $query->where('estado', $request->estado);
         }
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('numero', 'like', "%{$search}%")
                   ->orWhereHas('cliente', fn($q) => $q->where('nombre', 'like', "%{$search}%"));
@@ -191,7 +191,7 @@ class MantenimientoController extends Controller
         }
         if (!in_array($mtto->estado, ['completado', 'cancelado'])) {
             $html .= '<form action="' . route('climatizacion.mantenimientos.destroy', $mtto) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

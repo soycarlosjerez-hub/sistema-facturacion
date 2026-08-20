@@ -18,7 +18,7 @@ class SatisfaccionController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = $this->dtSearch($request);
         $estado = $request->input('estado');
 
         $query = EncuestaSatisfaccion::query()
@@ -133,7 +133,7 @@ class SatisfaccionController extends Controller
      */
     public function reclamos(Request $request)
     {
-        $search = $request->input('search');
+        $search = $this->dtSearch($request);
         $estado = $request->input('estado');
 
         $query = ReclamoCliente::query()

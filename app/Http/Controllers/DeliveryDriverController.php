@@ -12,7 +12,7 @@ class DeliveryDriverController extends Controller
     {
         $query = DeliveryDriver::query();
 
-        if ($search = $request->input('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
                     ->orWhere('apellido', 'like', "%{$search}%")

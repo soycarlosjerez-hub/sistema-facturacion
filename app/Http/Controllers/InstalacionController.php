@@ -30,7 +30,7 @@ class InstalacionController extends Controller
         if ($request->filled('instalador_id')) {
             $query->where('instalador_id', $request->instalador_id);
         }
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('numero', 'like', "%{$search}%")
                   ->orWhereHas('cliente', fn($q) => $q->where('nombre', 'like', "%{$search}%"))
@@ -39,8 +39,8 @@ class InstalacionController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = clone $query;
-            $instalaciones = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $total = (clone $query)->count();
+            $instalaciones = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $instalaciones->map(function ($inst) {
                 $badgeColor = match ($inst->estado) {
@@ -164,7 +164,7 @@ class InstalacionController extends Controller
         if ($request->filled('tipo_inmueble')) {
             $query->where('tipo_inmueble', $request->tipo_inmueble);
         }
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('numero', 'like', "%{$search}%")
                   ->orWhereHas('cliente', fn($q) => $q->where('nombre', 'like', "%{$search}%"));
@@ -195,7 +195,7 @@ class InstalacionController extends Controller
         }
         if (!in_array($inst->estado, ['completada', 'cancelada'])) {
             $html .= '<form action="' . route('climatizacion.instalaciones.destroy', $inst) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

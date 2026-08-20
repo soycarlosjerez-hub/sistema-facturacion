@@ -19,7 +19,7 @@ class GarantiasConfigController extends Controller
             $query->where('tipo_garantia', $request->tipo_garantia);
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
                     ->orWhere('tipo_producto', 'like', "%{$search}%")
@@ -29,7 +29,7 @@ class GarantiasConfigController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->count();
-            $garantias = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $garantias = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $garantias->map(function ($garantia) {
                 return [
@@ -154,7 +154,7 @@ class GarantiasConfigController extends Controller
             . '<i class="bi bi-' . ($garantia->activo ? 'pause-circle' : 'play-circle') . '"></i></a>';
 
         $html .= '<form action="' . route('garantias-config.destroy', $garantia) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta configuración?\');">';
-        $html .= '@csrf @method("DELETE")';
+        $html .= csrf_field() . method_field('DELETE');
         $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
         $html .= '</form>';
 

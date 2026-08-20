@@ -18,7 +18,7 @@ class GestionRiesgosController extends Controller
      */
     public function index(Request $request)
     {
-        $buscar   = $request->input('search');
+        $buscar   = $this->dtSearch($request);
         $estado   = $request->input('estado');
         $clasificacion  = $request->input('clasificacion');
         $area     = $request->input('area');

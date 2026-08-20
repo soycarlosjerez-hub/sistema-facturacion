@@ -19,7 +19,7 @@ class AuditoriaInternaController extends Controller
      */
     public function index(Request $request)
     {
-        $search   = $request->input('search');
+        $search   = $this->dtSearch($request);
         $estado   = $request->input('estado');
         $area     = $request->input('area');
 
@@ -57,7 +57,7 @@ class AuditoriaInternaController extends Controller
      */
     public function programas(Request $request)
     {
-        $search = $request->input('search');
+        $search = $this->dtSearch($request);
         $estado = $request->input('estado');
 
         $query = ProgramaAuditoria::query()

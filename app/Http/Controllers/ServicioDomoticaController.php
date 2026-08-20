@@ -31,7 +31,7 @@ class ServicioDomoticaController extends Controller
             $query->where('cliente_id', $request->cliente_id);
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('titulo', 'like', "%{$search}%")
                     ->orWhere('descripcion', 'like', "%{$search}%")
@@ -44,12 +44,13 @@ class ServicioDomoticaController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = clone $query;
+            $total = (clone $query)->count();
+            $perPage = max(1, (int) request('length', 10));
             $services = $query->latest()->paginate(
-                request('length', 10),
+                $perPage,
                 ['*'],
                 'page',
-                request('start', 0)
+                (int) floor(request('start', 0) / $perPage) + 1
             );
 
             $rows = $services->map(function ($service) {
@@ -251,7 +252,7 @@ class ServicioDomoticaController extends Controller
 
         if (!in_array($servicio->estado, ['completado', 'cancelado'])) {
             $html .= '<form action="' . route('domotica.destroy', $servicio) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar este servicio?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field() . method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

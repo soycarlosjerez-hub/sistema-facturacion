@@ -22,7 +22,7 @@ class RedConfigController extends Controller
             $query->where('vlan_id', $request->vlan_id);
         }
 
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('nombre_red', 'like', "%{$search}%")
                     ->orWhere('ssid_wifi', 'like', "%{$search}%")
@@ -34,7 +34,7 @@ class RedConfigController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->count();
-            $redes = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
+            $redes = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
 
             $rows = $redes->map(function ($red) {
                 return [
@@ -172,7 +172,7 @@ class RedConfigController extends Controller
             . '<i class="bi bi-' . ($red->activo ? 'pause-circle' : 'play-circle') . '"></i></a>';
 
         $html .= '<form action="' . route('redes-config.destroy', $red) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta configuración?\');">';
-        $html .= '@csrf @method("DELETE")';
+        $html .= csrf_field() . method_field('DELETE');
         $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
         $html .= '</form>';
 

@@ -22,7 +22,7 @@ class ObjetivoCalidadController extends Controller
      */
     public function index(Request $request)
     {
-        $search   = $request->input('search');
+        $search   = $this->dtSearch($request);
         $periodoInicio = $request->input('periodo_inicio');
         $periodoFin  = $request->input('periodo_fin');
 

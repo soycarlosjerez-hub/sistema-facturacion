@@ -39,7 +39,7 @@ class EquipoController extends Controller
         }
 
         // Búsqueda
-        if ($search = $request->get('search')) {
+        if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
                 $q->where('serial_imei', 'like', "%{$search}%")
                     ->orWhere('serial_esn', 'like', "%{$search}%")
