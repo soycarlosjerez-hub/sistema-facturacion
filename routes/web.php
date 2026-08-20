@@ -1292,8 +1292,13 @@ Route::middleware(['auth', 'permission:garantias.view'])->group(function () {
     Route::get('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'show'])->name('garantias.show');
 });
 Route::middleware(['auth', 'permission:garantias.edit'])->group(function () {
+    Route::get('garantias/{garantia}/edit', [\App\Http\Controllers\GarantiaController::class, 'edit'])->name('garantias.edit');
+    Route::put('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'update'])->name('garantias.update');
     Route::post('garantias/{garantia}/extender', [\App\Http\Controllers\GarantiaController::class, 'extender'])->name('garantias.extender');
     Route::post('garantias/{garantia}/reclamar', [\App\Http\Controllers\GarantiaController::class, 'procesarReclamo'])->name('garantias.reclamar');
+});
+Route::middleware(['auth', 'permission:garantias.delete'])->group(function () {
+    Route::delete('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'destroy'])->name('garantias.destroy');
 });
 
 // Marcas Tecnológicas
