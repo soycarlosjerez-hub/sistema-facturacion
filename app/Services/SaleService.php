@@ -39,6 +39,14 @@ class SaleService
 
     public function createSale(array $data, SesionCaja $sesion): Venta
     {
+        $sesion->loadMissing('caja');
+        
+        $tipoComprobante = $data['tipo_comprobante'] ?? 'sin';
+
+        if (!$sesion->caja->esTipoComprobantePermitido($tipoComprobante)) {
+            throw new \Exception("El tipo de comprobante '{$tipoComprobante}' no está permitido en este terminal.");
+        }
+
         if (empty($data['cliente_id'])) {
             $consumidorFinal = Cliente::consumidorFinal(Auth::user()->business_instance_id);
             $data['cliente_id'] = $consumidorFinal->id;
@@ -178,6 +186,13 @@ class SaleService
         $data['total'] = round($subtotalTotal - $descuentosLinea + $itbisRecalculado, 2);
 
         return DB::transaction(function () use ($data, $sesion, $metodo, $estado, $descuentosLinea, $generalDescuento, $itbisRecalculado) {
+            // Verificar que el tipo de comprobante está permitido por la caja de la sesión
+            $tipoComprobante = $data['tipo_comprobante'] ?? 'ncf';
+            $tiposPermitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
+            if (!in_array($tipoComprobante, $tiposPermitidos, true)) {
+                throw new \Exception("El tipo de comprobante '{$tipoComprobante}' no está permitido en este terminal.");
+            }
+
             $ncf = null;
             $ncfTipo = null;
             $ncfVencimiento = null;
@@ -441,6 +456,8 @@ class SaleService
         $puedeModificarPrecio = in_array(Auth::user()->role, ['admin', 'admin-business', 'root', 'gerente'])
             || Auth::user()->hasAnyRole(['admin', 'admin-business', 'root', 'gerente']);
 
+        $permitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
+
         $clientesJs = $clientes->map(fn($c) => [
             'id'         => (int) $c->id,
             'nombre'     => $c->nombre,
@@ -483,7 +500,7 @@ class SaleService
                 'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
                 'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
                 'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-                'modoObras'
+                'modoObras', 'permitidos'
             );
         }
 
@@ -520,7 +537,7 @@ class SaleService
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
             'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-            'modoObras'
+            'modoObras', 'permitidos'
         );
     }
 

@@ -138,6 +138,44 @@
                                 </div>
                             </div>
 
+                            <div class="col-12">
+                                <div class="p-3 rounded-3" style="background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.2);">
+                                    <label class="fw-bold mb-3 d-block">
+                                        <i class="bi bi-receipt-cutoff me-1"></i>
+                                        Tipos de Comprobante Permitidos
+                                    </label>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        @php
+                                            $permitidos = $caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
+                                            $checkedSin = in_array('sin', $permitidos) ? 'checked' : (is_null(old('allowed_comprobante_types')) && empty($permitidos)) ? '' : '';
+                                            $checkedNcf = in_array('ncf', $permitidos) ? 'checked' : (is_null(old('allowed_comprobante_types')) && empty($permitidos)) ? '' : '';
+                                            $checkedEcf = in_array('ecf', $permitidos) ? 'checked' : (is_null(old('allowed_comprobante_types')) && empty($permitidos)) ? '' : '';
+                                            if (old('allowed_comprobante_types')) {
+                                                $checkedSin = in_array('sin', old('allowed_comprobante_types')) ? 'checked' : '';
+                                                $checkedNcf = in_array('ncf', old('allowed_comprobante_types')) ? 'checked' : '';
+                                                $checkedEcf = in_array('ecf', old('allowed_comprobante_types')) ? 'checked' : '';
+                                            }
+                                        @endphp
+                                        <label class="form-check d-flex align-items-center gap-2 mb-0" style="cursor:pointer;">
+                                            <input class="form-check-input" type="checkbox" name="allowed_comprobante_types[]" value="sin" id="tipo_sin" {{ $checkedSin }}>
+                                            <span class="small fw-semibold">Sin Comprobante</span>
+                                            <small class="text-muted">(B00)</small>
+                                        </label>
+                                        <label class="form-check d-flex align-items-center gap-2 mb-0" style="cursor:pointer;">
+                                            <input class="form-check-input" type="checkbox" name="allowed_comprobante_types[]" value="ncf" id="tipo_ncf" {{ $checkedNcf }}>
+                                            <span class="small fw-semibold">NCF</span>
+                                            <small class="text-muted">(Tradicional)</small>
+                                        </label>
+                                        <label class="form-check d-flex align-items-center gap-2 mb-0" style="cursor:pointer;">
+                                            <input class="form-check-input" type="checkbox" name="allowed_comprobante_types[]" value="ecf" id="tipo_ecf" {{ $checkedEcf }}>
+                                            <span class="small fw-semibold">e-CF</span>
+                                            <small class="text-muted">(DGII)</small>
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">Selecciona los tipos de comprobante que estarán disponibles en la terminal de venta de esta caja.</small>
+                                </div>
+                            </div>
+
                             <!-- Info adicional -->
                             <div class="col-12">
                                 <div class="row g-2 small text-muted">

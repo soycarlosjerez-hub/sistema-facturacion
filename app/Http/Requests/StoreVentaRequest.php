@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\SesionCaja;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -66,6 +67,7 @@ class StoreVentaRequest extends FormRequest
             'mixto_transferencia' => 'nullable|numeric|min:0',
             'ncf_tipo'      => ['nullable', 'string', 'exists:ncf_sequences,prefijo', Rule::requiredIf(fn() => $this->tipo_comprobante === 'ncf')],
             'tipo_comprobante' => 'nullable|in:sin,ncf,ecf',
+            'sesion_caja_id'  => 'nullable|exists:sesion_cajas,id',
         ];
 
         return $reglas;
@@ -97,6 +99,20 @@ class StoreVentaRequest extends FormRequest
                     $expectedSub = is_array($subtotals) ? (float)($subtotals[$i] ?? 0) : 0;
                     if (abs($calc - $expectedSub) > 0.02) {
                         $validator->errors()->add("subtotal.{$i}", "El subtotal no coincide con precio × cantidad.");
+                    }
+                }
+            }
+
+            // Verificar que el tipo de comprobante esté permitido por la caja
+            $tipoComprobante = $this->input('tipo_comprobante');
+            $sesionCajaId = $this->input('sesion_caja_id');
+
+            if ($tipoComprobante && $sesionCajaId) {
+                $sesion = SesionCaja::with('caja')->find($sesionCajaId);
+                if ($sesion && $sesion->caja) {
+                    $tiposPermitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
+                    if (!in_array($tipoComprobante, $tiposPermitidos, true)) {
+                        $validator->errors()->add('tipo_comprobante', "El tipo de comprobante '{$tipoComprobante}' no está permitido en este terminal.");
                     }
                 }
             }

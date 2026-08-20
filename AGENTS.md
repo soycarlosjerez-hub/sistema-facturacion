@@ -17,6 +17,7 @@ Este proyecto utiliza subagentes especializados para desarrollo eficiente.
 | `erp-analyst` | Analista funcional ERP — procesos empresariales, levantamiento de requerimientos, flujos de facturación, inventario, contabilidad | "requerimiento", "proceso", "flujo", "negocio", "user story", "análisis funcional", "levantamiento" |
 | `analista-negocio` | Senior Business Analyst — descubre procesos, actores, reglas, excepciones, documentos, permisos, KPIs, integraciones, automatización | "analista negocio", "analista-negocio", "proceso", "regla negocio", "permisos", "flujos", "KPI", "automatización", "documentos", "actores", "requisitos funcionales", "matriz permisos" |
 | `security-expert` | Especialista en seguridad web — Laravel Security, autenticación, autorización, OWASP, protección de APIs, auditoría | "seguridad", "auth", "permiso", "OWASP", "vulnerabilidad", "auditoría", "encriptación", "protección" |
+| `iso` | Consultor de calidad ISO 9000/9001/9004/19011 — sistemas de gestión de calidad, auditoría, trazabilidad, indicadores, documentación QMS, procesos, riesgos, mejora continua | "ISO", "iso 9000", "iso 9001", "iso 9004", "iso 19011", "calidad", "SGC", "gestión calidad", "auditoría calidad", "no conformidad", "acción correctiva", "indicador calidad", "KPI calidad", "política de calidad", "mejora continua", "risk", "oportunidad calidad" |
 
 ## Ubicación
 
@@ -33,7 +34,8 @@ Los agentes están en `.opencode/agent/`:
 ├── qa-engineer.md
 ├── security-expert.md
 ├── software-architect.md
-└── testing.md
+├── testing.md
+└── iso.md
 ```
 
 ## Cómo Usar
@@ -54,6 +56,7 @@ Usa `@nombre-agente` para invocar uno específico:
 @erp-analyst levanta requerimientos del módulo de nómina
 @analista-negocio analiza el flujo completo de facturación
 @security-expert audita la protección de APIs
+@iso implementa un SGC basado en ISO 9001
 ```
 
 ### Flujo Completo

@@ -61,10 +61,18 @@ class CajaController extends Controller
             'ubicacion'   => 'nullable|string|max:100',
             'activo'      => 'boolean',
             'sucursal_id' => 'nullable|exists:sucursales,id',
+            'allowed_comprobante_types' => 'nullable|array',
+            'allowed_comprobante_types.*' => 'in:sin,ncf,ecf',
         ], [
             'nombre.required' => 'El nombre de la caja es obligatorio.',
             'codigo.unique'   => 'Este código ya está en uso.',
         ]);
+
+        if (empty($data['allowed_comprobante_types'])) {
+            $data['allowed_comprobante_types'] = ['sin', 'ncf', 'ecf'];
+        }
+
+        $data['activo'] = $request->boolean('activo');
 
         $this->cajaService->create($data);
 
@@ -89,9 +97,17 @@ class CajaController extends Controller
             'ubicacion'   => 'nullable|string|max:100',
             'activo'      => 'boolean',
             'sucursal_id' => 'nullable|exists:sucursales,id',
+            'allowed_comprobante_types' => 'nullable|array',
+            'allowed_comprobante_types.*' => 'in:sin,ncf,ecf',
         ]);
 
-        $this->cajaService->update($caja, $data);
+        if (empty($data['allowed_comprobante_types'])) {
+            $data['allowed_comprobante_types'] = ['sin', 'ncf', 'ecf'];
+        }
+
+        $data['activo'] = $request->boolean('activo');
+
+        $caja->update($data);
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

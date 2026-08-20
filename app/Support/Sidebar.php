@@ -802,6 +802,25 @@ class Sidebar
             ];
         }
 
+        // ISO 9001 — SGC
+        if ($can('sgc-datos.view')) {
+            $items[] = ['section' => 'ISO 9001'];
+            $items[] = [
+                'route' => 'sgc-dashboard',
+                'icon'  => 'bi-award',
+                'label' => 'Dashboard SGC',
+                'is_route' => 'sgc-dashboard',
+                'exact_route' => 'sgc-dashboard',
+            ];
+            $items[] = [
+                'route' => 'sgc.documentos.index',
+                'icon'  => 'bi-journal-bookmark',
+                'label' => 'Gestión Documental',
+                'is_route' => 'sgc.documentos.*',
+                'exact_route' => 'sgc.documentos.index',
+            ];
+        }
+
         // Configuración — cuando hay InstanceRole, requiere el módulo asignado
         $hasConf = fn(string $k) => $user->instance_role_id ? $mod($k) : true;
         if (

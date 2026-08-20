@@ -321,6 +321,18 @@ class PermissionSeeder extends Seeder
                 'delivery-earnings.view',
                 'delivery-earnings.export',
             ],
+            'sgc-documentos' => [
+                'sgc-documentos.view',
+                'sgc-documentos.create',
+                'sgc-documentos.edit',
+                'sgc-documentos.delete',
+                'sgc-documentos.download',
+            ],
+            'sgc-datos' => [
+                'sgc-datos.view',
+                'sgc-datos.dashboard',
+                'sgc-datos.proveedores',
+            ],
         ];
 
         $allPermissions = collect($permissionsByModule)
@@ -622,6 +634,8 @@ class PermissionSeeder extends Seeder
                 'reportes.view',
                 'reportes.export',
                 'reportes.restaurante',
+                'sgc-datos.view',
+                'sgc-datos.dashboard',
 
                 'ventas.view',
                 'ventas.create',

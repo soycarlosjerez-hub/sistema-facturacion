@@ -21,10 +21,12 @@ class Caja extends Model
         'ubicacion',
         'estado',
         'activo',
+        'allowed_comprobante_types',
     ];
 
     protected $casts = [
         'activo' => 'boolean',
+        'allowed_comprobante_types' => 'array',
     ];
 
     public function sucursal()
@@ -45,6 +47,16 @@ class Caja extends Model
     public function scopeActivas($query)
     {
         return $query->where('activo', true);
+    }
+
+    public function esTipoComprobantePermitido(string $tipo): bool
+    {
+        $tipos = $this->allowed_comprobante_types;
+        if (empty($tipos)) {
+            // Si no está configurado (cajas antiguas), permitir todos
+            return true;
+        }
+        return in_array($tipo, $tipos, true);
     }
 
     public function getCodigoCortoAttribute(): string

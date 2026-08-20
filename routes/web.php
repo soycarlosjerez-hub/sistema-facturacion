@@ -52,6 +52,7 @@ use App\Http\Controllers\LibroVentasController;
 use App\Http\Controllers\LibroComprasController;
 use App\Http\Controllers\LibroRetencionesController;
 use App\Http\Controllers\Formulario1414Controller;
+use App\Http\Controllers\DocumentoSgcController;
 use App\Http\Middleware\RoleMiddleware;
 
 // Home / Welcome
@@ -96,10 +97,48 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // ISO 9001 — SGC Dashboard
+    Route::get('/sgc', [DocumentoSgcController::class, 'dashboard'])->name('sgc-dashboard');
+
+    // ISO 9001 — SGC Gestión Documental
+    Route::middleware('permission:sgc-documentos.view')->group(function () {
+        Route::get('/sgc/documentos', [DocumentoSgcController::class, 'index'])->name('sgc.documentos.index');
+        Route::get('/sgc/documentos/{documento}', [DocumentoSgcController::class, 'show'])->name('sgc.documentos.show');
+        Route::get('/sgc/documentos/{documento}/descargar', [DocumentoSgcController::class, 'archivoShow'])->name('sgc.documentos.archivo.show');
+        Route::get('/sgc/documentos/{documento}/download', [DocumentoSgcController::class, 'archivoShow'])->name('sgc.documentos.archivo.download');
+        Route::get('/sgc/documentos/{documento}/edit', [DocumentoSgcController::class, 'edit'])->name('sgc.documentos.edit');
+        Route::get('/sgc/documentos/{documento}/aprobar', [DocumentoSgcController::class, 'aprobar'])->name('sgc.documentos.aprobar');
+        Route::get('/sgc/documentos/{documento}/rechazar', [DocumentoSgcController::class, 'rechazar'])->name('sgc.documentos.rechazar');
+        Route::post('/sgc/documentos/{documento}/aprobar', [DocumentoSgcController::class, 'aprobar'])->name('sgc.documentos.aprobar.post');
+        Route::post('/sgc/documentos/{documento}/rechazar', [DocumentoSgcController::class, 'rechazar'])->name('sgc.documentos.rechazar.post');
+        Route::post('/sgc/documentos/{documento}/obsoleto', [DocumentoSgcController::class, 'marcarObsoleto'])->name('sgc.documentos.obsoleto');
+        Route::get('/sgc/proveedores/{proveedor}/documentos', [DocumentoSgcController::class, 'documentosProveedor'])->name('sgc.proveedores.documentos');
+    });
+
+    Route::middleware('permission:sgc-documentos.create')->group(function () {
+        Route::get('/sgc/documentos/create', [DocumentoSgcController::class, 'create'])->name('sgc.documentos.create');
+        Route::post('/sgc/documentos', [DocumentoSgcController::class, 'store'])->name('sgc.documentos.store');
+        Route::post('/sgc/proveedores/{proveedor}/documentos', [DocumentoSgcController::class, 'storeDocumentoProveedor'])->name('sgc.documentos-proveedor.store');
+    });
+
+    Route::middleware('permission:sgc-documentos.edit')->group(function () {
+        Route::put('/sgc/documentos/{documento}', [DocumentoSgcController::class, 'update'])->name('sgc.documentos.update');
+    });
+
+    Route::middleware('permission:sgc-documentos.delete')->group(function () {
+        Route::delete('/sgc/documentos/{documento}', [DocumentoSgcController::class, 'destroy'])->name('sgc.documentos.destroy');
+        Route::delete('/sgc/documentos-proveedor/{document}', [DocumentoSgcController::class, 'destroyDocumentoProveedor'])->name('sgc.documentos-proveedor.destroy');
+        Route::get('/sgc/documentos-proveedor/{document}/download', [DocumentoSgcController::class, 'archivoProveedor'])->name('sgc.documentos-proveedor.archivo.show');
+    });
+
+    Route::middleware('permission:sgc-datos.dashboard')->group(function () {
+        Route::get('/sgc/data', [DocumentoSgcController::class, 'stats'])->name('sgc.data.stats');
+    });
 });
 
-// Operational routes
-Route::middleware(['auth'])->group(function () {
+    // Operational routes
+    Route::middleware(['auth'])->group(function () {
 
     Route::get('/search', [SearchController::class, 'search'])->name('search.global');
 

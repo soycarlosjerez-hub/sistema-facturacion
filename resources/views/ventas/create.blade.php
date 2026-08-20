@@ -2477,23 +2477,33 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                         <i class="bi bi-receipt"></i> Comprobante Fiscal
                     </div>
                     <div class="comprobante-grid">
-                        <div class="comprobante-card active" data-comprobante="sin" data-action="select-comprobante">
+                        @php
+                            $permitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
+                            $defaultTipo = in_array('ncf', $permitidos, true) ? 'ncf' : (in_array('sin', $permitidos, true) ? 'sin' : 'ecf');
+                        @endphp
+                        @if(in_array('sin', $permitidos, true))
+                        <div class="comprobante-card {{ $defaultTipo === 'sin' ? 'active' : '' }}" data-comprobante="sin" data-action="select-comprobante">
                             <i class="bi bi-x-circle"></i>
                             <div class="ct-name">Sin Comprob.</div>
                             <div class="ct-sub">B00</div>
                         </div>
-                        <div class="comprobante-card" data-comprobante="ncf" data-action="select-comprobante">
+                        @endif
+                        @if(in_array('ncf', $permitidos, true))
+                        <div class="comprobante-card {{ $defaultTipo === 'ncf' ? 'active' : '' }}" data-comprobante="ncf" data-action="select-comprobante">
                             <i class="bi bi-receipt"></i>
                             <div class="ct-name">NCF</div>
                             <div class="ct-sub">Tradicional</div>
                         </div>
-                        <div class="comprobante-card" data-comprobante="ecf" data-action="select-comprobante">
+                        @endif
+                        @if(in_array('ecf', $permitidos, true))
+                        <div class="comprobante-card {{ $defaultTipo === 'ecf' ? 'active' : '' }}" data-comprobante="ecf" data-action="select-comprobante">
                             <i class="bi bi-shield-check"></i>
                             <div class="ct-name">e-CF</div>
                             <div class="ct-sub">DGII</div>
                         </div>
+                        @endif
                     </div>
-                    <input type="hidden" name="tipo_comprobante" id="tipo_comprobante" value="sin">
+                    <input type="hidden" name="tipo_comprobante" id="tipo_comprobante" value="{{ $defaultTipo }}">
                     <select name="ncf_tipo" id="ncf_tipo" class="ncf-select" disabled>
                         <option value="">Seleccione tipo de NCF...</option>
                         @foreach($ncfSequences as $seq)
@@ -3142,6 +3152,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     const validaStock = {!! json_encode($validaStock ?? true) !!};
     const modoObras = {!! json_encode($modoObras ?? false) !!};
     const puedeModificarPrecio = {!! json_encode($puedeModificarPrecio ?? false) !!};
+    const tiposComprobantePermitidos = {!! json_encode($permitidos ?? ['sin', 'ncf', 'ecf']) !!};
 
     // ============ Estado ============
     const cart = [];
@@ -3276,6 +3287,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         },
 
         selectComprobante(tipo) {
+            // Verificar si el tipo de comprobante está permitido por esta caja
+            if (!tiposComprobantePermitidos.includes(tipo)) {
+                showToast(`El comprobante '${tipo}' no está permitido en este terminal.`, 'error');
+                return;
+            }
             document.querySelectorAll('.comprobante-card').forEach(c => c.classList.remove('active'));
             document.querySelector(`.comprobante-card[data-comprobante="${tipo}"]`)?.classList.add('active');
             $('tipo_comprobante').value = tipo;
