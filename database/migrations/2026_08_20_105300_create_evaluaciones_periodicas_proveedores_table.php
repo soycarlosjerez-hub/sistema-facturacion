@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('evaluaciones_periodicas_proveedores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores', 'fk_epp_prov_id')->onDelete('cascade');
+            $table->foreignId('proveedor_id');
+            $table->foreign('proveedor_id', 'fk_epp_prov_id')->references('id')->on('proveedores')->onDelete('cascade');
             $table->integer('periodo');
             $table->integer('evaluacion_general')->default(1)->comment('1-5');
             $table->integer('cumplimiento_ncf')->default(1)->comment('1-5');

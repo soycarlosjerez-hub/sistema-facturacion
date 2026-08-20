@@ -23,7 +23,8 @@ return new class extends Migration
             $table->text('accion_inmediata')->nullable();
             $table->string('estado', 20)->default('abierta');
             $table->unsignedBigInteger('tenant_id')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_ip_dsgc_id')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable();
+            $table->foreign('documento_sgc_id', 'fk_ip_dsgc_id')->references('id')->on('documentos_sgc')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('programas_auditoria', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas', 'fk_pa_ai_id')->cascadeOnDelete();
+            $table->foreignId('auditoria_interna_id');
+            $table->foreign('auditoria_interna_id', 'fk_pa_ai_id')->references('id')->on('auditorias_internas')->onDelete('cascade');
             $table->string('area_auditada', 100);
             $table->text('criterios_auditoria')->nullable();
             $table->unsignedBigInteger('auditor_id')->nullable();

@@ -27,7 +27,8 @@ return new class extends Migration
             $table->text('metodologia')->nullable();
             $table->unsignedBigInteger('creado_por')->nullable();
             $table->unsignedBigInteger('aprobado_por')->nullable();
-            $table->foreignId('documento_sgc_id')->nullable()->constrained('documentos_sgc', 'fk_ai_dsgc_id')->onDelete('set null');
+            $table->foreignId('documento_sgc_id')->nullable();
+            $table->foreign('documento_sgc_id', 'fk_ai_dsgc_id')->references('id')->on('documentos_sgc')->onDelete('set null');
             $table->unsignedBigInteger('tenant_id')->nullable();
             $table->timestamps();
             $table->softDeletes();

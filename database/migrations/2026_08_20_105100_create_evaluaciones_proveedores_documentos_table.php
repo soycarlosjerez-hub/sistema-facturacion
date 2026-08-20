@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('evaluaciones_proveedores_documentos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('evaluacion_proveedor_id')->constrained('evaluaciones_proveedores', 'fk_epd_ep_id')->cascadeOnDelete();
+            $table->foreignId('evaluacion_proveedor_id');
+            $table->foreign('evaluacion_proveedor_id', 'fk_epd_ep_id')->references('id')->on('evaluaciones_proveedores')->onDelete('cascade');
             $table->string('nombre_doc', 200);
             $table->string('archivo_path')->nullable();
             $table->string('archivo_original_name')->nullable();

@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('checklist_auditorias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas', 'fk_ca_ai_id')->cascadeOnDelete();
+            $table->foreignId('auditoria_interna_id');
+            $table->foreign('auditoria_interna_id', 'fk_ca_ai_id')->references('id')->on('auditorias_internas')->onDelete('cascade');
             $table->string('item', 255);
             $table->text('criterio')->nullable();
             $table->integer('orden')->default(0);

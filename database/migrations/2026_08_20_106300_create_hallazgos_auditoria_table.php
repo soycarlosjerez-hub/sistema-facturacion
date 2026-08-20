@@ -14,7 +14,8 @@ return new class extends Migration
 
         Schema::create('hallazgos_auditoria', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('auditoria_interna_id')->constrained('auditorias_internas', 'fk_ha_ai_id')->cascadeOnDelete();
+            $table->foreignId('auditoria_interna_id');
+            $table->foreign('auditoria_interna_id', 'fk_ha_ai_id')->references('id')->on('auditorias_internas')->onDelete('cascade');
             $table->string('descripcion');
             $table->text('evidencia_objetiva')->nullable();
             $table->string('tipo', 50)->default('no_conformidad');
