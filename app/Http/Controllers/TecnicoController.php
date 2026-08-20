@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tecnico;
+use App\Models\TecnicaEspecialidad;
 use App\Models\OrdenReparacion;
 use App\Models\ServicioDomotica;
 use Illuminate\Http\Request;
