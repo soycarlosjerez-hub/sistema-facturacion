@@ -1,11 +1,11 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Historial de Movimientos')
 
 @push('styles')
 @include('partials.premium-ui')
 
-<｜｜DSML｜｜parameter name="replaceAll" string="false">false@endpush
+@endpush
 
 @section('content')
 <div class="ui-page" style="--accent:#14b8a6;--accent-rgb:20,184,166;--accent-hover:#0d9488;">
