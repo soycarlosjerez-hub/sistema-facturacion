@@ -33,8 +33,16 @@ class AlmacenController extends Controller
     public function store(Request $request)
     {
         $sucursalId = $request->sucursal_id ?? session('sucursal_id');
+        $tenantId = auth()->user()->business_instance_id;
+        $nombreRules = 'required|string|max:255';
+        if ($tenantId) {
+            $nombreRules .= '|unique:almacenes,nombre,NULL,id,tenant_id,' . $tenantId;
+        } else {
+            $nombreRules .= '|unique:almacenes,nombre,NULL,id,sucursal_id,' . ($sucursalId ?? 'NULL');
+        }
+
         $data = $request->validate([
-            'nombre'      => 'required|string|max:255|unique:almacenes,nombre,NULL,id,sucursal_id,' . ($sucursalId ?? 'NULL'),
+            'nombre'      => $nombreRules,
             'ubicacion'   => 'nullable|string|max:255',
             'sucursal_id' => 'nullable|exists:sucursales,id',
         ]);
@@ -59,8 +67,16 @@ class AlmacenController extends Controller
     public function update(Request $request, Almacen $almacen)
     {
         $sucursalId = $request->sucursal_id ?? session('sucursal_id');
+        $tenantId = auth()->user()->business_instance_id;
+        $nombreRules = 'required|string|max:255';
+        if ($tenantId) {
+            $nombreRules .= '|unique:almacenes,nombre,' . $almacen->id . ',id,tenant_id,' . $tenantId;
+        } else {
+            $nombreRules .= '|unique:almacenes,nombre,' . $almacen->id . ',id,sucursal_id,' . ($sucursalId ?? 'NULL');
+        }
+
         $data = $request->validate([
-            'nombre'      => 'required|string|max:255|unique:almacenes,nombre,' . $almacen->id . ',id,sucursal_id,' . ($sucursalId ?? 'NULL'),
+            'nombre'      => $nombreRules,
             'ubicacion'   => 'nullable|string|max:255',
             'sucursal_id' => 'nullable|exists:sucursales,id',
         ]);
