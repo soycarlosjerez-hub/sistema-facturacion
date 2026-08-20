@@ -59,7 +59,7 @@ class GarantiaController extends Controller
 
         // Soporte DataTables AJAX
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = (clone $query)->count();
             $garantias = $query->latest()->paginate(
                 request('length', 10),
                 ['*'],

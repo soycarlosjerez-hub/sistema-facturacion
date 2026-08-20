@@ -33,7 +33,7 @@ class TicketGarantiaController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = (clone $query)->count();
             $tickets = $query->latest()->paginate(request('length', 10), ['*'], 'page', request('start', 0));
 
             $rows = $tickets->map(function ($t) {

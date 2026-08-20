@@ -51,7 +51,7 @@ class EquipoController extends Controller
 
         // Soporte DataTables AJAX
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = (clone $query)->count();
             $perPage = max(1, (int) request('length', 10));
             $start = max(0, (int) request('start', 0));
             $page = (int) floor($start / $perPage) + 1;

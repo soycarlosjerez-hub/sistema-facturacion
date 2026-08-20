@@ -25,7 +25,7 @@ class TipoClimaController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = (clone $query)->count();
             $tipos = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', request('start', 0));
 
             $rows = $tipos->map(function ($tipo) {

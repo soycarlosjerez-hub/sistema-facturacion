@@ -48,7 +48,7 @@ class OrdenReparacionController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->copy()->count();
+            $total = (clone $query)->count();
             $ordenes = $query->latest()->paginate(
                 request('length', 10),
                 ['*'],
