@@ -477,6 +477,60 @@ class Sidebar
                     'exact_route' => 'garantias.index',
                 ];
             }
+            if ($can('marca-tecnologicas.view')) {
+                $items[] = [
+                    'route' => 'marcas-tecnologicas.index',
+                    'icon'  => 'bi-tag',
+                    'label' => 'Marcas Tecnológicas',
+                    'is_route' => 'marcas-tecnologicas.*',
+                    'exact_route' => 'marcas-tecnologicas.index',
+                ];
+            }
+            if ($can('licencias-software.view')) {
+                $items[] = [
+                    'route' => 'licencias-software.index',
+                    'icon'  => 'bi-key',
+                    'label' => 'Licencias de Software',
+                    'is_route' => 'licencias-software.*',
+                    'exact_route' => 'licencias-software.index',
+                ];
+            }
+            if ($can('redes-config.view')) {
+                $items[] = [
+                    'route' => 'redes-config.index',
+                    'icon'  => 'bi-hdd-network',
+                    'label' => 'Config. Redes',
+                    'is_route' => 'redes-config.*',
+                    'exact_route' => 'redes-config.index',
+                ];
+            }
+            if ($can('presupuestos.view')) {
+                $items[] = [
+                    'route' => 'presupuestos.index',
+                    'icon'  => 'bi-file-earmark-text',
+                    'label' => 'Presupuestos Técnicos',
+                    'is_route' => 'presupuestos.*',
+                    'exact_route' => 'presupuestos.index',
+                ];
+            }
+            if ($can('tecnica-especialidades.view')) {
+                $items[] = [
+                    'route' => 'tecnica-especialidades.index',
+                    'icon'  => 'bi-tools',
+                    'label' => 'Especialidades Técnicas',
+                    'is_route' => 'tecnica-especialidades.*',
+                    'exact_route' => 'tecnica-especialidades.index',
+                ];
+            }
+            if ($can('garantias-config.view')) {
+                $items[] = [
+                    'route' => 'garantias-config.index',
+                    'icon'  => 'bi-shield',
+                    'label' => 'Config. Garantías',
+                    'is_route' => 'garantias-config.*',
+                    'exact_route' => 'garantias-config.index',
+                ];
+            }
         }
 
         // Arte / Escultura / Galería
