@@ -70,8 +70,9 @@ class TecnicoController extends Controller
         }
 
         $tecnicos = $query->latest()->paginate(20)->withQueryString();
+        $especialidades = TecnicaEspecialidad::orderBy('orden')->orderBy('nombre')->get();
 
-        return view('tecnicos.index', compact('tecnicos'));
+        return view('tecnicos.index', compact('tecnicos', 'especialidades'));
     }
 
     /**
@@ -239,7 +240,8 @@ class TecnicoController extends Controller
         // Delete (only if no orders)
         if ($tecnico->ordenesReparacion()->count() === 0) {
             $html .= '<form action="' . route('tecnicos.destroy', $tecnico) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar este técnico?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field();
+            $html .= method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }

@@ -1240,17 +1240,19 @@ Route::middleware(['auth', 'permission:tecnicas.delete'])->group(function () {
 });
 
 // Técnicos
-Route::middleware(['auth', 'permission:tecnicos.view'])->group(function () {
-    Route::get('tecnicos', [\App\Http\Controllers\TecnicoController::class, 'index'])->name('tecnicos.index');
-    Route::get('tecnicos/{tecnico}', [\App\Http\Controllers\TecnicoController::class, 'show'])->name('tecnicos.show');
-});
 Route::middleware(['auth', 'permission:tecnicos.create'])->group(function () {
     Route::get('tecnicos/create', [\App\Http\Controllers\TecnicoController::class, 'create'])->name('tecnicos.create');
     Route::post('tecnicos', [\App\Http\Controllers\TecnicoController::class, 'store'])->name('tecnicos.store');
 });
+Route::middleware(['auth', 'permission:tecnicos.view'])->group(function () {
+    Route::get('tecnicos', [\App\Http\Controllers\TecnicoController::class, 'index'])->name('tecnicos.index');
+    Route::get('tecnicos/stats', [\App\Http\Controllers\TecnicoController::class, 'getStats'])->name('tecnicos.stats');
+    Route::get('tecnicos/{tecnico}', [\App\Http\Controllers\TecnicoController::class, 'show'])->name('tecnicos.show');
+});
 Route::middleware(['auth', 'permission:tecnicos.edit'])->group(function () {
     Route::get('tecnicos/{tecnico}/edit', [\App\Http\Controllers\TecnicoController::class, 'edit'])->name('tecnicos.edit');
     Route::put('tecnicos/{tecnico}', [\App\Http\Controllers\TecnicoController::class, 'update'])->name('tecnicos.update');
+    Route::post('tecnicos/{tecnico}/toggle-activar', [\App\Http\Controllers\TecnicoController::class, 'toggleActivar'])->name('tecnicos.toggle-activar');
 });
 Route::middleware(['auth', 'permission:tecnicos.delete'])->group(function () {
     Route::delete('tecnicos/{tecnico}', [\App\Http\Controllers\TecnicoController::class, 'destroy'])->name('tecnicos.destroy');
