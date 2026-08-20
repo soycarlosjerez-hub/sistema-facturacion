@@ -1200,6 +1200,7 @@ Route::middleware(['auth', 'permission:equipos.view'])->group(function () {
     Route::get('equipos', [\App\Http\Controllers\EquipoController::class, 'index'])->name('equipos.index');
     Route::get('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'show'])->name('equipos.show');
     Route::get('equipos/buscar-imei', [\App\Http\Controllers\EquipoController::class, 'buscarPorImei'])->name('equipos.buscar-imei');
+    Route::get('equipos/exportar', [\App\Http\Controllers\EquipoController::class, 'exportarExcel'])->name('equipos.exportar');
 });
 Route::middleware(['auth', 'permission:equipos.create'])->group(function () {
     Route::get('equipos/create', [\App\Http\Controllers\EquipoController::class, 'create'])->name('equipos.create');
