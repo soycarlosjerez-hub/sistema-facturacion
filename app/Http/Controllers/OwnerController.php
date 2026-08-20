@@ -1003,17 +1003,10 @@ class OwnerController extends Controller
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:12|confirmed',
             'instance_role_id' => 'nullable|exists:instance_roles,id',
         ]);
-
-        $duplicateEmail = User::where('email', $data['email'])
-            ->where('business_instance_id', $instance->id)
-            ->exists();
-        if ($duplicateEmail) {
-            return back()->withInput()->with('error', 'Ya existe un usuario con ese email en esta instancia.');
-        }
 
         $user = User::create([
             'name' => $data['name'],
