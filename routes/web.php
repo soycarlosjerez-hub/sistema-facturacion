@@ -1304,6 +1304,7 @@ Route::middleware(['auth', 'permission:garantias.delete'])->group(function () {
 // Marcas Tecnológicas
 Route::middleware(['auth', 'permission:marca-tecnologicas.view'])->group(function () {
     Route::get('marcas-tecnologicas', [\App\Http\Controllers\MarcaTecnologicaController::class, 'index'])->name('marcas-tecnologicas.index');
+    Route::get('marcas-tecnologicas/ajax', [\App\Http\Controllers\MarcaTecnologicaController::class, 'indexAjax'])->name('marcas-tecnologicas.ajax');
     Route::get('marcas-tecnologicas/{marcaTecnologica}', [\App\Http\Controllers\MarcaTecnologicaController::class, 'show'])->name('marcas-tecnologicas.show');
 });
 Route::middleware(['auth', 'permission:marca-tecnologicas.create'])->group(function () {
@@ -1322,6 +1323,7 @@ Route::middleware(['auth', 'permission:marca-tecnologicas.delete'])->group(funct
 // Licencias de Software
 Route::middleware(['auth', 'permission:licencias-software.view'])->group(function () {
     Route::get('licencias-software', [\App\Http\Controllers\LicenciaSoftwareController::class, 'index'])->name('licencias-software.index');
+    Route::get('licencias-software/ajax', [\App\Http\Controllers\LicenciaSoftwareController::class, 'indexAjax'])->name('licencias-software.ajax');
     Route::get('licencias-software/{licenciaSoftware}', [\App\Http\Controllers\LicenciaSoftwareController::class, 'show'])->name('licencias-software.show');
 });
 Route::middleware(['auth', 'permission:licencias-software.create'])->group(function () {
@@ -1340,6 +1342,7 @@ Route::middleware(['auth', 'permission:licencias-software.delete'])->group(funct
 // Redes de Config (Infraestructura de Red)
 Route::middleware(['auth', 'permission:redes-config.view'])->group(function () {
     Route::get('redes-config', [\App\Http\Controllers\RedConfigController::class, 'index'])->name('redes-config.index');
+    Route::get('redes-config/ajax', [\App\Http\Controllers\RedConfigController::class, 'indexAjax'])->name('redes-config.ajax');
     Route::get('redes-config/{redConfig}', [\App\Http\Controllers\RedConfigController::class, 'show'])->name('redes-config.show');
 });
 Route::middleware(['auth', 'permission:redes-config.create'])->group(function () {
@@ -1358,6 +1361,7 @@ Route::middleware(['auth', 'permission:redes-config.delete'])->group(function ()
 // Presupuestos Técnicos
 Route::middleware(['auth', 'permission:presupuestos.view'])->group(function () {
     Route::get('presupuestos', [\App\Http\Controllers\PresupuestoController::class, 'index'])->name('presupuestos.index');
+    Route::get('presupuestos/ajax', [\App\Http\Controllers\PresupuestoController::class, 'indexAjax'])->name('presupuestos.ajax');
     Route::get('presupuestos/{presupuesto}', [\App\Http\Controllers\PresupuestoController::class, 'show'])->name('presupuestos.show');
 });
 Route::middleware(['auth', 'permission:presupuestos.create'])->group(function () {
@@ -1379,6 +1383,7 @@ Route::middleware(['auth', 'permission:presupuestos.delete'])->group(function ()
 // Especialidades Técnicas
 Route::middleware(['auth', 'permission:tecnica-especialidades.view'])->group(function () {
     Route::get('tecnica-especialidades', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'index'])->name('tecnica-especialidades.index');
+    Route::get('tecnica-especialidades/ajax', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'indexAjax'])->name('tecnica-especialidades.ajax');
     Route::get('tecnica-especialidades/{tecnicaEspecialidad}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'show'])->name('tecnica-especialidades.show');
 });
 Route::middleware(['auth', 'permission:tecnica-especialidades.create'])->group(function () {
@@ -1399,6 +1404,7 @@ Route::middleware(['auth', 'permission:tecnica-especialidades.delete'])->group(f
 // Configuración de Garantías
 Route::middleware(['auth', 'permission:garantias-config.view'])->group(function () {
     Route::get('garantias-config', [\App\Http\Controllers\GarantiasConfigController::class, 'index'])->name('garantias-config.index');
+    Route::get('garantias-config/ajax', [\App\Http\Controllers\GarantiasConfigController::class, 'indexAjax'])->name('garantias-config.ajax');
     Route::get('garantias-config/{garantiasConfig}', [\App\Http\Controllers\GarantiasConfigController::class, 'show'])->name('garantias-config.show');
 });
 Route::middleware(['auth', 'permission:garantias-config.create'])->group(function () {

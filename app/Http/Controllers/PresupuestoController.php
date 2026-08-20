@@ -27,36 +27,80 @@ class PresupuestoController extends Controller
             });
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->count();
-            $presupuestos = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
-
-            $rows = $presupuestos->map(function ($presupuesto) {
-                return [
-                    'DT_RowIndex' => $presupuesto->id,
-                    'numero' => $presupuesto->numero,
-                    'cliente' => $presupuesto->cliente ? $presupuesto->cliente->nombre : '-',
-                    'subtotal' => number_format($presupuesto->subtotal, 2),
-                    'itbis' => number_format($presupuesto->itbis, 2),
-                    'total' => number_format($presupuesto->total, 2),
-                    'estado' => $presupuesto->estado_label,
-                    'valido_hasta' => $presupuesto->valido_hasta ? $presupuesto->valido_hasta->format('Y-m-d') : '-',
-                    'acciones' => $this->getAccionesHtml($presupuesto),
-                ];
-            });
-
-            return response()->json([
-                'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $rows,
-            ]);
-        }
-
         $presupuestos = $query->latest()->paginate(20)->withQueryString();
         $clientes = Cliente::where('activo', true)->orderBy('nombre')->get();
 
         return view('presupuestos.index', compact('presupuestos', 'clientes'));
+    }
+
+    public function indexAjax(Request $request)
+    {
+        $query = Presupuesto::query()->with('cliente');
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        if ($search = $this->dtSearch($request)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('numero', 'like', "%{$search}%")
+                    ->orWhereHas('cliente', function ($q2) use ($search) {
+                        $q2->where('nombre', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Ordering
+        $columnMapping = ['id', 'numero', 'cliente', 'subtotal', 'itbis', 'total', 'estado', 'valido_hasta'];
+        $orderColIdx = (int) $request->input('columns.0.data', 0);
+        $orderCol = $columnMapping[$orderColIdx] ?? 'id';
+        $orderDir = $request->input('order.0.dir', 'desc');
+        if (in_array($orderCol, ['numero', 'cliente', 'subtotal', 'itbis', 'total', 'estado', 'valido_hasta'])) {
+            $query->orderBy($orderCol, $orderDir);
+        }
+
+        // Pagination
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', -1);
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        // Total count BEFORE skip/take
+        $total = Presupuesto::query()->with('cliente')
+            ->when($request->filled('estado'), fn($q) => $q->where('estado', $request->estado))
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('numero', 'like', "%{$search}%")
+                        ->orWhereHas('cliente', function ($q3) use ($search) {
+                            $q3->where('nombre', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->count();
+
+        $presupuestos = $query->get();
+
+        $rows = $presupuestos->map(function ($presupuesto) {
+            return [
+                'DT_RowIndex' => $presupuesto->id,
+                'numero' => $presupuesto->numero,
+                'cliente' => $presupuesto->cliente ? $presupuesto->cliente->nombre : '-',
+                'subtotal' => number_format($presupuesto->subtotal, 2),
+                'itbis' => number_format($presupuesto->itbis, 2),
+                'total' => number_format($presupuesto->total, 2),
+                'estado' => $presupuesto->estado_label,
+                'valido_hasta' => $presupuesto->valido_hasta ? $presupuesto->valido_hasta->format('Y-m-d') : '-',
+                'acciones' => $this->getAccionesHtml($presupuesto),
+            ];
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $rows,
+        ]);
     }
 
     public function create()

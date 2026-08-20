@@ -46,37 +46,6 @@
     </div>
     @endif
 
-    <div class="row g-3 mb-4">
-        <div class="col-lg-4 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Total Especialidades</div>
-                    <div class="ui-stat-value">{{ $especialidades->total() ?? 0 }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Activas</div>
-                    <div class="ui-stat-value" style="color:#22c55e;">
-                        {{ $especialidades->where('activo', true)->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-12">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Técnicos Especializados</div>
-                    <div class="ui-stat-value" style="color:#3b82f6;">
-                        {{ $especialidades->sum('tecnicos_count') ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('tecnica-especialidades.index') }}" class="row g-3">
@@ -113,59 +82,11 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($especialidades as $esp)
-                        <tr>
-                            <td>{{ $esp->id }}</td>
-                            <td><strong>{{ $esp->nombre }}</strong></td>
-                            <td>{{ Str::limit($esp->descripcion, 50) ?? '-' }}</td>
-                            <td>
-                                <span class="badge bg-info">{{ $esp->tecnicos_count ?? 0 }}</span>
-                            </td>
-                            <td>
-                                <span class="badge {{ $esp->activo ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ $esp->activo_label }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('tecnica-especialidades.show', $esp) }}" class="btn btn-outline-info" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @can('tecnica-especialidades.edit')
-                                    <a href="{{ route('tecnica-especialidades.edit', $esp) }}" class="btn btn-outline-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    @endcan
-                                    @can('tecnica-especialidades.delete')
-                                    @if($esp->tecnicos_count == 0 || !isset($esp->tecnicos_count))
-                                    <form action="{{ route('tecnica-especialidades.destroy', $esp) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta especialidad?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endif
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
-                                No hay especialidades registradas
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
-            <div class="mt-3">
-                {{ $especialidades->links() }}
-            </div>
+            <div class="mt-3 dt-table-footer"></div>
         </div>
     </div>
 </div>
@@ -173,13 +94,63 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#especialidadesTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+    var table = $('#especialidadesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route("tecnica-especialidades.ajax") }}',
+            type: 'GET',
+            data: function(d) {
+                d.activo = $('select[name="activo"]').val();
+            }
         },
-        "order": [[0, "desc"]],
-        "pageLength": 10,
-        "responsive": true
+        columns: [
+            { data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false, width: '50px' },
+            { 
+                data: 'nombre', 
+                name: 'nombre',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'descripcion', 
+                name: 'descripcion',
+                render: function(data) {
+                    return (data && data.length > 50) ? data.substring(0, 50) + '...' : (data || '-');
+                }
+            },
+            { 
+                data: 'tecnicos_count', 
+                name: 'tecnicos_count',
+                orderable: false,
+                render: function(data) {
+                    return '<span class="badge bg-info">' + (data || 0) + '</span>';
+                }
+            },
+            { 
+                data: 'activo', 
+                name: 'activo',
+                render: function(data) {
+                    var cls = data ? 'success' : 'secondary';
+                    var label = data ? 'Activa' : 'Inactiva';
+                    return '<span class="badge bg-' + cls + '">' + label + '</span>';
+                }
+            },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, width: '140px' }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true
+    });
+
+    // Filter on form submit
+    $('form').on('submit', function(e) {
+        e.preventDefault();
+        table.ajax.reload();
     });
 });
 </script>

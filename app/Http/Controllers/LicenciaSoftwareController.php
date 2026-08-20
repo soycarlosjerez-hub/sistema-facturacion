@@ -32,46 +32,100 @@ class LicenciaSoftwareController extends Controller
             });
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->count();
-            $licencias = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
-
-            $rows = $licencias->map(function ($licencia) {
-                $estado = 'Activa';
-                if (!$licencia->licencia_activa) {
-                    $estado = 'Inactiva';
-                } elseif ($licencia->fecha_vencimiento && $licencia->fecha_vencimiento->lt(today())) {
-                    $estado = 'Vencida';
-                } elseif ($licencia->fecha_vencimiento && $licencia->fecha_vencimiento->lte(today()->addDays(30))) {
-                    $estado = 'Por Vencer';
-                }
-
-                return [
-                    'DT_RowIndex' => $licencia->id,
-                    'clave_licencia' => $licencia->clave_licencia,
-                    'producto' => $licencia->producto ? $licencia->producto->nombre : '-',
-                    'tipo_licencia' => $licencia->tipo_licencia ?? '-',
-                    'plataforma' => $licencia->plataforma ?? '-',
-                    'usuario_asignado' => $licencia->usuario_asignado ?? '-',
-                    'fecha_vencimiento' => $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('Y-m-d') : '-',
-                    'estado' => $estado,
-                    'licencia_activa' => $licencia->licencia_activa,
-                    'acciones' => $this->getAccionesHtml($licencia),
-                ];
-            });
-
-            return response()->json([
-                'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $rows,
-            ]);
-        }
-
         $licencias = $query->latest()->paginate(20)->withQueryString();
         $productos = Producto::where('es_licencia', true)->get();
 
         return view('licencias-software.index', compact('licencias', 'productos'));
+    }
+
+    public function indexAjax(Request $request)
+    {
+        $query = LicenciaSoftware::query()->with('producto');
+
+        if ($request->filled('licencia_activa')) {
+            $query->where('licencia_activa', filter_var($request->licencia_activa, FILTER_VALIDATE_BOOLEAN));
+        }
+        if ($request->filled('plataforma')) {
+            $query->where('plataforma', $request->plataforma);
+        }
+        if ($request->filled('tipo_licencia')) {
+            $query->where('tipo_licencia', $request->tipo_licencia);
+        }
+
+        if ($search = $this->dtSearch($request)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('clave_licencia', 'like', "%{$search}%")
+                    ->orWhere('usuario_asignado', 'like', "%{$search}%")
+                    ->orWhereHas('producto', function ($q2) use ($search) {
+                        $q2->where('nombre', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Ordering
+        $columnMapping = ['id', 'clave_licencia', 'producto', 'tipo_licencia', 'plataforma', 'usuario_asignado', 'fecha_vencimiento', 'estado'];
+        $orderColIdx = (int) $request->input('columns.0.data', 0);
+        $orderCol = $columnMapping[$orderColIdx] ?? 'id';
+        $orderDir = $request->input('order.0.dir', 'desc');
+        if (in_array($orderCol, ['clave_licencia', 'producto', 'tipo_licencia', 'plataforma', 'usuario_asignado', 'fecha_vencimiento'])) {
+            $query->orderBy($orderCol, $orderDir);
+        }
+
+        // Pagination
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', -1);
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        // Total count BEFORE skip/take
+        $total = LicenciaSoftware::query()->with('producto')
+            ->when($request->filled('licencia_activa'), fn($q) => $q->where('licencia_activa', filter_var($request->licencia_activa, FILTER_VALIDATE_BOOLEAN)))
+            ->when($request->filled('plataforma'), fn($q) => $q->where('plataforma', $request->plataforma))
+            ->when($request->filled('tipo_licencia'), fn($q) => $q->where('tipo_licencia', $request->tipo_licencia))
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('clave_licencia', 'like', "%{$search}%")
+                        ->orWhere('usuario_asignado', 'like', "%{$search}%")
+                        ->orWhereHas('producto', function ($q3) use ($search) {
+                            $q3->where('nombre', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->count();
+
+        $licencias = $query->get();
+
+        $rows = $licencias->map(function ($licencia) {
+            $estado = 'Activa';
+            if (!$licencia->licencia_activa) {
+                $estado = 'Inactiva';
+            } elseif ($licencia->fecha_vencimiento && $licencia->fecha_vencimiento->lt(today())) {
+                $estado = 'Vencida';
+            } elseif ($licencia->fecha_vencimiento && $licencia->fecha_vencimiento->lte(today()->addDays(30))) {
+                $estado = 'Por Vencer';
+            }
+
+            return [
+                'DT_RowIndex' => $licencia->id,
+                'clave_licencia' => $licencia->clave_licencia,
+                'producto' => $licencia->producto ? $licencia->producto->nombre : '-',
+                'tipo_licencia' => $licencia->tipo_licencia ?? '-',
+                'plataforma' => $licencia->plataforma ?? '-',
+                'usuario_asignado' => $licencia->usuario_asignado ?? '-',
+                'fecha_vencimiento' => $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('Y-m-d') : '-',
+                'estado' => $estado,
+                'licencia_activa' => $licencia->licencia_activa,
+                'acciones' => $this->getAccionesHtml($licencia),
+            ];
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $rows,
+        ]);
     }
 
     public function create()

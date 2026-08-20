@@ -27,34 +27,80 @@ class GarantiasConfigController extends Controller
             });
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->count();
-            $garantias = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
-
-            $rows = $garantias->map(function ($garantia) {
-                return [
-                    'DT_RowIndex' => $garantia->id,
-                    'nombre' => $garantia->nombre,
-                    'tipo_producto' => $garantia->tipo_producto ?? 'General',
-                    'dias_garantia' => $garantia->dias_garantia . ' días',
-                    'tipo_garantia' => $garantia->tipo_garantia_label,
-                    'activo' => $garantia->activo,
-                    'activo_label' => $garantia->activo ? 'Activa' : 'Inactiva',
-                    'acciones' => $this->getAccionesHtml($garantia),
-                ];
-            });
-
-            return response()->json([
-                'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $rows,
-            ]);
-        }
-
         $garantias = $query->orderBy('orden')->paginate(20)->withQueryString();
 
         return view('garantias-config.index', compact('garantias'));
+    }
+
+    public function indexAjax(Request $request)
+    {
+        $query = GarantiasConfig::query();
+
+        if ($request->filled('activo')) {
+            $query->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN));
+        }
+        if ($request->filled('tipo_garantia')) {
+            $query->where('tipo_garantia', $request->tipo_garantia);
+        }
+
+        if ($search = $this->dtSearch($request)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('tipo_producto', 'like', "%{$search}%")
+                    ->orWhere('cobertura', 'like', "%{$search}%");
+            });
+        }
+
+        // Ordering
+        $columnMapping = ['id', 'nombre', 'tipo_producto', 'dias_garantia', 'tipo_garantia', 'activo'];
+        $orderColIdx = (int) $request->input('columns.0.data', 0);
+        $orderCol = $columnMapping[$orderColIdx] ?? 'id';
+        $orderDir = $request->input('order.0.dir', 'asc');
+        if (in_array($orderCol, ['nombre', 'tipo_producto', 'dias_garantia', 'tipo_garantia'])) {
+            $query->orderBy($orderCol, $orderDir);
+        }
+
+        // Pagination
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', -1);
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        // Total count BEFORE skip/take
+        $total = GarantiasConfig::query()
+            ->when($request->filled('activo'), fn($q) => $q->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN)))
+            ->when($request->filled('tipo_garantia'), fn($q) => $q->where('tipo_garantia', $request->tipo_garantia))
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('nombre', 'like', "%{$search}%")
+                        ->orWhere('tipo_producto', 'like', "%{$search}%")
+                        ->orWhere('cobertura', 'like', "%{$search}%");
+                });
+            })
+            ->count();
+
+        $garantias = $query->get();
+
+        $rows = $garantias->map(function ($garantia) {
+            return [
+                'DT_RowIndex' => $garantia->id,
+                'nombre' => $garantia->nombre,
+                'tipo_producto' => $garantia->tipo_producto ?? 'General',
+                'dias_garantia' => $garantia->dias_garantia . ' días',
+                'tipo_garantia' => $garantia->tipo_garantia_label,
+                'activo' => $garantia->activo,
+                'activo_label' => $garantia->activo ? 'Activa' : 'Inactiva',
+                'acciones' => $this->getAccionesHtml($garantia),
+            ];
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $rows,
+        ]);
     }
 
     public function create()

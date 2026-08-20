@@ -46,47 +46,6 @@
     </div>
     @endif
 
-    <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Total Licencias</div>
-                    <div class="ui-stat-value">{{ $licencias->total() ?? 0 }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Activas</div>
-                    <div class="ui-stat-value" style="color:#22c55e;">
-                        {{ $licuencias->where('licencia_activa', true)->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Por Vencer</div>
-                    <div class="ui-stat-value" style="color:#f59e0b;">
-                        {{ $licencias->where('fecha_vencimiento', '<=', now()->addDays(30))->where('licencia_activa', true)->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Vencidas</div>
-                    <div class="ui-stat-value" style="color:#ef4444;">
-                        {{ $licencias->where('fecha_vencimiento', '<', now())->where('licencia_activa', true)->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('licencias-software.index') }}" class="row g-3">
@@ -136,71 +95,11 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($licencias as $licencia)
-                        <tr>
-                            <td>{{ $licencia->id }}</td>
-                            <td><code>{{ $licencia->clave_licencia }}</code></td>
-                            <td>{{ $licencia->producto->nombre ?? '-' }}</td>
-                            <td>{{ $licencia->tipo_licencia ?? '-' }}</td>
-                            <td><span class="badge bg-secondary">{{ $licencia->plataforma ?? '-' }}</span></td>
-                            <td>{{ $licencia->usuario_asignado ?? '-' }}</td>
-                            <td>{{ $licencia->fecha_vencimiento ? $licencia->fecha_vencimiento->format('Y-m-d') : '-' }}</td>
-                            <td>
-                                @php
-                                    $estado = 'Activa';
-                                    $badgeClass = 'success';
-                                    
-                                    if (!$licencia->licencia_activa) {
-                                        $estado = 'Inactiva';
-                                        $badgeClass = 'secondary';
-                                    } elseif ($licencia->fecha_vencimiento && $licencia->fecha_vencimiento->lt(now())) {
-                                        $estado = 'Vencida';
-                                        $badgeClass = 'danger';
-                                    } elseif ($licencia->fecha_vencimiento && $licencia->fecha_vencimiento->lte(now()->addDays(30))) {
-                                        $estado = 'Por Vencer';
-                                        $badgeClass = 'warning';
-                                    }
-                                @endphp
-                                <span class="badge bg-{{ $badgeClass }}">{{ $estado }}</span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('licencias-software.show', $licencia) }}" class="btn btn-outline-info" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @can('licencias-software.edit')
-                                    <a href="{{ route('licencias-software.edit', $licencia) }}" class="btn btn-outline-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    @endcan
-                                    @can('licencias-software.delete')
-                                    <form action="{{ route('licencias-software.destroy', $licencia) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta licencia?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="9" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
-                                No hay licencias registradas
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
-            <div class="mt-3">
-                {{ $licencias->links() }}
-            </div>
+            <div class="mt-3 dt-table-footer"></div>
         </div>
     </div>
 </div>
@@ -208,13 +107,72 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#licenciasTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+    var table = $('#licenciasTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route("licencias-software.ajax") }}',
+            type: 'GET',
+            data: function(d) {
+                d.licencia_activa = $('select[name="licencia_activa"]').val();
+                d.plataforma = $('select[name="plataforma"]').val();
+                d.tipo_licencia = $('select[name="tipo_licencia"]').val();
+            }
         },
-        "order": [[0, "desc"]],
-        "pageLength": 10,
-        "responsive": true
+        columns: [
+            { data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false, width: '50px' },
+            { 
+                data: 'clave_licencia', 
+                name: 'clave_licencia',
+                render: function(data) {
+                    return '<code>' + (data || '-') + '</code>';
+                }
+            },
+            { data: 'producto', name: 'producto' },
+            { data: 'tipo_licencia', name: 'tipo_licencia' },
+            { 
+                data: 'plataforma', 
+                name: 'plataforma',
+                render: function(data) {
+                    return '<span class="badge bg-secondary">' + (data || '-') + '</span>';
+                }
+            },
+            { data: 'usuario_asignado', name: 'usuario_asignado' },
+            { 
+                data: 'fecha_vencimiento', 
+                name: 'fecha_vencimiento',
+                render: function(data) {
+                    return data || '-';
+                }
+            },
+            { 
+                data: 'estado', 
+                name: 'estado',
+                render: function(data) {
+                    var map = {
+                        'Activa': 'success',
+                        'Inactiva': 'secondary',
+                        'Vencida': 'danger',
+                        'Por Vencer': 'warning'
+                    };
+                    var cls = map[data] || 'secondary';
+                    return '<span class="badge bg-' + cls + '">' + (data || '-') + '</span>';
+                }
+            },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, width: '140px' }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true
+    });
+
+    // Filter on form submit
+    $('form').on('submit', function(e) {
+        e.preventDefault();
+        table.ajax.reload();
     });
 });
 </script>

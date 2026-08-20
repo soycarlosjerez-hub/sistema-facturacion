@@ -28,35 +28,81 @@ class MarcaTecnologicaController extends Controller
             });
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->count();
-            $marcas = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
-
-            $rows = $marcas->map(function ($marca) {
-                return [
-                    'DT_RowIndex' => $marca->id,
-                    'nombre' => $marca->nombre,
-                    'website' => $marca->website ? '<a href="' . $marca->website . '" target="_blank"><i class="bi bi-globe"></i> ' . $marca->website . '</a>' : '-',
-                    'pais' => $marca->pais ?? '-',
-                    'productos_count' => $marca->productos_count ?? 0,
-                    'activo' => $marca->activo,
-                    'activo_label' => $marca->activo ? 'Activo' : 'Inactivo',
-                    'acciones' => $this->getAccionesHtml($marca),
-                ];
-            });
-
-            return response()->json([
-                'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $rows,
-            ]);
-        }
-
         $marcas = $query->latest()->paginate(20)->withQueryString();
         $productosCount = Producto::count();
 
         return view('marcas-tecnologicas.index', compact('marcas', 'productosCount'));
+    }
+
+    public function indexAjax(Request $request)
+    {
+        $query = MarcaTecnologica::query()->withCount(['productos']);
+
+        if ($request->filled('activo')) {
+            $query->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN));
+        }
+        if ($request->filled('pais')) {
+            $query->where('pais', 'like', "%{$request->pais}%");
+        }
+
+        if ($search = $this->dtSearch($request)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('website', 'like', "%{$search}%")
+                    ->orWhere('pais', 'like', "%{$search}%");
+            });
+        }
+
+        // Ordering
+        $columnMapping = ['id', 'nombre', 'website', 'pais', 'productos_count', 'activo'];
+        $orderColIdx = (int) $request->input('columns.0.data', 0);
+        $orderCol = $columnMapping[$orderColIdx] ?? 'id';
+        $orderDir = $request->input('order.0.dir', 'desc');
+        if ($orderCol !== 'productos_count') {
+            $query->orderBy($orderCol, $orderDir);
+        }
+
+        // Pagination
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', -1);
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        // Total count BEFORE skip/take
+        $total = MarcaTecnologica::query()->withCount(['productos'])
+            ->when($request->filled('activo'), fn($q) => $q->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN)))
+            ->when($request->filled('pais'), fn($q) => $q->where('pais', 'like', "%{$request->pais}%"))
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('nombre', 'like', "%{$search}%")
+                        ->orWhere('website', 'like', "%{$search}%")
+                        ->orWhere('pais', 'like', "%{$search}%");
+                });
+            })
+            ->count();
+
+        $marcas = $query->get();
+
+        $rows = $marcas->map(function ($marca) {
+            return [
+                'DT_RowIndex' => $marca->id,
+                'nombre' => $marca->nombre,
+                'website' => $marca->website ? '<a href="' . $marca->website . '" target="_blank"><i class="bi bi-globe"></i> ' . $marca->website . '</a>' : '-',
+                'pais' => $marca->pais ?? '-',
+                'productos_count' => $marca->productos_count ?? 0,
+                'activo' => $marca->activo,
+                'activo_label' => $marca->activo ? 'Activo' : 'Inactivo',
+                'acciones' => $this->getAccionesHtml($marca),
+            ];
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $rows,
+        ]);
     }
 
     public function create()

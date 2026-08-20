@@ -46,47 +46,6 @@
     </div>
     @endif
 
-    <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Total Redes</div>
-                    <div class="ui-stat-value">{{ $redes->total() ?? 0 }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Activas</div>
-                    <div class="ui-stat-value" style="color:#22c55e;">
-                        {{ $redes->where('activo', true)->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Con DHCP</div>
-                    <div class="ui-stat-value" style="color:#3b82f6;">
-                        {{ $redes->where('dhcp_activado', true)->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Con VLAN</div>
-                    <div class="ui-stat-value" style="color:#8b5cf6;">
-                        {{ $redes->whereNotNull('vlan_id')->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('redes-config.index') }}" class="row g-3">
@@ -138,69 +97,11 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($redes as $red)
-                        <tr>
-                            <td>{{ $red->id }}</td>
-                            <td><strong>{{ $red->nombre_red }}</strong></td>
-                            <td>{{ $red->ssid_wifi ?? '-' }}</td>
-                            <td>
-                                @if($red->vlan_id)
-                                <span class="badge bg-info">VLAN {{ $red->vlan_id }}</span>
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td>{{ $red->cliente->nombre ?? '-' }}</td>
-                            <td>
-                                @if($red->dhcp_activado)
-                                <span class="badge bg-success">Activo</span>
-                                @else
-                                <span class="badge bg-secondary">Inactivo</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge {{ $red->activo ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ $red->activo_label }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('redes-config.show', $red) }}" class="btn btn-outline-info" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @can('redes-config.edit')
-                                    <a href="{{ route('redes-config.edit', $red) }}" class="btn btn-outline-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    @endcan
-                                    @can('redes-config.delete')
-                                    <form action="{{ route('redes-config.destroy', $red) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta configuración?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
-                                No hay configuraciones de red registradas
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
-            <div class="mt-3">
-                {{ $redes->links() }}
-            </div>
+            <div class="mt-3 dt-table-footer"></div>
         </div>
     </div>
 </div>
@@ -208,13 +109,65 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#redesTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+    var table = $('#redesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route("redes-config.ajax") }}',
+            type: 'GET',
+            data: function(d) {
+                d.cliente_id = $('select[name="cliente_id"]').val();
+                d.vlan_id = $('select[name="vlan_id"]').val();
+            }
         },
-        "order": [[0, "desc"]],
-        "pageLength": 10,
-        "responsive": true
+        columns: [
+            { data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false, width: '50px' },
+            { 
+                data: 'nombre_red', 
+                name: 'nombre_red',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { data: 'ssid_wifi', name: 'ssid_wifi' },
+            { 
+                data: 'vlan_id', 
+                name: 'vlan_id',
+                render: function(data) {
+                    if (data) return '<span class="badge bg-info">VLAN ' + data + '</span>';
+                    return '<span class="text-muted">-</span>';
+                }
+            },
+            { data: 'cliente', name: 'cliente' },
+            { 
+                data: 'dhcp_activado', 
+                name: 'dhcp_activado',
+                render: function(data) {
+                    return data ? '<span class="badge bg-success">Activo</span>' : '<span class="badge bg-secondary">Inactivo</span>';
+                }
+            },
+            { 
+                data: 'activo_label', 
+                name: 'activo',
+                render: function(data, type, row) {
+                    var cls = row.activo ? 'success' : 'secondary';
+                    return '<span class="badge bg-' + cls + '">' + data + '</span>';
+                }
+            },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, width: '140px' }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true
+    });
+
+    // Filter on form submit
+    $('form').on('submit', function(e) {
+        e.preventDefault();
+        table.ajax.reload();
     });
 });
 </script>

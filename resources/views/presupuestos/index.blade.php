@@ -46,47 +46,6 @@
     </div>
     @endif
 
-    <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Total Presupuestos</div>
-                    <div class="ui-stat-value">{{ $presupuestos->total() ?? 0 }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Por Aprobar</div>
-                    <div class="ui-stat-value" style="color:#f59e0b;">
-                        {{ $presupuestos->where('estado', 'borrador')->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Aprobados</div>
-                    <div class="ui-stat-value" style="color:#22c55e;">
-                        {{ $presupuestos->where('estado', 'aprobada')->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Total Monto</div>
-                    <div class="ui-stat-value" style="color:#3b82f6;">
-                        RD$ {{ number_format($presupuestos->sum('total') ?? 0, 2) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('presupuestos.index') }}" class="row g-3">
@@ -129,69 +88,11 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($presupuestos as $presupuesto)
-                        <tr>
-                            <td>{{ $presupuesto->id }}</td>
-                            <td><strong>{{ $presupuesto->numero }}</strong></td>
-                            <td>{{ $presupuesto->cliente->nombre ?? '-' }}</td>
-                            <td>RD$ {{ number_format($presupuesto->subtotal, 2) }}</td>
-                            <td>RD$ {{ number_format($presupuesto->itbis, 2) }}</td>
-                            <td class="fw-bold">RD$ {{ number_format($presupuesto->total, 2) }}</td>
-                            <td>
-                                @php
-                                    $estadoBadge = [
-                                        'borrador' => 'secondary',
-                                        'enviada' => 'info',
-                                        'aprobada' => 'success',
-                                        'rechazada' => 'danger',
-                                        'vencida' => 'warning',
-                                    ];
-                                @endphp
-                                <span class="badge bg-{{ $estadoBadge[$presupuesto->estado] ?? 'secondary' }}">
-                                    {{ $presupuesto->estado_label }}
-                                </span>
-                            </td>
-                            <td>{{ $presupuesto->valido_hasta ? $presupuesto->valido_hasta->format('Y-m-d') : '-' }}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('presupuestos.show', $presupuesto) }}" class="btn btn-outline-info" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @can('presupuestos.edit')
-                                    <a href="{{ route('presupuestos.edit', $presupuesto) }}" class="btn btn-outline-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    @endcan
-                                    @can('presupuestos.delete')
-                                    @if($presupuesto->estado === 'borrador')
-                                    <form action="{{ route('presupuestos.destroy', $presupuesto) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este presupuesto?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endif
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="9" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
-                                No hay presupuestos registrados
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
-            <div class="mt-3">
-                {{ $presupuestos->links() }}
-            </div>
+            <div class="mt-3 dt-table-footer"></div>
         </div>
     </div>
 </div>
@@ -199,13 +100,70 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#presupuestosTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+    var table = $('#presupuestosTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route("presupuestos.ajax") }}',
+            type: 'GET',
+            data: function(d) {
+                d.estado = $('select[name="estado"]').val();
+            }
         },
-        "order": [[0, "desc"]],
-        "pageLength": 10,
-        "responsive": true
+        columns: [
+            { data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false, width: '50px' },
+            { 
+                data: 'numero', 
+                name: 'numero',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { data: 'cliente', name: 'cliente' },
+            { 
+                data: 'subtotal', 
+                name: 'subtotal',
+                render: function(data) {
+                    return 'RD$ ' + (data || '0.00');
+                }
+            },
+            { 
+                data: 'itbis', 
+                name: 'itbis',
+                render: function(data) {
+                    return 'RD$ ' + (data || '0.00');
+                }
+            },
+            { 
+                data: 'total', 
+                name: 'total',
+                className: 'fw-bold',
+                render: function(data) {
+                    return 'RD$ ' + (data || '0.00');
+                }
+            },
+            { data: 'estado', name: 'estado' },
+            { 
+                data: 'valido_hasta', 
+                name: 'valido_hasta',
+                render: function(data) {
+                    return data || '-';
+                }
+            },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, width: '140px' }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true
+    });
+
+    // Filter on form submit
+    $('form').on('submit', function(e) {
+        e.preventDefault();
+        table.ajax.reload();
     });
 });
 </script>

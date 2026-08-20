@@ -26,33 +26,79 @@ class TecnicaEspecialidadController extends Controller
             });
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->count();
-            $especialidades = $query->orderBy('orden')->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
-
-            $rows = $especialidades->map(function ($esp) {
-                return [
-                    'DT_RowIndex' => $esp->id,
-                    'nombre' => $esp->nombre,
-                    'descripcion' => $esp->descripcion ?? '-',
-                    'tecnicos_count' => $esp->tecnicos_count ?? 0,
-                    'activo' => $esp->activo,
-                    'activo_label' => $esp->activo ? 'Activa' : 'Inactiva',
-                    'acciones' => $this->getAccionesHtml($esp),
-                ];
-            });
-
-            return response()->json([
-                'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $rows,
-            ]);
-        }
-
         $especialidades = $query->orderBy('orden')->paginate(20)->withQueryString();
 
         return view('tecnica-especialidades.index', compact('especialidades'));
+    }
+
+    public function indexAjax(Request $request)
+    {
+        $query = TecnicaEspecialidad::query()
+            ->withCount(['tecnicos' => function ($q) {
+                $q->wherePivot('activo', true);
+            }]);
+
+        if ($request->filled('activo')) {
+            $query->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        if ($search = $this->dtSearch($request)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('descripcion', 'like', "%{$search}%");
+            });
+        }
+
+        // Ordering
+        $columnMapping = ['id', 'nombre', 'descripcion', 'tecnicos_count', 'activo'];
+        $orderColIdx = (int) $request->input('columns.0.data', 0);
+        $orderCol = $columnMapping[$orderColIdx] ?? 'id';
+        $orderDir = $request->input('order.0.dir', 'asc');
+        if ($orderCol !== 'tecnicos_count') {
+            $query->orderBy($orderCol, $orderDir);
+        }
+
+        // Pagination
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', -1);
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        // Total count BEFORE skip/take
+        $total = TecnicaEspecialidad::query()
+            ->withCount(['tecnicos' => function ($q) {
+                $q->wherePivot('activo', true);
+            }])
+            ->when($request->filled('activo'), fn($q) => $q->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN)))
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('nombre', 'like', "%{$search}%")
+                        ->orWhere('descripcion', 'like', "%{$search}%");
+                });
+            })
+            ->count();
+
+        $especialidades = $query->get();
+
+        $rows = $especialidades->map(function ($esp) {
+            return [
+                'DT_RowIndex' => $esp->id,
+                'nombre' => $esp->nombre,
+                'descripcion' => $esp->descripcion ?? '-',
+                'tecnicos_count' => $esp->tecnicos_count ?? 0,
+                'activo' => $esp->activo,
+                'activo_label' => $esp->activo ? 'Activa' : 'Inactiva',
+                'acciones' => $this->getAccionesHtml($esp),
+            ];
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $rows,
+        ]);
     }
 
     public function create()

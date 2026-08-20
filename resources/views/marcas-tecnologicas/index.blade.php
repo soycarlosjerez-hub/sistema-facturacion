@@ -92,76 +92,11 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($marcas as $marca)
-                        <tr>
-                            <td>{{ $marca->id }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    @if($marca->logo_url)
-                                    <img src="{{ $marca->logo_url }}" alt="{{ $marca->nombre }}" class="marca-logo me-2" onerror="this.style.display='none'">
-                                    @endif
-                                    <strong>{{ $marca->nombre }}</strong>
-                                </div>
-                            </td>
-                            <td>
-                                @if($marca->website)
-                                <a href="{{ $marca->website }}" target="_blank" class="text-decoration-none">
-                                    <i class="bi bi-globe me-1"></i>{{ $marca->website }}
-                                </a>
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td>{{ $marca->pais ?? '-' }}</td>
-                            <td>
-                                <span class="badge bg-info">{{ $marca->productos_count ?? 0 }}</span>
-                            </td>
-                            <td>
-                                <span class="badge {{ $marca->activo ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ $marca->activo_label }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('marcas-tecnologicas.show', $marca) }}" class="btn btn-outline-info" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @can('marca-tecnologicas.edit')
-                                    <a href="{{ route('marcas-tecnologicas.edit', $marca) }}" class="btn btn-outline-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    @endcan
-
-                                    @if($marca->productos_count == 0 || !isset($marca->productos_count))
-                                    @can('marca-tecnologicas.delete')
-                                    <form action="{{ route('marcas-tecnologicas.destroy', $marca) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta marca?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endcan
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
-                                No hay marcas registradas
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
-            <div class="mt-3">
-                {{ $marcas->links() }}
-            </div>
+            <div class="mt-3 dt-table-footer"></div>
         </div>
     </div>
 </div>
@@ -169,13 +104,53 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#marcasTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+    var table = $('#marcasTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route("marcas-tecnologicas.ajax") }}',
+            type: 'GET',
+            data: function(d) {
+                d.activo = $('select[name="activo"]').val();
+                d.pais = $('input[name="pais"]').val();
+            }
         },
-        "order": [[0, "desc"]],
-        "pageLength": 10,
-        "responsive": true
+        columns: [
+            { data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false, width: '50px' },
+            { data: 'nombre', name: 'nombre' },
+            { data: 'website', name: 'website', orderable: false },
+            { data: 'pais', name: 'pais' },
+            { 
+                data: 'productos_count', 
+                name: 'productos_count',
+                orderable: false,
+                render: function(data) {
+                    return '<span class="badge bg-info">' + (data || 0) + '</span>';
+                }
+            },
+            { 
+                data: 'activo', 
+                name: 'activo',
+                render: function(data) {
+                    var cls = data ? 'success' : 'secondary';
+                    var label = data ? 'Activo' : 'Inactivo';
+                    return '<span class="badge bg-' + cls + '">' + label + '</span>';
+                }
+            },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, width: '140px' }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true
+    });
+
+    // Filter on form submit
+    $('form').on('submit', function(e) {
+        e.preventDefault();
+        table.ajax.reload();
     });
 });
 </script>

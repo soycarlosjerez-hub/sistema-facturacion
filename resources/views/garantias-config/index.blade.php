@@ -46,47 +46,6 @@
     </div>
     @endif
 
-    <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Total Configuraciones</div>
-                    <div class="ui-stat-value">{{ $garantias->total() ?? 0 }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Fabrica</div>
-                    <div class="ui-stat-value" style="color:#3b82f6;">
-                        {{ $garantias->where('tipo_garantia', 'fabrica')->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Extendida</div>
-                    <div class="ui-stat-value" style="color:#8b5cf6;">
-                        {{ $garantias->where('tipo_garantia', 'extendida')->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="ui-stat">
-                <div class="ui-stat-body">
-                    <div class="ui-stat-label">Activas</div>
-                    <div class="ui-stat-value" style="color:#22c55e;">
-                        {{ $garantias->where('activo', true)->count() ?? 0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('garantias-config.index') }}" class="row g-3">
@@ -131,62 +90,11 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($garantias as $garantia)
-                        <tr>
-                            <td>{{ $garantia->id }}</td>
-                            <td><strong>{{ $garantia->nombre }}</strong></td>
-                            <td>{{ $garantia->tipo_producto ?? 'General' }}</td>
-                            <td>
-                                <span class="badge bg-info">{{ $garantia->dias_garantia }} días</span>
-                            </td>
-                            <td>
-                                <span class="badge {{ $garantia->tipo_garantia == 'fabrica' ? 'bg-primary' : 'bg-warning text-dark' }}">
-                                    {{ $garantia->tipo_garantia_label }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge {{ $garantia->activo ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ $garantia->activo_label }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('garantias-config.show', $garantia) }}" class="btn btn-outline-info" title="Ver">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @can('garantias-config.edit')
-                                    <a href="{{ route('garantias-config.edit', $garantia) }}" class="btn btn-outline-warning" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    @endcan
-                                    @can('garantias-config.delete')
-                                    <form action="{{ route('garantias-config.destroy', $garantia) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta configuración?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
-                                No hay configuraciones de garantía registradas
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
-            <div class="mt-3">
-                {{ $garantias->links() }}
-            </div>
+            <div class="mt-3 dt-table-footer"></div>
         </div>
     </div>
 </div>
@@ -194,13 +102,71 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#garantiasTable').DataTable({
-        "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+    var table = $('#garantiasTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route("garantias-config.ajax") }}',
+            type: 'GET',
+            data: function(d) {
+                d.tipo_garantia = $('select[name="tipo_garantia"]').val();
+                d.activo = $('select[name="activo"]').val();
+            }
         },
-        "order": [[0, "desc"]],
-        "pageLength": 10,
-        "responsive": true
+        columns: [
+            { data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false, width: '50px' },
+            { 
+                data: 'nombre', 
+                name: 'nombre',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'tipo_producto', 
+                name: 'tipo_producto',
+                render: function(data) {
+                    return data || 'General';
+                }
+            },
+            { 
+                data: 'dias_garantia', 
+                name: 'dias_garantia',
+                render: function(data) {
+                    return '<span class="badge bg-info">' + data + '</span>';
+                }
+            },
+            { 
+                data: 'tipo_garantia', 
+                name: 'tipo_garantia',
+                render: function(data, type, row) {
+                    var cls = row.tipo_garantia == 'fabrica' ? 'primary' : 'warning text-dark';
+                    return '<span class="badge ' + cls + '">' + data + '</span>';
+                }
+            },
+            { 
+                data: 'activo', 
+                name: 'activo',
+                render: function(data) {
+                    var cls = data ? 'success' : 'secondary';
+                    var label = data ? 'Activa' : 'Inactiva';
+                    return '<span class="badge bg-' + cls + '">' + label + '</span>';
+                }
+            },
+            { data: 'acciones', name: 'acciones', orderable: false, searchable: false, width: '140px' }
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true
+    });
+
+    // Filter on form submit
+    $('form').on('submit', function(e) {
+        e.preventDefault();
+        table.ajax.reload();
     });
 });
 </script>

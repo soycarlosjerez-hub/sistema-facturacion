@@ -32,36 +32,90 @@ class RedConfigController extends Controller
             });
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $total = $query->count();
-            $redes = $query->latest()->paginate(request('length', 10), ['*'], 'page', (int) floor(request('start', 0) / max(1, (int) request('length', 10))) + 1);
-
-            $rows = $redes->map(function ($red) {
-                return [
-                    'DT_RowIndex' => $red->id,
-                    'nombre_red' => $red->nombre_red,
-                    'ssid_wifi' => $red->ssid_wifi ?? '-',
-                    'vlan_id' => $red->vlan_id ?? '-',
-                    'cliente' => $red->cliente ? $red->cliente->nombre : '-',
-                    'dhcp_activado' => $red->dhcp_activado ? 'Sí' : 'No',
-                    'activo' => $red->activo,
-                    'activo_label' => $red->activo ? 'Activa' : 'Inactiva',
-                    'acciones' => $this->getAccionesHtml($red),
-                ];
-            });
-
-            return response()->json([
-                'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $rows,
-            ]);
-        }
-
         $redes = $query->latest()->paginate(20)->withQueryString();
         $clientes = Cliente::where('activo', true)->orderBy('nombre')->get();
 
         return view('redes-config.index', compact('redes', 'clientes'));
+    }
+
+    public function indexAjax(Request $request)
+    {
+        $query = RedConfig::query()->with('cliente');
+
+        if ($request->filled('activo')) {
+            $query->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN));
+        }
+        if ($request->filled('cliente_id')) {
+            $query->where('cliente_id', $request->cliente_id);
+        }
+        if ($request->filled('vlan_id')) {
+            $query->where('vlan_id', $request->vlan_id);
+        }
+
+        if ($search = $this->dtSearch($request)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre_red', 'like', "%{$search}%")
+                    ->orWhere('ssid_wifi', 'like', "%{$search}%")
+                    ->orWhereHas('cliente', function ($q2) use ($search) {
+                        $q2->where('nombre', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Ordering
+        $columnMapping = ['id', 'nombre_red', 'ssid_wifi', 'vlan_id', 'cliente', 'dhcp_activado', 'activo'];
+        $orderColIdx = (int) $request->input('columns.0.data', 0);
+        $orderCol = $columnMapping[$orderColIdx] ?? 'id';
+        $orderDir = $request->input('order.0.dir', 'desc');
+        if (in_array($orderCol, ['nombre_red', 'ssid_wifi', 'vlan_id', 'cliente', 'dhcp_activado'])) {
+            $query->orderBy($orderCol, $orderDir);
+        }
+
+        // Pagination
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', -1);
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        // Total count BEFORE skip/take
+        $total = RedConfig::query()->with('cliente')
+            ->when($request->filled('activo'), fn($q) => $q->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN)))
+            ->when($request->filled('cliente_id'), fn($q) => $q->where('cliente_id', $request->cliente_id))
+            ->when($request->filled('vlan_id'), fn($q) => $q->where('vlan_id', $request->vlan_id))
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('nombre_red', 'like', "%{$search}%")
+                        ->orWhere('ssid_wifi', 'like', "%{$search}%")
+                        ->orWhereHas('cliente', function ($q3) use ($search) {
+                            $q3->where('nombre', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->count();
+
+        $redes = $query->get();
+
+        $rows = $redes->map(function ($red) {
+            return [
+                'DT_RowIndex' => $red->id,
+                'nombre_red' => $red->nombre_red,
+                'ssid_wifi' => $red->ssid_wifi ?? '-',
+                'vlan_id' => $red->vlan_id ?? '-',
+                'cliente' => $red->cliente ? $red->cliente->nombre : '-',
+                'dhcp_activado' => $red->dhcp_activado ? 'Sí' : 'No',
+                'activo' => $red->activo,
+                'activo_label' => $red->activo ? 'Activa' : 'Inactiva',
+                'acciones' => $this->getAccionesHtml($red),
+            ];
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $rows,
+        ]);
     }
 
     public function create()
