@@ -18,7 +18,7 @@
                 </div>
                 <div>
                     <h4 class="ui-header-title">Editar Presupuesto: {{ $presupuesto->numero }}</h4>
-                    <div class="ui-header-meta">Actualiza los datos del presupuesto</div>
+                    <div class="ui-header-meta">Actualiza los datos del presupuesto técnico</div>
                 </div>
             </div>
         </div>

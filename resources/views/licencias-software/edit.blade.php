@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Editar Licencia')
+@section('title', 'Editar Licencia de Software')
 
 @push('styles')
 @include('partials.premium-ui')

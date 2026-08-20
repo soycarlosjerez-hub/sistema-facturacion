@@ -27,7 +27,9 @@ return new class extends Migration
             $table->string('categoria_tecnica', 100)->nullable()->after('requiere_serial');
 
             // Días de garantía por defecto para este producto
-            $table->integer('garantia_dias')->default(90)->after('categoria_tecnica');
+            if (!Schema::hasColumn('productos', 'garantia_dias')) {
+                $table->integer('garantia_dias')->default(90)->after('categoria_tecnica');
+            }
 
             // ¿Es producto de licencia de software?
             $table->boolean('es_licencia')->default(false)->after('garantia_dias');

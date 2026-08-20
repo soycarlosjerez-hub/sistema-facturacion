@@ -177,7 +177,7 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'climatizacion.tickets-garantia.index', 'sidebar_is_route' => 'climatizacion.tickets-garantia.*', 'sidebar_exact_route' => 'climatizacion.tickets-garantia.index', 'sidebar_permission' => 'garantias.view'],
 
             // Tecnología / Celulares
-            ['key' => 'tecnologia', 'label' => 'Dashboard Tecnología', 'icon' => 'bi-phone', 'categoria' => 'tecnologia', 'orden' => 100,
+            ['key' => 'tecnologia', 'label' => 'Dashboard Tecnología', 'icon' => 'bi-cpu', 'categoria' => 'tecnologia', 'orden' => 100,
              'sidebar_route' => 'tecnologia.dashboard', 'sidebar_is_route' => 'tecnologia.dashboard', 'sidebar_exact_route' => 'tecnologia.dashboard', 'sidebar_permission' => 'tecnologia.view'],
             ['key' => 'equipos', 'label' => 'Equipos (IMEI)', 'icon' => 'bi-phone', 'categoria' => 'tecnologia', 'orden' => 101,
              'sidebar_route' => 'equipos.index', 'sidebar_is_route' => 'equipos.*', 'sidebar_exact_route' => 'equipos.index', 'sidebar_permission' => 'equipos.view'],
@@ -189,6 +189,18 @@ class ModuloSeeder extends Seeder
              'sidebar_route' => 'domotica.index', 'sidebar_is_route' => 'domotica.*', 'sidebar_exact_route' => 'domotica.index', 'sidebar_permission' => 'domotica.view'],
             ['key' => 'garantias', 'label' => 'Garantías', 'icon' => 'bi-shield-check', 'categoria' => 'tecnologia', 'orden' => 105,
              'sidebar_route' => 'garantias.index', 'sidebar_is_route' => 'garantias.*', 'sidebar_exact_route' => 'garantias.index', 'sidebar_permission' => 'garantias.view'],
+            ['key' => 'marcas-tecnologicas', 'label' => 'Marcas Tecnológicas', 'icon' => 'bi-tag', 'categoria' => 'tecnologia', 'orden' => 106,
+             'sidebar_route' => 'marcas-tecnologicas.index', 'sidebar_is_route' => 'marcas-tecnologicas.*', 'sidebar_exact_route' => 'marcas-tecnologicas.index', 'sidebar_permission' => 'marca-tecnologicas.view'],
+            ['key' => 'licencias-software', 'label' => 'Licencias de Software', 'icon' => 'bi-key', 'categoria' => 'tecnologia', 'orden' => 107,
+             'sidebar_route' => 'licencias-software.index', 'sidebar_is_route' => 'licencias-software.*', 'sidebar_exact_route' => 'licencias-software.index', 'sidebar_permission' => 'licencias-software.view'],
+            ['key' => 'redes-config', 'label' => 'Config. Redes', 'icon' => 'bi-hdd-network', 'categoria' => 'tecnologia', 'orden' => 108,
+             'sidebar_route' => 'redes-config.index', 'sidebar_is_route' => 'redes-config.*', 'sidebar_exact_route' => 'redes-config.index', 'sidebar_permission' => 'redes-config.view'],
+            ['key' => 'presupuestos', 'label' => 'Presupuestos Técnicos', 'icon' => 'bi-file-earmark-text', 'categoria' => 'tecnologia', 'orden' => 109,
+             'sidebar_route' => 'presupuestos.index', 'sidebar_is_route' => 'presupuestos.*', 'sidebar_exact_route' => 'presupuestos.index', 'sidebar_permission' => 'presupuestos.view'],
+            ['key' => 'tecnica-especialidades', 'label' => 'Especialidades Técnicas', 'icon' => 'bi-tools', 'categoria' => 'tecnologia', 'orden' => 110,
+             'sidebar_route' => 'tecnica-especialidades.index', 'sidebar_is_route' => 'tecnica-especialidades.*', 'sidebar_exact_route' => 'tecnica-especialidades.index', 'sidebar_permission' => 'tecnica-especialidades.view'],
+            ['key' => 'garantias-config', 'label' => 'Config. Garantías', 'icon' => 'bi-shield-check', 'categoria' => 'tecnologia', 'orden' => 111,
+             'sidebar_route' => 'garantias-config.index', 'sidebar_is_route' => 'garantias-config.*', 'sidebar_exact_route' => 'garantias-config.index', 'sidebar_permission' => 'garantias-config.view'],
 
             // Arte / Escultura / Galería
             ['key' => 'arte', 'label' => 'Galería de Arte', 'icon' => 'bi-palette', 'categoria' => 'arte', 'activo' => true, 'orden' => 106,
