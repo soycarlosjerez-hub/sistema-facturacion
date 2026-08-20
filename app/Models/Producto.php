@@ -40,6 +40,34 @@ class Producto extends Model
         'incluir_kds',
         'imagen',
         'tenant_id',
+        'tipo_producto',
+        'requiere_serial',
+        'categoria_tecnica',
+        'garantia_dias',
+        'es_licencia',
+        'tipo_licencia',
+        'licencia_max_usuarios',
+        'requires_setup',
+        'marca_tecnologica_id',
+    ];
+
+    protected $casts = [
+        'precio'           => 'decimal:2',
+        'precio_compra'    => 'decimal:2',
+        'itbis_porcentaje' => 'decimal:2',
+        'stock'            => 'integer',
+        'stock_minimo'     => 'integer',
+        'activo'            => 'boolean',
+        'incluir_kds'       => 'boolean',
+        'capacidad_toneladas' => 'decimal:2',
+        'capacidad_btu'    => 'integer',
+        'eficiencia_seer'  => 'decimal:1',
+        'peso_kg'          => 'decimal:2',
+        'requiere_serial'  => 'boolean',
+        'garantia_dias'    => 'integer',
+        'es_licencia'      => 'boolean',
+        'licencia_max_usuarios' => 'integer',
+        'requires_setup'   => 'boolean',
     ];
 
     public function scopeActivos($query)

@@ -1292,6 +1292,119 @@ Route::middleware(['auth', 'permission:garantias.edit'])->group(function () {
     Route::post('garantias/{garantia}/reclamar', [\App\Http\Controllers\GarantiaController::class, 'procesarReclamo'])->name('garantias.reclamar');
 });
 
+// Marcas Tecnológicas
+Route::middleware(['auth', 'permission:marca-tecnologicas.view'])->group(function () {
+    Route::get('marcas-tecnologicas', [\App\Http\Controllers\MarcaTecnologicaController::class, 'index'])->name('marcas-tecnologicas.index');
+    Route::get('marcas-tecnologicas/{marcaTecnologica}', [\App\Http\Controllers\MarcaTecnologicaController::class, 'show'])->name('marcas-tecnologicas.show');
+});
+Route::middleware(['auth', 'permission:marca-tecnologicas.create'])->group(function () {
+    Route::get('marcas-tecnologicas/create', [\App\Http\Controllers\MarcaTecnologicaController::class, 'create'])->name('marcas-tecnologicas.create');
+    Route::post('marcas-tecnologicas', [\App\Http\Controllers\MarcaTecnologicaController::class, 'store'])->name('marcas-tecnologicas.store');
+});
+Route::middleware(['auth', 'permission:marca-tecnologicas.edit'])->group(function () {
+    Route::get('marcas-tecnologicas/{marcaTecnologica}/edit', [\App\Http\Controllers\MarcaTecnologicaController::class, 'edit'])->name('marcas-tecnologicas.edit');
+    Route::put('marcas-tecnologicas/{marcaTecnologica}', [\App\Http\Controllers\MarcaTecnologicaController::class, 'update'])->name('marcas-tecnologicas.update');
+    Route::post('marcas-tecnologicas/{marcaTecnologica}/toggle', [\App\Http\Controllers\MarcaTecnologicaController::class, 'toggleActivar'])->name('marcas-tecnologicas.toggle');
+});
+Route::middleware(['auth', 'permission:marca-tecnologicas.delete'])->group(function () {
+    Route::delete('marcas-tecnologicas/{marcaTecnologica}', [\App\Http\Controllers\MarcaTecnologicaController::class, 'destroy'])->name('marcas-tecnologicas.destroy');
+});
+
+// Licencias de Software
+Route::middleware(['auth', 'permission:licencias-software.view'])->group(function () {
+    Route::get('licencias-software', [\App\Http\Controllers\LicenciaSoftwareController::class, 'index'])->name('licencias-software.index');
+    Route::get('licencias-software/{licenciaSoftware}', [\App\Http\Controllers\LicenciaSoftwareController::class, 'show'])->name('licencias-software.show');
+});
+Route::middleware(['auth', 'permission:licencias-software.create'])->group(function () {
+    Route::get('licencias-software/create', [\App\Http\Controllers\LicenciaSoftwareController::class, 'create'])->name('licencias-software.create');
+    Route::post('licencias-software', [\App\Http\Controllers\LicenciaSoftwareController::class, 'store'])->name('licencias-software.store');
+});
+Route::middleware(['auth', 'permission:licencias-software.edit'])->group(function () {
+    Route::get('licencias-software/{licenciaSoftware}/edit', [\App\Http\Controllers\LicenciaSoftwareController::class, 'edit'])->name('licencias-software.edit');
+    Route::put('licencias-software/{licenciaSoftware}', [\App\Http\Controllers\LicenciaSoftwareController::class, 'update'])->name('licencias-software.update');
+    Route::post('licencias-software/{licenciaSoftware}/toggle', [\App\Http\Controllers\LicenciaSoftwareController::class, 'toggleActivar'])->name('licencias-software.toggle');
+});
+Route::middleware(['auth', 'permission:licencias-software.delete'])->group(function () {
+    Route::delete('licencias-software/{licenciaSoftware}', [\App\Http\Controllers\LicenciaSoftwareController::class, 'destroy'])->name('licencias-software.destroy');
+});
+
+// Redes de Config (Infraestructura de Red)
+Route::middleware(['auth', 'permission:redes-config.view'])->group(function () {
+    Route::get('redes-config', [\App\Http\Controllers\RedConfigController::class, 'index'])->name('redes-config.index');
+    Route::get('redes-config/{redConfig}', [\App\Http\Controllers\RedConfigController::class, 'show'])->name('redes-config.show');
+});
+Route::middleware(['auth', 'permission:redes-config.create'])->group(function () {
+    Route::get('redes-config/create', [\App\Http\Controllers\RedConfigController::class, 'create'])->name('redes-config.create');
+    Route::post('redes-config', [\App\Http\Controllers\RedConfigController::class, 'store'])->name('redes-config.store');
+});
+Route::middleware(['auth', 'permission:redes-config.edit'])->group(function () {
+    Route::get('redes-config/{redConfig}/edit', [\App\Http\Controllers\RedConfigController::class, 'edit'])->name('redes-config.edit');
+    Route::put('redes-config/{redConfig}', [\App\Http\Controllers\RedConfigController::class, 'update'])->name('redes-config.update');
+    Route::post('redes-config/{redConfig}/toggle', [\App\Http\Controllers\RedConfigController::class, 'toggleActivar'])->name('redes-config.toggle');
+});
+Route::middleware(['auth', 'permission:redes-config.delete'])->group(function () {
+    Route::delete('redes-config/{redConfig}', [\App\Http\Controllers\RedConfigController::class, 'destroy'])->name('redes-config.destroy');
+});
+
+// Presupuestos Técnicos
+Route::middleware(['auth', 'permission:presupuestos.view'])->group(function () {
+    Route::get('presupuestos', [\App\Http\Controllers\PresupuestoController::class, 'index'])->name('presupuestos.index');
+    Route::get('presupuestos/{presupuesto}', [\App\Http\Controllers\PresupuestoController::class, 'show'])->name('presupuestos.show');
+});
+Route::middleware(['auth', 'permission:presupuestos.create'])->group(function () {
+    Route::get('presupuestos/create', [\App\Http\Controllers\PresupuestoController::class, 'create'])->name('presupuestos.create');
+    Route::post('presupuestos', [\App\Http\Controllers\PresupuestoController::class, 'store'])->name('presupuestos.store');
+});
+Route::middleware(['auth', 'permission:presupuestos.edit'])->group(function () {
+    Route::get('presupuestos/{presupuesto}/edit', [\App\Http\Controllers\PresupuestoController::class, 'edit'])->name('presupuestos.edit');
+    Route::put('presupuestos/{presupuesto}', [\App\Http\Controllers\PresupuestoController::class, 'update'])->name('presupuestos.update');
+    Route::post('presupuestos/{presupuesto}/items', [\App\Http\Controllers\PresupuestoController::class, 'addItems'])->name('presupuestos.add-items');
+    Route::delete('presupuestos/{presupuesto}/items/{item}', [\App\Http\Controllers\PresupuestoController::class, 'removeItem'])->name('presupuestos.remove-item');
+    Route::post('presupuestos/{presupuesto}/cambiar-estado', [\App\Http\Controllers\PresupuestoController::class, 'cambiarEstado'])->name('presupuestos.cambiar-estado');
+    Route::post('presupuestos/{presupuesto}/convertir-en-venta', [\App\Http\Controllers\PresupuestoController::class, 'convertirEnVenta'])->name('presupuestos.convertir-en-venta');
+});
+Route::middleware(['auth', 'permission:presupuestos.delete'])->group(function () {
+    Route::delete('presupuestos/{presupuesto}', [\App\Http\Controllers\PresupuestoController::class, 'destroy'])->name('presupuestos.destroy');
+});
+
+// Especialidades Técnicas
+Route::middleware(['auth', 'permission:tecnica-especialidades.view'])->group(function () {
+    Route::get('tecnica-especialidades', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'index'])->name('tecnica-especialidades.index');
+    Route::get('tecnica-especialidades/{tecnicaEspecialidad}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'show'])->name('tecnica-especialidades.show');
+});
+Route::middleware(['auth', 'permission:tecnica-especialidades.create'])->group(function () {
+    Route::get('tecnica-especialidades/create', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'create'])->name('tecnica-especialidades.create');
+    Route::post('tecnica-especialidades', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'store'])->name('tecnica-especialidades.store');
+});
+Route::middleware(['auth', 'permission:tecnica-especialidades.edit'])->group(function () {
+    Route::get('tecnica-especialidades/{tecnicaEspecialidad}/edit', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'edit'])->name('tecnica-especialidades.edit');
+    Route::put('tecnica-especialidades/{tecnicaEspecialidad}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'update'])->name('tecnica-especialidades.update');
+    Route::post('tecnica-especialidades/{tecnicaEspecialidad}/toggle', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'toggleActivar'])->name('tecnica-especialidades.toggle');
+    Route::post('tecnica-especialidades/{tecnicaEspecialidad}/asignar/{tecnico}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'asignarTecnico'])->name('tecnica-especialidades.asignar');
+    Route::post('tecnica-especialidades/{tecnicaEspecialidad}/desasignar/{tecnico}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'desasignarTecnico'])->name('tecnica-especialidades.desasignar');
+});
+Route::middleware(['auth', 'permission:tecnica-especialidades.delete'])->group(function () {
+    Route::delete('tecnica-especialidades/{tecnicaEspecialidad}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'destroy'])->name('tecnica-especialidades.destroy');
+});
+
+// Configuración de Garantías
+Route::middleware(['auth', 'permission:garantias-config.view'])->group(function () {
+    Route::get('garantias-config', [\App\Http\Controllers\GarantiasConfigController::class, 'index'])->name('garantias-config.index');
+    Route::get('garantias-config/{garantiasConfig}', [\App\Http\Controllers\GarantiasConfigController::class, 'show'])->name('garantias-config.show');
+});
+Route::middleware(['auth', 'permission:garantias-config.create'])->group(function () {
+    Route::get('garantias-config/create', [\App\Http\Controllers\GarantiasConfigController::class, 'create'])->name('garantias-config.create');
+    Route::post('garantias-config', [\App\Http\Controllers\GarantiasConfigController::class, 'store'])->name('garantias-config.store');
+});
+Route::middleware(['auth', 'permission:garantias-config.edit'])->group(function () {
+    Route::get('garantias-config/{garantiasConfig}/edit', [\App\Http\Controllers\GarantiasConfigController::class, 'edit'])->name('garantias-config.edit');
+    Route::put('garantias-config/{garantiasConfig}', [\App\Http\Controllers\GarantiasConfigController::class, 'update'])->name('garantias-config.update');
+    Route::post('garantias-config/{garantiasConfig}/toggle', [\App\Http\Controllers\GarantiasConfigController::class, 'toggleActivar'])->name('garantias-config.toggle');
+});
+Route::middleware(['auth', 'permission:garantias-config.delete'])->group(function () {
+    Route::delete('garantias-config/{garantiasConfig}', [\App\Http\Controllers\GarantiasConfigController::class, 'destroy'])->name('garantias-config.destroy');
+});
+
 // UI System Demo
 Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function () {
     Route::get('/', fn() => view('ui-demo.index'))->name('index');
