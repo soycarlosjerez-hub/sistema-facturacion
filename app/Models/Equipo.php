@@ -39,6 +39,14 @@ class Equipo extends Model
         'bloqueado_icloud',
         'bloqueado_fr',
         'observaciones',
+        'tipo_dispositivo',
+        'procesador',
+        'memoria_ram',
+        'almacenamiento_tipo',
+        'almacenamiento_capacidad',
+        'sistema_operativo',
+        'puertos',
+        'peso_gramos',
     ];
 
     protected $casts = [
@@ -49,6 +57,7 @@ class Equipo extends Model
         'garantia_hasta' => 'date',
         'bloqueado_icloud' => 'boolean',
         'bloqueado_fr' => 'boolean',
+        'peso_gramos' => 'decimal:2',
     ];
 
     public function producto(): BelongsTo
@@ -84,6 +93,11 @@ class Equipo extends Model
     public function scopePorMarca($query, $marca)
     {
         return $query->where('marca', $marca);
+    }
+
+    public function scopePorTipoDispositivo($query, $tipo)
+    {
+        return $query->where('tipo_dispositivo', $tipo);
     }
 
     public function getEstadoLabelAttribute(): ?string

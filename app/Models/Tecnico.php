@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
 
@@ -50,6 +51,13 @@ class Tecnico extends Model
     public function serviciosDomotica(): HasMany
     {
         return $this->hasMany(ServicioDomotica::class);
+    }
+
+    public function especialidades(): BelongsToMany
+    {
+        return $this->belongsToMany(TecnicaEspecialidad::class, 'tecnica_especialidad_tecnico', 'tecnico_id', 'tecnica_especialidad_id')
+            ->withPivot('fecha_asignacion', 'nivel_experiencia', 'activo')
+            ->withTimestamps();
     }
 
     public function scopeActivos($query)

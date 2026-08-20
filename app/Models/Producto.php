@@ -75,20 +75,6 @@ class Producto extends Model
         return $query->where('activo', true);
     }
 
-    protected $casts = [
-        'precio'           => 'decimal:2',
-        'precio_compra'    => 'decimal:2',
-        'itbis_porcentaje' => 'decimal:2',
-        'stock'            => 'integer',
-        'stock_minimo'     => 'integer',
-        'activo'            => 'boolean',
-        'incluir_kds'       => 'boolean',
-        'capacidad_toneladas' => 'decimal:2',
-        'capacidad_btu'    => 'integer',
-        'eficiencia_seer'  => 'decimal:1',
-        'peso_kg'          => 'decimal:2',
-    ];
-
     protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen', 'can_delete'];
     protected $attributes = [
         'precio_compra' => 0,
