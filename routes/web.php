@@ -1281,15 +1281,15 @@ Route::middleware(['auth', 'permission:domotica.delete'])->group(function () {
 });
 
 // Garantías
-Route::middleware(['auth', 'permission:garantias.view'])->group(function () {
-    Route::get('garantias', [\App\Http\Controllers\GarantiaController::class, 'index'])->name('garantias.index');
-    Route::get('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'show'])->name('garantias.show');
-    Route::get('garantias/vigentes', [\App\Http\Controllers\GarantiaController::class, 'getVigentes'])->name('garantias.vigentes');
-    Route::get('garantias/por-vencer', [\App\Http\Controllers\GarantiaController::class, 'getPorVencer'])->name('garantias.por-vencer');
-});
 Route::middleware(['auth', 'permission:garantias.create'])->group(function () {
     Route::get('garantias/create', [\App\Http\Controllers\GarantiaController::class, 'create'])->name('garantias.create');
     Route::post('garantias', [\App\Http\Controllers\GarantiaController::class, 'store'])->name('garantias.store');
+});
+Route::middleware(['auth', 'permission:garantias.view'])->group(function () {
+    Route::get('garantias', [\App\Http\Controllers\GarantiaController::class, 'index'])->name('garantias.index');
+    Route::get('garantias/vigentes', [\App\Http\Controllers\GarantiaController::class, 'getVigentes'])->name('garantias.vigentes');
+    Route::get('garantias/por-vencer', [\App\Http\Controllers\GarantiaController::class, 'getPorVencer'])->name('garantias.por-vencer');
+    Route::get('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'show'])->name('garantias.show');
 });
 Route::middleware(['auth', 'permission:garantias.edit'])->group(function () {
     Route::post('garantias/{garantia}/extender', [\App\Http\Controllers\GarantiaController::class, 'extender'])->name('garantias.extender');
