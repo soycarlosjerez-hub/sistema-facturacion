@@ -377,7 +377,7 @@
             <div class="section-card">
                 <div class="section-card-header d-flex justify-content-between align-items-center px-3 py-3 border-bottom border-light-subtle">
                     <h6 class="fw-bold mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Licencias Por Vencer</h6>
-                    <a href="{{ route('licencias.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right me-1"></i>Ver todas</a>
+                    <a href="{{ route('licencias-software.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right me-1"></i>Ver todas</a>
                 </div>
                 <div class="card-body p-0">
                     <table class="stat-table table table-hover mb-0">
