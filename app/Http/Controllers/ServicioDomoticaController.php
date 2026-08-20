@@ -121,7 +121,8 @@ class ServicioDomoticaController extends Controller
     public function show(ServicioDomotica $servicio)
     {
         $servicio->load(['cliente', 'tecnico', 'instalaciones.producto']);
-        return view('domotica.show', compact('servicio'));
+        $productos = Producto::activos()->orderBy('nombre')->get();
+        return view('domotica.show', compact('servicio', 'productos'));
     }
 
     public function edit(ServicioDomotica $servicio)
