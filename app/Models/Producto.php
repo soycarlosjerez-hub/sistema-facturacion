@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
@@ -186,5 +187,15 @@ class Producto extends Model
         return $this->belongsToMany(Instalacion::class, 'instalacion_productos')
             ->withPivot('cantidad', 'precio_unitario')
             ->withTimestamps();
+    }
+
+    public function marcaTecnologica(): BelongsTo
+    {
+        return $this->belongsTo(MarcaTecnologica::class);
+    }
+
+    public function especificaciones(): HasMany
+    {
+        return $this->hasMany(ProductoEspecificacion::class);
     }
 }

@@ -15,16 +15,22 @@ return new class extends Migration
     {
         Schema::table('productos', function (Blueprint $table) {
             // Tipo de producto tecnológico
-            $table->enum('tipo_producto', [
-                'hardware', 'software', 'accesorio', 'servicio',
-                'red', 'almacenamiento', 'impresora', 'consumible'
-            ])->default('hardware')->after('descripcion');
+            if (!Schema::hasColumn('productos', 'tipo_producto')) {
+                $table->enum('tipo_producto', [
+                    'hardware', 'software', 'accesorio', 'servicio',
+                    'red', 'almacenamiento', 'impresora', 'consumible'
+                ])->default('hardware')->after('descripcion');
+            }
 
             // ¿Requiere serial/IMEI para rastreo?
-            $table->boolean('requiere_serial')->default(false)->after('tipo_producto');
+            if (!Schema::hasColumn('productos', 'requiere_serial')) {
+                $table->boolean('requiere_serial')->default(false)->after('tipo_producto');
+            }
 
             // Categoría técnica específica (laptops, desktops, servidores, redes, cámaras, etc.)
-            $table->string('categoria_tecnica', 100)->nullable()->after('requiere_serial');
+            if (!Schema::hasColumn('productos', 'categoria_tecnica')) {
+                $table->string('categoria_tecnica', 100)->nullable()->after('requiere_serial');
+            }
 
             // Días de garantía por defecto para este producto
             if (!Schema::hasColumn('productos', 'garantia_dias')) {
@@ -32,17 +38,25 @@ return new class extends Migration
             }
 
             // ¿Es producto de licencia de software?
-            $table->boolean('es_licencia')->default(false)->after('garantia_dias');
+            if (!Schema::hasColumn('productos', 'es_licencia')) {
+                $table->boolean('es_licencia')->default(false)->after('garantia_dias');
+            }
 
             // Tipo de licencia (solo para software/licencias)
-            $table->enum('tipo_licencia', ['perpetua', 'suscripcion', 'open_source'])
-                ->nullable()->after('es_licencia');
+            if (!Schema::hasColumn('productos', 'tipo_licencia')) {
+                $table->enum('tipo_licencia', ['perpetua', 'suscripcion', 'open_source'])
+                    ->nullable()->after('es_licencia');
+            }
 
             // Máximo de usuarios para licencias concurrentes
-            $table->integer('licencia_max_usuarios')->nullable()->after('tipo_licencia');
+            if (!Schema::hasColumn('productos', 'licencia_max_usuarios')) {
+                $table->integer('licencia_max_usuarios')->nullable()->after('tipo_licencia');
+            }
 
             // ¿Requiere configuración/instalación profesional?
-            $table->boolean('requires_setup')->default(false)->after('licencia_max_usuarios');
+            if (!Schema::hasColumn('productos', 'requires_setup')) {
+                $table->boolean('requires_setup')->default(false)->after('licencia_max_usuarios');
+            }
         });
     }
 

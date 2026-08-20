@@ -46,9 +46,9 @@ return [
         'admin-business' => ['gerente', 'supervisor', 'administrativo', 'tecnico', 'vendedor-tecnico', 'cotizador', 'instance-admin'],
     ],
     'tecnologia' => [
-        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'instance-admin'],
-        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'instance-admin'],
-        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'instance-admin'],
+        'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'soporte-n1', 'soporte-n2', 'redes', 'almacen-tech', 'instance-admin'],
+        'root' => ['admin', 'gerente', 'vendedor', 'almacen', 'contador', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'soporte-n1', 'soporte-n2', 'redes', 'almacen-tech', 'instance-admin'],
+        'admin-business' => ['gerente', 'supervisor', 'administrativo', 'technico', 'soporte', 'vendedor-tecnico', 'soporte-n1', 'soporte-n2', 'redes', 'almacen-tech', 'instance-admin'],
     ],
     'mecanica' => [
         'owner' => ['owner', 'root', 'admin', 'gerente', 'vendedor', 'almacen', 'contador', 'admin-business', 'supervisor', 'administrativo', 'cajero', 'mecanico', 'instance-admin'],
