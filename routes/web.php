@@ -1274,7 +1274,7 @@ Route::middleware(['auth', 'permission:domotica.edit'])->group(function () {
     Route::put('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'update'])->name('domotica.update');
     Route::post('domotica/{servicio}/cambiar-estado', [\App\Http\Controllers\ServicioDomoticaController::class, 'cambiarEstado'])->name('domotica.cambiar-estado');
     Route::post('domotica/{servicio}/completar', [\App\Http\Controllers\ServicioDomoticaController::class, 'completar'])->name('domotica.completar');
-    Route::delete('domotica/{servicio}/eliminar-equipo/{instalacion}', [\App\Http\Controllers\ServicioDomoticaController::class, 'eliminarEquipo'])->name('domotica.eliminar-equipo');
+    Route::delete('domotica/{servicio}/eliminar-equipo/{instalacion}', [\App\Http\Controllers\ServicioDomoticaController::class, 'quitarEquipo'])->name('domotica.eliminar-equipo');
 });
 Route::middleware(['auth', 'permission:domotica.delete'])->group(function () {
     Route::delete('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'destroy'])->name('domotica.destroy');
