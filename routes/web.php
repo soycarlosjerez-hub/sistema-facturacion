@@ -1196,20 +1196,21 @@ Route::middleware(['auth'])->prefix('tecnologia')->name('tecnologia.')->group(fu
 });
 
 // Equipos (Phones/Tablets)
-Route::middleware(['auth', 'permission:equipos.view'])->group(function () {
-    Route::get('equipos', [\App\Http\Controllers\EquipoController::class, 'index'])->name('equipos.index');
-    Route::get('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'show'])->name('equipos.show');
-    Route::get('equipos/buscar-imei', [\App\Http\Controllers\EquipoController::class, 'buscarPorImei'])->name('equipos.buscar-imei');
-    Route::get('equipos/exportar', [\App\Http\Controllers\EquipoController::class, 'exportarExcel'])->name('equipos.exportar');
-});
 Route::middleware(['auth', 'permission:equipos.create'])->group(function () {
     Route::get('equipos/create', [\App\Http\Controllers\EquipoController::class, 'create'])->name('equipos.create');
     Route::post('equipos', [\App\Http\Controllers\EquipoController::class, 'store'])->name('equipos.store');
+});
+Route::middleware(['auth', 'permission:equipos.view'])->group(function () {
+    Route::get('equipos', [\App\Http\Controllers\EquipoController::class, 'index'])->name('equipos.index');
+    Route::get('equipos/buscar-imei', [\App\Http\Controllers\EquipoController::class, 'buscarPorImei'])->name('equipos.buscar-imei');
+    Route::get('equipos/exportar', [\App\Http\Controllers\EquipoController::class, 'exportarExcel'])->name('equipos.exportar');
+    Route::get('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'show'])->name('equipos.show');
 });
 Route::middleware(['auth', 'permission:equipos.edit'])->group(function () {
     Route::get('equipos/{equipo}/edit', [\App\Http\Controllers\EquipoController::class, 'edit'])->name('equipos.edit');
     Route::put('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'update'])->name('equipos.update');
     Route::post('equipos/{equipo}/cambiar-estado', [\App\Http\Controllers\EquipoController::class, 'cambiarEstado'])->name('equipos.cambiar-estado');
+    Route::post('equipos/{equipo}/toggle-reservar', [\App\Http\Controllers\EquipoController::class, 'toggleReservar'])->name('equipos.toggle-reservar');
 });
 Route::middleware(['auth', 'permission:equipos.delete'])->group(function () {
     Route::delete('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'destroy'])->name('equipos.destroy');

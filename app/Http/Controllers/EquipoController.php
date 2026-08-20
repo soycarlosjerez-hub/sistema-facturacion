@@ -52,12 +52,11 @@ class EquipoController extends Controller
         // Soporte DataTables AJAX
         if ($request->ajax() || $request->wantsJson()) {
             $total = $query->copy()->count();
-            $equipos = $query->latest()->paginate(
-                request('length', 10),
-                ['*'],
-                'page',
-                request('start', 0)
-            );
+            $perPage = max(1, (int) request('length', 10));
+            $start = max(0, (int) request('start', 0));
+            $page = (int) floor($start / $perPage) + 1;
+
+            $equipos = $query->latest()->paginate($perPage, ['*'], 'page', $page);
 
             $rows = $equipos->map(function ($equipo) {
                 $badgeColor = match ($equipo->estado) {
@@ -361,7 +360,8 @@ class EquipoController extends Controller
 
         if (! $equipo->ordenesReparacion()->whereNotIn('estado', ['entregado', 'cancelado'])->exists()) {
             $html .= '<form action="' . route('equipos.destroy', $equipo) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar este equipo?\');">';
-            $html .= '@csrf @method("DELETE")';
+            $html .= csrf_field();
+            $html .= method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }
