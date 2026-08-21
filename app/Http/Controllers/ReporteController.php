@@ -364,6 +364,53 @@ class ReporteController extends Controller
         return view('reportes.delivery-comisiones', $data);
     }
 
+    public function comisionesVendedores(Request $request)
+    {
+        $data = $this->reporteService->comisionesVendedores(
+            $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            $request->input('hasta', today()->format('Y-m-d')),
+            $request->input('porcentaje')
+        );
+        return view('reportes.comisiones-vendedores', $data);
+    }
+
+    public function comisionesVendedoresCsv(Request $request)
+    {
+        $data = $this->reporteService->comisionesVendedores(
+            $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            $request->input('hasta', today()->format('Y-m-d')),
+            $request->input('porcentaje')
+        );
+
+        return $this->reporteService->exportCsv(
+            ['filename' => "comisiones_vendedores_{$data['desde']}_{$data['hasta']}.csv"],
+            ['#', 'Vendedor', 'Email', 'Total Ventas', 'Subtotal', 'Comisión (%)', 'Comisión (RD$)'],
+            function ($output) use ($data) {
+                foreach ($data['vendedores'] as $i => $v) {
+                    fputcsv($output, [
+                        $i + 1,
+                        $v['vendedor_nombre'],
+                        $v['email'],
+                        number_format($v['totalVentas'], 2, '.', ''),
+                        number_format($v['totalSubtotal'], 2, '.', ''),
+                        $v['porcentaje'],
+                        number_format($v['comision'], 2, '.', ''),
+                    ]);
+                }
+            }
+        );
+    }
+
+    public function comisionesVendedoresPdf(Request $request)
+    {
+        $data = $this->reporteService->comisionesVendedores(
+            $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            $request->input('hasta', today()->format('Y-m-d')),
+            $request->input('porcentaje')
+        );
+        return $this->exportPdf('reportes.comisiones-vendedores-pdf', $data, "comisiones_vendedores_{$data['desde']}_{$data['hasta']}.pdf");
+    }
+
     private function exportPdf(string $view, array $data, string $filename)
     {
         $html = view($view, $data)->render();

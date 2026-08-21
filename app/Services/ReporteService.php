@@ -455,6 +455,56 @@ class ReporteService
         ];
     }
 
+    public function comisionesVendedores(string $desde, string $hasta, ?string $porcentaje = null): array
+    {
+        $sucursalId = $this->sucursalId();
+
+        $ventas = Venta::with('cliente:id,nombre,rnc_cedula', 'usuario:id,name')
+            ->when($sucursalId, fn($q) => $q->where('sucursal_id', $sucursalId))
+            ->whereNotNull('user_id')
+            ->whereDate('created_at', '>=', $desde)
+            ->whereDate('created_at', '<=', $hasta)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $porVendedor = $ventas->groupBy('user_id')->map(function ($v) use ($porcentaje) {
+            $usuario = $v->first()?->usuario;
+            $totalVentas = $v->sum('total');
+            $totalSubtotal = $v->sum('subtotal');
+            $cantidad = $v->count();
+
+            if ($porcentaje) {
+                $comision = $totalVentas * ($porcentaje / 100);
+            } else {
+                $comision = $totalVentas * 0.05;
+            }
+
+            return [
+                'vendedor_id'   => $usuario?->id,
+                'vendedor_nombre' => $usuario?->name ?? 'Desconocido',
+                'email'         => $usuario?->email ?? '',
+                'cantidad'      => $cantidad,
+                'totalVentas'   => $totalVentas,
+                'totalSubtotal' => $totalSubtotal,
+                'comision'      => $comision,
+                'porcentaje'    => $porcentaje ?? 5,
+            ];
+        })->sortByDesc('comision')->values();
+
+        $porcentajeUsado = $porcentaje ?? 5;
+
+        return [
+            'vendedores'    => $porVendedor,
+            'ventasDetalle' => $ventas,
+            'desde'         => $desde,
+            'hasta'         => $hasta,
+            'porcentaje'    => $porcentajeUsado,
+            'totalVentas'   => $ventas->sum('total'),
+            'totalComision' => $porVendedor->sum('comision'),
+            'cantidadVendedores' => $porVendedor->count(),
+        ];
+    }
+
     public function exportCsv(array $data, array $headers, \Closure $rows): \Illuminate\Http\Response
     {
         $callback = function () use ($headers, $rows) {
