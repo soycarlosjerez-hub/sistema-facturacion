@@ -143,7 +143,20 @@ body.dark-mode .detalles-table tbody td {
                         <tr>
                             <td class="ps-4">
                                 <div class="fw-bold">{{ $detalle->producto->nombre ?? '—' }}</div>
-                                @if($detalle->producto)
+                                @if($detalle->equipo)
+                                    <small class="badge bg-info text-dark">
+                                        <i class="bi bi-phone"></i> {{ $detalle->equipo->serial_imei }}
+                                    </small>
+                                    @if($detalle->equipo->marca || $detalle->equipo->modelo)
+                                    <br><small class="text-muted">
+                                        {{ $detalle->equipo->marca }} {{ $detalle->equipo->modelo }}
+                                        @if($detalle->equipo->almacenamiento_gb) · {{ $detalle->equipo->almacenamiento_gb }}
+                                        @endif
+                                        @if($detalle->equipo->color) · {{ $detalle->equipo->color }}
+                                        @endif
+                                    </small>
+                                    @endif
+                                @else
                                     <small class="text-muted">
                                         Stock actual: <strong>{{ $detalle->producto->stock }}</strong>
                                     </small>

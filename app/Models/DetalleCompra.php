@@ -6,6 +6,7 @@ use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 class DetalleCompra extends Model
 {
     use TenantScope;
@@ -37,6 +38,11 @@ class DetalleCompra extends Model
     public function producto(): BelongsTo
     {
         return $this->belongsTo(Producto::class);
+    }
+
+    public function equipo(): BelongsTo
+    {
+        return $this->belongsTo(Equipo::class);
     }
 
     public function getBaseAttribute(): float

@@ -95,62 +95,88 @@
             </div>
         </div>
 
-        <div class="ui-card mb-4" style="--delay:.15s">
-            <div class="ui-card-accent"></div>
-            <div class="d-flex justify-content-between align-items-center p-4 pb-0">
+    <div class="ui-card mb-4" style="--delay:.15s">
+        <div class="ui-card-accent"></div>
+        <div class="d-flex justify-content-between align-items-center p-4 pb-0">
+            <div>
                 <div class="ui-card-title mb-0">
-                    <i class="bi bi-list-check me-2"></i>
-                    Detalle de la Compra
+                    @if ($facturacion_modo === 'equipos')
+                        <i class="bi bi-phone me-2"></i>
+                        Registro de Equipos (IMEI/Serial)
+                    @else
+                        <i class="bi bi-list-check me-2"></i>
+                        Detalle de la Compra
+                    @endif
                 </div>
-                <button type="button" class="ui-btn ui-btn-solid rounded-pill px-3 btn-sm" id="btnAgregarFila" style="background:var(--accent);border-color:var(--accent);">
-                    <i class="bi bi-plus-lg me-1"></i> Agregar producto
-                </button>
+                @if ($facturacion_modo === 'equipos')
+                    <div class="text-muted small mt-1">Cada equipo se registrará con su IMEI/Serial individual</div>
+                @endif
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="detalleCompra">
-                    <thead class="table-light">
-                        <tr class="text-muted text-uppercase small">
-                            <th>Producto</th>
-                            <th style="width: 160px;">Cód. Barras</th>
-                            <th style="width: 90px;">Cantidad</th>
-                            <th style="width: 130px;">Precio Unit.</th>
-                            <th style="width: 130px;">Precio Venta</th>
-                            <th style="width: 90px;">ITBIS %</th>
-                            <th style="width: 130px;">Subtotal</th>
-                            <th style="width: 60px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="detalle-body"></tbody>
-                    <tfoot class="bg-light bg-opacity-50">
-                        <tr>
-                            <td colspan="6" class="text-end fw-bold">Subtotal:</td>
-                            <td class="fw-bold text-end" id="subtotal-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colspan="6" class="text-end fw-bold">ITBIS:</td>
-                            <td class="fw-bold text-end" id="itbis-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td colspan="6" class="text-end fw-bold fs-5">TOTAL:</td>
-                            <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                        <tr class="retenciones-row" style="display:none">
-                            <td colspan="6" class="text-end text-danger fw-bold">Retenciones:</td>
-                            <td class="text-end fw-bold" id="retenciones-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                        <tr class="total-neto-row" style="display:none">
-                            <td colspan="6" class="text-end fw-bold fs-5">Total a Pagar:</td>
-                            <td class="fw-bold text-end fs-5 text-success" id="total-neto-display">RD$ 0.00</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
+            <button type="button" class="ui-btn ui-btn-solid rounded-pill px-3 btn-sm" id="btnAgregarFila" style="background:var(--accent);border-color:var(--accent);">
+                <i class="bi bi-plus-lg me-1"></i> @if ($facturacion_modo === 'equipos') Agregar equipo @else Agregar producto @endif
+            </button>
         </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="detalleCompra">
+                <thead class="table-light">
+                    @if ($facturacion_modo === 'equipos')
+                    <tr class="text-muted text-uppercase small">
+                        <th>Producto</th>
+                        <th style="width: 140px;">IMEI/Serial</th>
+                        <th style="width: 110px;">Marca</th>
+                        <th style="width: 130px;">Modelo</th>
+                        <th style="width: 110px;">Almacenamiento</th>
+                        <th style="width: 100px;">Color</th>
+                        <th style="width: 120px;">Precio Compra</th>
+                        <th style="width: 120px;">Precio Venta</th>
+                        <th style="width: 90px;">ITBIS %</th>
+                        <th style="width: 130px;">Subtotal</th>
+                        <th style="width: 60px;"></th>
+                    </tr>
+                    @else
+                    <tr class="text-muted text-uppercase small">
+                        <th>Producto</th>
+                        <th style="width: 160px;">Cód. Barras</th>
+                        <th style="width: 90px;">Cantidad</th>
+                        <th style="width: 130px;">Precio Unit.</th>
+                        <th style="width: 130px;">Precio Venta</th>
+                        <th style="width: 90px;">ITBIS %</th>
+                        <th style="width: 130px;">Subtotal</th>
+                        <th style="width: 60px;"></th>
+                    </tr>
+                    @endif
+                </thead>
+                <tbody id="detalle-body"></tbody>
+                <tfoot class="bg-light bg-opacity-50">
+                    <tr>
+                        <td colspan="@if ($facturacion_modo === 'equipos')8@else 6 @endif" class="text-end fw-bold">Subtotal:</td>
+                        <td class="fw-bold text-end" id="subtotal-display">RD$ 0.00</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="@if ($facturacion_modo === 'equipos')8@else 6 @endif" class="text-end fw-bold">ITBIS:</td>
+                        <td class="fw-bold text-end" id="itbis-display">RD$ 0.00</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="@if ($facturacion_modo === 'equipos')8@else 6 @endif" class="text-end fw-bold fs-5">TOTAL:</td>
+                        <td class="fw-bold text-end fs-5 text-primary" id="total-display">RD$ 0.00</td>
+                        <td></td>
+                    </tr>
+                    <tr class="retenciones-row" style="display:none">
+                        <td colspan="@if ($facturacion_modo === 'equipos')8@else 6 @endif" class="text-end text-danger fw-bold">Retenciones:</td>
+                        <td class="text-end fw-bold" id="retenciones-display">RD$ 0.00</td>
+                        <td></td>
+                    </tr>
+                    <tr class="total-neto-row" style="display:none">
+                        <td colspan="@if ($facturacion_modo === 'equipos')8@else 6 @endif" class="text-end fw-bold fs-5">Total a Pagar:</td>
+                        <td class="fw-bold text-end fs-5 text-success" id="total-neto-display">RD$ 0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 
         <div class="ui-card mb-4" id="retencionesCard">
             <div class="card-body p-4">
@@ -200,11 +226,12 @@
 
 <datalist id="productList">
     @foreach ($productos as $producto)
-        <option value="{{ $producto->nombre }}" data-id="{{ $producto->id }}" data-precio="{{ $producto->precio_compra }}" data-precio-venta="{{ $producto->precio }}" data-barcode="{{ $producto->codigo_barras }}"></option>
+        <option value="{{ $producto->nombre }}" data-id="{{ $producto->id }}" data-precio="{{ $producto->precio_compra }}" data-precio-venta="{{ $producto->precio }}" data-barcode="{{ $producto->codigo_barras }}" data-marca="{{ $producto->marca ?? '' }}" data-modelo="{{ $producto->modelo ?? '' }}" data-tipo="{{ $producto->tipo_dispositivo ?? '' }}"></option>
     @endforeach
 </datalist>
 
-<template id="fila-template">
+{{-- Template para modo PRODUCTOS --}}
+<template id="fila-template-productos">
     <tr>
         <td>
             <input type="text" class="ui-input nombre" list="productList" placeholder="Nombre del producto" required>
@@ -229,6 +256,40 @@
     </tr>
 </template>
 
+{{-- Template para modo EQUIPOS --}}
+<template id="fila-template-equipos">
+    <tr>
+        <td>
+            <input type="text" class="ui-input nombre" list="productList" placeholder="Producto (opcional)" autocomplete="off">
+            <input type="hidden" class="producto-id" value="">
+        </td>
+        <td>
+            <input type="text" class="ui-input serial-imei" placeholder="IMEI o Serial" required>
+        </td>
+        <td>
+            <input type="text" class="ui-input marca" placeholder="Marca">
+        </td>
+        <td>
+            <input type="text" class="ui-input modelo" placeholder="Modelo">
+        </td>
+        <td>
+            <input type="text" class="ui-input almacenamiento" placeholder="GB" maxlength="20">
+        </td>
+        <td>
+            <input type="text" class="ui-input color" placeholder="Color" maxlength="50">
+        </td>
+        <td><input type="number" min="0" step="0.01" class="ui-input precio" value="0.00" required></td>
+        <td><input type="number" min="0" step="0.01" class="ui-input precio-venta" value="0.00"></td>
+        <td><input type="number" min="0" max="100" step="0.01" class="ui-input itbis" value="{{ $systemItbis ?? 18 }}" required></td>
+        <td class="subtotal fw-bold text-end">RD$ 0.00</td>
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill btnEliminarFila" title="Eliminar fila">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
 @php
     $oldProductos = old('productos', [['nombre' => '', 'codigo_barras' => '', 'cantidad' => 1, 'precio' => 0, 'precio_venta' => 0, 'itbis_porcentaje' => $systemItbis ?? 18]]);
 @endphp
@@ -236,19 +297,19 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('detalle-body');
-    const template = document.getElementById('fila-template');
     const btnAdd = document.getElementById('btnAgregarFila');
     const totalHidden = document.getElementById('total-hidden');
     const form = document.getElementById('compraForm');
-    const oldProductos = @json($oldProductos);
+    const facturacionModo = '{{ $facturacion_modo }}';
+    const systemItbis = {{ $systemItbis ?? 18 }};
+    const oldProductos = @json(old('productos', []));
 
     function formatRD(n) { return 'RD$ ' + (n || 0).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
     function calcular(row) {
-        const cantidad = parseFloat(row.querySelector('.cantidad').value) || 0;
         const precio   = parseFloat(row.querySelector('.precio').value) || 0;
         const itbis    = parseFloat(row.querySelector('.itbis').value) || 0;
-        const base     = cantidad * precio;
+        const base     = precio;  // En modo equipos siempre es 1 unidad
         const total    = base * (1 + itbis / 100);
         row.querySelector('.subtotal').textContent = formatRD(total);
         return { base, itbis: base * (itbis / 100), total };
@@ -284,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('aplica_retencion_isr').addEventListener('change', recalcularTotal);
     document.getElementById('aplica_retencion_itbis').addEventListener('change', recalcularTotal);
 
-    function attachEvents(row) {
+    function attachEventsProductos(row) {
         row.querySelector('.cantidad').addEventListener('input', recalcularTotal);
         row.querySelector('.precio').addEventListener('input', recalcularTotal);
         row.querySelector('.itbis').addEventListener('input', recalcularTotal);
@@ -324,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         row.querySelector('.btnEliminarFila').addEventListener('click', () => {
             if (tbody.children.length === 1) {
-                nombre.value = ''; hidden.value = ''; precio.value = 0; precioVenta.value = 0; cantidad.value = 1; itbis.value = {{ $systemItbis ?? 18 }};
+                nombre.value = ''; hidden.value = ''; precio.value = 0; precioVenta.value = 0; cantidad.value = 1; itbis.value = systemItbis;
                 barcode.value = ''; msg.classList.add('d-none');
             } else {
                 row.remove();
@@ -333,17 +394,71 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function attachEventsEquipos(row) {
+        row.querySelector('.precio').addEventListener('input', recalcularTotal);
+        row.querySelector('.itbis').addEventListener('input', recalcularTotal);
+
+        const nombre = row.querySelector('.nombre');
+        const hidden = row.querySelector('.producto-id');
+        const precio = row.querySelector('.precio');
+        const precioVenta = row.querySelector('.precio-venta');
+
+        nombre.addEventListener('input', function () {
+            const val = this.value.trim();
+            const option = document.querySelector(`#productList option[value="${CSS.escape(val)}"]`);
+            if (option) {
+                hidden.value = option.dataset.id;
+                if (!parseFloat(precio.value) && option.dataset.precio) {
+                    precio.value = parseFloat(option.dataset.precio).toFixed(2);
+                }
+                if (precioVenta && option.dataset.precioVenta && !parseFloat(precioVenta.value)) {
+                    precioVenta.value = parseFloat(option.dataset.precioVenta).toFixed(2);
+                }
+            } else {
+                hidden.value = '';
+            }
+            recalcularTotal();
+        });
+
+        row.querySelector('.btnEliminarFila').addEventListener('click', () => {
+            if (tbody.children.length === 1) {
+                nombre.value = ''; hidden.value = ''; precio.value = 0; precioVenta.value = 0; itbis.value = systemItbis;
+            } else {
+                row.remove();
+            }
+            recalcularTotal();
+        });
+    }
+
     function agregarFila(data = {}) {
+        const templateId = facturacionModo === 'equipos' ? 'fila-template-equipos' : 'fila-template-productos';
+        const template = document.getElementById(templateId);
         const row = template.content.cloneNode(true).querySelector('tr');
-        if (data.nombre) row.querySelector('.nombre').value = data.nombre;
-        if (data.producto_id) row.querySelector('.producto-id').value = data.producto_id;
-        if (data.codigo_barras) row.querySelector('.codigo-barras').value = data.codigo_barras;
-        if (data.cantidad) row.querySelector('.cantidad').value = data.cantidad;
-        if (data.precio !== undefined) row.querySelector('.precio').value = data.precio;
-        if (data.precio_venta !== undefined) row.querySelector('.precio-venta').value = data.precio_venta;
-        if (data.itbis_porcentaje !== undefined) row.querySelector('.itbis').value = data.itbis_porcentaje;
+        
+        if (facturacionModo === 'equipos') {
+            if (data.serial_imei) row.querySelector('.serial-imei').value = data.serial_imei;
+            if (data.marca) row.querySelector('.marca').value = data.marca;
+            if (data.modelo) row.querySelector('.modelo').value = data.modelo;
+            if (data.almacenamiento_gb) row.querySelector('.almacenamiento').value = data.almacenamiento_gb;
+            if (data.color) row.querySelector('.color').value = data.color;
+            if (data.nombre) row.querySelector('.nombre').value = data.nombre;
+            if (data.producto_id) row.querySelector('.producto-id').value = data.producto_id;
+            if (data.precio !== undefined) row.querySelector('.precio').value = data.precio;
+            if (data.precio_venta !== undefined) row.querySelector('.precio-venta').value = data.precio_venta;
+            if (data.itbis_porcentaje !== undefined) row.querySelector('.itbis').value = data.itbis_porcentaje;
+            attachEventsEquipos(row);
+        } else {
+            if (data.nombre) row.querySelector('.nombre').value = data.nombre;
+            if (data.producto_id) row.querySelector('.producto-id').value = data.producto_id;
+            if (data.codigo_barras) row.querySelector('.codigo-barras').value = data.codigo_barras;
+            if (data.cantidad) row.querySelector('.cantidad').value = data.cantidad;
+            if (data.precio !== undefined) row.querySelector('.precio').value = data.precio;
+            if (data.precio_venta !== undefined) row.querySelector('.precio-venta').value = data.precio_venta;
+            if (data.itbis_porcentaje !== undefined) row.querySelector('.itbis').value = data.itbis_porcentaje;
+            attachEventsProductos(row);
+        }
+        
         tbody.appendChild(row);
-        attachEvents(row);
         return row;
     }
 
@@ -356,28 +471,56 @@ document.addEventListener('DOMContentLoaded', () => {
         form.querySelectorAll('input[type="hidden"][data-dynamic="producto"]').forEach(el => el.remove());
 
         const filasValidas = Array.from(tbody.querySelectorAll('tr')).filter(row => {
-            const nombre = (row.querySelector('.nombre')?.value || '').trim();
-            const cantidad = parseFloat(row.querySelector('.cantidad')?.value) || 0;
-            const precio = parseFloat(row.querySelector('.precio')?.value) || 0;
-            return nombre && cantidad > 0;
+            if (facturacionModo === 'equipos') {
+                const nombre = (row.querySelector('.nombre')?.value || '').trim();
+                const serial = (row.querySelector('.serial-imei')?.value || '').trim();
+                const precio = parseFloat(row.querySelector('.precio')?.value) || 0;
+                return (nombre || serial) && precio > 0;
+            } else {
+                const nombre = (row.querySelector('.nombre')?.value || '').trim();
+                const cantidad = parseFloat(row.querySelector('.cantidad')?.value) || 0;
+                const precio = parseFloat(row.querySelector('.precio')?.value) || 0;
+                return nombre && cantidad > 0;
+            }
         });
 
         if (filasValidas.length === 0) {
             e.preventDefault();
-            alert('Agrega al menos un producto con nombre y cantidad válida.');
+            if (facturacionModo === 'equipos') {
+                alert('Agrega al menos un equipo con IMEI/Serial y precio.');
+            } else {
+                alert('Agrega al menos un producto con nombre y cantidad válida.');
+            }
             return;
         }
 
         filasValidas.forEach((row, idx) => {
-            const campos = {
-                'producto_id': row.querySelector('.producto-id').value,
-                'nombre': row.querySelector('.nombre').value,
-                'codigo_barras': row.querySelector('.codigo-barras').value,
-                'cantidad': row.querySelector('.cantidad').value,
-                'precio': row.querySelector('.precio').value,
-                'precio_venta': row.querySelector('.precio-venta').value,
-                'itbis_porcentaje': row.querySelector('.itbis').value,
-            };
+            let campos;
+            if (facturacionModo === 'equipos') {
+                campos = {
+                    'producto_id': row.querySelector('.producto-id').value,
+                    'nombre': row.querySelector('.nombre').value,
+                    'serial_imei': row.querySelector('.serial-imei').value,
+                    'marca': row.querySelector('.marca').value,
+                    'modelo': row.querySelector('.modelo').value,
+                    'almacenamiento_gb': row.querySelector('.almacenamiento').value,
+                    'color': row.querySelector('.color').value,
+                    'precio': row.querySelector('.precio').value,
+                    'precio_venta': row.querySelector('.precio-venta').value,
+                    'itbis_porcentaje': row.querySelector('.itbis').value,
+                };
+            } else {
+                campos = {
+                    'producto_id': row.querySelector('.producto-id').value,
+                    'nombre': row.querySelector('.nombre').value,
+                    'codigo_barras': row.querySelector('.codigo-barras').value,
+                    'cantidad': row.querySelector('.cantidad').value,
+                    'precio': row.querySelector('.precio').value,
+                    'precio_venta': row.querySelector('.precio-venta').value,
+                    'itbis_porcentaje': row.querySelector('.itbis').value,
+                };
+            }
+            
             for (const [key, val] of Object.entries(campos)) {
                 const input = document.createElement('input');
                 input.type = 'hidden';
@@ -389,7 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    if (oldProductos.length > 0 && oldProductos[0].nombre) {
+    // Cargar filas previas si hay errores de validación
+    if (oldProductos.length > 0) {
         oldProductos.forEach(p => agregarFila(p));
     } else {
         agregarFila();

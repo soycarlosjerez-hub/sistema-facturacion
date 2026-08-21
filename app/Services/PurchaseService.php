@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AlmacenMovimiento;
 use App\Models\Compra;
 use App\Models\DetalleCompra;
+use App\Models\Equipo;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\SystemSetting;
@@ -15,7 +16,15 @@ use Illuminate\Support\Facades\Event;
 
 class PurchaseService
 {
-    public function createPurchase(array $data, array $products): Compra
+    /**
+     * Crea una compra adaptada al modo de facturación del negocio.
+     *
+     * @param array  $data              Datos del header de la compra
+     * @param array  $products          Array de productos/equipos
+     * @param string $facturacion_modo  'productos' | 'equipos' | 'obras_arte'
+     * @return Compra
+     */
+    public function createPurchase(array $data, array $products, string $facturacion_modo = 'productos'): Compra
     {
         $products = $this->filterEmptyRows($products);
         $totals = $this->calculateTotals($products);
@@ -38,20 +47,40 @@ class PurchaseService
                 'observaciones'   => $data['observaciones'] ?? null,
             ]);
 
-            foreach ($products as $item) {
-                $producto = $this->resolveOrCreateProduct($item, $newProducts, $updatedProducts);
+            // Si el modo es 'equipos', cada fila genera un Equipo individual
+            if ($facturacion_modo === 'equipos') {
+                foreach ($products as $item) {
+                    $producto = $this->resolveOrCreateProduct($item, $newProducts, $updatedProducts);
+                    $equipo = $this->crearEquipoDesdeCompra($item, $compra, $producto);
 
-                $detalle = DetalleCompra::create([
-                    'compra_id'         => $compra->id,
-                    'producto_id'       => $producto->id,
-                    'cantidad'          => $item['cantidad'],
-                    'precio_unitario'   => $item['precio'],
-                    'itbis_porcentaje'  => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
-                    'subtotal'          => $this->computeDetailSubtotal($item),
-                    'tenant_id'         => Auth::user()->business_instance_id ?? null,
-                ]);
+                    $detalle = DetalleCompra::create([
+                        'compra_id'         => $compra->id,
+                        'producto_id'       => $producto->id,
+                        'equipo_id'         => $equipo->id,
+                        'cantidad'          => 1, // Cada equipo es 1 unidad
+                        'precio_unitario'   => $item['precio'],
+                        'itbis_porcentaje'  => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
+                        'subtotal'          => $this->computeDetailSubtotal($item),
+                        'tenant_id'         => Auth::user()->business_instance_id ?? null,
+                    ]);
+                }
+            } else {
+                // Modo normal: productos genéricos con stock
+                foreach ($products as $item) {
+                    $producto = $this->resolveOrCreateProduct($item, $newProducts, $updatedProducts);
 
-                $this->createInventoryMovement($compra, $detalle, $producto, $item['cantidad']);
+                    $detalle = DetalleCompra::create([
+                        'compra_id'         => $compra->id,
+                        'producto_id'       => $producto->id,
+                        'cantidad'          => $item['cantidad'],
+                        'precio_unitario'   => $item['precio'],
+                        'itbis_porcentaje'  => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
+                        'subtotal'          => $this->computeDetailSubtotal($item),
+                        'tenant_id'         => Auth::user()->business_instance_id ?? null,
+                    ]);
+
+                    $this->createInventoryMovement($compra, $detalle, $producto, $item['cantidad']);
+                }
             }
 
             $this->applyRetentions($compra, $data, $totals);
@@ -63,12 +92,21 @@ class PurchaseService
         });
     }
 
-    public function updatePurchase(Compra $compra, array $data, array $products): Compra
+    public function updatePurchase(Compra $compra, array $data, array $products, string $facturacion_modo = 'productos'): Compra
     {
         $products = $this->filterEmptyRows($products);
 
-        return DB::transaction(function () use ($compra, $data, $products) {
-            $this->revertStock($compra);
+        return DB::transaction(function () use ($compra, $data, $products, $facturacion_modo) {
+            // Revertir stock (modo productos) o liberar equipos (modo equipos)
+            if ($facturacion_modo === 'equipos') {
+                foreach ($compra->detalles as $detalle) {
+                    if ($detalle->equipo) {
+                        $detalle->equipo->update(['estado' => 'disponible']);
+                    }
+                }
+            } else {
+                $this->revertStock($compra);
+            }
             $compra->detalles()->delete();
 
             if (empty($products)) {
@@ -94,17 +132,32 @@ class PurchaseService
             foreach ($products as $item) {
                 $producto = $this->resolveOrCreateProduct($item, $newProducts, $updatedProducts);
 
-                $detalle = DetalleCompra::create([
-                    'compra_id'        => $compra->id,
-                    'producto_id'      => $producto->id,
-                    'cantidad'         => $item['cantidad'],
-                    'precio_unitario'  => $item['precio'],
-                    'itbis_porcentaje' => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
-                    'subtotal'         => $this->computeDetailSubtotal($item),
-                    'tenant_id'        => Auth::user()->business_instance_id ?? null,
-                ]);
+                if ($facturacion_modo === 'equipos') {
+                    $equipo = $this->crearEquipoDesdeCompra($item, $compra, $producto);
 
-                $this->createInventoryMovement($compra, $detalle, $producto, $item['cantidad']);
+                    DetalleCompra::create([
+                        'compra_id'        => $compra->id,
+                        'producto_id'      => $producto->id,
+                        'equipo_id'        => $equipo->id,
+                        'cantidad'         => 1,
+                        'precio_unitario'  => $item['precio'],
+                        'itbis_porcentaje' => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
+                        'subtotal'         => $this->computeDetailSubtotal($item),
+                        'tenant_id'        => Auth::user()->business_instance_id ?? null,
+                    ]);
+                } else {
+                    $detalle = DetalleCompra::create([
+                        'compra_id'        => $compra->id,
+                        'producto_id'      => $producto->id,
+                        'cantidad'         => $item['cantidad'],
+                        'precio_unitario'  => $item['precio'],
+                        'itbis_porcentaje' => $item['itbis_porcentaje'] ?? SystemSetting::itbisDefault(),
+                        'subtotal'         => $this->computeDetailSubtotal($item),
+                        'tenant_id'        => Auth::user()->business_instance_id ?? null,
+                    ]);
+
+                    $this->createInventoryMovement($compra, $detalle, $producto, $item['cantidad']);
+                }
             }
 
             $this->applyRetentions($compra, $data, $totals);
@@ -116,22 +169,38 @@ class PurchaseService
         });
     }
 
-    public function deletePurchase(Compra $compra): void
+    public function deletePurchase(Compra $compra, string $facturacion_modo = 'productos'): void
     {
-        DB::transaction(function () use ($compra) {
-            $this->revertStock($compra);
+        DB::transaction(function () use ($compra, $facturacion_modo) {
+            if ($facturacion_modo === 'equipos') {
+                foreach ($compra->detalles as $detalle) {
+                    if ($detalle->equipo) {
+                        // El equipo se libera a "disponible" (aunque en teoría ya no debería estar vendido)
+                        $detalle->equipo->update(['estado' => 'disponible']);
+                    }
+                }
+            } else {
+                $this->revertStock($compra);
+            }
             $compra->detalles()->delete();
             $compra->delete();
         });
     }
 
-    public function removeDetail(Compra $compra, DetalleCompra $detalle): void
+    public function removeDetail(Compra $compra, DetalleCompra $detalle, string $facturacion_modo = 'productos'): void
     {
-        DB::transaction(function () use ($compra, $detalle) {
-            if ($detalle->producto) {
-                $detalle->producto->decrement('stock', $detalle->cantidad);
-                if ($detalle->producto->stock <= ($detalle->producto->stock_minimo ?? 5)) {
-                    Event::dispatch(new \App\Events\StockCritical($detalle->producto, $detalle->producto->stock));
+        DB::transaction(function () use ($compra, $detalle, $facturacion_modo) {
+            if ($facturacion_modo === 'equipos') {
+                if ($detalle->equipo) {
+                    // Liberar el equipo a "disponible"
+                    $detalle->equipo->update(['estado' => 'disponible']);
+                }
+            } else {
+                if ($detalle->producto) {
+                    $detalle->producto->decrement('stock', $detalle->cantidad);
+                    if ($detalle->producto->stock <= ($detalle->producto->stock_minimo ?? 5)) {
+                        Event::dispatch(new \App\Events\StockCritical($detalle->producto, $detalle->producto->stock));
+                    }
                 }
             }
             $detalle->delete();
@@ -254,6 +323,76 @@ class PurchaseService
         ]);
         $newProducts[] = $producto->id;
         return $producto;
+    }
+
+    /**
+     * Crea un Equipo individual a partir de una fila de compra.
+     * Solo se usa cuando el negocio tiene facturacion_modo='equipos'.
+     *
+     * @param array       $item       Datos del equipo (IMEI, marca, modelo, etc.)
+     * @param Compra      $compra     La compra padre
+     * @param Producto    $producto   Producto asociado (padre del equipo)
+     * @return Equipo
+     */
+    private function crearEquipoDesdeCompra(array $item, Compra $compra, Producto $producto): Equipo
+    {
+        $imei = trim($item['serial_imei'] ?? $item['serial'] ?? '');
+        if (empty($imei)) {
+            throw new \InvalidArgumentException('El IMEI/Serial es obligatorio para equipos.');
+        }
+
+        $precioVenta = ($item['precio_venta'] ?? null) !== '' && ($item['precio_venta'] ?? null) !== null
+            ? (float) $item['precio_venta']
+            : null;
+
+        // Buscar si ya existe un equipo con ese IMEI
+        $equipo = Equipo::where('serial_imei', $imei)
+                       ->where('tenant_id', Auth::user()->business_instance_id ?? null)
+                       ->first();
+
+        if ($equipo) {
+            throw new \InvalidArgumentException('Ya existe un equipo con el IMEI/Serial: ' . $imei);
+        }
+
+        // Si el producto existe, verificar si el IMEI ya está registrado en otro tenant
+        $equipoExistenteGlobal = Equipo::where('serial_imei', $imei)->first();
+        if ($equipoExistenteGlobal) {
+            throw new \InvalidArgumentException('El IMEI/Serial ' . $imei . ' ya fue registrado con anterioridad.');
+        }
+
+        $equipo = Equipo::create([
+            'tenant_id'             => Auth::user()->business_instance_id ?? null,
+            'user_id'               => Auth::id(),
+            'producto_id'           => $producto->id,
+            'serial_imei'           => $imei,
+            'serial_esn'            => trim($item['serial_esn'] ?? ''),
+            'marca'                 => trim($item['marca'] ?? $producto->nombre ?? ''),
+            'modelo'                => trim($item['modelo'] ?? ''),
+            'almacenamiento_gb'     => trim($item['almacenamiento_gb'] ?? ''),
+            'color'                 => trim($item['color'] ?? ''),
+            'estado'                => 'disponible',
+            'precio_compra'         => $item['precio'] ?? 0,
+            'precio_venta'          => $precioVenta ?? $item['precio'] ?? 0,
+            'comprado_a_proveedor_id' => $compra->proveedor_id,
+            'fecha_compra'          => $compra->fecha ?? now(),
+            'factura_compra'        => trim($item['factura_compra'] ?? $compra->folio ?? ''),
+            'garantia_desde'        => !empty($item['garantia_desde']) ? $item['garantia_desde'] : null,
+            'garantia_hasta'        => !empty($item['garantia_hasta']) ? $item['garantia_hasta'] : null,
+            'garantia_tipo'         => $item['garantia_tipo'] ?? 'fabrica',
+            'bloqueado_icloud'      => !empty($item['bloqueado_icloud']),
+            'bloqueado_fr'          => !empty($item['bloqueado_fr']),
+            'observaciones'         => trim($item['observaciones'] ?? ''),
+            'tipo_dispositivo'      => trim($item['tipo_dispositivo'] ?? 'celular'),
+            'procesador'            => trim($item['procesador'] ?? ''),
+            'memoria_ram'           => trim($item['memoria_ram'] ?? ''),
+            'almacenamiento_tipo'   => trim($item['almacenamiento_tipo'] ?? ''),
+            'almacenamiento_capacidad' => trim($item['almacenamiento_capacidad'] ?? ''),
+            'sistema_operativo'     => trim($item['sistema_operativo'] ?? ''),
+            'puertos'               => trim($item['puertos'] ?? ''),
+            'peso_gramos'           => isset($item['peso_gramos']) ? (float) $item['peso_gramos'] : null,
+        ]);
+
+        return $equipo;
     }
 
     public function recalculateTotals(Compra $compra): void

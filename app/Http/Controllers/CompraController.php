@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCompraRequest;
 use App\Http\Requests\UpdateCompraRequest;
 use App\Exports\ComprasExport;
 use App\Models\Almacen;
+use App\Models\BusinessInstance;
 use App\Models\Compra;
 use App\Models\DetalleCompra;
 use App\Models\Producto;
@@ -15,6 +16,7 @@ use App\Services\Ecf\EcfService;
 use App\Services\PurchaseService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -25,6 +27,24 @@ class CompraController extends Controller
     public function __construct(PurchaseService $purchaseService)
     {
         $this->purchaseService = $purchaseService;
+    }
+
+    /**
+     * Obtiene el modo de facturación del negocio actual.
+     */
+    private function getFacturacionModo(): string
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $businessInstance = BusinessInstance::find($user->business_instance_id);
+
+        if (!$businessInstance) {
+            return 'productos';
+        }
+
+        // Prioridad: configuración del negocio sobre el tipo de negocio base
+        $config = $businessInstance->getDefaultConfig();
+        return $config['facturacion_modo'] ?? 'productos';
     }
 
     public function index(Request $request)
@@ -67,17 +87,18 @@ class CompraController extends Controller
 
     public function create()
     {
+        $facturacion_modo = $this->getFacturacionModo();
         $proveedores = Proveedor::orderBy('nombre')->get();
         $productos = Producto::orderBy('nombre')->get();
         $tiposCompra = TipoCompra::orderBy('nombre')->get();
         $almacenes = $this->almacenesSegunSucursal();
 
-        return view('compras.create', compact('proveedores', 'productos', 'tiposCompra', 'almacenes'));
+        return view('compras.create', compact('proveedores', 'productos', 'tiposCompra', 'almacenes', 'facturacion_modo'));
     }
 
     public function show(Compra $compra)
     {
-        $compra->load('detalles.producto', 'proveedor', 'almacen', 'tipoCompra', 'user');
+        $compra->load(['detalles.producto', 'detalles.equipo', 'proveedor', 'almacen', 'tipoCompra', 'user']);
         return view('compras.show', compact('compra'));
     }
 
@@ -104,7 +125,12 @@ class CompraController extends Controller
     public function store(StoreCompraRequest $request)
     {
         try {
-            $compra = $this->purchaseService->createPurchase($request->validated(), $request->validated('productos'));
+            $facturacion_modo = $this->getFacturacionModo();
+            $compra = $this->purchaseService->createPurchase(
+                $request->validated(),
+                $request->validated('productos'),
+                $facturacion_modo
+            );
             Event::dispatch(new \App\Events\PurchaseCreated($compra));
             $message = $this->purchaseService->buildSuccessMessage($compra, 'registrada');
 
@@ -116,19 +142,26 @@ class CompraController extends Controller
 
     public function edit(Compra $compra)
     {
+        $facturacion_modo = $this->getFacturacionModo();
         $proveedores = Proveedor::orderBy('nombre')->get();
         $productos = Producto::orderBy('nombre')->get();
-        $detalles = $compra->detalles()->with('producto')->get();
+        $detalles = $compra->detalles()->with(['producto', 'equipo'])->get();
         $tiposCompra = TipoCompra::orderBy('nombre')->get();
         $almacenes = $this->almacenesSegunSucursal();
 
-        return view('compras.edit', compact('compra', 'proveedores', 'productos', 'detalles', 'tiposCompra', 'almacenes'));
+        return view('compras.edit', compact('compra', 'proveedores', 'productos', 'detalles', 'tiposCompra', 'almacenes', 'facturacion_modo'));
     }
 
     public function update(UpdateCompraRequest $request, Compra $compra)
     {
         try {
-            $result = $this->purchaseService->updatePurchase($compra, $request->validated(), $request->validated('productos') ?? []);
+            $facturacion_modo = $this->getFacturacionModo();
+            $result = $this->purchaseService->updatePurchase(
+                $compra,
+                $request->validated(),
+                $request->validated('productos') ?? [],
+                $facturacion_modo
+            );
 
             if ($result === null) {
                 return redirect()->route('compras.index')
@@ -150,7 +183,8 @@ class CompraController extends Controller
         }
 
         try {
-            $this->purchaseService->removeDetail($compra, $detalle);
+            $facturacion_modo = $this->getFacturacionModo();
+            $this->purchaseService->removeDetail($compra, $detalle, $facturacion_modo);
 
             if (! $compra->detalles()->exists()) {
                 $compra->delete();
@@ -167,7 +201,8 @@ class CompraController extends Controller
     public function destroy(Compra $compra)
     {
         try {
-            $this->purchaseService->deletePurchase($compra);
+            $facturacion_modo = $this->getFacturacionModo();
+            $this->purchaseService->deletePurchase($compra, $facturacion_modo);
             return redirect()->route('compras.index')->with('success', 'Compra eliminada y stock revertido.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error al eliminar la compra: ' . $e->getMessage());
