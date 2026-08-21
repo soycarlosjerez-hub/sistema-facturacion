@@ -156,7 +156,7 @@ $(document).ready(function() {
     $('#domotica-table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '{{ route("domotica.index") }}?' + window.location.search.substring(1),
+        ajax: '{{ route("domotica.ajax") }}?' + window.location.search.substring(1),
         columns: [
             { data: 'numero_proyecto', name: 'numero_proyecto' },
             { data: 'titulo', name: 'titulo' },

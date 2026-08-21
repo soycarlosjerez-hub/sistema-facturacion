@@ -18,66 +18,7 @@ class ServicioDomoticaController extends Controller
 
     public function index(Request $request)
     {
-        $query = ServicioDomotica::query()
-            ->with(['cliente', 'tecnico', 'instalaciones.producto']);
-
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->estado);
-        }
-        if ($request->filled('tipo_servicio')) {
-            $query->where('tipo_servicio', $request->tipo_servicio);
-        }
-        if ($request->filled('cliente_id')) {
-            $query->where('cliente_id', $request->cliente_id);
-        }
-
-        if ($search = $this->dtSearch($request)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('titulo', 'like', "%{$search}%")
-                    ->orWhere('descripcion', 'like', "%{$search}%")
-                    ->orWhere('numero_proyecto', 'like', "%{$search}%")
-                    ->orWhereHas('cliente', function ($q) use ($search) {
-                        $q->where('nombre', 'like', "%{$search}%")
-                            ->orWhere('rnc_cedula', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($request->ajax() || $request->wantsJson()) {
-            $total = (clone $query)->count();
-            $perPage = max(1, (int) request('length', 10));
-            $services = $query->latest()->paginate(
-                $perPage,
-                ['*'],
-                'page',
-                (int) floor(request('start', 0) / $perPage) + 1
-            );
-
-            $rows = $services->map(function ($service) {
-                return [
-                    'DT_RowIndex' => $service->id,
-                    'numero_proyecto' => $service->numero_proyecto,
-                    'titulo' => $service->titulo,
-                    'cliente' => $service->cliente ? $service->cliente->nombre : '-',
-                    'tipo_servicio' => $service->tipo_servicio_label ?? ucfirst($service->tipo_servicio),
-                    'tecnico' => $service->tecnico ? $service->tecnico->nombre : 'Sin asignar',
-                    'total' => number_format($service->total ?? 0, 2),
-                    'estado' => $service->estado,
-                    'estado_label' => $service->estado_label ?? ucfirst($service->estado),
-                    'fecha_programada' => $service->fecha_programada ? $service->fecha_programada->format('d/m/Y') : '',
-                    'acciones' => $this->getAccionesHtml($service),
-                ];
-            });
-
-            return response()->json([
-                'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $rows,
-            ]);
-        }
-
-        $services = $query->latest()->paginate(20)->withQueryString();
+        $services = $this->getServicesQuery($request)->latest()->paginate(20)->withQueryString();
         $tiposServicio = [
             'camaras_seguridad' => 'Cámaras de Seguridad',
             'alarmas' => 'Alarmas',
@@ -91,6 +32,82 @@ class ServicioDomoticaController extends Controller
         $clientes = Cliente::orderBy('nombre')->get();
 
         return view('domotica.index', compact('services', 'tiposServicio', 'clientes'));
+    }
+
+    public function indexAjax(Request $request)
+    {
+        $query = $this->getServicesQuery($request);
+
+        if ($request->filled('order')) {
+            $orderColIdx = (int) $request->input('order.0.column', 0);
+            $orderColMapping = [
+                0 => 'numero_proyecto',
+                1 => 'titulo',
+                2 => 'cliente',
+                3 => 'tipo_servicio',
+                4 => 'tecnico',
+                5 => 'total',
+                6 => 'estado',
+                7 => 'fecha_programada',
+            ];
+            $col = $orderColMapping[$orderColIdx] ?? 'numero_proyecto';
+            $dir = $request->input('order.0.dir', 'desc');
+            $query->orderBy($col, $dir);
+        } else {
+            $query->latest();
+        }
+
+        $skip = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
+
+        $total = (clone $query)->count();
+        $services = $query->get();
+
+        $rows = $services->map(function ($service) {
+            return [
+                'DT_RowIndex' => $service->id,
+                'numero_proyecto' => $service->numero_proyecto,
+                'titulo' => $service->titulo,
+                'cliente' => $service->cliente ? $service->cliente->nombre : '-',
+                'tipo_servicio' => $service->tipo_servicio_label ?? ucfirst($service->tipo_servicio),
+                'tecnico' => $service->tecnico ? $service->tecnico->nombre : 'Sin asignar',
+                'total' => number_format($service->total ?? 0, 2),
+                'estado' => $service->estado,
+                'estado_label' => $service->estado_label ?? ucfirst($service->estado),
+                'fecha_programada' => $service->fecha_programada ? $service->fecha_programada->format('d/m/Y') : '',
+                'acciones' => $this->getAccionesHtml($service),
+            ];
+        });
+
+        return response()->json([
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $rows,
+        ]);
+    }
+
+    private function getServicesQuery(Request $request): \Illuminate\Database\Eloquent\Builder
+    {
+        return ServicioDomotica::query()
+            ->with(['cliente', 'tecnico', 'instalaciones.producto'])
+            ->when($request->filled('estado'), fn($q) => $q->where('estado', $request->estado))
+            ->when($request->filled('tipo_servicio'), fn($q) => $q->where('tipo_servicio', $request->tipo_servicio))
+            ->when($request->filled('cliente_id'), fn($q) => $q->where('cliente_id', $request->cliente_id))
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('titulo', 'like', "%{$search}%")
+                        ->orWhere('descripcion', 'like', "%{$search}%")
+                        ->orWhere('numero_proyecto', 'like', "%{$search}%")
+                        ->orWhereHas('cliente', function ($q3) use ($search) {
+                            $q3->where('nombre', 'like', "%{$search}%")
+                                ->orWhere('rnc_cedula', 'like', "%{$search}%");
+                        });
+                });
+            });
     }
 
     public function create(Request $request)

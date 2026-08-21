@@ -1261,6 +1261,8 @@ Route::middleware(['auth', 'permission:tecnicos.delete'])->group(function () {
 
 // Servicios Domótica
 Route::get('domotica/create', [\App\Http\Controllers\ServicioDomoticaController::class, 'create'])->middleware(['auth', 'permission:domotica.create'])->name('domotica.create');
+Route::get('domotica/ajax', [\App\Http\Controllers\ServicioDomoticaController::class, 'indexAjax'])->middleware(['auth', 'permission:domotica.view'])->name('domotica.ajax');
+
 Route::middleware(['auth', 'permission:domotica.view'])->group(function () {
     Route::get('domotica', [\App\Http\Controllers\ServicioDomoticaController::class, 'index'])->name('domotica.index');
     Route::get('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'show'])->name('domotica.show');
@@ -1281,18 +1283,28 @@ Route::middleware(['auth', 'permission:domotica.delete'])->group(function () {
 });
 
 // Garantías
+// create fuera del grupo view para evitar conflicto con {garantia} model binding
+Route::get('garantias/create', [\App\Http\Controllers\GarantiaController::class, 'create'])
+    ->middleware(['auth', 'permission:garantias.create'])
+    ->name('garantias.create');
+
 Route::middleware(['auth', 'permission:garantias.create'])->group(function () {
-    Route::get('garantias/create', [\App\Http\Controllers\GarantiaController::class, 'create'])->name('garantias.create');
     Route::post('garantias', [\App\Http\Controllers\GarantiaController::class, 'store'])->name('garantias.store');
 });
+
 Route::middleware(['auth', 'permission:garantias.view'])->group(function () {
     Route::get('garantias', [\App\Http\Controllers\GarantiaController::class, 'index'])->name('garantias.index');
     Route::get('garantias/vigentes', [\App\Http\Controllers\GarantiaController::class, 'getVigentes'])->name('garantias.vigentes');
     Route::get('garantias/por-vencer', [\App\Http\Controllers\GarantiaController::class, 'getPorVencer'])->name('garantias.por-vencer');
     Route::get('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'show'])->name('garantias.show');
 });
+
+// edit fuera del grupo view para evitar conflicto con {garantia} model binding
+Route::get('garantias/{garantia}/edit', [\App\Http\Controllers\GarantiaController::class, 'edit'])
+    ->middleware(['auth', 'permission:garantias.edit'])
+    ->name('garantias.edit');
+
 Route::middleware(['auth', 'permission:garantias.edit'])->group(function () {
-    Route::get('garantias/{garantia}/edit', [\App\Http\Controllers\GarantiaController::class, 'edit'])->name('garantias.edit');
     Route::put('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'update'])->name('garantias.update');
     Route::post('garantias/{garantia}/extender', [\App\Http\Controllers\GarantiaController::class, 'extender'])->name('garantias.extender');
     Route::post('garantias/{garantia}/reclamar', [\App\Http\Controllers\GarantiaController::class, 'procesarReclamo'])->name('garantias.reclamar');
@@ -1302,36 +1314,54 @@ Route::middleware(['auth', 'permission:garantias.delete'])->group(function () {
 });
 
 // Marcas Tecnológicas
+// create/edit fuera del grupo view para evitar conflicto con {marcaTecnologica} model binding
+Route::get('marcas-tecnologicas/create', [\App\Http\Controllers\MarcaTecnologicaController::class, 'create'])
+    ->middleware(['auth', 'permission:marca-tecnologicas.create'])
+    ->name('marcas-tecnologicas.create');
+
+Route::get('marcas-tecnologicas/{marcaTecnologica}/edit', [\App\Http\Controllers\MarcaTecnologicaController::class, 'edit'])
+    ->middleware(['auth', 'permission:marca-tecnologicas.edit'])
+    ->name('marcas-tecnologicas.edit');
+
 Route::middleware(['auth', 'permission:marca-tecnologicas.view'])->group(function () {
     Route::get('marcas-tecnologicas', [\App\Http\Controllers\MarcaTecnologicaController::class, 'index'])->name('marcas-tecnologicas.index');
     Route::get('marcas-tecnologicas/ajax', [\App\Http\Controllers\MarcaTecnologicaController::class, 'indexAjax'])->name('marcas-tecnologicas.ajax');
     Route::get('marcas-tecnologicas/{marcaTecnologica}', [\App\Http\Controllers\MarcaTecnologicaController::class, 'show'])->name('marcas-tecnologicas.show');
 });
+
 Route::middleware(['auth', 'permission:marca-tecnologicas.create'])->group(function () {
-    Route::get('marcas-tecnologicas/create', [\App\Http\Controllers\MarcaTecnologicaController::class, 'create'])->name('marcas-tecnologicas.create');
     Route::post('marcas-tecnologicas', [\App\Http\Controllers\MarcaTecnologicaController::class, 'store'])->name('marcas-tecnologicas.store');
 });
+
 Route::middleware(['auth', 'permission:marca-tecnologicas.edit'])->group(function () {
-    Route::get('marcas-tecnologicas/{marcaTecnologica}/edit', [\App\Http\Controllers\MarcaTecnologicaController::class, 'edit'])->name('marcas-tecnologicas.edit');
     Route::put('marcas-tecnologicas/{marcaTecnologica}', [\App\Http\Controllers\MarcaTecnologicaController::class, 'update'])->name('marcas-tecnologicas.update');
     Route::post('marcas-tecnologicas/{marcaTecnologica}/toggle', [\App\Http\Controllers\MarcaTecnologicaController::class, 'toggleActivar'])->name('marcas-tecnologicas.toggle');
 });
+
 Route::middleware(['auth', 'permission:marca-tecnologicas.delete'])->group(function () {
     Route::delete('marcas-tecnologicas/{marcaTecnologica}', [\App\Http\Controllers\MarcaTecnologicaController::class, 'destroy'])->name('marcas-tecnologicas.destroy');
 });
 
 // Licencias de Software
+// create/edit fuera del grupo view para evitar conflicto con {licenciaSoftware} model binding
+Route::get('licencias-software/create', [\App\Http\Controllers\LicenciaSoftwareController::class, 'create'])
+    ->middleware(['auth', 'permission:licencias-software.create'])
+    ->name('licencias-software.create');
+Route::get('licencias-software/{licenciaSoftware}/edit', [\App\Http\Controllers\LicenciaSoftwareController::class, 'edit'])
+    ->middleware(['auth', 'permission:licencias-software.edit'])
+    ->name('licencias-software.edit');
+
 Route::middleware(['auth', 'permission:licencias-software.view'])->group(function () {
     Route::get('licencias-software', [\App\Http\Controllers\LicenciaSoftwareController::class, 'index'])->name('licencias-software.index');
     Route::get('licencias-software/ajax', [\App\Http\Controllers\LicenciaSoftwareController::class, 'indexAjax'])->name('licencias-software.ajax');
     Route::get('licencias-software/{licenciaSoftware}', [\App\Http\Controllers\LicenciaSoftwareController::class, 'show'])->name('licencias-software.show');
 });
+
 Route::middleware(['auth', 'permission:licencias-software.create'])->group(function () {
-    Route::get('licencias-software/create', [\App\Http\Controllers\LicenciaSoftwareController::class, 'create'])->name('licencias-software.create');
     Route::post('licencias-software', [\App\Http\Controllers\LicenciaSoftwareController::class, 'store'])->name('licencias-software.store');
 });
+
 Route::middleware(['auth', 'permission:licencias-software.edit'])->group(function () {
-    Route::get('licencias-software/{licenciaSoftware}/edit', [\App\Http\Controllers\LicenciaSoftwareController::class, 'edit'])->name('licencias-software.edit');
     Route::put('licencias-software/{licenciaSoftware}', [\App\Http\Controllers\LicenciaSoftwareController::class, 'update'])->name('licencias-software.update');
     Route::post('licencias-software/{licenciaSoftware}/toggle', [\App\Http\Controllers\LicenciaSoftwareController::class, 'toggleActivar'])->name('licencias-software.toggle');
 });
@@ -1340,17 +1370,25 @@ Route::middleware(['auth', 'permission:licencias-software.delete'])->group(funct
 });
 
 // Redes de Config (Infraestructura de Red)
+// create/edit fuera del grupo view para evitar conflicto con {redConfig} model binding
+Route::get('redes-config/create', [\App\Http\Controllers\RedConfigController::class, 'create'])
+    ->middleware(['auth', 'permission:redes-config.create'])
+    ->name('redes-config.create');
+Route::get('redes-config/{redConfig}/edit', [\App\Http\Controllers\RedConfigController::class, 'edit'])
+    ->middleware(['auth', 'permission:redes-config.edit'])
+    ->name('redes-config.edit');
+
 Route::middleware(['auth', 'permission:redes-config.view'])->group(function () {
     Route::get('redes-config', [\App\Http\Controllers\RedConfigController::class, 'index'])->name('redes-config.index');
     Route::get('redes-config/ajax', [\App\Http\Controllers\RedConfigController::class, 'indexAjax'])->name('redes-config.ajax');
     Route::get('redes-config/{redConfig}', [\App\Http\Controllers\RedConfigController::class, 'show'])->name('redes-config.show');
 });
+
 Route::middleware(['auth', 'permission:redes-config.create'])->group(function () {
-    Route::get('redes-config/create', [\App\Http\Controllers\RedConfigController::class, 'create'])->name('redes-config.create');
     Route::post('redes-config', [\App\Http\Controllers\RedConfigController::class, 'store'])->name('redes-config.store');
 });
+
 Route::middleware(['auth', 'permission:redes-config.edit'])->group(function () {
-    Route::get('redes-config/{redConfig}/edit', [\App\Http\Controllers\RedConfigController::class, 'edit'])->name('redes-config.edit');
     Route::put('redes-config/{redConfig}', [\App\Http\Controllers\RedConfigController::class, 'update'])->name('redes-config.update');
     Route::post('redes-config/{redConfig}/toggle', [\App\Http\Controllers\RedConfigController::class, 'toggleActivar'])->name('redes-config.toggle');
 });
@@ -1359,17 +1397,25 @@ Route::middleware(['auth', 'permission:redes-config.delete'])->group(function ()
 });
 
 // Presupuestos Técnicos
+// create/edit fuera del grupo view para evitar conflicto con {presupuesto} model binding
+Route::get('presupuestos/create', [\App\Http\Controllers\PresupuestoController::class, 'create'])
+    ->middleware(['auth', 'permission:presupuestos.create'])
+    ->name('presupuestos.create');
+Route::get('presupuestos/{presupuesto}/edit', [\App\Http\Controllers\PresupuestoController::class, 'edit'])
+    ->middleware(['auth', 'permission:presupuestos.edit'])
+    ->name('presupuestos.edit');
+
 Route::middleware(['auth', 'permission:presupuestos.view'])->group(function () {
     Route::get('presupuestos', [\App\Http\Controllers\PresupuestoController::class, 'index'])->name('presupuestos.index');
     Route::get('presupuestos/ajax', [\App\Http\Controllers\PresupuestoController::class, 'indexAjax'])->name('presupuestos.ajax');
     Route::get('presupuestos/{presupuesto}', [\App\Http\Controllers\PresupuestoController::class, 'show'])->name('presupuestos.show');
 });
+
 Route::middleware(['auth', 'permission:presupuestos.create'])->group(function () {
-    Route::get('presupuestos/create', [\App\Http\Controllers\PresupuestoController::class, 'create'])->name('presupuestos.create');
     Route::post('presupuestos', [\App\Http\Controllers\PresupuestoController::class, 'store'])->name('presupuestos.store');
 });
+
 Route::middleware(['auth', 'permission:presupuestos.edit'])->group(function () {
-    Route::get('presupuestos/{presupuesto}/edit', [\App\Http\Controllers\PresupuestoController::class, 'edit'])->name('presupuestos.edit');
     Route::put('presupuestos/{presupuesto}', [\App\Http\Controllers\PresupuestoController::class, 'update'])->name('presupuestos.update');
     Route::post('presupuestos/{presupuesto}/items', [\App\Http\Controllers\PresupuestoController::class, 'addItems'])->name('presupuestos.add-items');
     Route::delete('presupuestos/{presupuesto}/items/{item}', [\App\Http\Controllers\PresupuestoController::class, 'removeItem'])->name('presupuestos.remove-item');
@@ -1381,38 +1427,56 @@ Route::middleware(['auth', 'permission:presupuestos.delete'])->group(function ()
 });
 
 // Especialidades Técnicas
+// Especialidades Técnicas - create/edit fuera del grupo view para evitar conflicto con {tecnicaEspecialidad} model binding
+Route::get('tecnica-especialidades/create', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'create'])
+    ->middleware(['auth', 'permission:tecnica-especialidades.create'])
+    ->name('tecnica-especialidades.create');
+
+Route::get('tecnica-especialidades/{tecnicaEspecialidad}/edit', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'edit'])
+    ->middleware(['auth', 'permission:tecnica-especialidades.edit'])
+    ->name('tecnica-especialidades.edit');
+
 Route::middleware(['auth', 'permission:tecnica-especialidades.view'])->group(function () {
     Route::get('tecnica-especialidades', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'index'])->name('tecnica-especialidades.index');
     Route::get('tecnica-especialidades/ajax', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'indexAjax'])->name('tecnica-especialidades.ajax');
     Route::get('tecnica-especialidades/{tecnicaEspecialidad}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'show'])->name('tecnica-especialidades.show');
 });
+
 Route::middleware(['auth', 'permission:tecnica-especialidades.create'])->group(function () {
-    Route::get('tecnica-especialidades/create', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'create'])->name('tecnica-especialidades.create');
     Route::post('tecnica-especialidades', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'store'])->name('tecnica-especialidades.store');
 });
+
 Route::middleware(['auth', 'permission:tecnica-especialidades.edit'])->group(function () {
-    Route::get('tecnica-especialidades/{tecnicaEspecialidad}/edit', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'edit'])->name('tecnica-especialidades.edit');
     Route::put('tecnica-especialidades/{tecnicaEspecialidad}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'update'])->name('tecnica-especialidades.update');
     Route::post('tecnica-especialidades/{tecnicaEspecialidad}/toggle', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'toggleActivar'])->name('tecnica-especialidades.toggle');
     Route::post('tecnica-especialidades/{tecnicaEspecialidad}/asignar/{tecnico}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'asignarTecnico'])->name('tecnica-especialidades.asignar');
     Route::post('tecnica-especialidades/{tecnicaEspecialidad}/desasignar/{tecnico}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'desasignarTecnico'])->name('tecnica-especialidades.desasignar');
 });
+
 Route::middleware(['auth', 'permission:tecnica-especialidades.delete'])->group(function () {
     Route::delete('tecnica-especialidades/{tecnicaEspecialidad}', [\App\Http\Controllers\TecnicaEspecialidadController::class, 'destroy'])->name('tecnica-especialidades.destroy');
 });
 
 // Configuración de Garantías
+// create/edit fuera del grupo view para evitar conflicto con {garantiasConfig} model binding
+Route::get('garantias-config/create', [\App\Http\Controllers\GarantiasConfigController::class, 'create'])
+    ->middleware(['auth', 'permission:garantias-config.create'])
+    ->name('garantias-config.create');
+Route::get('garantias-config/{garantiasConfig}/edit', [\App\Http\Controllers\GarantiasConfigController::class, 'edit'])
+    ->middleware(['auth', 'permission:garantias-config.edit'])
+    ->name('garantias-config.edit');
+
 Route::middleware(['auth', 'permission:garantias-config.view'])->group(function () {
     Route::get('garantias-config', [\App\Http\Controllers\GarantiasConfigController::class, 'index'])->name('garantias-config.index');
     Route::get('garantias-config/ajax', [\App\Http\Controllers\GarantiasConfigController::class, 'indexAjax'])->name('garantias-config.ajax');
     Route::get('garantias-config/{garantiasConfig}', [\App\Http\Controllers\GarantiasConfigController::class, 'show'])->name('garantias-config.show');
 });
+
 Route::middleware(['auth', 'permission:garantias-config.create'])->group(function () {
-    Route::get('garantias-config/create', [\App\Http\Controllers\GarantiasConfigController::class, 'create'])->name('garantias-config.create');
     Route::post('garantias-config', [\App\Http\Controllers\GarantiasConfigController::class, 'store'])->name('garantias-config.store');
 });
+
 Route::middleware(['auth', 'permission:garantias-config.edit'])->group(function () {
-    Route::get('garantias-config/{garantiasConfig}/edit', [\App\Http\Controllers\GarantiasConfigController::class, 'edit'])->name('garantias-config.edit');
     Route::put('garantias-config/{garantiasConfig}', [\App\Http\Controllers\GarantiasConfigController::class, 'update'])->name('garantias-config.update');
     Route::post('garantias-config/{garantiasConfig}/toggle', [\App\Http\Controllers\GarantiasConfigController::class, 'toggleActivar'])->name('garantias-config.toggle');
 });

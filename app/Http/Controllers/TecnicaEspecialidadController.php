@@ -54,22 +54,13 @@ class TecnicaEspecialidadController extends Controller
         $orderColIdx = (int) $request->input('columns.0.data', 0);
         $orderCol = $columnMapping[$orderColIdx] ?? 'id';
         $orderDir = $request->input('order.0.dir', 'asc');
-        if ($orderCol !== 'tecnicos_count') {
-            $query->orderBy($orderCol, $orderDir);
-        }
 
         // Pagination
         $skip = (int) $request->input('start', 0);
         $length = (int) $request->input('length', -1);
-        if ($length > 0) {
-            $query->skip($skip)->take($length);
-        }
 
         // Total count BEFORE skip/take
-        $total = TecnicaEspecialidad::query()
-            ->withCount(['tecnicos' => function ($q) {
-                $q->wherePivot('activo', true);
-            }])
+        $total = (clone $query)
             ->when($request->filled('activo'), fn($q) => $q->where('activo', filter_var($request->activo, FILTER_VALIDATE_BOOLEAN)))
             ->when($search = $this->dtSearch($request), function ($q) use ($search) {
                 $q->where(function ($q2) use ($search) {
@@ -78,6 +69,14 @@ class TecnicaEspecialidadController extends Controller
                 });
             })
             ->count();
+
+        // Apply ordering and pagination
+        if ($orderCol !== 'tecnicos_count') {
+            $query->orderBy($orderCol, $orderDir);
+        }
+        if ($length > 0) {
+            $query->skip($skip)->take($length);
+        }
 
         $especialidades = $query->get();
 
