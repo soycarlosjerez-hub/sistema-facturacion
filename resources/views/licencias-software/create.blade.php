@@ -104,16 +104,30 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i> Guardar Licencia
-                            </button>
-                            <a href="{{ route('licencias-software.index') }}" class="btn btn-secondary">
+                            <button type="submit" form="licenciaForm" class="ui-btn ui-btn-ghost rounded-pill">
                                 <i class="bi bi-x-lg me-1"></i> Cancelar
-                            </a>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#06b6d4;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva licencia</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('licencias-software.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="licenciaForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Licencia
+            </button>
         </div>
     </div>
 </div>

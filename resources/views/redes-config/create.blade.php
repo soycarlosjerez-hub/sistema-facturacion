@@ -28,7 +28,7 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('redes-config.store') }}" method="POST">
+                    <form id="redConfigForm" action="{{ route('redes-config.store') }}" method="POST">
                         @csrf
 
                         <div class="mb-3">
@@ -109,16 +109,30 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i> Guardar Configuración
-                            </button>
-                            <a href="{{ route('redes-config.index') }}" class="btn btn-secondary">
+                            <button type="submit" form="redConfigForm" class="ui-btn ui-btn-ghost rounded-pill">
                                 <i class="bi bi-x-lg me-1"></i> Cancelar
-                            </a>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#06b6d4;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva configuración</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('redes-config.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="redConfigForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Configuración
+            </button>
         </div>
     </div>
 </div>
