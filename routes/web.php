@@ -1260,17 +1260,17 @@ Route::middleware(['auth', 'permission:tecnicos.delete'])->group(function () {
 });
 
 // Servicios Domótica
+Route::get('domotica/create', [\App\Http\Controllers\ServicioDomoticaController::class, 'create'])->middleware(['auth', 'permission:domotica.create'])->name('domotica.create');
 Route::middleware(['auth', 'permission:domotica.view'])->group(function () {
     Route::get('domotica', [\App\Http\Controllers\ServicioDomoticaController::class, 'index'])->name('domotica.index');
     Route::get('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'show'])->name('domotica.show');
+    Route::get('domotica/{servicio}/edit', [\App\Http\Controllers\ServicioDomoticaController::class, 'edit'])->name('domotica.edit');
 });
 Route::middleware(['auth', 'permission:domotica.create'])->group(function () {
-    Route::get('domotica/create', [\App\Http\Controllers\ServicioDomoticaController::class, 'create'])->name('domotica.create');
     Route::post('domotica', [\App\Http\Controllers\ServicioDomoticaController::class, 'store'])->name('domotica.store');
     Route::post('domotica/{servicio}/agregar-equipo', [\App\Http\Controllers\ServicioDomoticaController::class, 'agregarEquipo'])->name('domotica.agregar-equipo');
 });
 Route::middleware(['auth', 'permission:domotica.edit'])->group(function () {
-    Route::get('domotica/{servicio}/edit', [\App\Http\Controllers\ServicioDomoticaController::class, 'edit'])->name('domotica.edit');
     Route::put('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'update'])->name('domotica.update');
     Route::post('domotica/{servicio}/cambiar-estado', [\App\Http\Controllers\ServicioDomoticaController::class, 'cambiarEstado'])->name('domotica.cambiar-estado');
     Route::post('domotica/{servicio}/completar', [\App\Http\Controllers\ServicioDomoticaController::class, 'completar'])->name('domotica.completar');
