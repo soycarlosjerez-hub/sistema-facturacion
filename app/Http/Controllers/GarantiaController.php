@@ -29,76 +29,117 @@ class GarantiaController extends Controller
 
     public function indexAjax(Request $request)
     {
-        $query = Garantia::query()
-            ->when($request->filled('tipo'), fn($q) => $q->where('garantias.tipo', $request->tipo))
-            ->when($request->filled('estado'), fn($q) => $q->where('garantias.estado', $request->estado))
-            ->when($request->filled('vigencia'), function ($q) use ($request) {
-                match ($request->vigencia) {
-                    'vigentes' => $q->vigentes(),
-                    'por_vencer' => $q->where('garantias.estado', 'vigente')->where('garantias.fecha_fin', '<=', now()->addDays(30))->where('garantias.fecha_fin', '>=', today()),
-                    'expiradas' => $q->where('garantias.fecha_fin', '<', today())->where('garantias.estado', 'vigente'),
-                };
-            })
-            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
-                $q->where(function ($q2) use ($search) {
-                    $q2->where('garantias.cobertura', 'like', "%{$search}%")
-                        ->orWhereHas('equipo', fn($q3) => $q3->where('serial_imei', 'like', "%{$search}%")->orWhere('modelo', 'like', "%{$search}%"))
-                        ->orWhereHas('ordenReparacion', fn($q4) => $q4->where('numero_orden', 'like', "%{$search}%"));
+        try {
+            $query = Garantia::query();
+
+            // Apply filters
+            if ($request->input('tipo')) {
+                $query->where('garantias.tipo', $request->input('tipo'));
+            }
+            if ($request->input('estado')) {
+                $query->where('garantias.estado', $request->input('estado'));
+            }
+            if ($request->input('vigencia')) {
+                switch ($request->input('vigencia')) {
+                    case 'vigentes':
+                        $query->where('garantias.fecha_fin', '>=', today())->where('garantias.estado', 'vigente');
+                        break;
+                    case 'por_vencer':
+                        $query->where('garantias.estado', 'vigente')
+                            ->where('garantias.fecha_fin', '<=', now()->addDays(30))
+                            ->where('garantias.fecha_fin', '>=', today());
+                        break;
+                    case 'expiradas':
+                        $query->where('garantias.fecha_fin', '<', today())
+                            ->where('garantias.estado', 'vigente');
+                        break;
+                }
+            }
+
+            $search = $this->dtSearch($request);
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('garantias.cobertura', 'like', "%{$search}%")
+                        ->orWhereHas('equipo', function ($q2) use ($search) {
+                            $q2->where('serial_imei', 'like', "%{$search}%")
+                               ->orWhere('modelo', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('ordenReparacion', function ($q2) use ($search) {
+                            $q2->where('numero_orden', 'like', "%{$search}%");
+                        });
                 });
+            }
+
+            $total = $query->count();
+
+            // Ordering
+            $orderColIdx = (int) $request->input('columns.0.data', 0);
+            $orderColMapping = [
+                0 => 'garantias.tipo',
+                1 => 'garantias.id',
+                2 => 'garantias.id',
+                3 => 'garantias.cobertura',
+                4 => 'garantias.fecha_inicio',
+                5 => 'garantias.fecha_fin',
+                6 => 'garantias.fecha_fin',
+                7 => 'garantias.estado',
+            ];
+            $orderCol = $orderColMapping[$orderColIdx] ?? 'garantias.id';
+            $orderDir = $request->input('order.0.dir', 'desc');
+            $query->orderBy($orderCol, $orderDir);
+
+            // Pagination
+            $skip = (int) $request->input('start', 0);
+            $length = (int) $request->input('length', 10);
+            if ($length > 0) {
+                $query->skip($skip)->take($length);
+            }
+
+            $garantias = $query->with(['equipo', 'ordenReparacion.cliente'])->get();
+
+            $rows = $garantias->map(function ($garantia) {
+                $diasRestantes = $garantia->dias_restantes;
+                if (!$garantia->esta_vigente) {
+                    $badgeColor = 'danger';
+                } elseif ($diasRestantes <= 7) {
+                    $badgeColor = 'warning';
+                } elseif ($diasRestantes <= 30) {
+                    $badgeColor = 'info';
+                } else {
+                    $badgeColor = 'success';
+                }
+
+                return [
+                    'DT_RowIndex' => $garantia->id,
+                    'tipo' => $garantia->tipo_label ?? ucfirst($garantia->tipo),
+                    'equipo_serial' => $garantia->equipo ? $garantia->equipo->serial_imei : '-',
+                    'equipo_modelo' => $garantia->equipo ? $garantia->equipo->modelo : '-',
+                    'cobertura' => $garantia->cobertura,
+                    'fecha_inicio' => $garantia->fecha_inicio ? $garantia->fecha_inicio->format('d/m/Y') : '',
+                    'fecha_fin' => $garantia->fecha_fin ? $garantia->fecha_fin->format('d/m/Y') : '',
+                    'dias_restantes' => $diasRestantes,
+                    'estado' => $garantia->estado,
+                    'estado_label' => $garantia->estado_label ?? ucfirst($garantia->estado),
+                    'badge_color' => $badgeColor,
+                    'acciones' => $this->getAccionesHtml($garantia),
+                ];
             });
 
-        $total = $query->count();
-
-        $orderColIdx = (int) $request->input('columns.0.data', 0);
-        $orderColMapping = [0 => 'garantias.id', 1 => 'equipo_serial', 2 => 'equipo_modelo', 3 => 'garantias.cobertura', 4 => 'garantias.fecha_inicio', 5 => 'garantias.fecha_fin', 6 => 'dias_restantes', 7 => 'garantias.estado'];
-        $orderCol = $orderColMapping[$orderColIdx] ?? 'garantias.id';
-        $orderDir = $request->input('order.0.dir', 'desc');
-
-        if (!in_array($orderCol, ['dias_restantes', 'equipo_serial', 'equipo_modelo'])) {
-            $query->orderBy($orderCol, $orderDir);
-        } else {
-            $query->orderBy('garantias.id', $orderDir);
+            return response()->json([
+                'draw' => (int) $request->input('draw', 1),
+                'recordsTotal' => $total,
+                'recordsFiltered' => $total,
+                'data' => $rows,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'draw' => (int) $request->input('draw', 1),
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $skip = (int) $request->input('start', 0);
-        $length = (int) $request->input('length', 10);
-        if ($length > 0) {
-            $query->skip($skip)->take($length);
-        }
-
-        $garantias = $query->with(['equipo', 'ordenReparacion.cliente'])->get();
-
-        $rows = $garantias->map(function ($garantia) {
-            $diasRestantes = $garantia->dias_restantes;
-            $badgeColor = match (true) {
-                !$garantia->esta_vigente => 'danger',
-                $diasRestantes <= 7 => 'warning',
-                $diasRestantes <= 30 => 'info',
-                default => 'success',
-            };
-
-            return [
-                'DT_RowIndex' => $garantia->id,
-                'tipo' => $garantia->tipo_label ?? ucfirst($garantia->tipo),
-                'equipo_serial' => $garantia->equipo ? $garantia->equipo->serial_imei : '-',
-                'equipo_modelo' => $garantia->equipo ? $garantia->equipo->modelo : '-',
-                'cobertura' => $garantia->cobertura,
-                'fecha_inicio' => $garantia->fecha_inicio ? $garantia->fecha_inicio->format('d/m/Y') : '',
-                'fecha_fin' => $garantia->fecha_fin ? $garantia->fecha_fin->format('d/m/Y') : '',
-                'dias_restantes' => $diasRestantes,
-                'estado' => $garantia->estado,
-                'estado_label' => $garantia->estado_label ?? ucfirst($garantia->estado),
-                'badge_color' => $badgeColor,
-                'acciones' => $this->getAccionesHtml($garantia),
-            ];
-        });
-
-        return response()->json([
-            'draw' => (int) $request->input('draw', 1),
-            'recordsTotal' => $total,
-            'recordsFiltered' => $total,
-            'data' => $rows,
-        ]);
     }
 
     private function buildQuery(Request $request): \Illuminate\Database\Eloquent\Builder

@@ -153,7 +153,7 @@ $(document).ready(function() {
     $('#garantias-table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '{{ route("garantias.index") }}?' + window.location.search.substring(1),
+        ajax: '{{ route("garantias.ajax") }}?' + window.location.search.substring(1),
         columns: [
             { data: 'tipo', name: 'tipo' },
             { data: 'equipo_serial', name: 'equipo_serial' },
