@@ -49,11 +49,9 @@
                 </div>
             </div>
             <div class="ui-header-actions">
-                @can('garantias.create')
                 <a href="{{ route('garantias.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Garantía
                 </a>
-                @endcan
             </div>
         </div>
     </div>

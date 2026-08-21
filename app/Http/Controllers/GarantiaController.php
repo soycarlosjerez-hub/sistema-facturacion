@@ -29,15 +29,35 @@ class GarantiaController extends Controller
 
     public function indexAjax(Request $request)
     {
-        $query = $this->buildQuery($request);
+        $query = Garantia::query()
+            ->when($request->filled('tipo'), fn($q) => $q->where('garantias.tipo', $request->tipo))
+            ->when($request->filled('estado'), fn($q) => $q->where('garantias.estado', $request->estado))
+            ->when($request->filled('vigencia'), function ($q) use ($request) {
+                match ($request->vigencia) {
+                    'vigentes' => $q->vigentes(),
+                    'por_vencer' => $q->where('garantias.estado', 'vigente')->where('garantias.fecha_fin', '<=', now()->addDays(30))->where('garantias.fecha_fin', '>=', today()),
+                    'expiradas' => $q->where('garantias.fecha_fin', '<', today())->where('garantias.estado', 'vigente'),
+                };
+            })
+            ->when($search = $this->dtSearch($request), function ($q) use ($search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->where('garantias.cobertura', 'like', "%{$search}%")
+                        ->orWhereHas('equipo', fn($q3) => $q3->where('serial_imei', 'like', "%{$search}%")->orWhere('modelo', 'like', "%{$search}%"))
+                        ->orWhereHas('ordenReparacion', fn($q4) => $q4->where('numero_orden', 'like', "%{$search}%"));
+                });
+            });
+
+        $total = $query->count();
 
         $orderColIdx = (int) $request->input('columns.0.data', 0);
-        $orderColMapping = [0 => 'tipo', 1 => 'equipo_serial', 2 => 'equipo_modelo', 3 => 'cobertura', 4 => 'fecha_inicio', 5 => 'fecha_fin', 6 => 'dias_restantes', 7 => 'estado'];
-        $orderCol = $orderColMapping[$orderColIdx] ?? 'estado';
+        $orderColMapping = [0 => 'garantias.id', 1 => 'equipo_serial', 2 => 'equipo_modelo', 3 => 'garantias.cobertura', 4 => 'garantias.fecha_inicio', 5 => 'garantias.fecha_fin', 6 => 'dias_restantes', 7 => 'garantias.estado'];
+        $orderCol = $orderColMapping[$orderColIdx] ?? 'garantias.id';
         $orderDir = $request->input('order.0.dir', 'desc');
 
-        if ($orderCol !== 'dias_restantes' && $orderCol !== 'equipo_serial' && $orderCol !== 'equipo_modelo') {
+        if (!in_array($orderCol, ['dias_restantes', 'equipo_serial', 'equipo_modelo'])) {
             $query->orderBy($orderCol, $orderDir);
+        } else {
+            $query->orderBy('garantias.id', $orderDir);
         }
 
         $skip = (int) $request->input('start', 0);
@@ -46,8 +66,7 @@ class GarantiaController extends Controller
             $query->skip($skip)->take($length);
         }
 
-        $total = (clone $query)->count();
-        $garantias = $query->get();
+        $garantias = $query->with(['equipo', 'ordenReparacion.cliente'])->get();
 
         $rows = $garantias->map(function ($garantia) {
             $diasRestantes = $garantia->dias_restantes;
