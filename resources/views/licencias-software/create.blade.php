@@ -28,7 +28,7 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('licencias-software.store') }}" method="POST">
+                    <form id="licenciaForm" action="{{ route('licencias-software.store') }}" method="POST">
                         @csrf
 
                         <div class="mb-3">
