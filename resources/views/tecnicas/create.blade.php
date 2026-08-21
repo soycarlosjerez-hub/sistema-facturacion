@@ -5,17 +5,6 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.form-section-title {
-    font-size: .75rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    font-weight: 700;
-    color: #64748b;
-    margin-bottom: 1rem;
-    padding-bottom: .5rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293b; }
 .imei-autocomplete { position: relative; }
 .autocomplete-results {
     position: absolute;
@@ -56,7 +45,7 @@ body.dark-mode .autocomplete-item:hover { background: #334155; }
                     <i class="bi bi-tools"></i>
                 </div>
                 <div>
-                    <h4 class="ui-header-title">Nueva Orden de Reparación</h4>
+                    <div class="ui-header-title">Nueva Orden de Reparación</div>
                     <div class="ui-header-meta">
                         <i class="bi bi-plus-circle me-1"></i>
                         Registrar una nueva orden de reparación técnica
@@ -87,14 +76,16 @@ body.dark-mode .autocomplete-item:hover { background: #334155; }
         </div>
     @endif
 
-    <form id="tecnicasForm" method="POST" action="{{ route('tecnicas.store') }}">
-        @csrf
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <form id="tecnicasForm" method="POST" action="{{ route('tecnicas.store') }}">
+            @csrf
 
-        <div class="ui-card mb-4" style="--delay:.1s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-person-vcard"></i> Información del Cliente</div>
-            <div class="ui-card-subtitle">Selecciona o busca el cliente</div>
-            <div class="ui-card-body">
+            {{-- Información del Cliente --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
+                <h6 class="fw-bold mb-3" style="color: #0891b2;">
+                    <i class="bi bi-person-vcard me-2"></i>Información del Cliente
+                </h6>
                 <div class="row g-3">
                     <div class="col-lg-6">
                         <label class="ui-label">Cliente <span class="text-danger">*</span></label>
@@ -124,13 +115,12 @@ body.dark-mode .autocomplete-item:hover { background: #334155; }
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="ui-card mb-4" style="--delay:.2s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-phone"></i> Información del Equipo</div>
-            <div class="ui-card-subtitle">Registra el equipo que ingresa a reparación</div>
-            <div class="ui-card-body">
+            {{-- Información del Equipo --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
+                <h6 class="fw-bold mb-3" style="color: #7c3aed;">
+                    <i class="bi bi-phone me-2"></i>Información del Equipo
+                </h6>
                 <div class="row g-3">
                     <div class="col-lg-6 imei-autocomplete">
                         <label class="ui-label">Buscar por Serial/IMEI</label>
@@ -178,13 +168,12 @@ body.dark-mode .autocomplete-item:hover { background: #334155; }
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="ui-card mb-4" style="--delay:.3s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-currency-dollar"></i> Costos</div>
-            <div class="ui-card-subtitle">Detalles de costos y precios</div>
-            <div class="ui-card-body">
+            {{-- Costos --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
+                <h6 class="fw-bold mb-3" style="color: #059669;">
+                    <i class="bi bi-currency-dollar me-2"></i>Costos
+                </h6>
                 <div class="row g-3">
                     <div class="col-lg-3">
                         <label class="ui-label">Costo Piezas</label>
@@ -216,17 +205,19 @@ body.dark-mode .autocomplete-item:hover { background: #334155; }
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="ui-card mb-4" style="--delay:.4s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-shield-check"></i> Garantía y Notas</div>
+            {{-- Garantía y Notas --}}
             <div class="ui-card-body">
+                <h6 class="fw-bold mb-3" style="color: #ca8a04;">
+                    <i class="bi bi-shield-check me-2"></i>Garantía y Notas
+                </h6>
                 <div class="row g-3">
                     <div class="col-lg-6">
-                        <div class="form-check form-switch mt-3">
-                            <input class="form-check-input" type="checkbox" name="garantia_extendida" id="garantia_extendida" value="1" {{ old('garantia_extendida') ? 'checked' : '' }}>
-                            <label class="form-check-label" for="garantia_extendida">Garantía Extendida</label>
+                        <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background: rgba(34,197,94,.05);">
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" name="garantia_extendida" id="garantia_extendida" value="1" {{ old('garantia_extendida') ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold ms-2" for="garantia_extendida">Garantía Extendida</label>
+                            </div>
                         </div>
                     </div>
                     <div class="col-12">
@@ -235,12 +226,11 @@ body.dark-mode .autocomplete-item:hover { background: #334155; }
                     </div>
                 </div>
             </div>
-        </div>
 
-    </form>
-</div>
+        </form>
+    </div>
 
-<div style="height: 80px;"></div>
+    <div style="height: 80px;"></div>
 </div>
 
 <div class="ui-sticky-bar">

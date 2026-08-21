@@ -3,8 +3,6 @@
 
 @push('styles')
 @include('partials.premium-ui')
-<style>
-</style>
 @endpush
 
 @section('content')
@@ -51,17 +49,17 @@
         </div>
     @endif
 
-    <form id="equipoForm" action="{{ route('equipos.store') }}" method="POST">
-        @csrf
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <form id="equipoForm" action="{{ route('equipos.store') }}" method="POST">
+            @csrf
 
-        {{-- Sección 1: Identificación del Equipo --}}
-        <div class="ui-card" style="--delay:.1s;">
-            <div class="ui-card-accent"></div>
-            <div class="card-body p-4 p-md-5">
+            {{-- Sección 1: Identificación del Equipo --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
                 <h6 class="fw-bold mb-3" style="color: #0891b2;">
                     <i class="bi bi-phone me-2"></i>Identificación del Equipo
                 </h6>
-                <div class="row g-4">
+                <div class="row g-3">
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label class="ui-label small fw-semibold">Serial / IMEI <span class="text-danger">*</span></label>
@@ -106,16 +104,13 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Sección 2: Especificaciones Técnicas --}}
-        <div class="ui-card" style="--delay:.15s;">
-            <div class="ui-card-accent"></div>
-            <div class="card-body p-4 p-md-5">
+            {{-- Sección 2: Especificaciones Técnicas --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
                 <h6 class="fw-bold mb-3" style="color: #7c3aed;">
                     <i class="bi bi-cpu me-2"></i>Especificaciones Técnicas
                 </h6>
-                <div class="row g-4">
+                <div class="row g-3">
                     <div class="col-md-4">
                         <div class="mb-3">
                             <label class="ui-label small fw-semibold">Tipo de Dispositivo</label>
@@ -176,16 +171,13 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Sección 3: Precios y Estado --}}
-        <div class="ui-card" style="--delay:.2s;">
-            <div class="ui-card-accent"></div>
-            <div class="card-body p-4 p-md-5">
+            {{-- Sección 3: Precios y Estado --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
                 <h6 class="fw-bold mb-3" style="color: #059669;">
                     <i class="bi bi-cash-stack me-2"></i>Precios y Estado
                 </h6>
-                <div class="row g-4">
+                <div class="row g-3">
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label class="ui-label small fw-semibold">Estado <span class="text-danger">*</span></label>
@@ -242,16 +234,13 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Sección 4: Garantía --}}
-        <div class="ui-card" style="--delay:.25s;">
-            <div class="ui-card-accent"></div>
-            <div class="card-body p-4 p-md-5">
+            {{-- Sección 4: Garantía --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
                 <h6 class="fw-bold mb-3" style="color: #ca8a04;">
                     <i class="bi bi-shield-check me-2"></i>Garantía
                 </h6>
-                <div class="row g-4">
+                <div class="row g-3">
                     <div class="col-md-3">
                         <div class="mb-3">
                             <label class="ui-label small fw-semibold">Tipo de Garantía</label>
@@ -276,16 +265,13 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Sección 5: Bloqueos y Observaciones --}}
-        <div class="ui-card" style="--delay:.3s;">
-            <div class="ui-card-accent"></div>
-            <div class="card-body p-4 p-md-5">
+            {{-- Sección 5: Bloqueos y Observaciones --}}
+            <div class="ui-card-body">
                 <h6 class="fw-bold mb-3" style="color: #dc2626;">
                     <i class="bi bi-lock me-2"></i>Bloqueos y Observaciones
                 </h6>
-                <div class="row g-4">
+                <div class="row g-3">
                     <div class="col-md-3">
                         <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background: rgba(220,38,38,.04);">
                             <div class="form-check form-switch mb-0">
@@ -310,8 +296,9 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </form>
+
+        </form>
+    </div>
 
     <div style="height: 80px;"></div>
 </div>

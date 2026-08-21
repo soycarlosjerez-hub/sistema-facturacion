@@ -30,15 +30,30 @@
     </div>
 
     @if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>Por favor corrige los errores del formulario.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
     </div>
     @endif
 
+    <div class="alert rounded-4 shadow-sm border-0 mb-4" style="background:rgba(99,102,241,.05);border-left:4px solid #6366f1 !important;">
+        <div class="d-flex align-items-center">
+            <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;color:#6366f1;background:rgba(99,102,241,.1);">
+                <i class="bi bi-info-circle fs-5"></i>
+            </div>
+            <div>
+                <span class="text-muted">Editando el técnico:</span>
+                <strong class="d-block" style="font-size:1.1rem;color:#1e293b;">{{ $tecnico->nombre }}</strong>
+            </div>
+        </div>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-lg-9">
-            <form action="{{ route('tecnicos.update', $tecnico) }}" method="POST">
+            <form id="tecnicoForm" action="{{ route('tecnicos.update', $tecnico) }}" method="POST">
                 @csrf
                 @method('PUT')
 

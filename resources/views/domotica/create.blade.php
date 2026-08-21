@@ -5,17 +5,12 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.form-section-title {
-    font-size: .75rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    font-weight: 700;
-    color: #64748b;
-    margin-bottom: 1rem;
-    padding-bottom: .5rem;
+.domotica-create-section {
     border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 }
-body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293b; }
+body.dark-mode .domotica-create-section { border-bottom-color: #1e293b; }
 </style>
 @endpush
 
@@ -32,7 +27,7 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                     <i class="bi bi-hdd-network"></i>
                 </div>
                 <div>
-                    <h4 class="ui-header-title">Nuevo Servicio de Domótica</h4>
+                    <div class="ui-header-title">Nuevo Servicio de Domótica</div>
                     <div class="ui-header-meta">
                         <i class="bi bi-plus-circle me-1"></i>
                         Registrar una nueva instalación o proyecto de automatización
@@ -63,14 +58,16 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
         </div>
     @endif
 
-    <form id="domoticaForm" method="POST" action="{{ route('domotica.store') }}">
-        @csrf
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <form id="domoticaForm" method="POST" action="{{ route('domotica.store') }}">
+            @csrf
 
-        <div class="ui-card mb-4" style="--delay:.1s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-person-vcard"></i> Información del Cliente</div>
-            <div class="ui-card-subtitle">Selecciona el cliente del servicio</div>
-            <div class="ui-card-body">
+            {{-- Información del Cliente --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
+                <h6 class="fw-bold mb-3" style="color: #0891b2;">
+                    <i class="bi bi-person-vcard me-2"></i>Información del Cliente
+                </h6>
                 <div class="row g-3">
                     <div class="col-lg-6">
                         <label class="ui-label">Cliente <span class="text-danger">*</span></label>
@@ -101,13 +98,12 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="ui-card mb-4" style="--delay:.2s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-clipboard-check"></i> Detalles del Servicio</div>
-            <div class="ui-card-subtitle">Describe el proyecto y la instalación</div>
-            <div class="ui-card-body">
+            {{-- Detalles del Servicio --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
+                <h6 class="fw-bold mb-3" style="color: #7c3aed;">
+                    <i class="bi bi-clipboard-check me-2"></i>Detalles del Servicio
+                </h6>
                 <div class="row g-3">
                     <div class="col-lg-6">
                         <label class="ui-label">Título <span class="text-danger">*</span></label>
@@ -143,13 +139,12 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="ui-card mb-4" style="--delay:.3s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-currency-dollar"></i> Presupuesto</div>
-            <div class="ui-card-subtitle">Montos del servicio</div>
-            <div class="ui-card-body">
+            {{-- Presupuesto --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
+                <h6 class="fw-bold mb-3" style="color: #059669;">
+                    <i class="bi bi-currency-dollar me-2"></i>Presupuesto
+                </h6>
                 <div class="row g-3">
                     <div class="col-lg-6">
                         <label class="ui-label">Presupuesto</label>
@@ -167,12 +162,12 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="ui-card mb-4" style="--delay:.4s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title"><i class="bi bi-journal-text"></i> Notas</div>
+            {{-- Notas --}}
             <div class="ui-card-body">
+                <h6 class="fw-bold mb-3" style="color: #ca8a04;">
+                    <i class="bi bi-journal-text me-2"></i>Notas
+                </h6>
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="ui-label">Notas Adicionales</label>
@@ -180,12 +175,11 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                     </div>
                 </div>
             </div>
-        </div>
 
-    </form>
-</div>
+        </form>
+    </div>
 
-<div style="height: 80px;"></div>
+    <div style="height: 80px;"></div>
 </div>
 
 <div class="ui-sticky-bar">

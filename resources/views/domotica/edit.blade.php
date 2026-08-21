@@ -63,7 +63,29 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
         </div>
     @endif
 
-    <form method="POST" action="{{ route('domotica.update', $servicio) }}">
+    @if ($errors->any())
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="alert rounded-4 shadow-sm border-0 mb-4" style="background:rgba(6,182,212,.05);border-left:4px solid #06b6d4 !important;">
+        <div class="d-flex align-items-center">
+            <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;color:#06b6d4;background:rgba(6,182,212,.1);">
+                <i class="bi bi-info-circle fs-5"></i>
+            </div>
+            <div>
+                <span class="text-muted">Editando el servicio:</span>
+                <strong class="d-block" style="font-size:1.1rem;color:#1e293b;">{{ $servicio->numero_proyecto }} · {{ $servicio->titulo }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <form id="domoticaForm" method="POST" action="{{ route('domotica.update', $servicio) }}">
         @csrf
         @method('PUT')
 
@@ -182,15 +204,24 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                 </div>
             </div>
         </div>
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="ui-btn ui-btn-primary rounded-pill px-4">
-                <i class="bi bi-check-lg me-1"></i> Actualizar Servicio
-            </button>
-            <a href="{{ route('domotica.show', $servicio) }}" class="ui-btn ui-btn-secondary rounded-pill px-4">
-                Cancelar
-            </a>
-        </div>
     </form>
+</div>
+
+<div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#06b6d4;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Editando servicio: {{ $servicio->numero_proyecto }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('domotica.show', $servicio) }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="domoticaForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Cambios
+            </button>
+        </div>
+    </div>
 </div>
 @endsection

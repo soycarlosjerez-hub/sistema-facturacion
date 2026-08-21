@@ -60,7 +60,7 @@ body.dark-mode .devoluciones-create-table tbody td {
                     <i class="bi bi-arrow-return-left"></i>
                 </div>
                 <div>
-                    <h4 class="ui-header-title">Nueva Devolución</h4>
+                    <div class="ui-header-title">Nueva Devolución</div>
                     <div class="ui-header-meta">
                         <i class="bi bi-arrow-return-left me-1"></i>
                         <span>Registra la devolución de productos de una venta</span>
@@ -75,17 +75,16 @@ body.dark-mode .devoluciones-create-table tbody td {
         </div>
     </div>
 
-    <form action="{{ route('devoluciones.store') }}" method="POST" id="formDevolucion">
-        @csrf
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <form action="{{ route('devoluciones.store') }}" method="POST" id="formDevolucion">
+            @csrf
 
-        <div class="ui-card mb-4" style="--delay:.1s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title">
-                <i class="bi bi-arrow-return-left"></i>
-                Datos de la Devolución
-            </div>
-            <div class="ui-card-subtitle">Información general de la devolución</div>
-            <div class="ui-card-body">
+            {{-- Datos de la Devolución --}}
+            <div class="ui-card-body pb-4 mb-4 border-bottom">
+                <h6 class="fw-bold mb-3" style="color: #dc2626;">
+                    <i class="bi bi-arrow-return-left me-2"></i>Datos de la Devolución
+                </h6>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="ui-label">Buscar Venta</label>
@@ -124,17 +123,13 @@ body.dark-mode .devoluciones-create-table tbody td {
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="ui-card mb-4" style="--delay:.2s">
-            <div class="ui-card-accent"></div>
-            <div class="ui-card-title">
-                <i class="bi bi-box-seam"></i>
-                Productos a Devolver
-            </div>
-            <div class="ui-card-subtitle">Detalle de los productos incluidos en la devolución</div>
+            {{-- Productos a Devolver --}}
             <div class="ui-card-body p-0">
-                <div class="d-flex justify-content-end px-4 pt-3">
+                <h6 class="fw-bold mb-3 px-4 pt-3" style="color: #4f46e5;">
+                    <i class="bi bi-box-seam me-2"></i>Productos a Devolver
+                </h6>
+                <div class="d-flex justify-content-end px-4 pb-2">
                     <button type="button" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill px-3" id="btnAgregarFila">
                         <i class="bi bi-plus-lg me-1"></i>Agregar producto
                     </button>
@@ -172,14 +167,23 @@ body.dark-mode .devoluciones-create-table tbody td {
                     </table>
                 </div>
             </div>
-        </div>
-    </form>
 
-    <div class="ui-sticky-bar">
-        <div class="ui-sticky-bar-inner">
-            <a href="{{ route('devoluciones.index') }}" class="ui-btn ui-btn-ghost ui-btn-sm rounded-pill">Cancelar</a>
-            <button type="submit" form="formDevolucion" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
-                <i class="bi bi-save me-2"></i>Registrar Devolución
+        </form>
+    </div>
+
+    <div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#ef4444;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Registrando nueva devolución</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('devoluciones.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="formDevolucion" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Registrar Devolución
             </button>
         </div>
     </div>

@@ -71,18 +71,20 @@
             </div>
         </div>
     </div>
+
+    <div style="height: 80px;"></div>
 </div>
 
 <div class="ui-sticky-bar">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="ui-sticky-bar-inner">
         <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>
-            <span class="fw-semibold d-none d-sm-inline">Creando nuevo conduce</span>
+            <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nuevo Conduce</span>
         </div>
-        <div>
-            <a href="{{ route('conduces.index') }}" class="btn-cancel me-2">Cancelar</a>
-            <button type="submit" form="formConduce" class="btn-save">
-                <i class="bi bi-check-lg me-2"></i>Guardar Conduce
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('conduces.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="formConduce" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Conduce
             </button>
         </div>
     </div>

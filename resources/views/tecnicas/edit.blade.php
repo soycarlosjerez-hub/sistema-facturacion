@@ -63,12 +63,25 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
         </div>
     @endif
 
-    <form method="POST" action="{{ route('tecnicas.update', $orden) }}">
+    <div class="alert rounded-4 shadow-sm border-0 mb-4" style="background:rgba(59,130,246,.05);border-left:4px solid #3b82f6 !important;">
+        <div class="d-flex align-items-center">
+            <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;color:#3b82f6;background:rgba(59,130,246,.1);">
+                <i class="bi bi-info-circle fs-5"></i>
+            </div>
+            <div>
+                <span class="text-muted">Editando la orden:</span>
+                <strong class="d-block" style="font-size:1.1rem;color:#1e293b;">#{{ $orden->numero_orden }} - {{ $orden->cliente }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <form id="tecnicasForm" method="POST" action="{{ route('tecnicas.update', $orden) }}">
         @csrf @method('PUT')
 
-        <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card" style="--delay:.1s">
             <div class="ui-card-accent"></div>
             <div class="ui-card-title"><i class="bi bi-person-vcard"></i> Información del Cliente</div>
+            <div class="ui-card-subtitle">Selecciona o modifica el cliente</div>
             <div class="ui-card-body">
                 <div class="row g-3">
                     <div class="col-lg-6">
@@ -219,16 +232,25 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                 </div>
             </div>
         </div>
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="ui-btn ui-btn-primary rounded-pill px-4">
-                <i class="bi bi-check-lg me-1"></i> Guardar Cambios
-            </button>
-            <a href="{{ route('tecnicas.show', $orden) }}" class="ui-btn ui-btn-secondary rounded-pill px-4">
-                Cancelar
-            </a>
-        </div>
     </form>
+</div>
+
+<div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#3b82f6;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Editando orden #{{ $orden->numero_orden }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('tecnicas.show', $orden) }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="tecnicasForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Cambios
+            </button>
+        </div>
+    </div>
 </div>
 @endsection
 
