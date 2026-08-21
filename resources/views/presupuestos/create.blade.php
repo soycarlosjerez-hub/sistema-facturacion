@@ -28,7 +28,7 @@
         <div class="col-lg-10">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('presupuestos.store') }}" method="POST">
+                    <form id="presupuestoForm" action="{{ route('presupuestos.store') }}" method="POST">
                         @csrf
 
                         <div class="row mb-3">
@@ -59,16 +59,30 @@
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i> Crear Presupuesto
-                            </button>
-                            <a href="{{ route('presupuestos.index') }}" class="btn btn-secondary">
+                            <button type="submit" form="presupuestoForm" class="ui-btn ui-btn-ghost rounded-pill">
                                 <i class="bi bi-x-lg me-1"></i> Cancelar
-                            </a>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#8b5cf6;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nuevo presupuesto</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('presupuestos.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="presupuestoForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Presupuesto
+            </button>
         </div>
     </div>
 </div>
