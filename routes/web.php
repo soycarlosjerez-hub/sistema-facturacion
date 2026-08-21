@@ -1282,11 +1282,15 @@ Route::middleware(['auth', 'permission:domotica.delete'])->group(function () {
     Route::delete('domotica/{servicio}', [\App\Http\Controllers\ServicioDomoticaController::class, 'destroy'])->name('domotica.destroy');
 });
 
-// Garantías
-// create/edit fuera del grupo view para evitar conflicto con {garantia} model binding
+// Garantías - create/store primero para evitar conflicto con {garantia} model binding
 Route::get('garantias/create', [\App\Http\Controllers\GarantiaController::class, 'create'])
     ->middleware(['auth', 'permission:garantias.create'])
     ->name('garantias.create');
+
+Route::post('garantias', [\App\Http\Controllers\GarantiaController::class, 'store'])
+    ->middleware(['auth', 'permission:garantias.create'])
+    ->name('garantias.store');
+
 Route::get('garantias/{garantia}/edit', [\App\Http\Controllers\GarantiaController::class, 'edit'])
     ->middleware(['auth', 'permission:garantias.edit'])
     ->name('garantias.edit');
@@ -1299,16 +1303,12 @@ Route::middleware(['auth', 'permission:garantias.view'])->group(function () {
     Route::get('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'show'])->name('garantias.show');
 });
 
-// edit fuera del grupo view para evitar conflicto con {garantia} model binding
-Route::get('garantias/{garantia}/edit', [\App\Http\Controllers\GarantiaController::class, 'edit'])
-    ->middleware(['auth', 'permission:garantias.edit'])
-    ->name('garantias.edit');
-
 Route::middleware(['auth', 'permission:garantias.edit'])->group(function () {
     Route::put('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'update'])->name('garantias.update');
     Route::post('garantias/{garantia}/extender', [\App\Http\Controllers\GarantiaController::class, 'extender'])->name('garantias.extender');
     Route::post('garantias/{garantia}/reclamar', [\App\Http\Controllers\GarantiaController::class, 'procesarReclamo'])->name('garantias.reclamar');
 });
+
 Route::middleware(['auth', 'permission:garantias.delete'])->group(function () {
     Route::delete('garantias/{garantia}', [\App\Http\Controllers\GarantiaController::class, 'destroy'])->name('garantias.destroy');
 });

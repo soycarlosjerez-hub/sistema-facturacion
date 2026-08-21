@@ -50,7 +50,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('garantias.store') }}">
+    <form id="garantiaForm" method="POST" action="{{ route('garantias.store') }}">
         @csrf
 
         <div class="ui-card mb-4" style="--delay:.1s">
@@ -136,5 +136,23 @@
             </a>
         </div>
     </form>
+</div>
+
+<div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#10b981;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva garantía</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('garantias.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="garantiaForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Garantía
+            </button>
+        </div>
+    </div>
 </div>
 @endsection
