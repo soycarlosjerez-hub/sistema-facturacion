@@ -28,7 +28,7 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('tecnica-especialidades.store') }}" method="POST">
+                    <form id="especialidadForm" action="{{ route('tecnica-especialidades.store') }}" method="POST">
                         @csrf
 
                         <div class="mb-3">
@@ -59,17 +59,31 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i> Guardar Especialidad
-                            </button>
-                            <a href="{{ route('tecnica-especialidades.index') }}" class="btn btn-secondary">
-                                <i class="bi bi-x-lg me-1"></i> Cancelar
-                            </a>
-                        </div>
-                    </form>
-                </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" form="especialidadForm" class="ui-btn ui-btn-solid rounded-pill">
+                            <i class="bi bi-check-lg me-1"></i>Guardar Especialidad
+                        </button>
+                    </div>
+                </form>
             </div>
+        </div>
+    </div>
+</div>
+
+<div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva especialidad técnica</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('tecnica-especialidades.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="especialidadForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Especialidad
+            </button>
         </div>
     </div>
 </div>

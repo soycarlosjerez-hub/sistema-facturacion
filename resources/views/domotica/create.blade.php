@@ -63,7 +63,7 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
         </div>
     @endif
 
-    <form method="POST" action="{{ route('domotica.store') }}">
+    <form id="domoticaForm" method="POST" action="{{ route('domotica.store') }}">
         @csrf
 
         <div class="ui-card mb-4" style="--delay:.1s">
@@ -182,14 +182,24 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
             </div>
         </div>
 
-        <div class="d-flex gap-2">
-            <button type="submit" class="ui-btn ui-btn-primary rounded-pill px-4">
-                <i class="bi bi-check-lg me-1"></i> Crear Servicio
-            </button>
-            <a href="{{ route('domotica.index') }}" class="ui-btn ui-btn-secondary rounded-pill px-4">
-                Cancelar
-            </a>
-        </div>
     </form>
+</div>
+
+<div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#06b6d4;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nuevo servicio de domótica</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('domotica.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="domoticaForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Servicio
+            </button>
+        </div>
+    </div>
 </div>
 @endsection

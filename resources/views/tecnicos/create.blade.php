@@ -42,7 +42,7 @@
 
     <div class="row justify-content-center">
         <div class="col-lg-9">
-            <form action="{{ route('tecnicos.store') }}" method="POST">
+    <form id="tecnicoForm" action="{{ route('tecnicos.store') }}" method="POST">
                 @csrf
 
                 <div class="ui-card mb-4" style="--delay:.1s">
@@ -136,15 +136,25 @@
                     </div>
                 </div>
 
-                <div class="d-flex gap-2 justify-content-end">
-                    <a href="{{ route('tecnicos.index') }}" class="btn btn-secondary">
-                        <i class="bi bi-x-lg me-1"></i> Cancelar
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg me-1"></i> Guardar Técnico
-                    </button>
-                </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#6366f1;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nuevo técnico</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('tecnicos.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="tecnicoForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Técnico
+            </button>
         </div>
     </div>
 </div>
