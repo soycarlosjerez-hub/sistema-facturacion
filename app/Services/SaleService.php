@@ -7,6 +7,8 @@ use App\Models\ArteObra;
 use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\EcfDocumento;
+use App\Models\Equipo;
+use App\Models\EquipoVenta;
 use App\Models\Pago;
 use App\Models\Producto;
 use App\Models\SesionCaja;
@@ -64,10 +66,12 @@ class SaleService
         $puedeSobreescribirPrecio = in_array(auth()->user()->role, $rolesAutorizados)
             || auth()->user()->hasRole($rolesAutorizados);
 
-        $modoObras = $this->facturaObrasArte();
+        $modoObras    = $this->facturaObrasArte();
+        $modoEquipos  = $this->facturaEquipos();
 
         $productoIds = $data['producto_id'] ?? [];
         $obraIds     = $data['obra_id'] ?? [];
+        $equipoIds   = $data['equipo_id'] ?? [];
         $cantidades  = $data['cantidad'] ?? [];
         $preciosCli  = $data['precio'] ?? [];
         $descuentoCli = $data['descuento'] ?? [];
@@ -106,6 +110,45 @@ class SaleService
                     'tipo'     => 'monto',
                     'itbis_p'  => (float) ($this->itbisPorcentajeInstancia()),
                     'sin_itbis' => (bool) ($sinItbisCli[$i] ?? false),
+                ];
+            }
+        } elseif ($modoEquipos) {
+            foreach ($equipoIds as $i => $equipoId) {
+                if (!$equipoId) continue;
+                $equipo = Equipo::find($equipoId);
+                if (!$equipo) {
+                    throw new \Exception('El equipo #' . $equipoId . ' no existe.');
+                }
+                if ($equipo->estado !== 'disponible') {
+                    throw new \Exception('El equipo ' . $equipo->serial_imei . ' no est\u00e1 disponible para venta.');
+                }
+                $precioBD   = (float) $equipo->precio_venta;
+                $precioCli  = (float) ($preciosCli[$i] ?? $precioBD);
+                if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+                    throw new \Exception("No autorizado para modificar el precio del equipo " . $equipo->serial_imei . ".");
+                }
+                $precioBase = ($precioCli !== $precioBD && $puedeSobreescribirPrecio) ? $precioCli : $precioBD;
+                $lineas[] = [
+                    'id'        => $equipoId,
+                    'es_equipo' => true,
+                    'es_obra'   => false,
+                    'nombre'    => $equipo->marca . ' ' . $equipo->modelo . ' (' . $equipo->serial_imei . ')',
+                    'cantidad'  => 1,
+                    'precio'    => $precioBase,
+                    'subtotal'  => round($precioBase * 1, 2),
+                    'desc'      => (float) ($descuentoCli[$i] ?? 0),
+                    'tipo'      => $tiposCli[$i] ?? 'monto',
+                    'itbis_p'   => (float) ($this->itbisPorcentajeInstancia()),
+                    'sin_itbis' => (bool) ($sinItbisCli[$i] ?? false),
+                    'serial_imei' => $equipo->serial_imei,
+                    'marca'     => $equipo->marca,
+                    'modelo'    => $equipo->modelo,
+                    'color'     => $equipo->color,
+                    'almacenamiento_gb' => $equipo->almacenamiento_gb,
+                    'tipo_dispositivo' => $equipo->tipo_dispositivo,
+                    'garantia_desde' => $equipo->garantia_desde,
+                    'garantia_hasta' => $equipo->garantia_hasta,
+                    'garantia_tipo' => $equipo->garantia_tipo,
                 ];
             }
         } else {
@@ -173,7 +216,8 @@ class SaleService
 
         // Persistir arrays normalizados para procesarDetalles/procesarPago
         $data['obra_id']          = $modoObras ? array_column($lineas, 'id') : [];
-        $data['producto_id']      = $modoObras ? [] : array_column($lineas, 'id');
+        $data['equipo_id']        = $modoEquipos ? array_column($lineas, 'id') : [];
+        $data['producto_id']      = ($modoObras || $modoEquipos) ? [] : array_column($lineas, 'id');
         $data['cantidad']         = array_column($lineas, 'cantidad');
         $data['precio']           = array_column($lineas, 'precio');
         $data['subtotal']         = array_column($lineas, 'subtotal');
@@ -327,6 +371,18 @@ class SaleService
                 if ($obra && $obra->estado === 'vendida') {
                     $obra->update(['estado' => 'disponible']);
                 }
+            }
+
+            // Revertir equipos a disponible al anular
+            $equipoDetalles = $venta->detalles->whereNotNull('equipo_id');
+            foreach ($equipoDetalles as $detalle) {
+                $equipo = Equipo::find($detalle->equipo_id);
+                if ($equipo && $equipo->estado === 'vendido') {
+                    $equipo->update(['estado' => 'disponible']);
+                }
+                EquipoVenta::where('equipo_id', $detalle->equipo_id)
+                          ->where('venta_id', $venta->id)
+                          ->delete();
             }
 
             // Devolver deuda del cliente si estaba pendiente
@@ -496,11 +552,57 @@ class SaleService
             $stocks = [];
             $categoriasJs = [];
 
+            $user = Auth::user();
+            $tipo = $user?->businessInstance?->businessType;
+            $facturacionModo = $tipo?->config['facturacion_modo'] ?? 'productos';
+
             return compact(
                 'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
                 'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
                 'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-                'modoObras', 'permitidos'
+                'modoObras', 'permitidos', 'facturacionModo'
+            );
+        }
+
+        if ($this->facturaEquipos()) {
+            $equipos = Equipo::where('tenant_id', $tenantId)
+                ->where('estado', 'disponible')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $productosJs = $equipos->map(fn($e) => [
+                'id'              => (int) $e->id,
+                'nombre'          => $e->marca . ' ' . $e->modelo . ' (' . $e->serial_imei . ')',
+                'codigo_barras'   => $e->serial_imei,
+                'precio'          => (float) $e->precio_venta,
+                'precio_compra'   => (float) ($e->precio_compra ?? 0),
+                'itbis_p'         => $itbisInstancia,
+                'stock'           => 1,
+                'ventas_count'    => 0,
+                'unidad_medida'   => 'Equipo',
+                'imagen_url'      => null,
+                'categoria_id'    => 0,
+                'es_equipo'       => true,
+                'es_obra'         => false,
+                'serial_imei'     => $e->serial_imei,
+                'serial_esn'      => $e->serial_esn,
+                'color'           => $e->color,
+                'almacenamiento_gb' => $e->almacenamiento_gb,
+                'tipo_dispositivo' => $e->tipo_dispositivo,
+                'marca'           => $e->marca,
+                'modelo'          => $e->modelo,
+            ])->values()->all();
+
+            $stocks = [];
+            $categoriasJs = [];
+
+            $facturacionModo = 'equipos';
+
+            return compact(
+                'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
+                'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
+                'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
+                'modoObras', 'permitidos', 'equipos', 'facturacionModo'
             );
         }
 
@@ -537,7 +639,7 @@ class SaleService
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
             'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-            'modoObras', 'permitidos'
+            'modoObras', 'permitidos', 'facturacionModo'
         );
     }
 
@@ -553,6 +655,13 @@ class SaleService
         $user = Auth::user();
         $tipo = $user?->businessInstance?->businessType;
         return ($tipo?->config['facturacion_modo'] ?? 'productos') === 'obras_arte';
+    }
+
+    private function facturaEquipos(): bool
+    {
+        $user = Auth::user();
+        $tipo = $user?->businessInstance?->businessType;
+        return ($tipo?->config['facturacion_modo'] ?? 'productos') === 'equipos';
     }
 
     private function itbisPorcentajeInstancia(): float
@@ -660,6 +769,11 @@ class SaleService
             return;
         }
 
+        if (!empty($data['equipo_id'] ?? [])) {
+            $this->procesarDetallesEquipos($venta, $data, $tenantId);
+            return;
+        }
+
         $productoIds = $data['producto_id'] ?? [];
         $cantidades  = $data['cantidad'] ?? [];
         $precios     = $data['precio'] ?? [];
@@ -760,6 +874,52 @@ class SaleService
             ]);
 
             $obra->update(['estado' => 'vendida']);
+        }
+    }
+
+    private function procesarDetallesEquipos(Venta $venta, array $data, int $tenantId): void
+    {
+        $equipoIds = $data['equipo_id'] ?? [];
+        $precios = $data['precio'] ?? [];
+        $subtotales = $data['subtotal'] ?? [];
+        $descuentos = $data['descuento'] ?? [];
+        $descuentoTipos = $data['descuento_tipo'] ?? [];
+        $itbisPorcentajes = $data['itbis_porcentaje'] ?? [];
+
+        foreach ($equipoIds as $i => $equipoId) {
+            if (!$equipoId) continue;
+
+            $equipo = Equipo::find($equipoId);
+            if (!$equipo) {
+                throw new \Exception('El equipo #' . $equipoId . ' no existe.');
+            }
+            if ($equipo->estado !== 'disponible') {
+                throw new \Exception('El equipo ' . $equipo->serial_imei . ' no est\u00e1 disponible para venta.');
+            }
+
+            VentaDetalle::create([
+                'venta_id'         => $venta->id,
+                'equipo_id'        => $equipoId,
+                'producto_id'      => $equipo->producto_id ?? null,
+                'cantidad'         => 1,
+                'precio_unitario'  => $precios[$i] ?? (float) $equipo->precio_venta,
+                'subtotal'         => $subtotales[$i] ?? (float) $equipo->precio_venta,
+                'descuento'        => (float) ($descuentos[$i] ?? 0),
+                'descuento_tipo'   => $descuentoTipos[$i] ?? 'monto',
+                'itbis_porcentaje' => (float) ($itbisPorcentajes[$i] ?? 0),
+                'sin_itbis'        => (bool) ($data['sin_itbis'][$i] ?? false),
+                'almacen_id'       => null,
+                'tenant_id'        => $tenantId,
+            ]);
+
+            EquipoVenta::create([
+                'equipo_id'        => $equipoId,
+                'venta_id'         => $venta->id,
+                'precio_vendido'   => $precios[$i] ?? (float) $equipo->precio_venta,
+                'tenant_id'        => $tenantId,
+            ]);
+
+            $equipo->update(['estado' => 'vendido']);
         }
     }
 

@@ -95,8 +95,9 @@
                                 @php $facturacionModo = old('facturacion_modo', $businessType->config['facturacion_modo'] ?? 'productos'); @endphp
                                 <option value="productos" {{ $facturacionModo === 'productos' ? 'selected' : '' }}>Productos (inventario)</option>
                                 <option value="obras_arte" {{ $facturacionModo === 'obras_arte' ? 'selected' : '' }}>Obras de Arte (galer&iacute;a)</option>
+                                <option value="equipos" {{ $facturacionModo === 'equipos' ? 'selected' : '' }}>Equipos (IMEI/Serial)</option>
                             </select>
-                            <small class="text-muted">En "Obras de Arte" el terminal de ventas factura el cat&aacute;logo de obras del m&oacute;dulo Arte en lugar de productos.</small>
+                            <small class="text-muted">Define qu&eacute; tipo de elementos se facturan desde el terminal de ventas.</small>
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-6">

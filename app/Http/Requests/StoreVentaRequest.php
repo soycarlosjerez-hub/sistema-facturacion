@@ -26,6 +26,7 @@ class StoreVentaRequest extends FormRequest
     public function rules(): array
     {
         $tieneObras = $this->has('obra_id') && is_array($this->input('obra_id')) && count(array_filter($this->input('obra_id'))) > 0;
+        $tieneEquipos = $this->has('equipo_id') && is_array($this->input('equipo_id')) && count(array_filter($this->input('equipo_id'))) > 0;
 
         $reglas = [
             'cliente_id'    => [
@@ -33,10 +34,12 @@ class StoreVentaRequest extends FormRequest
                 'exists:clientes,id',
             ],
             'tipo_venta_id' => 'required|exists:tipos_ventas,id',
-            'producto_id'   => [$tieneObras ? 'nullable' : 'required', 'array', 'min:1'],
+            'producto_id'   => [$tieneObras || $tieneEquipos ? 'nullable' : 'required', 'array', 'min:1'],
             'producto_id.*' => 'exists:productos,id',
             'obra_id'       => 'nullable|array',
             'obra_id.*'     => 'exists:arte_obras,id',
+            'equipo_id'     => 'nullable|array',
+            'equipo_id.*'   => 'exists:equipos,id',
             'almacen_id'    => 'nullable|array',
             'almacen_id.*'  => 'nullable|exists:almacenes,id',
             'cantidad'      => 'required|array|min:1',

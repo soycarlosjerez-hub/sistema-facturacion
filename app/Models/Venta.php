@@ -143,4 +143,9 @@ class Venta extends Model
     {
         return $this->montoPagado() >= $this->total;
     }
+
+    public function equipos()
+    {
+        return $this->hasMany(EquipoVenta::class);
+    }
 }

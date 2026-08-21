@@ -30,6 +30,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ReporteFiscalController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\EquipoReporteController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\DeliveryCompanyController;
 use App\Http\Controllers\DevolucionController;
@@ -144,6 +145,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/ventas/buscar-producto', [VentaController::class, 'buscarProducto'])->name('ventas.buscarProducto');
     Route::get('/ventas/buscar-codigo/{codigo}', [VentaController::class, 'buscarPorCodigoBarras'])->name('ventas.buscarPorCodigo');
+    Route::get('/ventas/buscar-equipo', [VentaController::class, 'buscarEquipo'])->name('ventas.buscarEquipo');
 
     // Permission-based routes
     Route::middleware('permission:cajas.view')->group(function () {
@@ -536,6 +538,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/reportes/ventas', [ReporteController::class, 'ventas'])->name('reportes.ventas');
         Route::get('/reportes/ventas/csv', [ReporteController::class, 'ventasCsv'])->name('reportes.ventas.csv');
         Route::get('/reportes/ventas/pdf', [ReporteController::class, 'ventasPdf'])->name('reportes.ventas.pdf');
+
+        // Equipos
+        Route::get('/reportes/equipos', [EquipoReporteController::class, 'index'])->name('reportes.equipos');
+        Route::get('/reportes/equipos/export', [EquipoReporteController::class, 'exportExcel'])->name('reportes.equipos.export');
+        Route::get('/reportes/equipos/pdf', [EquipoReporteController::class, 'exportPdf'])->name('reportes.equipos.pdf');
 
         // Comisiones Vendedores
         Route::get('/reportes/comisiones-vendedores', [ReporteController::class, 'comisionesVendedores'])->name('reportes.comisiones-vendedores');

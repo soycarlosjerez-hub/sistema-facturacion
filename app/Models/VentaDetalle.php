@@ -10,7 +10,7 @@ class VentaDetalle extends Model
 {
     use HasFactory, TenantScope;
 
-    protected $fillable = ['venta_id', 'producto_id', 'obra_id', 'almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo', 'itbis_porcentaje', 'sin_itbis', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
+    protected $fillable = ['venta_id', 'producto_id', 'obra_id', 'equipo_id', 'almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo', 'itbis_porcentaje', 'sin_itbis', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
 
     protected $casts = [
         'cantidad' => 'decimal:2',
@@ -39,5 +39,10 @@ class VentaDetalle extends Model
     public function almacen()
     {
         return $this->belongsTo(Almacen::class);
+    }
+
+    public function equipo()
+    {
+        return $this->belongsTo(Equipo::class);
     }
 }

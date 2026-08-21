@@ -2406,6 +2406,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     <button type="button" class="pos-tab" data-filter="popular">
                         <i class="bi bi-fire"></i> Populares <span class="badge-count" id="count-pop">0</span>
                     </button>
+                    @if(($facturacionModo ?? 'productos') === 'equipos')
+                    <button type="button" class="pos-tab active" data-tab="equipos">
+                        <i class="bi bi-phone"></i> Equipos <span class="badge-count" id="count-equipos">0</span>
+                    </button>
+                    @endif
                 </div>
 
                 <!-- Category filter (shown when search is active) -->
@@ -3151,6 +3156,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     const turnoInicio = new Date({!! json_encode($sesion->fecha_apertura->toIso8601String()) !!});
     const validaStock = {!! json_encode($validaStock ?? true) !!};
     const modoObras = {!! json_encode($modoObras ?? false) !!};
+    const modoEquipos = {!! json_encode(($facturacionModo ?? 'productos') === 'equipos') !!};
+    const facturacionModo = {!! json_encode($facturacionModo ?? 'productos') !!};
+    const equiposData = {!! json_encode($equipos ?? collect([])) !!};
     const puedeModificarPrecio = {!! json_encode($puedeModificarPrecio ?? false) !!};
     const tiposComprobantePermitidos = {!! json_encode($permitidos ?? ['sin', 'ncf', 'ecf']) !!};
 
@@ -3925,6 +3933,40 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         cerrarModalProductos();
     }
 
+    function agregarEquipoAlCarrito(equipoId) {
+        if (modoEquipos) {
+            const existing = cart.find(x => x.id === equipoId);
+            if (existing) {
+                showToast('Este equipo ya está en el carrito', 'warning');
+                return;
+            }
+            const eq = equiposData.find(e => e.id === equipoId);
+            if (!eq) { showToast('Equipo no encontrado', 'danger'); return; }
+            cart.push({
+                id: eq.id,
+                nombre: (eq.marca || '') + ' ' + (eq.modelo || '') + ' (' + (eq.serial_imei || '') + ')',
+                precio: parseFloat(eq.precio_venta) || 0,
+                itbis_p: (facturacionModo === 'equipos') ? (parseFloat($('input[name=\\'itbis_porcentaje[]']')?.value) || 0) : 0,
+                qty: 1,
+                es_equipo: true,
+                es_obra: false,
+                serial_imei: eq.serial_imei,
+                marca: eq.marca,
+                modelo: eq.modelo,
+                color: eq.color,
+                almacenamiento_gb: eq.almacenamiento_gb,
+                tipo_dispositivo: eq.tipo_dispositivo,
+                descuento: 0,
+                descuento_tipo: 'monto',
+                sin_itbis: false,
+            });
+            renderCart('add');
+            playBeep('scan');
+            return;
+        }
+        showToast('La vista de equipos no está activa', 'warning');
+    }
+
     // Teclado virtual
     function renderizarTecladoModal() {
         const container = $('teclado-rows');
@@ -4074,47 +4116,64 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 const itbis = subtotalConDesc * (item.sin_itbis ? 0 : item.itbis_p / 100);
                 return `
                 <div class="cart-item ${anim === 'add' && index === cart.length-1 ? 'adding' : ''}" data-index="${index}">
-                    <img src="${escapeHtml(item.imagen_url)}" class="ci-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
-                    <div class="ci-info">
-                        <div class="ci-name">${escapeHtml(item.nombre)}</div>
-                        <div class="ci-meta">
-                            ${modoObras
-                                ? `<span class="qty-val">1</span>`
-                                : `<span class="ci-qty">
-                                <button type="button" data-action="dec" data-index="${index}" aria-label="Disminuir cantidad">−</button>
-                                <span class="qty-val" aria-label="Cantidad">${item.qty}</span>
-                                <button type="button" data-action="inc" data-index="${index}" aria-label="Aumentar cantidad">+</button>
-                            </span>`}
-                            <span>× ${fmt(item.precio)}</span>
-                        </div>
-                        ${modoObras ? '' : `<div class="ci-discount">
-                            <label for="desc-${index}" class="visually-hidden">Descuento línea ${index + 1}</label>
-                            <div class="discount-input-group">
-                                <button type="button" 
-                                        class="discount-toggle ${item.descuento_tipo === 'porcentaje' ? 'active' : ''}" 
-                                        data-action="toggle-discount-type" 
-                                        data-index="${index}"
-                                        title="Cambiar entre monto/porcentaje"
-                                        aria-label="Cambiar tipo de descuento">${item.descuento_tipo === 'porcentaje' ? '%' : '$'}</button>
-                                <input type="number" 
-                                       id="desc-${index}"
-                                       class="discount-input" 
-                                       data-action="set-discount" 
-                                       data-index="${index}"
-                                       value="${item.descuento || ''}" 
-                                       min="0" 
-                                       step="0.01"
-                                       placeholder="Desc"
-                                       aria-label="Descuento de la línea ${index + 1}">
-                            </div>
-                            ${descuentoAplicado > 0 ? `<small class="discount-applied">-${fmt(descuentoAplicado)}</small>` : ''}
-                        </div>`}
-                        <div class="ci-sinitbis">
-                            <button type="button" class="sinitbis-toggle ${item.sin_itbis ? 'active' : ''}" data-action="toggle-sin-itbis" data-index="${index}" title="Quitar/aplicar ITBIS de esta línea" aria-label="Quitar ITBIS de la línea ${index + 1}">
-                                <i class="bi ${item.sin_itbis ? 'bi-slash-circle' : 'bi-receipt'}"></i>${item.sin_itbis ? 'Sin ITBIS' : 'ITBIS'}
-                            </button>
-                        </div>
-                    </div>
+                    ${item.es_equipo
+                        ? `<div class="ci-img" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--pos-accent);"><i class="bi bi-phone"></i></div>
+                           <div class="ci-info">
+                               <div class="ci-name">${escapeHtml(item.nombre)}</div>
+                               <div class="ci-meta">
+                                   <span class="qty-val">1</span>
+                                   <span>× ${fmt(item.precio)}</span>
+                               </div>
+                               ${item.serial_imei ? '<div class="ci-meta" style="font-size:0.6rem;">IMEI: ' + escapeHtml(item.serial_imei) + '</div>' : ''}
+                               ${item.color ? '<div class="ci-meta" style="font-size:0.6rem;">Color: ' + escapeHtml(item.color) + '</div>' : ''}
+                               ${item.almacenamiento_gb ? '<div class="ci-meta" style="font-size:0.6rem;">' + escapeHtml(item.almacenamiento_gb) + 'GB</div>' : ''}
+                               <div class="ci-sinitbis">
+                                   <button type="button" class="sinitbis-toggle ${item.sin_itbis ? 'active' : ''}" data-action="toggle-sin-itbis" data-index="${index}" title="Quitar/aplicar ITBIS de esta línea" aria-label="Quitar ITBIS de la línea ${index + 1}">
+                                       <i class="bi ${item.sin_itbis ? 'bi-slash-circle' : 'bi-receipt'}"></i>${item.sin_itbis ? 'Sin ITBIS' : 'ITBIS'}
+                                   </button>
+                               </div>
+                           </div>`
+                        : `<img src="${escapeHtml(item.imagen_url)}" class="ci-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+                           <div class="ci-info">
+                               <div class="ci-name">${escapeHtml(item.nombre)}</div>
+                               <div class="ci-meta">
+                                   ${modoObras
+                                       ? `<span class="qty-val">1</span>`
+                                       : `<span class="ci-qty">
+                                       <button type="button" data-action="dec" data-index="${index}" aria-label="Disminuir cantidad">−</button>
+                                       <span class="qty-val" aria-label="Cantidad">${item.qty}</span>
+                                       <button type="button" data-action="inc" data-index="${index}" aria-label="Aumentar cantidad">+</button>
+                                   </span>`}
+                                   <span>× ${fmt(item.precio)}</span>
+                               </div>
+                               ${modoObras ? '' : `<div class="ci-discount">
+                                   <label for="desc-${index}" class="visually-hidden">Descuento línea ${index + 1}</label>
+                                   <div class="discount-input-group">
+                                       <button type="button" 
+                                               class="discount-toggle ${item.descuento_tipo === 'porcentaje' ? 'active' : ''}" 
+                                               data-action="toggle-discount-type" 
+                                               data-index="${index}"
+                                               title="Cambiar entre monto/porcentaje"
+                                               aria-label="Cambiar tipo de descuento">${item.descuento_tipo === 'porcentaje' ? '%' : '$'}</button>
+                                       <input type="number" 
+                                              id="desc-${index}"
+                                              class="discount-input" 
+                                              data-action="set-discount" 
+                                              data-index="${index}"
+                                              value="${item.descuento || ''}" 
+                                              min="0" 
+                                              step="0.01"
+                                              placeholder="Desc"
+                                              aria-label="Descuento de la línea ${index + 1}">
+                                   </div>
+                                   ${descuentoAplicado > 0 ? `<small class="discount-applied">-${fmt(descuentoAplicado)}</small>` : ''}
+                               </div>`}
+                               <div class="ci-sinitbis">
+                                   <button type="button" class="sinitbis-toggle ${item.sin_itbis ? 'active' : ''}" data-action="toggle-sin-itbis" data-index="${index}" title="Quitar/aplicar ITBIS de esta línea" aria-label="Quitar ITBIS de la línea ${index + 1}">
+                                       <i class="bi ${item.sin_itbis ? 'bi-slash-circle' : 'bi-receipt'}"></i>${item.sin_itbis ? 'Sin ITBIS' : 'ITBIS'}
+                                   </button>
+                               </div>
+                           </div>`}
                     <div class="ci-right">
                         <div class="ci-subtotal">${fmt(subtotalConDesc)}</div>
                         <div class="ci-itbis">${item.sin_itbis ? '<span style="color:#fca5a5;font-weight:700;">Sin ITBIS</span>' : '+ ITBIS ' + fmt(itbis)}</div>
@@ -4124,9 +4183,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     </button>
                     ${modoObras
                         ? `<input type="hidden" name="obra_id[]" value="${item.id}">`
-                        : `<input type="hidden" name="producto_id[]" value="${item.id}">`}
+                        : modoEquipos && item.es_equipo
+                            ? `<input type="hidden" name="equipo_id[]" value="${item.id}">`
+                            : `<input type="hidden" name="producto_id[]" value="${item.id}">`}
                     <input type="hidden" name="precio[]" value="${item.precio.toFixed(2)}">
-                    <input type="hidden" name="cantidad[]" value="${modoObras ? 1 : item.qty}">
+                    <input type="hidden" name="cantidad[]" value="${modoObras ? 1 : (item.es_equipo ? 1 : item.qty)}">
                     <input type="hidden" name="subtotal[]" value="${subtotal.toFixed(2)}">
                     <input type="hidden" name="descuento[]" value="${descuentoItem}">
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
@@ -4202,7 +4263,14 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     }
 
     // ============ Search (mostrar productos en grid) ============
+    let equipoSearchTimeout = null;
+    
     function triggerSearch() {
+        if (modoEquipos) {
+            handleEquipoSearch();
+            return;
+        }
+        
         const query = $('scan-input').value.toLowerCase().trim();
         searchQuery = query;
         const dropdown = $('search-results');
@@ -4249,6 +4317,65 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
         // Mostrar grid inferior con resultados
         renderProductsGrid(filtered);
+    }
+
+    function handleEquipoSearch() {
+        const query = $('scan-input').value.trim();
+        const dropdown = $('search-results');
+        dropdown.classList.remove('show');
+        if (!query) {
+            $('products-viewport').style.display = 'none';
+            $('cart-viewport').style.display = 'block';
+            return;
+        }
+        clearTimeout(equipoSearchTimeout);
+        equipoSearchTimeout = setTimeout(() => {
+            fetch(`/ventas/buscar-equipo?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        renderEquipoGrid(data);
+                    } else {
+                        $('products-viewport').style.display = 'none';
+                        $('cart-viewport').style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    $('products-viewport').style.display = 'none';
+                    $('cart-viewport').style.display = 'block';
+                });
+        }, 250);
+    }
+
+    function renderEquipoGrid(items) {
+        const viewport = $('products-viewport');
+        const cartViewport = $('cart-viewport');
+        if (items.length === 0) {
+            viewport.style.display = 'none';
+            cartViewport.style.display = 'block';
+            return;
+        }
+        viewport.style.display = 'grid';
+        cartViewport.style.display = 'none';
+        viewport.innerHTML = items.map(e => {
+            const isBlocked = e.bloqueado_icloud || e.bloqueado_fr;
+            return `<div class="pos-product-card ${isBlocked ? 'out-of-stock' : ''}" 
+                         style="cursor:pointer;position:relative;" 
+                         onclick="agregarEquipoAlCarrito(${e.equipo_id})"
+                         title="${escapeHtml('IMEI: ' + e.serial_imei + (e.serial_esn ? ' · ESN: ' + e.serial_esn : ''))}">
+                <div class="ppc-img" style="height:60px;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--pos-accent);">
+                    <i class="bi bi-phone"></i>
+                </div>
+                <div style="padding:6px 8px;min-height:80px;">
+                    <div style="font-weight:700;font-size:0.75rem;line-height:1.2;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(e.marca + ' ' + e.modelo)}</div>
+                    <div style="font-size:0.65rem;color:var(--pos-text-muted);margin-bottom:2px;">IMEI: ${escapeHtml(e.serial_imei)}</div>
+                    ${e.color ? '<div style="font-size:0.65rem;color:var(--pos-text-muted);margin-bottom:2px;">Color: ' + escapeHtml(e.color) + '</div>' : ''}
+                    ${e.almacenamiento_gb ? '<div style="font-size:0.65rem;color:var(--pos-text-muted);margin-bottom:2px;">' + escapeHtml(e.almacenamiento_gb) + 'GB</div>' : ''}
+                    <div style="font-weight:800;color:var(--pos-accent);font-size:0.85rem;margin-top:2px;">${fmt(e.precio)}</div>
+                </div>
+                ${isBlocked ? '<div style="position:absolute;top:4px;right:4px;background:#dc3545;color:#fff;font-size:0.6rem;padding:2px 4px;border-radius:4px;font-weight:700;">Bloqueado</div>' : ''}
+            </div>`;
+        }).join('');
     }
 
     function renderProductsGrid(items) {
@@ -4673,8 +4800,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.pos-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                activeFilter = tab.dataset.filter;
-                if (searchQuery) triggerSearch();
+                if (tab.dataset.filter !== undefined) {
+                    activeFilter = tab.dataset.filter;
+                    if (searchQuery && !modoEquipos) triggerSearch();
+                }
             });
         });
 
@@ -4775,6 +4904,16 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
         // Initial focus
         $('scan-input').focus();
+        
+        // Auto-show equipos if modo equipos is active
+        if (modoEquipos && equiposData.length > 0) {
+            renderEquipoGrid(equiposData.map(e => ({
+                ...e,
+                equipo_id: e.id,
+                label: (e.marca || '') + ' ' + (e.modelo || '') + ' (' + (e.serial_imei || '') + ')',
+                precio: parseFloat(e.precio_venta) || 0,
+            })));
+        }
     }
 
     function setScanMode(mode) {

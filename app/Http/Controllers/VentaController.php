@@ -7,6 +7,7 @@ use App\Models\Almacen;
 use App\Models\Caja;
 use App\Models\Cliente;
 use App\Models\EcfDocumento;
+use App\Models\Equipo;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\User;
@@ -393,5 +394,51 @@ class VentaController extends Controller
             ]);
             return response()->json(['error' => 'Error al facturar. Contacte al administrador.'], 500);
         }
+    }
+
+    public function buscarEquipo(Request $request)
+    {
+        $user = Auth::user();
+        $tipo = $user?->businessInstance?->businessType;
+        $facturacionModo = $tipo?->config['facturacion_modo'] ?? 'productos';
+
+        if ($facturacionModo !== 'equipos') {
+            return response()->json([]);
+        }
+
+        $term = $request->q ?? $request->termino ?? $request->get('search', '');
+
+        if (empty($term)) {
+            $equipos = Equipo::where('estado', 'disponible')
+                ->where('tenant_id', $user->business_instance_id)
+                ->orderBy('created_at', 'desc')
+                ->take(20)
+                ->get(['id', 'serial_imei', 'serial_esn', 'marca', 'modelo', 'color',
+                       'almacenamiento_gb', 'precio_venta', 'tipo_dispositivo']);
+        } else {
+            $equipos = Equipo::where(function($q) use ($term) {
+                $q->where('serial_imei', 'like', "%{$term}%")
+                  ->orWhere('serial_esn', 'like', "%{$term}%")
+                  ->orWhere('marca', 'like', "%{$term}%")
+                  ->orWhere('modelo', 'like', "%{$term}%")
+                  ->orWhere('color', 'like', "%{$term}%");
+            })
+            ->where('estado', 'disponible')
+            ->where('tenant_id', $user->business_instance_id)
+            ->take(20)
+            ->get(['id', 'serial_imei', 'serial_esn', 'marca', 'modelo', 'color',
+                   'almacenamiento_gb', 'precio_venta', 'tipo_dispositivo']);
+        }
+
+        return response()->json($equipos->map(function($e) {
+            return [
+                'id' => 'equipo_' . $e->id,
+                'equipo_id' => (int) $e->id,
+                'label' => $e->marca . ' ' . $e->modelo . ' (' . $e->serial_imei . ')',
+                'meta' => $e->color . ($e->almacenamiento_gb ? ' · ' . $e->almacenamiento_gb . 'GB' : '') . ' · ' . ucfirst($e->tipo_dispositivo),
+                'precio' => (float) $e->precio_venta,
+                'serial_imei' => $e->serial_imei,
+            ];
+        }));
     }
 }

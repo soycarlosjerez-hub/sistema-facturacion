@@ -80,6 +80,11 @@ class Equipo extends Model
         return $this->hasMany(Garantia::class);
     }
 
+    public function ventas()
+    {
+        return $this->hasMany(EquipoVenta::class);
+    }
+
     public function scopeDisponibles($query)
     {
         return $query->where('estado', 'disponible');

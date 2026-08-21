@@ -271,7 +271,7 @@ class OwnerController extends Controller
             'orden' => 'integer|min:0',
             'modules' => 'nullable|array',
             'modules.*' => 'string',
-            'facturacion_modo' => 'nullable|string|in:productos,obras_arte',
+            'facturacion_modo' => 'nullable|string|in:productos,obras_arte,equipos',
         ]);
 
         $businessType->update([
