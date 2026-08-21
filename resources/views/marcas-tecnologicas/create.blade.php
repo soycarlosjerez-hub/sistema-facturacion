@@ -28,8 +28,8 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form action="{{ route('marcas-tecnologicas.store') }}" method="POST">
-                        @csrf
+                    <form id="marcaForm" action="{{ route('marcas-tecnologicas.store') }}" method="POST">
+        @csrf
 
                         <div class="mb-3">
                             <label for="nombre" class="form-label fw-bold">Nombre de la Marca *</label>
@@ -86,16 +86,30 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i> Guardar Marca
-                            </button>
-                            <a href="{{ route('marcas-tecnologicas.index') }}" class="btn btn-secondary">
+                            <button type="submit" form="marcaForm" class="ui-btn ui-btn-ghost rounded-pill">
                                 <i class="bi bi-x-lg me-1"></i> Cancelar
-                            </a>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#3b82f6;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva marca</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ route('marcas-tecnologicas.index') }}" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="marcaForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Marca
+            </button>
         </div>
     </div>
 </div>
