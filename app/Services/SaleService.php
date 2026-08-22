@@ -606,6 +606,8 @@ class SaleService
             );
         }
 
+        $facturacionModo = 'productos';
+
         $stockPorProductoAlmacen = AlmacenMovimiento::query()
             ->where('tenant_id', $tenantId)
             ->selectRaw('producto_id, almacen_id, SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
