@@ -3946,7 +3946,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 id: eq.id,
                 nombre: (eq.marca || '') + ' ' + (eq.modelo || '') + ' (' + (eq.serial_imei || '') + ')',
                 precio: parseFloat(eq.precio_venta) || 0,
-                itbis_p: (facturacionModo === 'equipos') ? (parseFloat($('input[name=\\'itbis_porcentaje[]']')?.value) || 0) : 0,
+                itbis_p: (facturacionModo === 'equipos') ? (parseFloat($('input[name="itbis_porcentaje[]"]')?.value) || 0) : 0,
                 qty: 1,
                 es_equipo: true,
                 es_obra: false,
