@@ -41,6 +41,9 @@ th,td{padding:2px 4px;}
 @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
 
 <div class="header-company">
+    @if($pdfLogoUrl)
+    <img src="{{ $pdfLogoUrl }}" style="max-width: 80px; max-height: 55px; object-fit: contain; margin-bottom: 6px;" alt="Logo">
+    @endif
     <div class="company-name">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
     <div class="company-info">
         RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }} &nbsp;&nbsp;|&nbsp;&nbsp;

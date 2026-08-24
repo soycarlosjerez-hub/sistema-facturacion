@@ -12,6 +12,9 @@
 
 @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
 <div style="text-align:center;margin-bottom:15px;">
+    @if($pdfLogoUrl)
+    <img src="{{ $pdfLogoUrl }}" style="max-width: 80px; max-height: 60px; object-fit: contain; margin-bottom: 5px;" alt="Logo">
+    @endif
     <strong style="font-size:14px;">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
     <small>RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</small>
 </div>

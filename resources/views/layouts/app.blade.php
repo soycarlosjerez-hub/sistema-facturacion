@@ -502,8 +502,12 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         <!-- Sidebar -->
         <aside class="sidebar d-flex flex-column" id="mainSidebar">
             <div class="sidebar-header d-flex align-items-center">
-                <div class="brand-logo me-3">
-                    <i class="bi bi-shop fs-4"></i>
+                <div class="brand-logo me-3" style="overflow: hidden;">
+                    @if($systemLogo)
+                        <img src="{{ $systemLogo }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 4px;">
+                    @else
+                        <i class="bi bi-shop fs-4"></i>
+                    @endif
                 </div>
                 <div class="overflow-hidden">
                     <h5 class="fw-bold mb-0 text-truncate" title="{{ $systemName }}">{{ $systemName }}</h5>

@@ -155,6 +155,11 @@
 <body>
     <article class="ticket-container" role="document" aria-label="Cotización {{ $cotizacion->numero }}">
         <header class="ticket-header">
+            @if($pdfLogoUrl)
+            <div style="margin-bottom: 4px;">
+                <img src="{{ $pdfLogoUrl }}" style="max-width: 60px; max-height: 40px; object-fit: contain;" alt="Logo">
+            </div>
+            @endif
             <h1>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h1>
             @if(isset($cotizacion->user) && $cotizacion->user->empresa)
                 <p>RNC: {{ $cotizacion->user->empresa->rnc ?? 'N/A' }}</p>

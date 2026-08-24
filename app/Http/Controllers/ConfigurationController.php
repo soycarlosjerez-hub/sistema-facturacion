@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\SystemSetting;
+use App\Models\BusinessInstance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class ConfigurationController extends Controller
 {
@@ -21,7 +23,30 @@ class ConfigurationController extends Controller
 
     public function update(Request $request)
     {
-        $data = $request->except(['_token', 'tipo_negocio']);
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $instance = Auth::user()->businessInstance;
+            if ($instance) {
+                // Delete old logo
+                if ($instance->logo) {
+                    Storage::disk('public')->delete($instance->logo);
+                }
+                // Store new logo
+                $logoPath = $request->file('logo')->store('logos', 'public');
+                $instance->update(['logo' => $logoPath]);
+            }
+        }
+
+        // Handle logo delete
+        if ($request->has('delete_logo') && $request->delete_logo == '1') {
+            $instance = Auth::user()->businessInstance;
+            if ($instance && $instance->logo) {
+                Storage::disk('public')->delete($instance->logo);
+                $instance->update(['logo' => null]);
+            }
+        }
+
+        $data = $request->except(['_token', 'tipo_negocio', 'logo', 'delete_logo']);
 
         // SMTP settings can only be modified by owner/root
         if (!Auth::user()->hasRole('owner') && !Auth::user()->hasRole('root')) {

@@ -193,6 +193,9 @@
     <table style="width:100%; margin-bottom:15px;">
         <tr>
             <td style="border:none; vertical-align:top; width:60%;">
+                @if($pdfLogoUrl)
+                <img src="{{ $pdfLogoUrl }}" style="max-width: 80px; max-height: 60px; object-fit: contain; margin-bottom: 5px;" alt="Logo">
+                @endif
                 <div class="empresa-nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
                 <div class="empresa-info">
                     RNC/Cédula: {{ $empresa['empresa_rnc'] ?? 'N/A' }}<br>

@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -779,7 +780,28 @@ class OwnerController extends Controller
             'user_registered' => 'nullable|boolean',
             'subscription_expiring' => 'nullable|boolean',
             'subscription_suspended' => 'nullable|boolean',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'delete_logo' => 'nullable|boolean',
         ]);
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            // Delete old logo
+            if ($instance->logo) {
+                Storage::disk('public')->delete($instance->logo);
+            }
+            // Store new logo
+            $logoPath = $request->file('logo')->store('logos', 'public');
+            $instance->update(['logo' => $logoPath]);
+        }
+
+        // Handle logo delete
+        if ($request->has('delete_logo') && $request->delete_logo == '1') {
+            if ($instance->logo) {
+                Storage::disk('public')->delete($instance->logo);
+                $instance->update(['logo' => null]);
+            }
+        }
 
         $data['restaurante_valida_stock'] = $request->has('restaurante_valida_stock') ? '1' : '0';
 

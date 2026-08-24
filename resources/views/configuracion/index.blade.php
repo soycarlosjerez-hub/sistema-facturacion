@@ -40,7 +40,7 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
         </div>
     </div>
 
-    <form action="{{ route('configuracion.update') }}" method="POST">
+    <form action="{{ route('configuracion.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="row g-4">
             <div class="col-lg-8">
@@ -69,6 +69,43 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
                             <div class="col-md-6">
                                 <label class="ui-label small fw-bold">Dirección Física</label>
                                 <input type="text" name="empresa_direccion" class="ui-input" value="{{ $settings['empresa_direccion'] ?? '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui-card mb-4" style="--delay:.12s">
+                    <div class="ui-card-accent"></div>
+                    <h5 class="ui-card-title"><i class="bi bi-image"></i>Logo de la Empresa</h5>
+                    <p class="ui-card-subtitle">Imagen que aparecerá en la barra lateral, tickets y documentos</p>
+                    <div class="ui-card-body">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-3 text-center">
+                                <div id="logoPreviewContainer" style="display: {{ $businessInstance && $businessInstance->logo ? 'block' : 'none' }};">
+                                    <img id="logoPreview" src="{{ $businessInstance && $businessInstance->logo ? asset('storage/' . $businessInstance->logo) : '' }}" alt="Logo" style="max-width: 100%; max-height: 120px; border-radius: 12px; object-fit: contain;">
+                                </div>
+                                <div id="logoPlaceholder" style="display: {{ $businessInstance && $businessInstance->logo ? 'none' : 'block' }};">
+                                    <div style="width: 120px; height: 120px; border-radius: 12px; border: 2px dashed rgba(99,102,241,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto; background: rgba(99,102,241,0.05);">
+                                        <i class="bi bi-image" style="font-size: 2rem; color: rgba(99,102,241,0.4);"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="ui-label small fw-bold">Subir Logo</label>
+                                        <input type="file" name="logo" id="logoInput" class="ui-input" accept="image/png,image/jpeg,image/jpg,image/webp" onchange="previewLogo(this)">
+                                        <div class="form-text">PNG, JPG, JPEG o WebP. Máximo 2MB.</div>
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-end">
+                                        <div id="logoActions" style="display: {{ $businessInstance && $businessInstance->logo ? 'block' : 'none' }};">
+                                            <input type="hidden" name="delete_logo" id="deleteLogoInput" value="0">
+                                            <button type="button" class="ui-btn ui-btn-ghost btn-sm rounded-pill" onclick="confirmDeleteLogo()">
+                                                <i class="bi bi-trash me-1"></i> Eliminar Logo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -264,6 +301,25 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
 </div>
 
 <script>
+function previewLogo(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('logoPreview').src = e.target.result;
+            document.getElementById('logoPreviewContainer').style.display = 'block';
+            document.getElementById('logoPlaceholder').style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function confirmDeleteLogo() {
+    if (confirm('¿Está seguro de eliminar el logo?')) {
+        document.getElementById('deleteLogoInput').value = '1';
+        document.getElementById('logoInput').form.submit();
+    }
+}
+
 (function() {
     const form = document.querySelector('form[action*="configuracion"]');
     if (!form) return;

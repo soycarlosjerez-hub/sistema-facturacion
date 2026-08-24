@@ -39,6 +39,11 @@
             <tr>
                 <td style="width: 60%; vertical-align: top; padding: 0;">
                     @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+                    @if($pdfLogoUrl)
+                    <div style="margin-bottom: 4px;">
+                        <img src="{{ $pdfLogoUrl }}" style="max-width: 70px; max-height: 50px; object-fit: contain;" alt="Logo">
+                    </div>
+                    @endif
                     <div class="empresa-nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
                     <div class="rnc">RNC: {{ $empresa['empresa_rnc'] ?? '000000000' }}</div>
                     <div class="rnc">{{ $empresa['empresa_direccion'] ?? 'Santo Domingo, R.D.' }}</div>

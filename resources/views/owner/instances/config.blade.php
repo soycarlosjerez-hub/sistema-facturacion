@@ -39,12 +39,46 @@
                     <small class="text-muted">Estos valores sobreescriben la configuraci&oacute;n global para esta instancia.</small>
                 </div>
                 <div class="card-body p-4 pt-0">
-                    <form method="POST" action="{{ route('owner.instances.config.update', $instance) }}">
+                    <form method="POST" action="{{ route('owner.instances.config.update', $instance) }}" enctype="multipart/form-data">
                         @csrf @method('PUT')
 
                         <div class="alert alert-info rounded-4 border-0 bg-info bg-opacity-10" role="alert">
                             <i class="bi bi-info-circle me-2"></i>
                             Los valores marcados con <span class="ui-badge ui-badge-warning rounded-pill">personalizado</span> son espec&iacute;ficos de esta instancia. Los que tienen <span class="ui-badge ui-badge-neutral rounded-pill">global</span> usan la configuraci&oacute;n del sistema.
+                        </div>
+
+                        {{-- Logo Section --}}
+                        <div class="p-4 rounded-4 border mb-4" style="background: rgba(139,92,246,0.04); border-color: rgba(139,92,246,0.2) !important;">
+                            <h6 class="fw-bold mb-3"><i class="bi bi-image me-2"></i>Logo de la Instancia</h6>
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-3 text-center">
+                                    <div id="ownerLogoPreviewContainer" style="display: {{ $instance->logo ? 'block' : 'none' }};">
+                                        <img id="ownerLogoPreview" src="{{ $instance->logo ? asset('storage/' . $instance->logo) : '' }}" alt="Logo" style="max-width: 100%; max-height: 100px; border-radius: 12px; object-fit: contain;">
+                                    </div>
+                                    <div id="ownerLogoPlaceholder" style="display: {{ $instance->logo ? 'none' : 'block' }};">
+                                        <div style="width: 100px; height: 100px; border-radius: 12px; border: 2px dashed rgba(139,92,246,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto; background: rgba(139,92,246,0.05);">
+                                            <i class="bi bi-image" style="font-size: 2rem; color: rgba(139,92,246,0.4);"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="ui-label small fw-bold">Subir Logo</label>
+                                            <input type="file" name="logo" id="ownerLogoInput" class="ui-input" accept="image/png,image/jpeg,image/jpg,image/webp">
+                                            <div class="form-text">PNG, JPG, JPEG o WebP. Máximo 2MB.</div>
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-end">
+                                            <div id="ownerLogoActions" style="display: {{ $instance->logo ? 'block' : 'none' }};">
+                                                <input type="hidden" name="delete_logo" id="ownerDeleteLogoInput" value="0">
+                                                <button type="button" class="ui-btn ui-btn-ghost btn-sm rounded-pill" onclick="confirmDeleteOwnerLogo()">
+                                                    <i class="bi bi-trash me-1"></i> Eliminar Logo
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row g-3">
@@ -390,4 +424,34 @@
     </div>
 </div>
 </div>
+<script>
+function previewOwnerLogo(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('ownerLogoPreview').src = e.target.result;
+            document.getElementById('ownerLogoPreviewContainer').style.display = 'block';
+            document.getElementById('ownerLogoPlaceholder').style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function confirmDeleteOwnerLogo() {
+    if (confirm('¿Está seguro de eliminar el logo?')) {
+        document.getElementById('ownerDeleteLogoInput').value = '1';
+        document.getElementById('ownerLogoInput').form.submit();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('ownerLogoInput');
+    if (input) {
+        input.addEventListener('change', function() {
+            previewOwnerLogo(this);
+        });
+    }
+});
+</script>
+@endsection
 @endsection

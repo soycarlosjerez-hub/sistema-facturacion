@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class SetupWizardController extends Controller
 {
@@ -64,6 +65,20 @@ class SetupWizardController extends Controller
         // Paso con lógica propia (creación de usuario administrador / skip)
         if ($step === 'usuario-admin') {
             return $this->processUsuarioAdminStep($request, $user);
+        }
+
+        // Handle logo upload for parametros step
+        if ($step === 'parametros' && $request->hasFile('logo')) {
+            $instance = $user->businessInstance;
+            if ($instance) {
+                // Delete old logo
+                if ($instance->logo) {
+                    Storage::disk('public')->delete($instance->logo);
+                }
+                // Store new logo
+                $logoPath = $request->file('logo')->store('logos', 'public');
+                $instance->update(['logo' => $logoPath]);
+            }
         }
 
         $rules = $this->rulesFor($step, $user->business_instance_id);

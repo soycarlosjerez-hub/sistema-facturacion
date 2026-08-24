@@ -156,6 +156,7 @@ class AppServiceProvider extends ServiceProvider
             $sucursalActiva = null;
             $planLimites = [];
             $modulosPermitidos = [];
+            $systemLogo = null;
             if (auth()->check()) {
                 $sesionesCajaGlobales = \App\Models\SesionCaja::with('caja')
                     ->where('user_id', auth()->id())
@@ -171,6 +172,11 @@ class AppServiceProvider extends ServiceProvider
                     $planLimites = $instance->plan->getLimites();
                     $modulosPermitidos = $instance->plan->modulosPermitidos();
                 }
+
+                // Logo de la instancia
+                if ($instance) {
+                    $systemLogo = $instance->logo_url;
+                }
             }
             $view->with([
                 'systemName'         => SystemSetting::empresaNombre(),
@@ -182,10 +188,36 @@ class AppServiceProvider extends ServiceProvider
                 'sucursalActiva'     => $sucursalActiva,
                 'planLimites'        => $planLimites,
                 'modulosPermitidos'  => $modulosPermitidos,
+                'systemLogo'         => $systemLogo,
             ]);
         });
 
         View::composer('dashboard', DashboardComposer::class);
+
+        // Pass logo to all PDF views
+        $pdfViews = [
+            'ventas.pdf', 'ventas.ticket', 'ventas.all-pdf', 'ventas.ecf-pdf',
+            'cotizaciones.pdf', 'cotizaciones.ticket',
+            'compras.all-pdf',
+            'clientes.pdf', 'proveedores.pdf', 'categorias.pdf', 'productos.pdf',
+            'almacenes.movimientos-pdf', 'kardex.pdf',
+            'reportes.ventas-pdf', 'reportes.stock-pdf', 'reportes.gastos-pdf',
+            'reportes.compras-pdf', 'reportes.caja-pdf', 'reportes.fiscales-pdf',
+            'pdf.productos_bajos_stock',
+            'libros.ventas.pdf', 'libros.compras.pdf',
+            'conduces.pdf', 'conduces.ticket',
+            'formularios.14-14.pdf',
+            'restaurante.ticket',
+            'ventas.show',
+        ];
+        View::composer($pdfViews, function ($view) {
+            $logoUrl = null;
+            $user = Auth::user();
+            if ($user && $user->businessInstance) {
+                $logoUrl = $user->businessInstance->logo_url;
+            }
+            $view->with('pdfLogoUrl', $logoUrl);
+        });
 
         Event::listen(\Illuminate\Support\MessageLogged::class, \App\Listeners\LogErrorToDatabase::class);
     }

@@ -42,6 +42,9 @@
         <div class="left">
             <h1><i class="bi bi-truck"></i> CONDUCE</h1>
             <div class="small">Nota de Entrega</div>
+            @if($pdfLogoUrl)
+            <img src="{{ $pdfLogoUrl }}" style="max-width: 70px; max-height: 50px; object-fit: contain; margin-bottom: 5px;" alt="Logo">
+            @endif
             <p class="small">
                 <strong>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
                 RNC: {{ $empresaData['empresa_rnc'] ?? 'N/A' }}<br>

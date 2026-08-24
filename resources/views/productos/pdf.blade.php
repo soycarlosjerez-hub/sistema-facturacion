@@ -21,6 +21,9 @@
 </head>
 <body>
     <div class="header">
+        @if($pdfLogoUrl)
+        <img src="{{ $pdfLogoUrl }}" style="max-width: 60px; max-height: 45px; object-fit: contain; margin-bottom: 5px;" alt="Logo">
+        @endif
         <h1>Reporte de Productos</h1>
         @php
             $empresa = [];

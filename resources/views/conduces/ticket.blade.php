@@ -19,6 +19,11 @@
 <div class="ticket">
     <h2><i class="bi bi-truck"></i> CONDUCE</h2>
     <div class="center small">{{ str_pad('', 32, '-') }}</div>
+    @if($pdfLogoUrl)
+    <div class="center" style="margin-bottom: 5px;">
+        <img src="{{ $pdfLogoUrl }}" style="max-width: 60px; max-height: 40px; object-fit: contain;" alt="Logo">
+    </div>
+    @endif
     <p class="center"><strong>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
     <span class="small">RNC: {{ $empresa->rnc ?? '000-0000000-0' }}</span><br>
     <span class="small">{{ $empresa->direccion ?? 'Santo Domingo, RD' }}</span><br>

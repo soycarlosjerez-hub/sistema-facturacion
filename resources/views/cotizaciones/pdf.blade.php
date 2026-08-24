@@ -29,6 +29,9 @@
     <div class="header">
         <div class="company-info">
             @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+            @if($pdfLogoUrl)
+            <img src="{{ $pdfLogoUrl }}" style="max-width: 80px; max-height: 55px; object-fit: contain; margin-bottom: 5px;" alt="Logo">
+            @endif
             <h1>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h1>
             <p>{{ $empresa['sistema_slogan'] ?? 'Sistema de Facturación' }}</p>
             <small>{{ $empresa['empresa_rnc'] ?? '' }}</small>

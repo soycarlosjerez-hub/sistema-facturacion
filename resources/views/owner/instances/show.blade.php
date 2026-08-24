@@ -41,9 +41,15 @@
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
         <div class="ui-header-body">
             <div class="ui-header-left">
+                @if($instance->logo)
+                <div class="ui-avatar-circle" style="overflow: hidden; width: 56px; height: 56px; border-radius: 14px;">
+                    <img src="{{ asset('storage/' . $instance->logo) }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 6px;">
+                </div>
+                @else
                 <div class="ui-avatar-circle">
                     <i class="bi bi-building"></i>
                 </div>
+                @endif
                 <div>
                     <h4 class="ui-header-title">
                         {{ $instance->nombre }}

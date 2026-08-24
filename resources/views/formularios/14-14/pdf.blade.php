@@ -246,6 +246,9 @@
 
     {{-- Header Empresa --}}
     <div class="header-empresa">
+        @if($pdfLogoUrl)
+        <img src="{{ $pdfLogoUrl }}" style="max-width: 80px; max-height: 55px; object-fit: contain; margin-bottom: 6px;" alt="Logo">
+        @endif
         <div class="nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
         <div class="datos">
             RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}

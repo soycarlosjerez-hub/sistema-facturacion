@@ -27,6 +27,9 @@ body{font-family:'DejaVu Sans',sans-serif;font-size:7px;margin:0;padding:10px;co
 @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
 
 <div class="header">
+    @if($pdfLogoUrl)
+    <img src="{{ $pdfLogoUrl }}" style="max-width: 70px; max-height: 50px; object-fit: contain; margin-bottom: 6px;" alt="Logo">
+    @endif
     <h1>{{ strtoupper(\App\Models\SystemSetting::nombreEmpresaActual()) }}</h1>
     <p>RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }} &nbsp;&nbsp;|&nbsp;&nbsp; RFC: {{ $empresa['empresa_rfc'] ?? 'N/A' }}</p>
     <p>{{ $empresa['empresa_direccion'] ?? 'Sin direccion registrada' }}</p>

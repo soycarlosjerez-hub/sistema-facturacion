@@ -63,6 +63,11 @@
 <body>
     <div class="ticket">
         <div class="header center">
+            @if($pdfLogoUrl)
+            <div style="margin-bottom: 4px;">
+                <img src="{{ $pdfLogoUrl }}" style="max-width: 60px; max-height: 45px; object-fit: contain;" alt="Logo">
+            </div>
+            @endif
             <h1 class="bold">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h1>
             <p>RNC: {{ \App\Models\SystemSetting::get('empresa_rnc', 'N/A') }}</p>
             <p>{{ \App\Models\SystemSetting::get('empresa_direccion', '') }}</p>

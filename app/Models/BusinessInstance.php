@@ -37,6 +37,7 @@ class BusinessInstance extends Model
         'bloqueado_en',
         'setup_completed',
         'deleted_at',
+        'logo',
     ];
 
     protected $casts = [
@@ -120,6 +121,19 @@ class BusinessInstance extends Model
     public function apiKeys(): HasMany
     {
         return $this->hasMany(InstanceApiKey::class, 'business_instance_id');
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+        return asset('storage/' . $this->logo);
+    }
+
+    public static function scopeWithLogo($query)
+    {
+        return $query->whereNotNull('logo')->where('logo', '!=', '');
     }
 
     /**

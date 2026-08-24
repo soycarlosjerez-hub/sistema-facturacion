@@ -16,6 +16,11 @@ th, td { padding: 2px 0; text-align: left; }
 </style>
 </head>
 <body>
+    @if($pdfLogoUrl)
+    <div class="text-center mb-2">
+        <img src="{{ $pdfLogoUrl }}" style="max-width: 60px; max-height: 40px; object-fit: contain;" alt="Logo">
+    </div>
+    @endif
     <div class="text-center fw-bold">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
     <div class="text-center">RNC: {{ $empresa->rnc ?? 'N/A' }}</div>
     <div class="sep"></div>
