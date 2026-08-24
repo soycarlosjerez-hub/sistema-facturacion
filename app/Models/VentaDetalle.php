@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
-use App\Traits\TenantScope;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+    use App\Traits\TenantScope;
+    use Illuminate\Database\Eloquent\Factories\HasFactory;
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VentaDetalle extends Model
 {
     use HasFactory, TenantScope;
 
-    protected $fillable = ['venta_id', 'producto_id', 'obra_id', 'equipo_id', 'almacen_id', 'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo', 'itbis_porcentaje', 'sin_itbis', 'notas', 'curso', 'estado_cocina', 'cocina_updated_at', 'tenant_id'];
+    protected $fillable = [
+        'venta_id', 'producto_id', 'obra_id', 'equipo_id', 'almacen_id',
+        'cantidad', 'precio_unitario', 'subtotal', 'descuento', 'descuento_tipo',
+        'itbis_porcentaje', 'sin_itbis', 'notas', 'curso', 'estado_cocina',
+        'cocina_updated_at', 'tenant_id',
+        'tipo_linea', 'servicio_id', 'lavador_id',
+    ];
 
     protected $casts = [
         'cantidad' => 'decimal:2',
@@ -44,5 +51,15 @@ class VentaDetalle extends Model
     public function equipo()
     {
         return $this->belongsTo(Equipo::class);
+    }
+
+    public function servicio(): BelongsTo
+    {
+        return $this->belongsTo(LavaderoServicio::class, 'servicio_id');
+    }
+
+    public function lavador(): BelongsTo
+    {
+        return $this->belongsTo(Lavador::class, 'lavador_id');
     }
 }

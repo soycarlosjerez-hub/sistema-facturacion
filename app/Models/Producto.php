@@ -17,6 +17,7 @@ class Producto extends Model
     use HasFactory, Auditable, TenantScope;
     protected $fillable = [
         'categoria_id',
+        'category_subcategory_id',
         'nombre',
         'codigo_barras',
         'descripcion',
@@ -42,6 +43,7 @@ class Producto extends Model
         'imagen',
         'tenant_id',
         'tipo_producto',
+        'linea_negocio',
         'requiere_serial',
         'categoria_tecnica',
         'garantia_dias',
@@ -84,6 +86,11 @@ class Producto extends Model
     public function categoria()
     {
         return $this->belongsTo(Categoria::class);
+    }
+
+    public function categorySubcategory()
+    {
+        return $this->belongsTo(CategorySubcategory::class, 'category_subcategory_id');
     }
 
     public function detallesCompras(): HasMany

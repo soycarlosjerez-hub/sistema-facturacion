@@ -13,7 +13,8 @@ class AlmacenMovimiento extends Model
     use TenantScope;
 
     protected $fillable = [
-        'tenant_id', 'producto_id', 'detalle_compra_id', 'user_id', 'almacen_id', 'tipo', 'cantidad', 'nota'
+        'tenant_id', 'producto_id', 'detalle_compra_id', 'user_id', 'almacen_id',
+        'tipo', 'cantidad', 'nota', 'venta_id', 'linea_negocio',
     ];
 
     public function producto()
@@ -34,5 +35,10 @@ class AlmacenMovimiento extends Model
     public function detalleCompra()
     {
         return $this->belongsTo(DetalleCompra::class, 'detalle_compra_id');
+    }
+
+    public function venta()
+    {
+        return $this->belongsTo(Venta::class, 'venta_id');
     }
 }

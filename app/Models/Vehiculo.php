@@ -4,13 +4,15 @@ namespace App\Models;
 
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vehiculo extends Model
 {
     use Auditable;
 
     protected $fillable = [
-        'cliente_id', 'placa', 'marca', 'modelo', 'anio', 'color', 'vin', 'tipo', 'notas',
+        'cliente_id', 'placa', 'marca', 'modelo', 'anio', 'color', 'vin', 'tipo', 'tipo_id', 'notas',
     ];
 
     protected $casts = [
@@ -22,12 +24,17 @@ class Vehiculo extends Model
         return $this->belongsTo(Cliente::class);
     }
 
-    public function citas()
+    public function tipo(): BelongsTo
+    {
+        return $this->belongsTo(VehiculoTipo::class, 'tipo_id');
+    }
+
+    public function citas(): HasMany
     {
         return $this->hasMany(LavaderoCita::class);
     }
 
-    public function ventas()
+    public function ventas(): HasMany
     {
         return $this->hasMany(Venta::class, 'vehiculo_id');
     }
