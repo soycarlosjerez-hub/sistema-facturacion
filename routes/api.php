@@ -40,7 +40,6 @@ use App\Http\Controllers\Api\Arte\ExhibitionsController;
 use App\Http\Controllers\Api\Arte\ReportsController as ArteReportsController;
 use App\Http\Controllers\Api\Art\CatalogController;
 use App\Http\Controllers\Api\PosApiController;
-use App\Http\Controllers\Api\LavaderoApiController;
 use App\Http\Controllers\Api\TiendaApiController;
 use Illuminate\Support\Facades\Route;
 
