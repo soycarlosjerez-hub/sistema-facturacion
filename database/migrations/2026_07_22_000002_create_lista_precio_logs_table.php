@@ -16,7 +16,7 @@ return new class extends Migration
         }
         Schema::create('lista_precio_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('business_instances', 'id')->nullOnDelete();
+            $table->foreignId('tenant_id')->nullable()->constrained('business_instances', 'id')->nullOnDelete();
             $table->foreignId('lista_precio_id')->constrained('lista_precios')->cascadeOnDelete();
             $table->foreignId('producto_id')->nullable()->constrained('productos')->nullOnDelete();
             $table->decimal('precio_anterior', 12, 2)->nullable();
