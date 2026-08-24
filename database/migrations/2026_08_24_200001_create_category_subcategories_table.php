@@ -21,7 +21,7 @@ return new class extends Migration
 
             $table->index(['category_id', 'business_type_id']);
             $table->index('parent_id');
-            $table->unique(['category_id', 'business_type_id', 'parent_id', 'nombre']);
+            $table->unique(['category_id', 'business_type_id', 'parent_id', 'nombre'], 'cat_sub_unq');
         });
     }
 

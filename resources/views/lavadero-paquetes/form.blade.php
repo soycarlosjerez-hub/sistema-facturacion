@@ -5,14 +5,14 @@
 @push('styles')
 @include('partials.premium-ui')
 <style>
-.paquete-item-row { background: rgba(14,165,233,0.04); border-radius: 0.75rem; padding: 1rem; border: 1px solid rgba(14,165,233,0.1); margin-bottom: 0.75rem; }
+.paquete-item-row { background: rgba(6,182,212,0.04); border-radius: 0.75rem; padding: 1rem; border: 1px solid rgba(6,182,212,0.1); margin-bottom: 0.75rem; }
 .paquete-item-type-badge { font-size: 0.7rem; }
 .paquete-total-preview { background: rgba(34,197,94,0.06); border-radius: 1rem; padding: 1.5rem; text-align: center; border: 2px solid rgba(34,197,94,0.15); }
 </style>
 @endpush
 
 @section('content')
-<div class="ui-page" style="--accent:#0ea5e9;--accent-rgb:14,165,233;--accent-hover:#0284c7;">
+<div class="ui-page" style="--accent:#06b6d4;--accent-rgb:6,182,212;--accent-hover:#0891b2;">
     <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
@@ -39,6 +39,20 @@
     </div>
     @endif
 
+    @if($paquete->exists)
+    <div class="alert rounded-4 shadow-sm border-0 mb-4" style="background:rgba(6,182,212,.05);border-left:4px solid #06b6d4 !important;">
+        <div class="d-flex align-items-center">
+            <div class="rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;color:#06b6d4;background:rgba(6,182,212,.1);">
+                <i class="bi bi-info-circle fs-5"></i>
+            </div>
+            <div>
+                <span class="text-muted">Estás editando el paquete:</span>
+                <strong class="d-block" style="font-size:1.1rem;color:#1e293b;">{{ $paquete->nombre }}</strong>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <form id="paquete-form" action="{{ $paquete->exists ? route('lavadero.paquetes.update', $paquete) : route('lavadero.paquetes.store') }}" method="POST">
         @csrf @if($paquete->exists) @method('PUT') @endif
         <div class="row g-3">
@@ -47,7 +61,7 @@
                     <div class="ui-card-accent"></div>
                     <div class="card-body p-4">
                         <div class="mb-4 pb-3 border-bottom">
-                            <h6 class="fw-bold mb-0" style="color:#0ea5e9;"><i class="bi bi-box-seam me-2"></i>Información Básica</h6>
+                            <h6 class="fw-bold mb-0" style="color:#06b6d4;"><i class="bi bi-box-seam me-2"></i>Información Básica</h6>
                         </div>
 
                         <div class="mb-3">
@@ -76,7 +90,7 @@
                             </div>
                         </div>
                         <div class="mt-3">
-                            <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(14,165,233,0.05);">
+                                 <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(6,182,212,0.05);">
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" {{ old('activo', $paquete->activo) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
                                     <label class="form-check-label fw-semibold ms-2" for="chk-activo">Paquete Activo</label>

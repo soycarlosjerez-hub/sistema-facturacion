@@ -4,66 +4,89 @@
 @include('partials.premium-ui')
 @endpush
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#06b6d4;--accent-rgb:6,182,212;--accent-hover:#0891b2;">
+
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
-                    <i class="bi bi-droplet"></i>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-droplet-fill"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Servicios de Lavado</h2>
-                    <p class="text-white text-opacity-75 mb-0">Catálogo de servicios disponibles</p>
+                    <h4 class="ui-header-title">Servicios de Lavado</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-card-checklist me-1"></i>
+                        <span>Catálogo de servicios disponibles</span>
+                        <span class="divider">·</span>
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span>{{ $servicios->count() }} registro(s)</span>
+                    </div>
                 </div>
             </div>
-            <button class="btn btn-light rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#servicioModal">
-                <i class="bi bi-plus-lg me-1"></i> Nuevo Servicio
-            </button>
+            <div class="ui-header-actions">
+                <button class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#servicioModal">
+                    <i class="bi bi-plus-lg me-1"></i> Nuevo Servicio
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="premium-card">
-        <div class="card-accent green"></div>
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light small">
-                    <tr>
-                        <th>#</th>
-                        <th>Nombre</th>
-                        <th>Categoría</th>
-                        <th class="text-end">Precio</th>
-                        <th class="text-center">Duración</th>
-                        <th class="text-center">Activo</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($servicios as $s)
-                    <tr>
-                        <td>{{ $s->id }}</td>
-                        <td class="fw-medium">{{ $s->nombre }}</td>
-                        <td>{{ $s->categoria ?? '—' }}</td>
-                        <td class="text-end fw-bold">RD$ {{ number_format($s->precio, 2) }}</td>
-                        <td class="text-center">{{ $s->duracion_minutos ? $s->duracion_minutos . ' min' : '—' }}</td>
-                        <td class="text-center">
-                            <span class="badge {{ $s->activo ? 'bg-success' : 'bg-secondary' }} rounded-pill">
-                                {{ $s->activo ? 'Sí' : 'No' }}
-                            </span>
-                        </td>
-                        <td class="text-end">
-                            <a href="#" class="premium-btn-edit" data-bs-toggle="modal" data-bs-target="#editModal{{ $s->id }}">Editar</a>
-                            <form action="{{ route('lavadero.servicios.destroy', $s) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar?')">
-                                @csrf @method('DELETE')
-                                <button class="premium-btn-delete">Eliminar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    <div class="ui-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
+            <div class="table-responsive">
+                <table class="ui-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-center">Duración</th>
+                            <th class="text-center">Activo</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($servicios as $s)
+                        <tr>
+                            <td>{{ $s->id }}</td>
+                            <td class="fw-medium">{{ $s->nombre }}</td>
+                            <td>{{ $s->categoria ?? '—' }}</td>
+                            <td class="text-end fw-bold" style="color:#06b6d4;">RD$ {{ number_format($s->precio, 2) }}</td>
+                            <td class="text-center">{{ $s->duracion_minutos ? $s->duracion_minutos . ' min' : '—' }}</td>
+                            <td class="text-center">
+                                <span class="ui-badge {{ $s->activo ? 'ui-badge-success' : 'ui-badge-neutral' }}">
+                                    {{ $s->activo ? 'Sí' : 'No' }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="#" class="ui-action ui-action-edit me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ $s->id }}" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form id="del-servicio-{{ $s->id }}" action="{{ route('lavadero.servicios.destroy', $s) }}" method="POST" class="d-inline">@csrf @method('DELETE')</form>
+                                <button type="button" class="ui-action ui-action-delete" title="Eliminar"
+                                        onclick="UI.confirm.deleteWithForm('del-servicio-{{ $s->id }}', '{{ addslashes($s->nombre) }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7">
+                                <div class="ui-empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <p>No hay servicios registrados</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -79,35 +102,35 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Nombre</label>
-                    <input type="text" name="nombre" class="form-control rounded-3" required>
+                    <label class="ui-label">Nombre</label>
+                    <input type="text" name="nombre" class="ui-input" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Descripción</label>
-                    <textarea name="descripcion" class="form-control rounded-3" rows="2"></textarea>
+                    <label class="ui-label">Descripción</label>
+                    <textarea name="descripcion" class="ui-textarea" rows="2"></textarea>
                 </div>
                 <div class="row g-2">
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Precio (RD$)</label>
-                        <input type="number" name="precio" class="form-control rounded-3" step="0.01" min="0" required>
+                        <label class="ui-label">Precio (RD$)</label>
+                        <input type="number" name="precio" class="ui-input" step="0.01" min="0" required>
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Costo (RD$)</label>
-                        <input type="number" name="precio_compra" class="form-control rounded-3" step="0.01" min="0" value="0">
+                        <label class="ui-label">Costo (RD$)</label>
+                        <input type="number" name="precio_compra" class="ui-input" step="0.01" min="0" value="0">
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Duración (min)</label>
-                        <input type="number" name="duracion_minutos" class="form-control rounded-3" min="1">
+                        <label class="ui-label">Duración (min)</label>
+                        <input type="number" name="duracion_minutos" class="ui-input" min="1">
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Categoría</label>
-                        <input type="text" name="categoria" class="form-control rounded-3" placeholder="Ej: Lavado, Detail, Mecánica">
+                        <label class="ui-label">Categoría</label>
+                        <input type="text" name="categoria" class="ui-input" placeholder="Ej: Lavado, Detail, Mecánica">
                     </div>
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary rounded-pill px-4">Guardar</button>
+                <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4">Guardar</button>
             </div>
         </form>
     </div>
@@ -125,29 +148,29 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Nombre</label>
-                    <input type="text" name="nombre" class="form-control rounded-3" value="{{ $s->nombre }}" required>
+                    <label class="ui-label">Nombre</label>
+                    <input type="text" name="nombre" class="ui-input" value="{{ $s->nombre }}" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label small fw-bold">Descripción</label>
-                    <textarea name="descripcion" class="form-control rounded-3" rows="2">{{ $s->descripcion }}</textarea>
+                    <label class="ui-label">Descripción</label>
+                    <textarea name="descripcion" class="ui-textarea" rows="2">{{ $s->descripcion }}</textarea>
                 </div>
                 <div class="row g-2">
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Precio (RD$)</label>
-                        <input type="number" name="precio" class="form-control rounded-3" step="0.01" min="0" value="{{ $s->precio }}" required>
+                        <label class="ui-label">Precio (RD$)</label>
+                        <input type="number" name="precio" class="ui-input" step="0.01" min="0" value="{{ $s->precio }}" required>
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Costo (RD$)</label>
-                        <input type="number" name="precio_compra" class="form-control rounded-3" step="0.01" min="0" value="{{ $s->precio_compra }}">
+                        <label class="ui-label">Costo (RD$)</label>
+                        <input type="number" name="precio_compra" class="ui-input" step="0.01" min="0" value="{{ $s->precio_compra }}">
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Duración (min)</label>
-                        <input type="number" name="duracion_minutos" class="form-control rounded-3" min="1" value="{{ $s->duracion_minutos }}">
+                        <label class="ui-label">Duración (min)</label>
+                        <input type="number" name="duracion_minutos" class="ui-input" min="1" value="{{ $s->duracion_minutos }}">
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Categoría</label>
-                        <input type="text" name="categoria" class="form-control rounded-3" value="{{ $s->categoria }}">
+                        <label class="ui-label">Categoría</label>
+                        <input type="text" name="categoria" class="ui-input" value="{{ $s->categoria }}">
                     </div>
                 </div>
                 <div class="form-check mt-3">
@@ -156,8 +179,8 @@
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary rounded-pill px-4">Guardar</button>
+                <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="ui-btn ui-btn-solid rounded-pill px-4">Guardar</button>
             </div>
         </form>
     </div>

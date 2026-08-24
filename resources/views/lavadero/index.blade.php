@@ -2,22 +2,38 @@
 @section('title', 'Terminal Lavadero')
 @push('styles')
 @include('partials.premium-ui')
+<style>
+.servicio-card { transition: all .15s; }
+.servicio-card:hover { border-color: var(--accent) !important; background: rgba(var(--accent-rgb),.03); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.servicio-card.seleccionado { border-color: var(--accent) !important; background: rgba(var(--accent-rgb),.1); }
+.pago-metodo-lav.active { transform: scale(1.05); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+#servicios-seleccionados .list-group-item { border-left: 3px solid var(--accent); }
+</style>
 @endpush
 @section('content')
-<div class="container-fluid px-4 premium-page">
-    <div class="premium-header mb-4">
+<div class="ui-page" style="--accent:#06b6d4;--accent-rgb:6,182,212;--accent-hover:#0891b2;">
+
+    <div class="ui-header mb-4" style="--delay:0s">
         <div class="bubble"></div>
         <div class="bubble"></div>
         <div class="bubble"></div>
-        <div class="d-flex justify-content-between align-items-center position-relative" style="z-index:2;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="premium-avatar-circle">
-                    <i class="bi bi-droplet"></i>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-droplet-fill"></i>
                 </div>
                 <div>
-                    <h2 class="fw-bold mb-0 text-white">Terminal de Lavado</h2>
-                    <p class="text-white text-opacity-75 mb-0">Registro de servicios de lavado y detallado</p>
+                    <h4 class="ui-header-title">Terminal de Lavado</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-car-front me-1"></i>
+                        <span>Registro de servicios de lavado y detallado</span>
+                    </div>
                 </div>
+            </div>
+            <div class="ui-header-actions">
+                <a href="{{ route('lavadero.dashboard') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-grid-3x3 me-1"></i> Dashboard
+                </a>
             </div>
         </div>
     </div>
@@ -26,16 +42,16 @@
         {{-- Panel izquierdo: Cliente + Vehículo + Servicios --}}
         <div class="col-lg-8">
             {{-- Cliente --}}
-            <div class="premium-card mb-3">
-                <div class="card-accent green"></div>
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-person me-2"></i>Cliente</h6>
+            <div class="ui-card mb-3" style="--delay:.05s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title"><i class="bi bi-person me-2"></i>Cliente</div>
                     <div class="row g-2">
                         <div class="col-8">
                             <input type="text" id="buscar-cliente-lav" class="form-control rounded-3" placeholder="Buscar cliente por nombre, teléfono o RNC...">
                         </div>
                         <div class="col-4">
-                            <button class="btn btn-outline-primary rounded-pill w-100" onclick="crearClienteLav()">
+                            <button class="ui-btn ui-btn-ghost w-100" onclick="crearClienteLav()">
                                 <i class="bi bi-plus-circle me-1"></i> Nuevo
                             </button>
                         </div>
@@ -51,10 +67,10 @@
             </div>
 
             {{-- Vehículo --}}
-            <div class="premium-card mb-3" id="vehiculo-card" style="display:none;">
-                <div class="card-accent green"></div>
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-car-front me-2"></i>Vehículo</h6>
+            <div class="ui-card mb-3" id="vehiculo-card" style="display:none;--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title"><i class="bi bi-car-front me-2"></i>Vehículo</div>
                     <div class="row g-2">
                         <div class="col-4">
                             <input type="text" id="vehiculo-placa" class="form-control rounded-3" placeholder="Placa" maxlength="10">
@@ -79,7 +95,7 @@
                             <input type="text" id="vehiculo-color" class="form-control rounded-3" placeholder="Color">
                         </div>
                         <div class="col-6">
-                            <button class="btn btn-primary rounded-pill w-100" onclick="guardarVehiculoLav()">
+                            <button class="ui-btn ui-btn-solid w-100" onclick="guardarVehiculoLav()">
                                 <i class="bi bi-check-lg me-1"></i> Registrar Vehículo
                             </button>
                         </div>
@@ -89,10 +105,10 @@
             </div>
 
             {{-- Servicios --}}
-            <div class="premium-card">
-                <div class="card-accent green"></div>
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-card-checklist me-2"></i>Servicios</h6>
+            <div class="ui-card" style="--delay:.15s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title"><i class="bi bi-card-checklist me-2"></i>Servicios</div>
                     <div class="row g-2" id="servicios-grid">
                         @foreach($servicios as $s)
                         <div class="col-md-4 col-6">
@@ -117,12 +133,10 @@
 
         {{-- Panel derecho: Resumen de venta --}}
         <div class="col-lg-4">
-            <div class="premium-card">
-                <div class="card-accent green"></div>
-                <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-receipt me-2"></i>Resumen</h6>
-                </div>
-                <div class="card-body px-4">
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title"><i class="bi bi-receipt me-2"></i>Resumen</div>
                     <div id="servicios-seleccionados">
                         <div class="text-center text-muted py-4">
                             <i class="bi bi-hand-index fs-1 d-block mb-2"></i>
@@ -143,42 +157,35 @@
                         <span class="fw-bold text-primary" id="lav-total">RD$ 0.00</span>
                     </div>
                     <hr>
-                    <label class="form-label small fw-bold">Método de pago</label>
+                    <label class="ui-label small fw-bold">Método de pago</label>
                     <div class="d-flex gap-1 mb-3 flex-wrap">
                         <button class="btn btn-sm btn-outline-success rounded-pill pago-metodo-lav active" data-metodo="efectivo" onclick="selectMetodoLav(this)">Efectivo</button>
                         <button class="btn btn-sm btn-outline-primary rounded-pill pago-metodo-lav" data-metodo="tarjeta" onclick="selectMetodoLav(this)">Tarjeta</button>
                         <button class="btn btn-sm btn-outline-info rounded-pill pago-metodo-lav" data-metodo="transferencia" onclick="selectMetodoLav(this)">Transferencia</button>
                     </div>
                     <div id="lavador-selector" style="display:none;" class="mb-3">
-                        <label class="form-label small fw-bold"><i class="bi bi-people me-1"></i>Lavador(es)</label>
+                        <label class="ui-label small fw-bold"><i class="bi bi-people me-1"></i>Lavador(es)</label>
                         <div id="lavador-checkboxes" class="d-flex flex-wrap gap-1"></div>
                     </div>
-                    <button class="btn btn-success rounded-pill w-100 fw-bold py-2" onclick="cobrarLav()" id="btn-cobrar-lav" disabled>
+                    <button class="ui-btn ui-btn-solid w-100 fw-bold py-2" onclick="cobrarLav()" id="btn-cobrar-lav" disabled>
                         <i class="bi bi-check-lg me-1"></i> Cobrar RD$ 0.00
                     </button>
                 </div>
             </div>
 
             {{-- Citas del día --}}
-            <div class="premium-card mt-3">
-                <div class="card-accent green"></div>
-                <div class="card-header bg-white rounded-top-4 border-0 pt-3 px-4">
-                    <h6 class="fw-bold mb-0"><i class="bi bi-calendar-event me-2"></i>Citas de Hoy</h6>
-                </div>
-                <div class="card-body px-4" id="citas-hoy-lav">
-                    <div class="text-center text-muted py-3"><small>Cargando...</small></div>
+            <div class="ui-card mt-3" style="--delay:.25s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-body">
+                    <div class="ui-card-title"><i class="bi bi-calendar-event me-2"></i>Citas de Hoy</div>
+                    <div id="citas-hoy-lav">
+                        <div class="text-center text-muted py-3"><small>Cargando...</small></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.servicio-card:hover { border-color: var(--bs-primary) !important; background: rgba(var(--bs-primary-rgb),.03); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-.servicio-card.seleccionado { border-color: var(--bs-primary) !important; background: rgba(var(--bs-primary-rgb),.1); }
-.pago-metodo-lav.active { transform: scale(1.05); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
-#servicios-seleccionados .list-group-item { border-left: 3px solid var(--bs-primary); }
-</style>
 
 <script>
 let clienteLavId = null;

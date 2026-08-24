@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-<div class="ui-page" style="--accent:#0ea5e9;--accent-rgb:14,165,233;--accent-hover:#0284c7;">
+<div class="ui-page" style="--accent:#06b6d4;--accent-rgb:6,182,212;--accent-hover:#0891b2;">
     <div class="ui-header mb-4">
         <div class="bubble"></div>
         <div class="bubble"></div>
