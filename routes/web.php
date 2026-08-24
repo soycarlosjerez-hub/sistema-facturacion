@@ -1121,6 +1121,33 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'destroy'])->name('alquileres.pagos.destroy')->middleware('permission:alquileres.pagos');
 });
 
+// POS (Point of Sale)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+    Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+    Route::post('/pos/hold', [PosController::class, 'hold'])->name('pos.hold');
+    Route::post('/pos/restore/{id}', [PosController::class, 'restore'])->name('pos.restore');
+    Route::post('/pos/cancel/{id}', [PosController::class, 'cancel'])->name('pos.cancel');
+});
+
+// Categorías / Subcategorías
+Route::middleware(['auth'])->group(function () {
+    Route::resource('category-subcategories', CategorySubcategoryController::class)
+        ->parameters(['category-subcategories' => 'categorySubcategory'])
+        ->names('category-subcategories');
+    Route::post('category-subcategories/tree', [CategorySubcategoryController::class, 'tree'])
+        ->name('category-subcategories.tree');
+});
+
+// Tipos de Vehículo
+Route::middleware(['auth'])->group(function () {
+    Route::resource('vehiculo-tipos', VehiculoTipoController::class)
+        ->parameters(['vehiculo-tipos' => 'vehiculoTipo'])
+        ->names('vehiculo-tipos');
+    Route::post('vehiculo-tipos/{vehiculoTipo}/toggle', [VehiculoTipoController::class, 'toggle'])
+        ->name('vehiculo-tipos.toggle');
+});
+
 // Tattoo Studio
 Route::middleware(['auth'])->prefix('tattoo')->name('tattoo.')->group(function () {
     Route::get('/', [\App\Http\Controllers\TattooController::class, 'index'])->name('index')->middleware('permission:tattoo.view');

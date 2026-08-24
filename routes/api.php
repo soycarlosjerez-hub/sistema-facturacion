@@ -39,6 +39,9 @@ use App\Http\Controllers\Api\Arte\CertificatesController;
 use App\Http\Controllers\Api\Arte\ExhibitionsController;
 use App\Http\Controllers\Api\Arte\ReportsController as ArteReportsController;
 use App\Http\Controllers\Api\Art\CatalogController;
+use App\Http\Controllers\Api\PosApiController;
+use App\Http\Controllers\Api\LavaderoApiController;
+use App\Http\Controllers\Api\TiendaApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function () {
@@ -201,6 +204,35 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
     Route::apiResource('payment-processors', PaymentProcessorController::class)
         ->names('api.payment-processors')
         ->except(['edit', 'create']);
+
+    // POS API
+    Route::prefix('pos')->group(function() {
+        Route::post('/checkout', [PosApiController::class, 'checkout']);
+        Route::get('/quick-sale', [PosApiController::class, 'quickSale']);
+        Route::post('/hold', [PosApiController::class, 'hold']);
+        Route::post('/restore/{id}', [PosApiController::class, 'restore']);
+    });
+
+    // Lavadero (Car Wash) API
+    Route::prefix('lavadero')->group(function() {
+        Route::get('/servicios', [LavaderoController::class, 'servicios']);
+        Route::get('/paquetes', [LavaderoController::class, 'paquetes']);
+        Route::get('/paquetes/{id}', [LavaderoController::class, 'paqueteDetalle']);
+        Route::get('/lavadores', [LavaderoController::class, 'lavadores']);
+        Route::get('/vehiculos', [LavaderoController::class, 'vehiculos']);
+        Route::post('/vehiculos', [LavaderoController::class, 'storeVehiculo']);
+        Route::get('/citas', [LavaderoController::class, 'citas']);
+        Route::post('/citas', [LavaderoController::class, 'storeCita']);
+    });
+
+    // Tienda API
+    Route::prefix('tienda')->group(function() {
+        Route::get('/productos', [TiendaApiController::class, 'productos']);
+        Route::get('/categorias', [TiendaApiController::class, 'categorias']);
+        Route::get('/inventario', [TiendaApiController::class, 'inventario']);
+        Route::post('/inventario/ajuste', [TiendaApiController::class, 'ajusteInventario']);
+        Route::get('/kardex/{productoId}', [TiendaApiController::class, 'kardex']);
+    });
 
     // Printers removed - now using thermal ticket system
 
