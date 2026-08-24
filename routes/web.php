@@ -48,6 +48,11 @@ use App\Http\Controllers\RetencionExportController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ModuloController;
 use App\Http\Controllers\LavadorController;
+use App\Http\Controllers\LavaderoPaqueteController;
+use App\Http\Controllers\LavaderoPaqueteItemController;
+use App\Http\Controllers\PosController;
+use App\Http\Controllers\CategorySubcategoryController;
+use App\Http\Controllers\VehiculoTipoController;
 use App\Http\Controllers\CuentaBancariaController;
 use App\Http\Controllers\LibroVentasController;
 use App\Http\Controllers\LibroComprasController;
@@ -1041,6 +1046,9 @@ Route::middleware(['auth'])->group(function () {
 
 // Lavadero (Car Wash)
 Route::middleware(['auth'])->group(function () {
+    // Lavadero Dashboard
+    Route::get('/lavadero/dashboard', [\App\Http\Controllers\LavaderoController::class, 'dashboard'])->name('lavadero.dashboard');
+
     // Terminal POS
     Route::get('/lavadero', [\App\Http\Controllers\LavaderoController::class, 'index'])->name('lavadero.index')->middleware('permission:lavadero.view');
     Route::get('/lavadero/servicios', [\App\Http\Controllers\LavaderoServicioController::class, 'index'])->name('lavadero.servicios.index')->middleware('permission:lavadero.servicios');
@@ -1073,6 +1081,13 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/lavadero/lavadores/{lavador}', [\App\Http\Controllers\LavadorController::class, 'destroy'])->name('lavadero.lavadores.destroy')->middleware('permission:lavadero.lavadores');
     Route::get('/lavadero/lavadores/activos', [\App\Http\Controllers\LavadorController::class, 'activos'])->name('lavadero.lavadores.activos')->middleware('permission:lavadero.view');
     Route::post('/lavadero/ventas/{venta}/lavadores', [\App\Http\Controllers\LavaderoController::class, 'asignarLavadores'])->name('lavadero.ventas.lavadores')->middleware('permission:lavadero.view');
+
+    // Paquetes de Lavado (CRUD)
+    Route::resource('paquetes', LavaderoPaqueteController::class)->middleware('permission:lavadero.servicios');
+    Route::resource('paquete-items', LavaderoPaqueteItemController::class)->parameters(['paquete-items' => 'paqueteItem'])->middleware('permission:lavadero.servicios');
+
+    // API endpoints (used by POS JS)
+    Route::get('/lavadero/dashboard-data', [\App\Http\Controllers\LavaderoController::class, 'getDashboardData'])->name('lavadero.dashboard-data')->middleware('permission:lavadero.view');
 
     // Alquileres (Property Rentals)
     Route::get('/alquileres', [\App\Http\Controllers\AlquilerController::class, 'index'])->name('alquileres.index')->middleware('permission:alquileres.view');
