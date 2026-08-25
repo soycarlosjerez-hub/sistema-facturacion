@@ -4069,12 +4069,25 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
     // ============ Carrito ============
     function addToCart(id, fromScanner = false) {
-        const p = productos.find(x => x.id === id);
+        // Buscar en productos y servicios
+        let p = productos.find(x => x.id === id);
+        let isServicio = false;
+        
         if (!p) {
-            showToast(`Producto #${id} no encontrado`, 'danger');
+            // Buscar en servicios
+            p = servicios.find(x => x.id === id);
+            if (p) {
+                isServicio = true;
+            }
+        }
+        
+        if (!p) {
+            showToast(`Producto/Servicio #${id} no encontrado`, 'danger');
             return;
         }
-        const existing = cart.find(x => x.id === id);
+        
+        const existing = cart.find(x => x.id === id && x.es_servicio === isServicio);
+        
         if (modoObras) {
             if (existing) {
                 showToast(`La obra "${p.nombre}" ya está en el carrito`, 'warning');
@@ -4088,11 +4101,17 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         } else if (existing) {
             existing.qty++;
         } else {
-            cart.push({
+            const item = {
                 id: p.id, nombre: p.nombre, precio: p.precio,
-                itbis_p: p.itbis_p, qty: 1, stock: p.stock, imagen_url: p.imagen_url,
+                itbis_p: p.itbis_p, qty: 1, stock: p.stock || 999, imagen_url: p.imagen_url,
                 descuento: 0, descuento_tipo: 'monto', sin_itbis: false
-            });
+            };
+            if (isServicio) {
+                item.es_servicio = true;
+                item.servicio_id = p.id;
+                item.itbis_porcentaje = p.itbis_p;
+            }
+            cart.push(item);
         }
         if (fromScanner) {
             $('scan-input').classList.add('scanner-flash');
