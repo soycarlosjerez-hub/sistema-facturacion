@@ -980,7 +980,7 @@ class SaleService
         }
 
         if ($this->facturaProductosYServicios()) {
-            $this->procesarDetallesMixto($venta, $data, $tenantId);
+            $this->procesarDetallesMixto($venta, $data, $ventaExistente);
             return;
         }
 
@@ -1133,8 +1133,10 @@ class SaleService
         }
     }
 
-    private function procesarDetallesMixto(Venta $venta, array $data, int $tenantId): void
+    private function procesarDetallesMixto(Venta $venta, array $data, ?Venta $ventaExistente): void
     {
+        $tenantId = $venta->tenant_id;
+
         // Ensure we always have a fallback almacen for the FK constraint
         $fallbackAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
 
