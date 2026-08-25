@@ -151,6 +151,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/ventas/buscar-producto', [VentaController::class, 'buscarProducto'])->name('ventas.buscarProducto');
     Route::get('/ventas/buscar-codigo/{codigo}', [VentaController::class, 'buscarPorCodigoBarras'])->name('ventas.buscarPorCodigo');
     Route::get('/ventas/buscar-equipo', [VentaController::class, 'buscarEquipo'])->name('ventas.buscarEquipo');
+    Route::get('/ventas/buscar-servicio', [VentaController::class, 'buscarServicio'])->name('ventas.buscarServicio');
 
     // Permission-based routes
     Route::middleware('permission:cajas.view')->group(function () {

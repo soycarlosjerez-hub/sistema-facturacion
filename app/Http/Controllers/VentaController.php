@@ -441,4 +441,48 @@ class VentaController extends Controller
             ];
         }));
     }
+
+    public function buscarServicio(Request $request)
+    {
+        $user = Auth::user();
+        $tipo = $user?->businessInstance?->businessType;
+        $facturacionModo = $tipo?->config['facturacion_modo'] ?? 'productos';
+
+        if ($facturacionModo !== 'productos_y_servicios') {
+            return response()->json([]);
+        }
+
+        $term = $request->q ?? $request->termino ?? $request->get('search', '');
+
+        $query = \App\Models\LavaderoServicio::where('tenant_id', $user->business_instance_id)
+            ->where('activo', true);
+
+        if (!empty($term)) {
+            $query->where(function($q) use ($term) {
+                $q->where('nombre', 'like', "%{$term}%")
+                  ->orWhere('descripcion', 'like', "%{$term}%")
+                  ->orWhere('categoria', 'like', "%{$term}%");
+            });
+        }
+
+        $servicios = $query->orderBy('nombre')->take(20)->get([
+            'id', 'nombre', 'descripcion', 'precio', 'precio_compra',
+            'itbis_porcentaje', 'duracion_minutos', 'categoria', 'imagen'
+        ]);
+
+        return response()->json($servicios->map(function($s) {
+            return [
+                'id' => 'servicio_' . $s->id,
+                'servicio_id' => (int) $s->id,
+                'label' => $s->nombre,
+                'meta' => ($s->categoria ? $s->categoria . ' · ' : '') .
+                          ($s->duracion_minutos ? $s->duracion_minutos . ' min' : ''),
+                'precio' => (float) $s->precio,
+                'itbis_p' => (float) ($s->itbis_porcentaje ?? 18),
+                'duracion' => $s->duracion_minutos,
+                'categoria' => $s->categoria,
+                'descripcion' => $s->descripcion,
+            ];
+        }));
+    }
 }

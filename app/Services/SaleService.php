@@ -69,6 +69,7 @@ class SaleService
         $modoObras    = $this->facturaObrasArte();
         $modoEquipos  = $this->facturaEquipos();
         $modoLavados  = $this->facturaLavados();
+        $modoProductosYServicios  = $this->facturaProductosYServicios();
 
         $productoIds = $data['producto_id'] ?? [];
         $obraIds     = $data['obra_id'] ?? [];
@@ -185,6 +186,74 @@ class SaleService
                     'es_lavado' => true,  // Marcador para identificar en la vista/impresión
                 ];
             }
+        } elseif ($modoProductosYServicios) {
+            // MODO MIXTO: productos + servicios de lavado
+            // Procesar productos normales
+            foreach ($productoIds as $i => $productoId) {
+                if (!$productoId) continue;
+                $producto = Producto::find($productoId);
+                if (!$producto) {
+                    throw new \Exception('El producto #' . $productoId . ' no existe.');
+                }
+                $cantidad   = max(1, (int) ($cantidades[$i] ?? 1));
+                $precioBD   = (float) $producto->precio;
+                $precioCli  = (float) ($preciosCli[$i] ?? $precioBD);
+                if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+                    throw new \Exception("No autorizado para modificar el precio de \"{$producto->nombre}\".");
+                }
+                $precioBase = ($precioCli !== $precioBD && $puedeSobreescribirPrecio) ? $precioCli : $precioBD;
+                $lineas[] = [
+                    'id'       => $productoId,
+                    'es_obra'  => false,
+                    'nombre'   => $producto->nombre,
+                    'cantidad' => $cantidad,
+                    'precio'   => $precioBase,
+                    'subtotal' => round($precioBase * $cantidad, 2),
+                    'desc'     => (float) ($descuentoCli[$i] ?? 0),
+                    'tipo'     => $tiposCli[$i] ?? 'monto',
+                    'itbis_p'  => (float) ($producto->itbis_porcentaje ?? 0),
+                    'sin_itbis' => (bool) ($sinItbisCli[$i] ?? false),
+                ];
+            }
+
+            // Procesar servicios de lavado
+            $servicioIds = $data['servicio_id'] ?? [];
+            $cantidadesServ = $data['cantidad_servicio'] ?? [];
+            $preciosServ = $data['precio_servicio'] ?? [];
+            $descuentosServ = $data['descuento_servicio'] ?? [];
+            $tiposServ = $data['descuento_tipo_servicio'] ?? [];
+            $sinItbisServ = $data['sin_itbis_servicio'] ?? [];
+
+            foreach ($servicioIds as $i => $servicioId) {
+                if (!$servicioId) continue;
+                $servicio = \App\Models\LavaderoServicio::find($servicioId);
+                if (!$servicio) {
+                    throw new \Exception('El servicio de lavado #' . $servicioId . ' no existe.');
+                }
+                $cantidad   = max(1, (int) ($cantidadesServ[$i] ?? 1));
+                $precioBD   = (float) $servicio->precio;
+                $precioCli  = (float) ($preciosServ[$i] ?? $precioBD);
+                if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+                    throw new \Exception("No autorizado para modificar el precio del servicio \"{$servicio->nombre}\".");
+                }
+                $precioBase = ($precioCli !== $precioBD && $puedeSobreescribirPrecio) ? $precioCli : $precioBD;
+                // Usar ITBIS del servicio o del sistema
+                $itbisServicio = (float) ($servicio->itbis_porcentaje ?? $this->itbisPorcentajeInstancia());
+                $lineas[] = [
+                    'id'       => $servicioId,
+                    'es_obra'  => false,
+                    'nombre'   => 'Servicio: ' . $servicio->nombre,
+                    'cantidad' => $cantidad,
+                    'precio'   => $precioBase,
+                    'subtotal' => round($precioBase * $cantidad, 2),
+                    'desc'     => (float) ($descuentosServ[$i] ?? 0),
+                    'tipo'     => $tiposServ[$i] ?? 'monto',
+                    'itbis_p'  => $itbisServicio,
+                    'sin_itbis' => (bool) ($sinItbisServ[$i] ?? false),
+                    'es_lavado' => true,
+                    'es_servicio' => true,
+                ];
+            }
         } else {
             // MODO PRODUCTOS (predeterminado)
             foreach ($productoIds as $i => $productoId) {
@@ -253,6 +322,7 @@ class SaleService
         $data['obra_id']          = $modoObras ? array_column($lineas, 'id') : [];
         $data['equipo_id']        = $modoEquipos ? array_column($lineas, 'id') : [];
         $data['producto_id']      = ($modoObras || $modoEquipos) ? [] : array_column($lineas, 'id');
+        $data['servicio_id']      = $modoProductosYServicios ? array_filter(array_column($lineas, 'id'), fn($id, $k) => $lineas[$k]['es_servicio'] ?? false, ARRAY_FILTER_USE_BOTH) : [];
         $data['cantidad']         = array_column($lineas, 'cantidad');
         $data['precio']           = array_column($lineas, 'precio');
         $data['subtotal']         = array_column($lineas, 'subtotal');
@@ -526,6 +596,7 @@ class SaleService
         $itbisInstancia = $this->itbisPorcentajeInstancia();
 
         $modoLavados = $this->facturaLavados();
+        $modoProductosYServicios = $this->facturaProductosYServicios();
 
         $productos = Producto::where('tenant_id', $tenantId)
             ->orderBy('nombre')
@@ -645,6 +716,76 @@ class SaleService
 
         $facturacionModo = 'productos';
 
+        // MODO MIXTO: productos + servicios de lavado
+        if ($this->facturaProductosYServicios()) {
+            // Cargar productos normales
+            $stockPorProductoAlmacen = AlmacenMovimiento::query()
+                ->where('tenant_id', $tenantId)
+                ->selectRaw('producto_id, almacen_id, SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
+                ->groupBy('producto_id', 'almacen_id')
+                ->get();
+            $stocks = [];
+            foreach ($stockPorProductoAlmacen as $row) {
+                $stocks[$row->producto_id][$row->almacen_id] = (int) $row->stock;
+            }
+            foreach ($productos as $producto) {
+                $stocks[$producto->id] ??= [];
+            }
+
+            $productosJs = $productos->map(fn($p) => [
+                'id'           => (int) $p->id,
+                'nombre'       => $p->nombre,
+                'codigo_barras'=> $p->codigo_barras,
+                'precio'       => (float) $p->precio,
+                'precio_compra'=> (float) ($p->precio_compra ?? 0),
+                'itbis_p'      => (float) ($p->itbis_porcentaje ?? SystemSetting::itbisDefault()),
+                'stock'        => (int) $p->stock,
+                'ventas_count' => (int) ($p->ventas_count ?? 0),
+                'unidad_medida'=> $p->unidad_medida ?? 'Unidad',
+                'imagen_url'   => $p->imagen_url,
+                'categoria_id' => (int) ($p->categoria_id ?? 0),
+                'es_servicio'  => false,
+            ])->values()->all();
+
+            // Cargar servicios de lavado
+            $servicios = \App\Models\LavaderoServicio::where('tenant_id', $tenantId)
+                ->where('activo', true)
+                ->orderBy('nombre')
+                ->get();
+
+            $serviciosJs = $servicios->map(fn($s) => [
+                'id'           => (int) $s->id,
+                'nombre'       => $s->nombre,
+                'descripcion'  => $s->descripcion ?? '',
+                'precio'       => (float) $s->precio,
+                'precio_compra'=> (float) ($s->precio_compra ?? 0),
+                'itbis_p'      => (float) ($s->itbis_porcentaje ?? $this->itbisPorcentajeInstancia()),
+                'stock'        => 999,
+                'ventas_count' => 0,
+                'unidad_medida'=> 'Servicio',
+                'imagen_url'   => $s->imagen ?? null,
+                'categoria_id' => 0,
+                'es_servicio'  => true,
+                'duracion_minutos' => $s->duracion_minutos ?? 0,
+                'categoria'    => $s->categoria ?? '',
+            ])->values()->all();
+
+            $stocks = [];
+            $categoriasJs = Categoria::where('tenant_id', $tenantId)->orderBy('nombre')->get(['id', 'nombre'])->toArray();
+
+            $facturacionModo = 'productos_y_servicios';
+
+            return compact(
+                'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
+                'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
+                'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
+                'modoObras', 'permitidos', 'facturacionModo', 'modoLavados', 'modoProductosYServicios',
+                'serviciosJs'
+            );
+        }
+
+        $facturacionModo = 'productos';
+
         $stockPorProductoAlmacen = AlmacenMovimiento::query()
             ->where('tenant_id', $tenantId)
             ->selectRaw('producto_id, almacen_id, SUM(CASE WHEN tipo = "entrada" THEN cantidad ELSE -cantidad END) as stock')
@@ -685,7 +826,8 @@ class SaleService
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
             'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-            'modoObras', 'permitidos', 'facturacionModo', 'modoLavados'
+            'modoObras', 'permitidos', 'facturacionModo', 'modoLavados', 'modoProductosYServicios',
+            'serviciosJs'
         );
     }
 
@@ -715,6 +857,13 @@ class SaleService
         $user = Auth::user();
         $tipo = $user?->businessInstance?->businessType;
         return ($tipo?->config['facturacion_modo'] ?? 'productos') === 'lavados';
+    }
+
+    private function facturaProductosYServicios(): bool
+    {
+        $user = Auth::user();
+        $tipo = $user?->businessInstance?->businessType;
+        return ($tipo?->config['facturacion_modo'] ?? 'productos') === 'productos_y_servicios';
     }
 
     private function itbisPorcentajeInstancia(): float
@@ -813,6 +962,7 @@ class SaleService
     {
         $tenantId = Auth::user()->business_instance_id;
         $modoObras = $this->facturaObrasArte();
+        $modoProductosYServicios = $this->facturaProductosYServicios();
 
         // Ensure we always have a fallback almacen for the FK constraint
         $fallbackAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
@@ -824,6 +974,11 @@ class SaleService
 
         if (!empty($data['equipo_id'] ?? [])) {
             $this->procesarDetallesEquipos($venta, $data, $tenantId);
+            return;
+        }
+
+        if ($this->facturaProductosYServicios()) {
+            $this->procesarDetallesMixto($venta, $data, $tenantId);
             return;
         }
 
@@ -973,6 +1128,116 @@ class SaleService
             ]);
 
             $equipo->update(['estado' => 'vendido']);
+        }
+    }
+
+    private function procesarDetallesMixto(Venta $venta, array $data, int $tenantId): void
+    {
+        // Ensure we always have a fallback almacen for the FK constraint
+        $fallbackAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
+
+        // Procesar productos normales
+        $productoIds = $data['producto_id'] ?? [];
+        $cantidades = $data['cantidad'] ?? [];
+        $precios = $data['precio'] ?? [];
+        $subtotales = $data['subtotal'] ?? [];
+        $almacenes = $data['almacen_id'] ?? [];
+        $descuentos = $data['descuento'] ?? [];
+        $descuentoTipos = $data['descuento_tipo'] ?? [];
+        $itbisPorcentajes = $data['itbis_porcentaje'] ?? [];
+        $sinItbis = $data['sin_itbis'] ?? [];
+
+        $maxItems = count($productoIds);
+        for ($i = 0; $i < $maxItems; $i++) {
+            $productoId = $productoIds[$i] ?? null;
+            if (!$productoId) continue;
+
+            $cantidad = $cantidades[$i] ?? 0;
+            $precio = $precios[$i] ?? 0;
+            $subtotal = $subtotales[$i] ?? 0;
+            $almacenId = isset($almacenes[$i]) && (int)$almacenes[$i] > 0
+                ? (int)$almacenes[$i]
+                : ($fallbackAlmacen?->id);
+            $descuento = (float) ($descuentos[$i] ?? 0);
+            $descuentoTipo = $descuentoTipos[$i] ?? 'monto';
+            $itbisPorcentaje = (float) ($itbisPorcentajes[$i] ?? 0);
+            $sinItbisFlag = (bool) ($data['sin_itbis'][$i] ?? false);
+
+            $producto = Producto::findOrFail($productoId);
+
+            if ($this->validaStock()) {
+                $disponiblePorAlmacen = $almacenId ? $this->checkStock($productoId, $almacenId) : $producto->stock;
+                if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
+                    throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
+                }
+            }
+
+            VentaDetalle::create([
+                'venta_id'         => $venta->id,
+                'producto_id'      => $productoId,
+                'cantidad'         => $cantidad,
+                'precio_unitario'  => $precio,
+                'subtotal'         => $subtotal,
+                'descuento'        => $descuento,
+                'descuento_tipo'   => $descuentoTipo,
+                'itbis_porcentaje' => $itbisPorcentaje,
+                'sin_itbis'        => $sinItbisFlag,
+                'almacen_id'       => $almacenId,
+                'tenant_id'        => $tenantId,
+            ]);
+
+            if ($this->validaStock()) {
+                AlmacenMovimiento::create([
+                    'tenant_id'   => $tenantId,
+                    'producto_id' => $productoId,
+                    'almacen_id'  => $almacenId,
+                    'tipo'        => 'salida',
+                    'cantidad'    => $cantidad,
+                    'nota'        => 'Venta #' . $venta->id . ($ventaExistente ? ' (Adición)' : ''),
+                    'user_id'     => Auth::id(),
+                ]);
+
+                $producto->decrement('stock', $cantidad);
+
+                if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
+                    Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
+                }
+            }
+
+            $producto->increment('ventas_count', $cantidad);
+        }
+
+        // Procesar servicios de lavado
+        $servicioIds = $data['servicio_id'] ?? [];
+        $cantidadesServ = $data['cantidad_servicio'] ?? [];
+        $preciosServ = $data['precio_servicio'] ?? [];
+        $subtotalesServ = $data['subtotal_servicio'] ?? [];
+        $descuentosServ = $data['descuento_servicio'] ?? [];
+        $descuentoTiposServ = $data['descuento_tipo_servicio'] ?? [];
+        $itbisPorcentajesServ = $data['itbis_porcentaje_servicio'] ?? [];
+        $sinItbisServ = $data['sin_itbis_servicio'] ?? [];
+
+        foreach ($servicioIds as $i => $servicioId) {
+            if (!$servicioId) continue;
+
+            $servicio = \App\Models\LavaderoServicio::where('tenant_id', $tenantId)->find($servicioId);
+            if (!$servicio) {
+                throw new \Exception('El servicio de lavado #' . $servicioId . ' no existe.');
+            }
+
+            VentaDetalle::create([
+                'venta_id'         => $venta->id,
+                'servicio_id'      => $servicioId,
+                'cantidad'         => $cantidadesServ[$i] ?? 1,
+                'precio_unitario'  => $preciosServ[$i] ?? $servicio->precio,
+                'subtotal'         => $subtotalesServ[$i] ?? $servicio->precio,
+                'descuento'        => (float) ($data['descuento_servicio'][$i] ?? 0),
+                'descuento_tipo'   => $descuentoTiposServ[$i] ?? 'monto',
+                'itbis_porcentaje' => (float) ($data['itbis_porcentaje_servicio'][$i] ?? $servicio->itbis_porcentaje ?? $this->itbisPorcentajeInstancia()),
+                'sin_itbis'        => (bool) ($data['sin_itbis_servicio'][$i] ?? false),
+                'almacen_id'       => null,
+                'tenant_id'        => $tenantId,
+            ]);
         }
     }
 

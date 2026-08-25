@@ -2411,6 +2411,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                         <i class="bi bi-phone"></i> Equipos <span class="badge-count" id="count-equipos">0</span>
                     </button>
                     @endif
+                    @if(($facturacionModo ?? 'productos') === 'productos_y_servicios')
+                    <button type="button" class="pos-tab" data-tab="servicios">
+                        <i class="bi bi-droplet"></i> Servicios <span class="badge-count" id="count-servicios">0</span>
+                    </button>
+                    @endif
                 </div>
 
                 <!-- Category filter (shown when search is active) -->
@@ -3164,6 +3169,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
     // ============ Estado ============
     const cart = [];
+
+    // Modo mixto: productos + servicios
+    let activeTab = 'productos'; // 'productos' | 'servicios' | 'equipos'
+    const servicios = {!! json_encode($serviciosJs ?? []) !!};
+    const serviciosPre = servicios.map(s => ({ ...s, nl: (s.nombre || '').toLowerCase(), cl: (s.codigo_barras || '').toLowerCase() }));
     let scanMode = 'barcode';
     let activeFilter = 'all';
     let searchQuery = '';
@@ -3900,6 +3910,17 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         container.innerHTML = html;
     }
 
+    // Función para obtener productos filtrados según la pestaña activa
+    function getFilteredProducts() {
+        if (activeTab === 'servicios') {
+            return servicios;
+        }
+        if (activeTab === 'equipos') {
+            return equiposData;
+        }
+        return productos;
+    }
+
     function cambiarQtyModal(productoId, delta) {
         if (cantidadesModal[productoId] === undefined) cantidadesModal[productoId] = 1;
         let nueva = cantidadesModal[productoId] + delta;
@@ -4389,6 +4410,20 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         viewport.style.display = 'grid';
         cartViewport.style.display = 'none';
         viewport.innerHTML = items.map(p => {
+            // Servicios de lavado
+            if (activeTab === 'servicios') {
+                const stockCls = 'ok';
+                const stockLbl = 'Servicio';
+                const placeholder = '/images/placeholder-service.svg';
+                return `
+                <button type="button" class="pos-product-card" data-action="add" data-id="${p.id}">
+                    <img src="${escapeHtml(p.imagen_url || '/images/placeholder-service.svg')}" class="ppc-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+                    <div class="ppc-name">${escapeHtml(p.nombre)}</div>
+                    <div class="ppc-price">${fmt(p.precio)}</div>
+                    <span class="ppc-stock ${stockCls}">${stockLbl}</span>
+                    <span class="ppc-tag servicio-tag" style="font-size:0.6rem;background:rgba(59,130,246,.2);color:var(--pos-accent);padding:1px 6px;border-radius:4px;margin-top:4px;display:inline-block;">Servicio</span>
+                </button>`;
+            }
             if (modoObras) {
                 return `
                 <button type="button" class="pos-product-card" data-action="add" data-id="${p.id}">
@@ -4803,6 +4838,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 if (tab.dataset.filter !== undefined) {
                     activeFilter = tab.dataset.filter;
                     if (searchQuery && !modoEquipos) triggerSearch();
+                }
+                if (tab.dataset.tab !== undefined) {
+                    activeTab = tab.dataset.tab;
+                    renderProductsGrid(getFilteredProducts());
                 }
             });
         });

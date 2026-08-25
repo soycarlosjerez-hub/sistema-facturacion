@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         // Catálogos base
         $this->call(Full\PlansFullSeeder::class); // 4 filas
         $this->call(Full\BusinessTypesFullSeeder::class); // 11 filas
+        $this->call(BusinessTypeMixtoSeeder::class); // Modo mixto: productos + servicios
         $this->call(Full\ModulosFullSeeder::class); // 86 filas
         $this->call(Full\PermissionsFullSeeder::class); // 218 filas
         $this->call(Full\WizardStepsFullSeeder::class); // 14 filas
