@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,13 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Lavadero extends Model
 {
     use HasFactory;
+    use TenantScope;
 
     protected $fillable = [
         'folio',
         'cliente_id',
+        'vehiculo_id',
         'sucursal_id',
         'user_id',
-        'vehiculo_id',
+        'tenant_id',
         'fecha_ingreso',
         'fecha_entrega',
         'estado',
@@ -35,6 +38,11 @@ class Lavadero extends Model
         return $this->belongsTo(Cliente::class);
     }
 
+    public function vehiculo(): BelongsTo
+    {
+        return $this->belongsTo(Vehiculo::class);
+    }
+
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class);
@@ -43,10 +51,5 @@ class Lavadero extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function vehiculo(): BelongsTo
-    {
-        return $this->belongsTo(Vehiculo::class);
     }
 }
