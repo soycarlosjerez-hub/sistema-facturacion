@@ -68,6 +68,7 @@ class SaleService
 
         $modoObras    = $this->facturaObrasArte();
         $modoEquipos  = $this->facturaEquipos();
+        $modoLavados  = $this->facturaLavados();
 
         $productoIds = $data['producto_id'] ?? [];
         $obraIds     = $data['obra_id'] ?? [];
@@ -151,7 +152,41 @@ class SaleService
                     'garantia_tipo' => $equipo->garantia_tipo,
                 ];
             }
+        } elseif ($modoLavados) {
+            // MODO LAVADOS: servicios de lavado de carros
+            foreach ($productoIds as $i => $productoId) {
+                if (!$productoId) continue;
+                // Para lavados, buscamos productos que tengan categoría de lavado
+                // o usamos un campo especial. Por ahora, usamos la misma lógica de productos
+                // pero identificados como servicios de lavado.
+                $producto = Producto::find($productoId);
+                if (!$producto) {
+                    throw new \Exception('El producto #' . $productoId . ' no existe.');
+                }
+                $cantidad   = max(1, (int) ($cantidades[$i] ?? 1));
+                $precioBD   = (float) $producto->precio;
+                $precioCli  = (float) ($preciosCli[$i] ?? $precioBD);
+                if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+                    throw new \Exception("No autorizado para modificar el precio de \"{$producto->nombre}\".");
+                }
+                $precioBase = ($precioCli !== $precioBD && $puedeSobreescribirPrecio) ? $precioCli : $precioBD;
+                // Agregar marca de que es un servicio de lavado
+                $lineas[] = [
+                    'id'       => $productoId,
+                    'es_obra'  => false,
+                    'nombre'   => 'Lavado: ' . $producto->nombre,
+                    'cantidad' => $cantidad,
+                    'precio'   => $precioBase,
+                    'subtotal' => round($precioBase * $cantidad, 2),
+                    'desc'     => (float) ($descuentoCli[$i] ?? 0),
+                    'tipo'     => $tiposCli[$i] ?? 'monto',
+                    'itbis_p'  => (float) ($producto->itbis_porcentaje ?? 0),
+                    'sin_itbis' => (bool) ($sinItbisCli[$i] ?? false),
+                    'es_lavado' => true,  // Marcador para identificar en la vista/impresión
+                ];
+            }
         } else {
+            // MODO PRODUCTOS (predeterminado)
             foreach ($productoIds as $i => $productoId) {
                 if (!$productoId) continue;
                 $producto = Producto::find($productoId);
@@ -490,6 +525,8 @@ class SaleService
         $modoObras = $this->facturaObrasArte();
         $itbisInstancia = $this->itbisPorcentajeInstancia();
 
+        $modoLavados = $this->facturaLavados();
+
         $productos = Producto::where('tenant_id', $tenantId)
             ->orderBy('nombre')
             ->select('id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'ventas_count', 'unidad_medida', 'imagen', 'categoria_id')
@@ -635,13 +672,20 @@ class SaleService
             'categoria_id' => (int) ($p->categoria_id ?? 0),
         ])->values()->all();
 
+        // Si está en modo lavados, marcar los productos como servicios de lavado
+        if ($modoLavados) {
+            foreach ($productosJs as &$pj) {
+                $pj['es_lavado'] = true;
+            }
+        }
+
         $categoriasJs = Categoria::where('tenant_id', $tenantId)->orderBy('nombre')->get(['id', 'nombre'])->toArray();
 
         return compact(
             'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
             'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
             'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-            'modoObras', 'permitidos', 'facturacionModo'
+            'modoObras', 'permitidos', 'facturacionModo', 'modoLavados'
         );
     }
 
@@ -664,6 +708,13 @@ class SaleService
         $user = Auth::user();
         $tipo = $user?->businessInstance?->businessType;
         return ($tipo?->config['facturacion_modo'] ?? 'productos') === 'equipos';
+    }
+
+    private function facturaLavados(): bool
+    {
+        $user = Auth::user();
+        $tipo = $user?->businessInstance?->businessType;
+        return ($tipo?->config['facturacion_modo'] ?? 'productos') === 'lavados';
     }
 
     private function itbisPorcentajeInstancia(): float
