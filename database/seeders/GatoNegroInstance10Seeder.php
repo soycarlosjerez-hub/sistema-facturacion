@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class GatoNegroInstance10Seeder extends Seeder
 {
-    protected int $tenantId = 10;
+    protected int $tenantId = 3;
 
     protected string $imagen = 'productos/gato-negro-logo.jpeg';
 
