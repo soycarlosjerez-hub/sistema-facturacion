@@ -4286,6 +4286,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         $('count-low').textContent = validaStock ? productos.filter(p => p.stock > 0 && p.stock <= 15).length : 0;
         $('count-avail').textContent = available;
         $('count-pop').textContent = productos.filter(p => p.ventas_count > 0).length;
+        
+        // Actualizar contador de servicios en modo mixto
+        if (facturacionModo === 'productos_y_servicios') {
+            $('count-servicios').textContent = servicios.length;
+        }
     }
 
     function filterProductos(list) {
