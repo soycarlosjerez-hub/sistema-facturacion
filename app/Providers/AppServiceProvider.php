@@ -212,12 +212,15 @@ class AppServiceProvider extends ServiceProvider
             'ventas.show',
         ];
         View::composer($pdfViews, function ($view) {
-            $logoUrl = null;
+            $pdfLogoUrl = null;
             $user = \Illuminate\Support\Facades\Auth::user();
             if ($user && $user->businessInstance) {
-                $logoUrl = $user->businessInstance->logo_url;
+                $logoPath = $user->businessInstance->logo;
+                if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
+                    $pdfLogoUrl = 'data:' . mime_content_type(\Illuminate\Support\Facades\Storage::disk('public')->path($logoPath)) . ';base64,' . base64_encode(\Illuminate\Support\Facades\Storage::disk('public')->get($logoPath));
+                }
             }
-            $view->with('pdfLogoUrl', $logoUrl);
+            $view->with('pdfLogoUrl', $pdfLogoUrl);
         });
 
         Event::listen(\Illuminate\Support\MessageLogged::class, \App\Listeners\LogErrorToDatabase::class);
