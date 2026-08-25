@@ -784,6 +784,8 @@ class SaleService
             );
         }
 
+        $serviciosJs = [];
+
         $facturacionModo = 'productos';
 
         $stockPorProductoAlmacen = AlmacenMovimiento::query()
