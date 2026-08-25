@@ -3,67 +3,123 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     *
+     * Snapshot completo de la base de datos generado desde solo_inserts.sql
+     * (65 tablas, 11,851 filas). Cada seeder hace truncate + insert en chunks.
+     * Se ejecutan en orden de dependencias FK y con FK checks deshabilitadas.
      */
     public function run(): void
     {
-        // Primero: Instalar roles básicos y personalizados
-        $this->call(CustomRolesSeeder::class);        // 1. Crea roles base + root, admin-business, owner
-        $this->call(PermissionSeeder::class);         // 2. Asigna permisos a TODOS los roles
-        
-        // Segundo: Poblar tipos de negocio (necesario para usuarios y business_instances)
-        $this->call(BusinessTypeSeeder::class);       // 3. Crea tipos de negocio (restaurante, retail, mayorista, etc.)
-        
-        // Tercero: Limpiar usuarios admin existentes y asignarlos roles correctos
-        $this->call(RolesAndUsersSeeder::class);      // 4. Reasigna admin@test.com como root, crea owner, crea restaurante-ejemplo
-        
-        // Cuarto: Poblar usuarios de prueba/descanso (dependerán de los roles anteriores)
-        $this->call(DemoUsersSeeder::class);          // 5. Crea usuarios demo (gerente, almacen, contador)
-        
-        // Quinto: Poblar usuarios específicos de restaurante (mesero, cocinero, bartender, delivery, cajero)
-        $this->call(RestaurantUsersSeeder::class);    // 6. Crea usuarios por instancia restaurante
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
-        // Sexto: Crear InstanceRoles y asignarlos a los usuarios de restaurante
-        $this->call(InstanceRolesSeeder::class);      // 7. Crea InstanceRoles con módulos visibles y asigna instance_role_id
-
-        $this->call(TiposVentasSeeder::class);
-        $this->call(CategoriaSeeder::class);
-        $this->call(ProductosSeeder::class);
-        $this->call(ProveedoresSeeder::class);
-        $this->call(ClientesSeeder::class);
-        $this->call(TipoCompraSeeder::class);
-        $this->call(SystemSettingsSeeder::class);
-        $this->call(ModuloSeeder::class);
-        $this->call(NcfSequenceSeeder::class);
-        $this->call(SecuenciaEcfSeeder::class);
-        $this->call(NcfSequenceInstancia7Seeder::class);
-        $this->call(SecuenciaEcfInstancia7Seeder::class);
-        $this->call(DeliveryCompanySeeder::class);
-        $this->call(CuentasBancariasSeeder::class);
-        $this->call(WizardStepSeeder::class);
-        $this->call(CategoryPermissionsSeeder::class);
-
-        // Repuesto de Mecanica
-        $this->call(MecanicaCategoriasSeeder::class);
-        $this->call(MecanicaProductosSeeder::class);
-
-        // Embutidos / Charcutería
-        $this->call(EmbutidosCategoriaSeeder::class);
-        $this->call(EmbutidosProductoSeeder::class);
-
-        // Cervezas (solo instancia 7, depende de BusinessInstance::find(7))
-        $this->call(CervezasProductoSeeder::class);
         
-        // Climatización
-        $this->call(TiposClimaSeeder::class);
-        $this->call(ClimatizacionSeeder::class);
-        
+        // Estado de migraciones del entorno origen
+        $this->call(Full\MigrationsFullSeeder::class); // 261 filas
+        $this->call(Full\CacheFullSeeder::class); // 10 filas
+        $this->call(Full\JobsFullSeeder::class); // 122 filas
+        $this->call(Full\SessionsFullSeeder::class); // 11 filas
+        $this->call(Full\PasswordResetTokensFullSeeder::class); // 1 filas
+        $this->call(Full\PersonalAccessTokensFullSeeder::class); // 2 filas
+        $this->call(Full\ClientApiTokensFullSeeder::class); // 2 filas
+        $this->call(Full\InstanceApiKeysFullSeeder::class); // 1 filas
+        $this->call(Full\BackupsFullSeeder::class); // 2 filas
+
+        // Catálogos base
+        $this->call(Full\PlansFullSeeder::class); // 4 filas
+        $this->call(Full\BusinessTypesFullSeeder::class); // 11 filas
+        $this->call(Full\ModulosFullSeeder::class); // 86 filas
+        $this->call(Full\PermissionsFullSeeder::class); // 218 filas
+        $this->call(Full\WizardStepsFullSeeder::class); // 14 filas
+        $this->call(Full\SystemSettingsFullSeeder::class); // 39 filas
+        $this->call(Full\TiposVentasFullSeeder::class); // 12 filas
+        $this->call(Full\TiposComprasFullSeeder::class); // 9 filas
+        $this->call(Full\DeliveryCompaniesFullSeeder::class); // 6 filas
+        $this->call(Full\MesaUbicacionesFullSeeder::class); // 4 filas
+        $this->call(Full\MesaCategoriasFullSeeder::class); // 3 filas
+
+        // Usuarios y seguridad
+        $this->call(Full\UsersFullSeeder::class); // 26 filas
+        $this->call(Full\RolesFullSeeder::class); // 13 filas
+
+        // Instancias (negocios) multi-tenant
+        $this->call(Full\BusinessInstancesFullSeeder::class); // 8 filas
+
+        // Pivotes de roles y permisos
+        $this->call(Full\ModelHasRolesFullSeeder::class); // 25 filas
+        $this->call(Full\RoleHasPermissionsFullSeeder::class); // 905 filas
+
+        // Relaciones de módulos
+        $this->call(Full\BusinessTypeModulesFullSeeder::class); // 439 filas
+        $this->call(Full\InstanceRolesFullSeeder::class); // 15 filas
+        $this->call(Full\InstanceNotificationSettingsFullSeeder::class); // 3 filas
+        $this->call(Full\PagosInstanciaFullSeeder::class); // 2 filas
+
+        // Estructura operativa
+        $this->call(Full\SucursalesFullSeeder::class); // 5 filas
+        $this->call(Full\AlmacenesFullSeeder::class); // 3 filas
+        $this->call(Full\CuentasBancariasFullSeeder::class); // 2 filas
+        $this->call(Full\ImpresorasFullSeeder::class); // 1 filas
+
+        // Maestros de inventario
+        $this->call(Full\CategoriasFullSeeder::class); // 18 filas
+        $this->call(Full\ProductosFullSeeder::class); // 217 filas
+        $this->call(Full\ClientesFullSeeder::class); // 50 filas
+        $this->call(Full\ProveedoresFullSeeder::class); // 14 filas
+
+        // Secuencias fiscales (DGII)
+        $this->call(Full\NcfSequencesFullSeeder::class); // 39 filas
+        $this->call(Full\SecuenciasEcfFullSeeder::class); // 50 filas
+
+        // Listas de precio
+        $this->call(Full\ListaPreciosFullSeeder::class); // 1 filas
+        $this->call(Full\ListaPrecioItemsFullSeeder::class); // 5 filas
+        $this->call(Full\ListaPrecioLogsFullSeeder::class); // 1 filas
+
+        // Operación: cajas y mesas
+        $this->call(Full\CajasFullSeeder::class); // 8 filas
+        $this->call(Full\MesasFullSeeder::class); // 13 filas
+
+        // Órdenes restaurante
+        $this->call(Full\OrdenesFullSeeder::class); // 4 filas
+        $this->call(Full\OrdenDetallesFullSeeder::class); // 5 filas
+        $this->call(Full\ReservacionesFullSeeder::class); // 2 filas
+
+        // Delivery
+        $this->call(Full\DeliveryZonesFullSeeder::class); // 1 filas
+        $this->call(Full\DeliveryDriversFullSeeder::class); // 1 filas
+
+        // Transacciones
+        $this->call(Full\VentasFullSeeder::class); // 69 filas
+        $this->call(Full\VentaDetallesFullSeeder::class); // 76 filas
+        $this->call(Full\ComprasFullSeeder::class); // 1 filas
+        $this->call(Full\CompraDetallesFullSeeder::class); // 1 filas
+        $this->call(Full\PagosFullSeeder::class); // 46 filas
+        $this->call(Full\GastosFullSeeder::class); // 68 filas
+        $this->call(Full\SesionCajasFullSeeder::class); // 14 filas
+        $this->call(Full\AlmacenMovimientosFullSeeder::class); // 38 filas
+
+        // Facturación electrónica
+        $this->call(Full\EcfDocumentosFullSeeder::class); // 3 filas
+        $this->call(Full\EcfLogEnviosFullSeeder::class); // 10 filas
+
         // Impresión
-        $this->call(ImpresoraSeeder::class);
+        $this->call(Full\HistorialImpresionFullSeeder::class); // 13 filas
+
+        // Configuración por instancia
+        $this->call(Full\InstanceRoleModulesFullSeeder::class); // 296 filas
+
+        // Logs y auditoría
+        $this->call(Full\AuditLogsFullSeeder::class); // 5954 filas
+        $this->call(Full\UserActivityLogsFullSeeder::class); // 1393 filas
+        $this->call(Full\ApiRequestLogsFullSeeder::class); // 822 filas
+        $this->call(Full\InstanceErrorLogsFullSeeder::class); // 353 filas
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 }
