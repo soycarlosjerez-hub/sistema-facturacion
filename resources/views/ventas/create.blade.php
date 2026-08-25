@@ -4276,9 +4276,12 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             return list;
         }
         switch (activeFilter) {
-            case 'low': return list.filter(p => p.stock > 0 && p.stock <= 15);
-            case 'available': return list.filter(p => p.stock > 0);
-            case 'popular': return list.filter(p => p.ventas_count > 0).sort((a,b) => b.ventas_count - a.ventas_count);
+            case 'low': 
+                return list.filter(p => (p.es_servicio || p.es_servicio === true) ? false : (p.stock > 0 && p.stock <= 15));
+            case 'available': 
+                return list.filter(p => (p.es_servicio || p.es_servicio === true) ? true : p.stock > 0);
+            case 'popular': 
+                return list.filter(p => p.ventas_count > 0).sort((a,b) => b.ventas_count - a.ventas_count);
             default: return list;
         }
     }
@@ -4307,37 +4310,100 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         }
         if (catFilterDiv) catFilterDiv.style.display = 'block';
 
-        // Apply category filter
-        let filteredProducts = productosPre.filter(p =>
-            p.nl.includes(query) ||
-            (p.cl && p.cl.includes(query))
-        );
-        if (mainCategoriaFiltro) {
-            filteredProducts = filteredProducts.filter(p => String(p.categoria_id) === mainCategoriaFiltro);
+        // Buscar en productos y/o servicios según pestaña activa o modo mixto
+        let filteredProducts = [];
+        
+        if (activeTab === 'servicios') {
+            // Buscar solo en servicios
+            filteredProducts = serviciosPre.filter(s =>
+                s.nl.includes(query) ||
+                (s.cl && s.cl.includes(query))
+            );
+        } else if (activeTab === 'productos' || (facturacionModo === 'productos_y_servicios' && activeTab !== 'equipos')) {
+            // Buscar en productos
+            let filteredProductsTemp = productosPre.filter(p =>
+                p.nl.includes(query) ||
+                (p.cl && p.cl.includes(query))
+            );
+            if (mainCategoriaFiltro) {
+                filteredProductsTemp = filteredProductsTemp.filter(p => String(p.categoria_id) === mainCategoriaFiltro);
+            }
+            filteredProducts = filterProductos(filteredProductsTemp).slice(0, 12);
+            
+            // En modo mixto, también buscar en servicios si la búsqueda es corta
+            if (facturacionModo === 'productos_y_servicios' && filteredProducts.length < 5) {
+                const serviciosFiltrados = serviciosPre.filter(s =>
+                    s.nl.includes(query) ||
+                    (s.cl && s.cl.includes(query))
+                ).slice(0, 12 - filteredProducts.length);
+                filteredProducts = [...filteredProducts, ...serviciosFiltrados];
+            }
+        } else {
+            // Fallback: buscar en productos
+            let filteredProductsTemp = productosPre.filter(p =>
+                p.nl.includes(query) ||
+                (p.cl && p.cl.includes(query))
+            );
+            if (mainCategoriaFiltro) {
+                filteredProductsTemp = filteredProductsTemp.filter(p => String(p.categoria_id) === mainCategoriaFiltro);
+            }
+            filteredProducts = filterProductos(filteredProductsTemp).slice(0, 12);
         }
-        const filtered = filterProductos(filteredProducts).slice(0, 12);
+
+        const filtered = filteredProducts.slice(0, 12);
 
         if (filtered.length > 0) {
-            dropdown.innerHTML = filtered.map(p => `
+            dropdown.innerHTML = filtered.map(p => {
+                const isServicio = p.es_servicio === true;
+                const isEquipo = p.es_equipo === true;
+                const isObra = p.es_obra === true;
+                const isLavado = p.es_lavado === true;
+                
+                let metaHtml = '';
+                if (isServicio) {
+                    metaHtml = `${escapeHtml(p.categoria || 'Servicio')} · ${p.duracion ? p.duracion + ' min' : ''}`;
+                } else if (isEquipo) {
+                    metaHtml = `${escapeHtml(p.color || '')} ${p.almacenamiento_gb ? '· ' + p.almacenamiento_gb + 'GB' : ''} · ${p.tipo_dispositivo || ''}`;
+                } else if (isObra) {
+                    metaHtml = 'Obra';
+                } else if (isLavado) {
+                    metaHtml = 'Lavado';
+                } else {
+                    metaHtml = `${escapeHtml(p.codigo_barras || 'Sin código')} · ${escapeHtml(p.unidad_medida || 'Unidad')}`;
+                }
+                
+                let stockHtml = '';
+                if (isServicio) {
+                    stockHtml = '<div class="res-meta">Servicio</div>';
+                } else if (isEquipo) {
+                    stockHtml = '<div class="res-meta">Equipo</div>';
+                } else if (isObra) {
+                    stockHtml = '<div class="res-meta">Obra</div>';
+                } else {
+                    stockHtml = `<div class="res-meta">${p.stock > 0 ? p.stock + ' disp.' : 'Sin stock'}</div>`;
+                }
+                
+                return `
                 <div class="res-item" data-action="add" data-id="${p.id}">
-                    <img src="${escapeHtml(p.imagen_url)}" class="res-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
+                    <img src="${escapeHtml(p.imagen_url || '/images/placeholder-service.svg')}" class="res-img" alt="" onerror="this.onerror=null;this.src='${placeholder}'">
                     <div class="res-info">
-                        <div class="res-name">${escapeHtml(p.nombre)}</div>
-                        <div class="res-meta">${escapeHtml(p.codigo_barras || 'Sin código')} · ${escapeHtml(p.unidad_medida)}</div>
+                        <div class="res-name">${escapeHtml(p.nombre)}${isServicio ? ' <span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">Servicio</span>' : (isLavado ? ' <span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">Lavado</span>' : '')}</div>
+                        <div class="res-meta">${metaHtml}</div>
                     </div>
                     <div class="res-right">
                         <div class="res-price">${fmt(p.precio)}</div>
-                        <div class="res-meta">${p.stock > 0 ? p.stock + ' disp.' : 'Sin stock'}</div>
+                        ${stockHtml}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         } else {
             dropdown.innerHTML = `<div class="res-empty"><i class="bi bi-search"></i><div>Sin resultados para "<strong>${escapeHtml(query)}</strong>"</div></div>`;
         }
         dropdown.classList.add('show');
 
         // Mostrar grid inferior con resultados
-        renderProductsGrid(filtered);
+        renderProductsGrid(getFilteredProducts());
     }
 
     function handleEquipoSearch() {
