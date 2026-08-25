@@ -34,7 +34,7 @@ class GatoNegroInstance10Seeder extends Seeder
         if (! DB::table('business_instances')->where('id', $this->tenantId)->exists()) {
             $this->command->error(
                 "La instancia (business_instance) con id={$this->tenantId} no existe. " .
-                "Créala primero (wizard/setup) y vuelve a ejecutar este seeder."
+                "Créela primero (wizard/setup) y vuelve a ejecutar este seeder."
             );
             return;
         }
@@ -59,6 +59,7 @@ class GatoNegroInstance10Seeder extends Seeder
                 'updated_at'  => $ahora,
             ]);
 
+            // Insertar productos con la imagen del local (fallback por restricciones de Cloudflare)
             foreach ($catData['productos'] as $p) {
                 DB::table('productos')->insert([
                     'categoria_id'       => $catId,
@@ -93,6 +94,7 @@ class GatoNegroInstance10Seeder extends Seeder
      */
     protected function asegurarImagen(): void
     {
+        // Asegurar que el logo del local exista como fallback
         if (Storage::disk('public')->exists($this->imagen)) {
             return;
         }
@@ -104,7 +106,7 @@ class GatoNegroInstance10Seeder extends Seeder
             }
         } catch (\Throwable $e) {
             $this->imagen = null;
-            $this->command->warn('No se pudo descargar la imagen del local; los productos quedarán sin imagen.');
+            $this->command->warn('No se pudo descargar la imagen del local.');
         }
     }
 
