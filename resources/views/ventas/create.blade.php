@@ -4225,7 +4225,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                         ? `<input type="hidden" name="obra_id[]" value="${item.id}">`
                         : modoEquipos && item.es_equipo
                             ? `<input type="hidden" name="equipo_id[]" value="${item.id}">`
-                            : `<input type="hidden" name="producto_id[]" value="${item.id}">`}
+                            : item.es_servicio
+                                ? `<input type="hidden" name="servicio_id[]" value="${item.id}">`
+                                : `<input type="hidden" name="producto_id[]" value="${item.id}">`}
                     <input type="hidden" name="precio[]" value="${item.precio.toFixed(2)}">
                     <input type="hidden" name="cantidad[]" value="${modoObras ? 1 : (item.es_equipo ? 1 : item.qty)}">
                     <input type="hidden" name="subtotal[]" value="${subtotal.toFixed(2)}">
