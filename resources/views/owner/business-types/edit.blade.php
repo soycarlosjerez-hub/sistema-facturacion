@@ -96,6 +96,7 @@
                                 <option value="productos" {{ $facturacionModo === 'productos' ? 'selected' : '' }}>Productos (inventario)</option>
                                 <option value="obras_arte" {{ $facturacionModo === 'obras_arte' ? 'selected' : '' }}>Obras de Arte (galer&iacute;a)</option>
                                 <option value="equipos" {{ $facturacionModo === 'equipos' ? 'selected' : '' }}>Equipos (IMEI/Serial)</option>
+                                <option value="productos_y_servicios" {{ $facturacionModo === 'productos_y_servicios' ? 'selected' : '' }}>Productos y Servicios (mixto)</option>
                             </select>
                             <small class="text-muted">Define qu&eacute; tipo de elementos se facturan desde el terminal de ventas.</small>
                         </div>
