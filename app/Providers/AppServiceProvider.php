@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
@@ -212,7 +213,7 @@ class AppServiceProvider extends ServiceProvider
         ];
         View::composer($pdfViews, function ($view) {
             $logoUrl = null;
-            $user = Auth::user();
+            $user = \Illuminate\Support\Facades\Auth::user();
             if ($user && $user->businessInstance) {
                 $logoUrl = $user->businessInstance->logo_url;
             }
