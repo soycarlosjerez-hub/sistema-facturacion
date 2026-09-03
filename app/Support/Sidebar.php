@@ -139,7 +139,21 @@ class Sidebar
                 'is_route' => 'api.documentation*',
                 'exact_route' => 'api.documentation',
             ];
+            $items[] = [
+                'route'  => 'flowapi.documentation',
+                'icon'   => 'bi-diagram-3',
+                'label'  => 'Documentación FlowApi',
+                'is_route' => 'flowapi.documentation*',
+                'exact_route' => 'flowapi.documentation',
+            ];
             $items[] = ['section' => 'Configuración del Sistema'];
+            $items[] = [
+                'route' => 'owner.backups.index',
+                'icon'  => 'bi-cloud-arrow-up',
+                'label' => 'Backups',
+                'is_route' => 'owner.backups.*',
+                'exact_route' => 'owner.backups.index',
+            ];
             $items[] = [
                 'route'       => 'owner.smtp-settings',
                 'icon'        => 'bi-envelope-at',
@@ -432,15 +446,6 @@ class Sidebar
                 'is_route' => 'tecnologia.dashboard',
                 'exact_route' => 'tecnologia.dashboard',
             ];
-            if ($can('equipos.view')) {
-                $items[] = [
-                    'route' => 'equipos.index',
-                    'icon'  => 'bi-phone',
-                    'label' => 'Equipos (IMEI)',
-                    'is_route' => 'equipos.*',
-                    'exact_route' => 'equipos.index',
-                ];
-            }
             if ($can('tecnicas.view')) {
                 $items[] = [
                     'route' => 'tecnicas.index',
@@ -713,6 +718,15 @@ class Sidebar
                     'label' => 'Repartidores',
                     'is_route' => 'delivery-drivers.*',
                     'exact_route' => 'delivery-drivers.index',
+                ];
+            }
+            if ($mod('delivery-tracking') && $can('delivery-tracking.view')) {
+                $items[] = [
+                    'route' => 'delivery.drivers-queue',
+                    'icon'  => 'bi-truck-flatbed',
+                    'label' => 'Cola de Repartidores',
+                    'is_route' => 'delivery.drivers-queue*',
+                    'exact_route' => 'delivery.drivers-queue',
                 ];
             }
             if ($mod('delivery-zones') && $can('delivery-zones.view')) {

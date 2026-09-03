@@ -28,9 +28,9 @@ use App\Http\Controllers\PlantaGastoController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\OwnerBackupController;
 use App\Http\Controllers\ReporteFiscalController;
 use App\Http\Controllers\ReporteController;
-use App\Http\Controllers\EquipoReporteController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\DeliveryCompanyController;
 use App\Http\Controllers\DevolucionController;
@@ -47,12 +47,10 @@ use App\Http\Controllers\KdsController;
 use App\Http\Controllers\RetencionExportController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ModuloController;
-use App\Http\Controllers\LavadorController;
-use App\Http\Controllers\LavaderoPaqueteController;
-use App\Http\Controllers\LavaderoPaqueteItemController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\CategorySubcategoryController;
 use App\Http\Controllers\VehiculoTipoController;
+use App\Http\Controllers\LavaderoController;
 use App\Http\Controllers\CuentaBancariaController;
 use App\Http\Controllers\LibroVentasController;
 use App\Http\Controllers\LibroComprasController;
@@ -141,6 +139,170 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:sgc-datos.dashboard')->group(function () {
         Route::get('/sgc/data', [DocumentoSgcController::class, 'stats'])->name('sgc.data.stats');
     });
+
+    // ISO 9001 — No Conformidades
+    Route::middleware('permission:sgc-no-conformidad.view')->group(function () {
+        Route::get('/sgc/no-conformidades', [\App\Http\Controllers\NoConformidadController::class, 'index'])->name('sgc.no-conformidades.index');
+        Route::get('/sgc/no-conformidades/{noConformidad}', [\App\Http\Controllers\NoConformidadController::class, 'show'])->name('sgc.no-conformidades.show');
+        Route::get('/sgc/no-conformidades/stats', [\App\Http\Controllers\NoConformidadController::class, 'stats'])->name('sgc.no-conformidades.stats');
+    });
+    Route::middleware('permission:sgc-no-conformidad.create')->group(function () {
+        Route::get('/sgc/no-conformidades/create', [\App\Http\Controllers\NoConformidadController::class, 'create'])->name('sgc.no-conformidades.create');
+        Route::post('/sgc/no-conformidades', [\App\Http\Controllers\NoConformidadController::class, 'store'])->name('sgc.no-conformidades.store');
+        Route::post('/sgc/no-conformidades/{noConformidad}/analisis-causa', [\App\Http\Controllers\NoConformidadController::class, 'analisisCausa'])->name('sgc.no-conformidades.analisis-causa');
+        Route::post('/sgc/no-conformidades/{noConformidad}/acciones', [\App\Http\Controllers\NoConformidadController::class, 'crearAccion'])->name('sgc.no-conformidades.acciones');
+    });
+    Route::middleware('permission:sgc-no-conformidad.edit')->group(function () {
+        Route::get('/sgc/no-conformidades/{noConformidad}/edit', [\App\Http\Controllers\NoConformidadController::class, 'edit'])->name('sgc.no-conformidades.edit');
+        Route::put('/sgc/no-conformidades/{noConformidad}', [\App\Http\Controllers\NoConformidadController::class, 'update'])->name('sgc.no-conformidades.update');
+        Route::put('/sgc/no-conformidades/{noConformidad}/acciones/{accion}', [\App\Http\Controllers\NoConformidadController::class, 'actualizarAccion'])->name('sgc.no-conformidades.acciones.update');
+        Route::post('/sgc/no-conformidades/{noConformidad}/acciones/{accion}/verificar', [\App\Http\Controllers\NoConformidadController::class, 'verificarEficacia'])->name('sgc.no-conformidades.acciones.verificar');
+        Route::post('/sgc/no-conformidades/{noConformidad}/cerrar', [\App\Http\Controllers\NoConformidadController::class, 'cerrarNC'])->name('sgc.no-conformidades.cerrar');
+    });
+
+    // ISO 9001 — Gestión de Riesgos
+    Route::middleware('permission:sgc-riesgos.view')->group(function () {
+        Route::get('/sgc/riesgos', [\App\Http\Controllers\GestionRiesgosController::class, 'index'])->name('sgc.riesgos.index');
+        Route::get('/sgc/riesgos/{riesgo}', [\App\Http\Controllers\GestionRiesgosController::class, 'show'])->name('sgc.riesgos.show');
+        Route::get('/sgc/riesgos/stats', [\App\Http\Controllers\GestionRiesgosController::class, 'stats'])->name('sgc.riesgos.stats');
+    });
+    Route::middleware('permission:sgc-riesgos.create')->group(function () {
+        Route::get('/sgc/riesgos/create', [\App\Http\Controllers\GestionRiesgosController::class, 'create'])->name('sgc.riesgos.create');
+        Route::post('/sgc/riesgos', [\App\Http\Controllers\GestionRiesgosController::class, 'store'])->name('sgc.riesgos.store');
+    });
+    Route::middleware('permission:sgc-riesgos.edit')->group(function () {
+        Route::get('/sgc/riesgos/{riesgo}/edit', [\App\Http\Controllers\GestionRiesgosController::class, 'edit'])->name('sgc.riesgos.edit');
+        Route::put('/sgc/riesgos/{riesgo}', [\App\Http\Controllers\GestionRiesgosController::class, 'update'])->name('sgc.riesgos.update');
+        Route::delete('/sgc/riesgos/{riesgo}', [\App\Http\Controllers\GestionRiesgosController::class, 'eliminar'])->name('sgc.riesgos.eliminar');
+    });
+
+    // ISO 9001 — Auditorías Internas
+    Route::middleware('permission:sgc-auditorias.view')->group(function () {
+        Route::get('/sgc/auditorias', [\App\Http\Controllers\AuditoriaInternaController::class, 'index'])->name('sgc.auditorias.index');
+        Route::get('/sgc/auditorias/{auditoria}', [\App\Http\Controllers\AuditoriaInternaController::class, 'show'])->name('sgc.auditorias.show');
+        Route::get('/sgc/auditorias/stats', [\App\Http\Controllers\AuditoriaInternaController::class, 'stats'])->name('sgc.auditorias.stats');
+        Route::get('/sgc/auditorias/programas', [\App\Http\Controllers\AuditoriaInternaController::class, 'programas'])->name('sgc.auditorias.programas');
+    });
+    Route::middleware('permission:sgc-auditorias.create')->group(function () {
+        Route::get('/sgc/auditorias/programas/create', [\App\Http\Controllers\AuditoriaInternaController::class, 'crearPrograma'])->name('sgc.auditorias.programas.create');
+        Route::post('/sgc/auditorias/programas', [\App\Http\Controllers\AuditoriaInternaController::class, 'storePrograma'])->name('sgc.auditorias.programas.store');
+        Route::post('/sgc/auditorias/{auditoria}/checklist', [\App\Http\Controllers\AuditoriaInternaController::class, 'agregarChecklistItem'])->name('sgc.auditorias.checklist.store');
+        Route::delete('/sgc/auditorias/{auditoria}/checklist/{item}', [\App\Http\Controllers\AuditoriaInternaController::class, 'eliminarChecklistItem'])->name('sgc.auditorias.checklist.delete');
+        Route::post('/sgc/auditorias/{auditoria}/hallazgos', [\App\Http\Controllers\AuditoriaInternaController::class, 'registrarHallazgo'])->name('sgc.auditorias.hallazgos.store');
+    });
+    Route::middleware('permission:sgc-auditorias.edit')->group(function () {
+        Route::post('/sgc/auditorias/{auditoria}/iniciar', [\App\Http\Controllers\AuditoriaInternaController::class, 'iniciarAuditoria'])->name('sgc.auditorias.iniciar');
+        Route::post('/sgc/auditorias/{auditoria}/completar', [\App\Http\Controllers\AuditoriaInternaController::class, 'completarAuditoria'])->name('sgc.auditorias.completar');
+        Route::get('/sgc/auditorias/{auditoria}/informe', [\App\Http\Controllers\AuditoriaInternaController::class, 'generarInforme'])->name('sgc.auditorias.informe');
+    });
+
+    // ISO 9001 — Mejora Continua
+    Route::middleware('permission:sgc-mejora.view')->group(function () {
+        Route::get('/sgc/mejora-continua', [\App\Http\Controllers\MejoraContinuaController::class, 'index'])->name('sgc.mejora.index');
+        Route::get('/sgc/mejora-continua/{mejora}', [\App\Http\Controllers\MejoraContinuaController::class, 'show'])->name('sgc.mejora.show');
+        Route::get('/sgc/mejora-continua/stats', [\App\Http\Controllers\MejoraContinuaController::class, 'stats'])->name('sgc.mejora.stats');
+        Route::get('/sgc/mejora-continua/propuestas', [\App\Http\Controllers\MejoraContinuaController::class, 'propuestas'])->name('sgc.mejora.propuestas');
+    });
+    Route::middleware('permission:sgc-mejora.create')->group(function () {
+        Route::get('/sgc/mejora-continua/create', [\App\Http\Controllers\MejoraContinuaController::class, 'create'])->name('sgc.mejora.create');
+        Route::post('/sgc/mejora-continua', [\App\Http\Controllers\MejoraContinuaController::class, 'store'])->name('sgc.mejora.store');
+        Route::get('/sgc/mejora-continua/propuestas/create', [\App\Http\Controllers\MejoraContinuaController::class, 'crearPropuesta'])->name('sgc.mejora.propuestas.create');
+        Route::post('/sgc/mejora-continua/propuestas', [\App\Http\Controllers\MejoraContinuaController::class, 'guardarPropuesta'])->name('sgc.mejora.propuestas.store');
+    });
+    Route::middleware('permission:sgc-mejora.edit')->group(function () {
+        Route::post('/sgc/mejora-continua/propuestas/{propuesta}/aprobar', [\App\Http\Controllers\MejoraContinuaController::class, 'aprobarPropuesta'])->name('sgc.mejora.propuestas.aprobar');
+        Route::post('/sgc/mejora-continua/propuestas/{propuesta}/rechazar', [\App\Http\Controllers\MejoraContinuaController::class, 'rechazarPropuesta'])->name('sgc.mejora.propuestas.rechazar');
+        Route::post('/sgc/mejora-continua/{mejora}/completar', [\App\Http\Controllers\MejoraContinuaController::class, 'completar'])->name('sgc.mejora.completar');
+        Route::post('/sgc/mejora-continua/{mejora}/cerrar', [\App\Http\Controllers\MejoraContinuaController::class, 'cerrar'])->name('sgc.mejora.cerrar');
+    });
+
+    // ISO 9001 — Objetivos de Calidad
+    Route::middleware('permission:sgc-objetivos.view')->group(function () {
+        Route::get('/sgc/objetivos-calidad', [\App\Http\Controllers\ObjetivoCalidadController::class, 'index'])->name('sgc.objetivos.index');
+        Route::get('/sgc/objetivos-calidad/{objetivo}', [\App\Http\Controllers\ObjetivoCalidadController::class, 'show'])->name('sgc.objetivos.show');
+        Route::get('/sgc/objetivos-calidad/stats', [\App\Http\Controllers\ObjetivoCalidadController::class, 'stats'])->name('sgc.objetivos.stats');
+    });
+    Route::middleware('permission:sgc-objetivos.create')->group(function () {
+        Route::get('/sgc/objetivos-calidad/create', [\App\Http\Controllers\ObjetivoCalidadController::class, 'create'])->name('sgc.objetivos.create');
+        Route::post('/sgc/objetivos-calidad', [\App\Http\Controllers\ObjetivoCalidadController::class, 'store'])->name('sgc.objetivos.store');
+    });
+    Route::middleware('permission:sgc-objetivos.edit')->group(function () {
+        Route::get('/sgc/objetivos-calidad/{objetivo}/edit', [\App\Http\Controllers\ObjetivoCalidadController::class, 'edit'])->name('sgc.objetivos.edit');
+        Route::put('/sgc/objetivos-calidad/{objetivo}', [\App\Http\Controllers\ObjetivoCalidadController::class, 'update'])->name('sgc.objetivos.update');
+        Route::post('/sgc/objetivos-calidad/{objetivo}/mediciones', [\App\Http\Controllers\ObjetivoCalidadController::class, 'registrarMedicion'])->name('sgc.objetivos.mediciones.store');
+    });
+
+    // ISO 9001 — Capacitación
+    Route::middleware('permission:sgc-capacitacion.view')->group(function () {
+        Route::get('/sgc/capacitaciones', [\App\Http\Controllers\CapacitacionController::class, 'index'])->name('sgc.capacitaciones.index');
+        Route::get('/sgc/capacitaciones/{cap}', [\App\Http\Controllers\CapacitacionController::class, 'show'])->name('sgc.capacitaciones.show');
+        Route::get('/sgc/capacitaciones/stats', [\App\Http\Controllers\CapacitacionController::class, 'stats'])->name('sgc.capacitaciones.stats');
+        Route::get('/sgc/capacitaciones/competencias', [\App\Http\Controllers\CapacitacionController::class, 'competencias'])->name('sgc.capacitaciones.competencias');
+    });
+    Route::middleware('permission:sgc-capacitacion.create')->group(function () {
+        Route::get('/sgc/capacitaciones/create', [\App\Http\Controllers\CapacitacionController::class, 'create'])->name('sgc.capacitaciones.create');
+        Route::post('/sgc/capacitaciones', [\App\Http\Controllers\CapacitacionController::class, 'store'])->name('sgc.capacitaciones.store');
+        Route::post('/sgc/capacitaciones/{cap}/participantes', [\App\Http\Controllers\CapacitacionController::class, 'agregarParticipante'])->name('sgc.capacitaciones.participantes.store');
+    });
+    Route::middleware('permission:sgc-capacitacion.edit')->group(function () {
+        Route::get('/sgc/capacitaciones/{cap}/edit', [\App\Http\Controllers\CapacitacionController::class, 'edit'])->name('sgc.capacitaciones.edit');
+        Route::put('/sgc/capacitaciones/{cap}', [\App\Http\Controllers\CapacitacionController::class, 'update'])->name('sgc.capacitaciones.update');
+        Route::delete('/sgc/capacitaciones/{cap}/participantes/{partId}', [\App\Http\Controllers\CapacitacionController::class, 'removerParticipante'])->name('sgc.capacitaciones.participantes.delete');
+        Route::post('/sgc/capacitaciones/{cap}/asistencia', [\App\Http\Controllers\CapacitacionController::class, 'registrarAsistencia'])->name('sgc.capacitaciones.asistencia');
+        Route::post('/sgc/capacitaciones/{cap}/certificados', [\App\Http\Controllers\CapacitacionController::class, 'otorgarCertificado'])->name('sgc.capacitaciones.certificados');
+    });
+
+    // ISO 9001 — Revisión por Dirección
+    Route::middleware('permission:sgc-revision-direccion.view')->group(function () {
+        Route::get('/sgc/revision-direccion', [\App\Http\Controllers\RevisionDireccionController::class, 'index'])->name('sgc.revision-direccion.index');
+        Route::get('/sgc/revision-direccion/{revision}', [\App\Http\Controllers\RevisionDireccionController::class, 'show'])->name('sgc.revision-direccion.show');
+        Route::get('/sgc/revision-direccion/stats', [\App\Http\Controllers\RevisionDireccionController::class, 'stats'])->name('sgc.revision-direccion.stats');
+    });
+    Route::middleware('permission:sgc-revision-direccion.create')->group(function () {
+        Route::get('/sgc/revision-direccion/create', [\App\Http\Controllers\RevisionDireccionController::class, 'create'])->name('sgc.revision-direccion.create');
+        Route::post('/sgc/revision-direccion', [\App\Http\Controllers\RevisionDireccionController::class, 'store'])->name('sgc.revision-direccion.store');
+        Route::post('/sgc/revision-direccion/{revision}/asistentes', [\App\Http\Controllers\RevisionDireccionController::class, 'addAsistente'])->name('sgc.revision-direccion.asistentes.store');
+        Route::delete('/sgc/revision-direccion/{revision}/asistentes/{asistenteId}', [\App\Http\Controllers\RevisionDireccionController::class, 'removeAsistente'])->name('sgc.revision-direccion.asistentes.delete');
+        Route::post('/sgc/revision-direccion/{revision}/entradas', [\App\Http\Controllers\RevisionDireccionController::class, 'addEntrada'])->name('sgc.revision-direccion.entradas.store');
+        Route::post('/sgc/revision-direccion/{revision}/salidas', [\App\Http\Controllers\RevisionDireccionController::class, 'addSalida'])->name('sgc.revision-direccion.salidas.store');
+    });
+    Route::middleware('permission:sgc-revision-direccion.edit')->group(function () {
+        Route::post('/sgc/revision-direccion/{revision}/asistencia', [\App\Http\Controllers\RevisionDireccionController::class, 'registrarAsistencia'])->name('sgc.revision-direccion.asistencia');
+        Route::post('/sgc/revision-direccion/{revision}/completar', [\App\Http\Controllers\RevisionDireccionController::class, 'completarRevision'])->name('sgc.revision-direccion.completar');
+        Route::get('/sgc/revision-direccion/{revision}/acta', [\App\Http\Controllers\RevisionDireccionController::class, 'generarActa'])->name('sgc.revision-direccion.acta');
+    });
+
+    // ISO 9001 — Satisfacción del Cliente
+    Route::middleware('permission:sgc-satisfaccion.view')->group(function () {
+        Route::get('/sgc/satisfaccion', [\App\Http\Controllers\SatisfaccionController::class, 'index'])->name('sgc.satisfaccion.index');
+        Route::get('/sgc/satisfaccion/{encuesta}', [\App\Http\Controllers\SatisfaccionController::class, 'show'])->name('sgc.satisfaccion.show');
+        Route::get('/sgc/satisfaccion/stats', [\App\Http\Controllers\SatisfaccionController::class, 'stats'])->name('sgc.satisfaccion.stats');
+        Route::get('/sgc/satisfaccion/reclamos', [\App\Http\Controllers\SatisfaccionController::class, 'reclamos'])->name('sgc.satisfaccion.reclamos');
+    });
+    Route::middleware('permission:sgc-satisfaccion.create')->group(function () {
+        Route::get('/sgc/satisfaccion/create', [\App\Http\Controllers\SatisfaccionController::class, 'create'])->name('sgc.satisfaccion.create');
+        Route::post('/sgc/satisfaccion', [\App\Http\Controllers\SatisfaccionController::class, 'store'])->name('sgc.satisfaccion.store');
+        Route::post('/sgc/satisfaccion/{encuesta}/responder', [\App\Http\Controllers\SatisfaccionController::class, 'responderEncuestaStore'])->name('sgc.satisfaccion.responder');
+        Route::get('/sgc/satisfaccion/reclamos/create', [\App\Http\Controllers\SatisfaccionController::class, 'reclamoCreate'])->name('sgc.satisfaccion.reclamos.create');
+        Route::post('/sgc/satisfaccion/reclamos', [\App\Http\Controllers\SatisfaccionController::class, 'reclamoStore'])->name('sgc.satisfaccion.reclamos.store');
+    });
+    Route::middleware('permission:sgc-satisfaccion.edit')->group(function () {
+        Route::get('/sgc/satisfaccion/reclamos/{reclamo}', [\App\Http\Controllers\SatisfaccionController::class, 'reclamoShow'])->name('sgc.satisfaccion.reclamos.show');
+        Route::put('/sgc/satisfaccion/reclamos/{reclamo}', [\App\Http\Controllers\SatisfaccionController::class, 'reclamoUpdate'])->name('sgc.satisfaccion.reclamos.update');
+    });
+
+    // ISO 9001 — Evaluación de Proveedores
+    Route::middleware('permission:sgc-evaluaciones-proveedores.view')->group(function () {
+        Route::get('/sgc/evaluaciones-proveedores', [\App\Http\Controllers\EvaluacionProveedorController::class, 'index'])->name('sgc.evaluaciones_proveedores.index');
+        Route::get('/sgc/evaluaciones-proveedores/{evaluacion}', [\App\Http\Controllers\EvaluacionProveedorController::class, 'show'])->name('sgc.evaluaciones_proveedores.show');
+        Route::get('/sgc/evaluaciones-proveedores/stats', [\App\Http\Controllers\EvaluacionProveedorController::class, 'stats'])->name('sgc.evaluaciones_proveedores.stats');
+    });
+    Route::middleware('permission:sgc-evaluaciones-proveedores.create')->group(function () {
+        Route::get('/sgc/evaluaciones-proveedores/evaluar/{proveedor}', [\App\Http\Controllers\EvaluacionProveedorController::class, 'evaluarProveedor'])->name('sgc.evaluaciones_proveedores.evaluar');
+        Route::get('/sgc/evaluaciones-proveedores/periodico', [\App\Http\Controllers\EvaluacionProveedorController::class, 'periodico'])->name('sgc.evaluaciones_proveedores.periodico');
+        Route::get('/sgc/evaluaciones-proveedores/periodico/create', [\App\Http\Controllers\EvaluacionProveedorController::class, 'newPeriodico'])->name('sgc.evaluaciones_proveedores.periodico.create');
+        Route::post('/sgc/evaluaciones-proveedores/periodico', [\App\Http\Controllers\EvaluacionProveedorController::class, 'savePeriodico'])->name('sgc.evaluaciones_proveedores.periodico.store');
+    });
 });
 
     // Operational routes
@@ -150,7 +312,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/ventas/buscar-producto', [VentaController::class, 'buscarProducto'])->name('ventas.buscarProducto');
     Route::get('/ventas/buscar-codigo/{codigo}', [VentaController::class, 'buscarPorCodigoBarras'])->name('ventas.buscarPorCodigo');
-    Route::get('/ventas/buscar-equipo', [VentaController::class, 'buscarEquipo'])->name('ventas.buscarEquipo');
     Route::get('/ventas/buscar-servicio', [VentaController::class, 'buscarServicio'])->name('ventas.buscarServicio');
 
     // Permission-based routes
@@ -545,11 +706,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/reportes/ventas/csv', [ReporteController::class, 'ventasCsv'])->name('reportes.ventas.csv');
         Route::get('/reportes/ventas/pdf', [ReporteController::class, 'ventasPdf'])->name('reportes.ventas.pdf');
 
-        // Equipos
-        Route::get('/reportes/equipos', [EquipoReporteController::class, 'index'])->name('reportes.equipos');
-        Route::get('/reportes/equipos/export', [EquipoReporteController::class, 'exportExcel'])->name('reportes.equipos.export');
-        Route::get('/reportes/equipos/pdf', [EquipoReporteController::class, 'exportPdf'])->name('reportes.equipos.pdf');
-
         // Comisiones Vendedores
         Route::get('/reportes/comisiones-vendedores', [ReporteController::class, 'comisionesVendedores'])->name('reportes.comisiones-vendedores');
         Route::get('/reportes/comisiones-vendedores/csv', [ReporteController::class, 'comisionesVendedoresCsv'])->name('reportes.comisiones-vendedores.csv');
@@ -696,63 +852,66 @@ Route::middleware(['auth', 'role:admin|owner'])->group(function () {
 // API Documentation
 Route::middleware('auth')->get('/docs/api', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'index'])->name('api.documentation');
 Route::middleware('auth')->get('/docs/api/export', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'export'])->name('api.documentation.export');
+Route::middleware('auth')->get('/docs/flowapi', [\App\Http\Controllers\Api\FlowApiDocumentationController::class, 'index'])->name('flowapi.documentation');
+Route::middleware('auth')->get('/docs/flowapi/export', [\App\Http\Controllers\Api\FlowApiDocumentationController::class, 'export'])->name('flowapi.documentation.export');
 
 // Owner (Dueño del Sistema)
 Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
     Route::get('/', [\App\Http\Controllers\OwnerController::class, 'index'])->name('dashboard');
-    Route::get('/business-types', [\App\Http\Controllers\OwnerController::class, 'businessTypes'])->name('business-types.index');
-    Route::get('/business-types/create', [\App\Http\Controllers\OwnerController::class, 'businessTypesCreate'])->name('business-types.create');
-    Route::post('/business-types', [\App\Http\Controllers\OwnerController::class, 'businessTypesStore'])->name('business-types.store');
-    Route::get('/business-types/{type}/edit', [\App\Http\Controllers\OwnerController::class, 'businessTypesEdit'])->name('business-types.edit');
-    Route::put('/business-types/{type}', [\App\Http\Controllers\OwnerController::class, 'businessTypesUpdate'])->name('business-types.update');
-    Route::delete('/business-types/{type}', [\App\Http\Controllers\OwnerController::class, 'businessTypesDestroy'])->name('business-types.destroy');
+    Route::get('/business-types', [\App\Http\Controllers\OwnerBusinessTypeController::class, 'index'])->name('business-types.index');
+    Route::get('/business-types/create', [\App\Http\Controllers\OwnerBusinessTypeController::class, 'create'])->name('business-types.create');
+    Route::post('/business-types', [\App\Http\Controllers\OwnerBusinessTypeController::class, 'store'])->name('business-types.store');
+    Route::get('/business-types/{type}/edit', [\App\Http\Controllers\OwnerBusinessTypeController::class, 'edit'])->name('business-types.edit');
+    Route::put('/business-types/{type}', [\App\Http\Controllers\OwnerBusinessTypeController::class, 'update'])->name('business-types.update');
+    Route::delete('/business-types/{type}', [\App\Http\Controllers\OwnerBusinessTypeController::class, 'destroy'])->name('business-types.destroy');
     // Module management
-    Route::get('/modules', [\App\Http\Controllers\OwnerController::class, 'modulesIndex'])->name('modules.index');
-    Route::get('/modules/create', [\App\Http\Controllers\OwnerController::class, 'modulesCreate'])->name('modules.create');
-    Route::post('/modules', [\App\Http\Controllers\OwnerController::class, 'modulesStore'])->name('modules.store');
-    Route::get('/modules/{module}/edit', [\App\Http\Controllers\OwnerController::class, 'modulesEdit'])->name('modules.edit');
-    Route::put('/modules/{module}', [\App\Http\Controllers\OwnerController::class, 'modulesUpdate'])->name('modules.update');
-    Route::delete('/modules/{module}', [\App\Http\Controllers\OwnerController::class, 'modulesDestroy'])->name('modules.destroy');
+    Route::get('/modules', [\App\Http\Controllers\OwnerModuleController::class, 'modulesIndex'])->name('modules.index');
+    Route::get('/modules/create', [\App\Http\Controllers\OwnerModuleController::class, 'modulesCreate'])->name('modules.create');
+    Route::post('/modules', [\App\Http\Controllers\OwnerModuleController::class, 'modulesStore'])->name('modules.store');
+    Route::get('/modules/{module}/edit', [\App\Http\Controllers\OwnerModuleController::class, 'modulesEdit'])->name('modules.edit');
+    Route::put('/modules/{module}', [\App\Http\Controllers\OwnerModuleController::class, 'modulesUpdate'])->name('modules.update');
+    Route::delete('/modules/{module}', [\App\Http\Controllers\OwnerModuleController::class, 'modulesDestroy'])->name('modules.destroy');
     // Planes (SaaS)
-    Route::get('/planes', [\App\Http\Controllers\OwnerController::class, 'plansIndex'])->name('plans.index');
-    Route::get('/planes/create', [\App\Http\Controllers\OwnerController::class, 'plansCreate'])->name('plans.create');
-    Route::post('/planes', [\App\Http\Controllers\OwnerController::class, 'plansStore'])->name('plans.store');
-    Route::get('/planes/{plan}/edit', [\App\Http\Controllers\OwnerController::class, 'plansEdit'])->name('plans.edit');
-    Route::put('/planes/{plan}', [\App\Http\Controllers\OwnerController::class, 'plansUpdate'])->name('plans.update');
-    Route::delete('/planes/{plan}', [\App\Http\Controllers\OwnerController::class, 'plansDestroy'])->name('plans.destroy');
-    Route::get('/instances', [\App\Http\Controllers\OwnerController::class, 'instances'])->name('instances.index');
-    Route::get('/instances/create', [\App\Http\Controllers\OwnerController::class, 'instancesCreate'])->name('instances.create');
-    Route::post('/instances', [\App\Http\Controllers\OwnerController::class, 'instancesStore'])->name('instances.store');
-    Route::get('/instances/{instance}', [\App\Http\Controllers\OwnerController::class, 'instancesShow'])->name('instances.show');
-    Route::get('/instances/{instance}/edit', [\App\Http\Controllers\OwnerController::class, 'instancesEdit'])->name('instances.edit');
-    Route::put('/instances/{instance}', [\App\Http\Controllers\OwnerController::class, 'instancesUpdate'])->name('instances.update');
-    Route::delete('/instances/{instance}', [\App\Http\Controllers\OwnerController::class, 'instancesDestroy'])->name('instances.destroy');
-    Route::get('/instances/{instance}/config', [\App\Http\Controllers\OwnerController::class, 'instancesConfig'])->name('instances.config');
-    Route::put('/instances/{instance}/config', [\App\Http\Controllers\OwnerController::class, 'instancesConfigUpdate'])->name('instances.config.update');
-    Route::post('/instances/{instance}/toggle-block', [\App\Http\Controllers\OwnerController::class, 'alternarBloqueo'])->name('instances.toggle-block');
-    Route::post('/instances/{instance}/clean', [\App\Http\Controllers\OwnerController::class, 'cleanInstance'])->name('instances.clean');
-    Route::get('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'paymentHistory'])->name('instances.pagos');
-    Route::get('/instances/{instance}/pagos/create', [\App\Http\Controllers\OwnerController::class, 'registerPayment'])->name('instances.pagos.create');
-    Route::post('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerController::class, 'storePayment'])->name('instances.pagos.store');
-    Route::post('/instances/{instance}/pagos/{pago}/confirmar', [\App\Http\Controllers\OwnerController::class, 'confirmPayment'])->name('instances.pagos.confirmar');
+    Route::get('/planes', [\App\Http\Controllers\OwnerPlanController::class, 'index'])->name('plans.index');
+    Route::get('/planes/create', [\App\Http\Controllers\OwnerPlanController::class, 'create'])->name('plans.create');
+    Route::post('/planes', [\App\Http\Controllers\OwnerPlanController::class, 'store'])->name('plans.store');
+    Route::get('/planes/{plan}/edit', [\App\Http\Controllers\OwnerPlanController::class, 'edit'])->name('plans.edit');
+    Route::put('/planes/{plan}', [\App\Http\Controllers\OwnerPlanController::class, 'update'])->name('plans.update');
+    Route::delete('/planes/{plan}', [\App\Http\Controllers\OwnerPlanController::class, 'destroy'])->name('plans.destroy');
+    Route::get('/instances', [\App\Http\Controllers\OwnerInstanceController::class, 'instances'])->name('instances.index');
+    Route::get('/instances/create', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesCreate'])->name('instances.create');
+    Route::post('/instances', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesStore'])->name('instances.store');
+    Route::get('/instances/{instance}', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesShow'])->name('instances.show');
+    Route::get('/instances/{instance}/edit', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesEdit'])->name('instances.edit');
+    Route::put('/instances/{instance}', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesUpdate'])->name('instances.update');
+    Route::delete('/instances/{instance}', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesDestroy'])->name('instances.destroy');
+    Route::get('/instances/{instance}/config', [\App\Http\Controllers\OwnerInstanceConfigController::class, 'instancesConfig'])->name('instances.config');
+    Route::put('/instances/{instance}/config', [\App\Http\Controllers\OwnerInstanceConfigController::class, 'instancesConfigUpdate'])->name('instances.config.update');
+    Route::post('/instances/{instance}/toggle-block', [\App\Http\Controllers\OwnerInstanceController::class, 'alternarBloqueo'])->name('instances.toggle-block');
+    Route::post('/instances/{instance}/clean', [\App\Http\Controllers\OwnerInstanceController::class, 'cleanInstance'])->name('instances.clean');
+    Route::get('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'paymentHistory'])->name('instances.pagos');
+    Route::get('/instances/{instance}/pagos/create', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'registerPayment'])->name('instances.pagos.create');
+    Route::post('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'storePayment'])->name('instances.pagos.store');
+    Route::post('/instances/{instance}/pagos/{pago}/confirmar', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'confirmPayment'])->name('instances.pagos.confirmar');
+    Route::get('/instances/{instance}/pagos/{pago}/edit', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'editPayment'])->name('instances.pagos.edit');
+    Route::put('/instances/{instance}/pagos/{pago}', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'updatePayment'])->name('instances.pagos.update');
     // Instance user management
-    Route::get('/instances/{instance}/users/create', [\App\Http\Controllers\OwnerController::class, 'instanceUserCreate'])->name('instances.users.create');
-    Route::post('/instances/{instance}/users', [\App\Http\Controllers\OwnerController::class, 'instanceUserStore'])->name('instances.users.store');
-    Route::get('/instances/{instance}/users/{user}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceUserEdit'])->name('instances.users.edit');
-    Route::put('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserUpdate'])->name('instances.users.update');
-    Route::delete('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerController::class, 'instanceUserDestroy'])->name('instances.users.destroy');
+    Route::get('/instances/{instance}/users/create', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceUserCreate'])->name('instances.users.create');
+    Route::post('/instances/{instance}/users', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceUserStore'])->name('instances.users.store');
+    Route::get('/instances/{instance}/users/{user}/edit', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceUserEdit'])->name('instances.users.edit');
+    Route::put('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceUserUpdate'])->name('instances.users.update');
+    Route::delete('/instances/{instance}/users/{user}', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceUserDestroy'])->name('instances.users.destroy');
     // Instance role management
-    Route::get('/instances/{instance}/roles', [\App\Http\Controllers\OwnerController::class, 'instanceRoles'])->name('instances.roles');
-    Route::get('/instances/{instance}/roles/create', [\App\Http\Controllers\OwnerController::class, 'instanceRolesCreate'])->name('instances.roles.create');
-    Route::post('/instances/{instance}/roles', [\App\Http\Controllers\OwnerController::class, 'instanceRolesStore'])->name('instances.roles.store');
-    Route::get('/instances/{instance}/roles/{role}/edit', [\App\Http\Controllers\OwnerController::class, 'instanceRolesEdit'])->name('instances.roles.edit');
-    Route::put('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesUpdate'])->name('instances.roles.update');
-    Route::delete('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerController::class, 'instanceRolesDestroy'])->name('instances.roles.destroy');
+    Route::get('/instances/{instance}/roles', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceRoles'])->name('instances.roles');
+    Route::get('/instances/{instance}/roles/create', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceRolesCreate'])->name('instances.roles.create');
+    Route::post('/instances/{instance}/roles', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceRolesStore'])->name('instances.roles.store');
+    Route::get('/instances/{instance}/roles/{role}/edit', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceRolesEdit'])->name('instances.roles.edit');
+    Route::put('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceRolesUpdate'])->name('instances.roles.update');
+    Route::delete('/instances/{instance}/roles/{role}', [\App\Http\Controllers\OwnerInstanceUserManagementController::class, 'instanceRolesDestroy'])->name('instances.roles.destroy');
     // Instance error logs
-    Route::get('/errors', [\App\Http\Controllers\OwnerController::class, 'globalErrors'])->name('errors.index');
-    Route::get('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'instanceErrors'])->name('instances.errors');
-    Route::patch('/instances/{instance}/errors/{errorLog}/resolve', [\App\Http\Controllers\OwnerController::class, 'resolveError'])->name('instances.errors.resolve');
-    Route::delete('/instances/{instance}/errors', [\App\Http\Controllers\OwnerController::class, 'clearErrors'])->name('instances.errors.clear');
+    Route::get('/instances/{instance}/errors', [\App\Http\Controllers\OwnerInstanceConfigController::class, 'instanceErrors'])->name('instances.errors');
+    Route::patch('/instances/{instance}/errors/{errorLog}/resolve', [\App\Http\Controllers\OwnerInstanceConfigController::class, 'resolveError'])->name('instances.errors.resolve');
+    Route::delete('/instances/{instance}/errors', [\App\Http\Controllers\OwnerInstanceConfigController::class, 'clearErrors'])->name('instances.errors.clear');
     // Online users
     Route::get('/online', [\App\Http\Controllers\OwnerController::class, 'onlineUsers'])->name('online.index');
     Route::get('/instances/{instance}/online', [\App\Http\Controllers\OwnerController::class, 'instanceOnlineUsers'])->name('instances.online');
@@ -760,6 +919,9 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/activity-history', [\App\Http\Controllers\OwnerController::class, 'activityHistory'])->name('activity.history');
     Route::get('/activity-history/json', [\App\Http\Controllers\OwnerController::class, 'activityHistoryJson'])->name('activity.history.json');
     Route::post('/activity-history/clear', [\App\Http\Controllers\OwnerController::class, 'clearHistory'])->name('activity.history.clear');
+
+    // Global Error Logs
+    Route::get('/errors', [\App\Http\Controllers\OwnerController::class, 'globalErrors'])->name('errors.index');
 
     // Audit Logs
     Route::get('/audit-logs', [\App\Http\Controllers\OwnerController::class, 'auditLogsIndex'])->name('audit-logs.index');
@@ -800,7 +962,15 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/owners/{owner}/edit', [\App\Http\Controllers\OwnerController::class, 'ownersEdit'])->name('owners.edit');
     Route::put('/owners/{owner}', [\App\Http\Controllers\OwnerController::class, 'ownersUpdate'])->name('owners.update');
     Route::delete('/owners/{owner}', [\App\Http\Controllers\OwnerController::class, 'ownersDestroy'])->name('owners.destroy');
-    // (owner role management removed — roles are managed per-instance)
+    // (owner role management removed - roles are managed per-instance)
+
+    // Owner Backups Management
+    Route::get('/backups', [OwnerBackupController::class, 'index'])->name('backups.index');
+    Route::get('/backups/config', [OwnerBackupController::class, 'config'])->name('backups.config');
+    Route::post('/backups', [OwnerBackupController::class, 'store'])->name('backups.store');
+    Route::get('/backups/{backup}/download', [OwnerBackupController::class, 'download'])->name('backups.download');
+    Route::post('/backups/{backup}/restore', [OwnerBackupController::class, 'restore'])->name('backups.restore');
+    Route::delete('/backups/{backup}', [OwnerBackupController::class, 'destroy'])->name('backups.destroy');
 });
 
 // Devoluciones
@@ -918,6 +1088,11 @@ Route::middleware(['auth', 'permission:delivery-zones.delete'])->group(function 
     Route::delete('/delivery-zones/{deliveryZone}', [\App\Http\Controllers\DeliveryZoneController::class, 'destroy'])->name('delivery-zones.destroy');
 });
 
+// Delivery Tracking - Cola de Drivers
+Route::middleware(['auth', 'permission:delivery-tracking.view'])->group(function () {
+    Route::get('/delivery/drivers-queue', [\App\Http\Controllers\DeliveryTrackingController::class, 'driversQueue'])->name('delivery.drivers-queue');
+});
+
 // Delivery Tracking
 Route::middleware(['auth', 'permission:delivery-tracking.view'])->group(function () {
     Route::get('/delivery-tracking', [\App\Http\Controllers\DeliveryTrackingController::class, 'index'])->name('delivery-tracking.index');
@@ -943,7 +1118,7 @@ Route::middleware(['auth', 'permission:delivery-earnings.view'])->group(function
 });
 
 // DEBUG - diagnostic route for reservations
-Route::middleware(['auth'])->get('/_debug-reservaciones', function () {
+Route::middleware(['auth', 'role:admin'])->get('/_debug-reservaciones', function () {
     $query = \App\Models\Reservacion::with('mesa', 'user')->deSucursal();
     $results = $query->get();
     return [
@@ -993,6 +1168,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/restaurante/mesa/{mesa}/estado', [OrdenController::class, 'cambiarEstado'])->name('restaurante.mesa.estado')->middleware('permission:restaurante.mesas.manage');
     Route::post('/restaurante/mesa/{mesa}/posicion', [OrdenController::class, 'savePosicion'])->name('restaurante.mesa.posicion')->middleware('permission:restaurante.mesas.manage');
     Route::post('/restaurante/mesas/posiciones', [OrdenController::class, 'saveAllPosiciones'])->name('restaurante.mesas.posiciones')->middleware('permission:restaurante.mesas.manage');
+
+    // Delivery
+    Route::get('/restaurante/delivery/zones', [OrdenController::class, 'getDeliveryZones'])->name('restaurante.delivery.zones')->middleware('permission:restaurante.cobrar');
+    Route::get('/restaurante/delivery/drivers', [OrdenController::class, 'getAvailableDrivers'])->name('restaurante.delivery.drivers')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/configurar-delivery', [OrdenController::class, 'configurarDelivery'])->name('restaurante.mesa.configurar-delivery')->middleware('permission:restaurante.cobrar');
+    Route::post('/restaurante/mesa/{mesa}/asignar-driver', [OrdenController::class, 'asignarDriver'])->name('restaurante.mesa.asignar-driver')->middleware('permission:restaurante.cobrar');
+    Route::get('/restaurante/delivery/verificar-cobertura', [OrdenController::class, 'verificarCobertura'])->name('restaurante.delivery.verificar-cobertura')->middleware('permission:restaurante.cobrar');
+    Route::get('/restaurante/delivery/tarifa', [OrdenController::class, 'calcularTarifaDelivery'])->name('restaurante.delivery.tarifa')->middleware('permission:restaurante.cobrar');
 
     // Cajas desde restaurante
     Route::post('/restaurante/abrir-caja', [OrdenController::class, 'abrirCaja'])->name('restaurante.abrir-caja')->middleware('permission:restaurante.cajas');
@@ -1045,90 +1228,61 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/restaurante/kds/audio', [KdsController::class, 'audio'])->name('restaurante.kds.audio')->middleware('permission:restaurante.view');
 });
 
-// Lavadero (Car Wash)
-Route::middleware(['auth'])->group(function () {
-    // Lavadero Dashboard
-    Route::get('/lavadero/dashboard', [\App\Http\Controllers\LavaderoController::class, 'dashboard'])->name('lavadero.dashboard');
-
-    // Terminal POS
-    Route::get('/lavadero', [\App\Http\Controllers\LavaderoController::class, 'index'])->name('lavadero.index')->middleware('permission:lavadero.view');
-    Route::get('/lavadero/servicios', [\App\Http\Controllers\LavaderoServicioController::class, 'index'])->name('lavadero.servicios.index')->middleware('permission:lavadero.servicios');
-    Route::post('/lavadero/servicios', [\App\Http\Controllers\LavaderoServicioController::class, 'store'])->name('lavadero.servicios.store')->middleware('permission:lavadero.servicios');
-    Route::put('/lavadero/servicios/{servicio}', [\App\Http\Controllers\LavaderoServicioController::class, 'update'])->name('lavadero.servicios.update')->middleware('permission:lavadero.servicios');
-    Route::delete('/lavadero/servicios/{servicio}', [\App\Http\Controllers\LavaderoServicioController::class, 'destroy'])->name('lavadero.servicios.destroy')->middleware('permission:lavadero.servicios');
-
-    Route::get('/lavadero/vehiculos', [\App\Http\Controllers\VehiculoController::class, 'index'])->name('lavadero.vehiculos.index')->middleware('permission:lavadero.vehiculos');
-    Route::get('/lavadero/vehiculos/{vehiculo}', [\App\Http\Controllers\VehiculoController::class, 'show'])->name('lavadero.vehiculos.show')->middleware('permission:lavadero.vehiculos');
-    Route::put('/lavadero/vehiculos/{vehiculo}', [\App\Http\Controllers\VehiculoController::class, 'update'])->name('lavadero.vehiculos.update')->middleware('permission:lavadero.vehiculos');
-
-    Route::get('/lavadero/citas', [\App\Http\Controllers\LavaderoCitaController::class, 'index'])->name('lavadero.citas.index')->middleware('permission:lavadero.citas');
-    Route::post('/lavadero/citas', [\App\Http\Controllers\LavaderoCitaController::class, 'store'])->name('lavadero.citas.store')->middleware('permission:lavadero.citas');
-    Route::put('/lavadero/citas/{cita}', [\App\Http\Controllers\LavaderoCitaController::class, 'update'])->name('lavadero.citas.update')->middleware('permission:lavadero.citas');
-    Route::delete('/lavadero/citas/{cita}', [\App\Http\Controllers\LavaderoCitaController::class, 'destroy'])->name('lavadero.citas.destroy')->middleware('permission:lavadero.citas');
-
-    // API endpoints (used by POS JS)
-    Route::get('/lavadero/clientes', [\App\Http\Controllers\LavaderoController::class, 'buscarCliente'])->name('lavadero.clientes.buscar')->middleware('permission:lavadero.view');
-    Route::post('/lavadero/clientes/crear', [\App\Http\Controllers\LavaderoController::class, 'createCliente'])->name('lavadero.clientes.crear')->middleware('permission:lavadero.view');
-    Route::post('/lavadero/vehiculos/crear', [\App\Http\Controllers\LavaderoController::class, 'createVehiculo'])->name('lavadero.vehiculos.crear')->middleware('permission:lavadero.view');
-    Route::get('/lavadero/vehiculos/{vehiculo}/historial', [\App\Http\Controllers\LavaderoController::class, 'historialVehiculo'])->name('lavadero.vehiculos.historial')->middleware('permission:lavadero.view');
-    Route::get('/lavadero/servicios-json', [\App\Http\Controllers\LavaderoController::class, 'servicios'])->name('lavadero.servicios.json')->middleware('permission:lavadero.view');
-    Route::post('/lavadero/cobrar', [\App\Http\Controllers\LavaderoController::class, 'cobrar'])->name('lavadero.cobrar')->middleware('permission:lavadero.view');
-    Route::get('/lavadero/citas/hoy', [\App\Http\Controllers\LavaderoCitaController::class, 'hoy'])->name('lavadero.citas.hoy')->middleware('permission:lavadero.view');
-
-    // Lavadores
-    Route::get('/lavadero/lavadores', [\App\Http\Controllers\LavadorController::class, 'index'])->name('lavadero.lavadores.index')->middleware('permission:lavadero.lavadores');
-    Route::post('/lavadero/lavadores', [\App\Http\Controllers\LavadorController::class, 'store'])->name('lavadero.lavadores.store')->middleware('permission:lavadero.lavadores');
-    Route::put('/lavadero/lavadores/{lavador}', [\App\Http\Controllers\LavadorController::class, 'update'])->name('lavadero.lavadores.update')->middleware('permission:lavadero.lavadores');
-    Route::delete('/lavadero/lavadores/{lavador}', [\App\Http\Controllers\LavadorController::class, 'destroy'])->name('lavadero.lavadores.destroy')->middleware('permission:lavadero.lavadores');
-    Route::get('/lavadero/lavadores/activos', [\App\Http\Controllers\LavadorController::class, 'activos'])->name('lavadero.lavadores.activos')->middleware('permission:lavadero.view');
-    Route::post('/lavadero/ventas/{venta}/lavadores', [\App\Http\Controllers\LavaderoController::class, 'asignarLavadores'])->name('lavadero.ventas.lavadores')->middleware('permission:lavadero.view');
-
-    // Paquetes de Lavado (CRUD)
-    Route::resource('paquetes', LavaderoPaqueteController::class)->middleware('permission:lavadero.servicios');
-    Route::resource('paquete-items', LavaderoPaqueteItemController::class)->parameters(['paquete-items' => 'paqueteItem'])->middleware('permission:lavadero.servicios');
-
-    // API endpoints (used by POS JS)
-    Route::get('/lavadero/dashboard-data', [\App\Http\Controllers\LavaderoController::class, 'getDashboardData'])->name('lavadero.dashboard-data')->middleware('permission:lavadero.view');
-
     // Alquileres (Property Rentals)
-    Route::get('/alquileres', [\App\Http\Controllers\AlquilerController::class, 'index'])->name('alquileres.index')->middleware('permission:alquileres.view');
+    Route::middleware(['auth'])->group(function () {
+        // Lavadero (Car Wash) routes
+        Route::get('/lavadero/vehiculos', [LavaderoController::class, 'buscarVehiculo'])->name('lavadero.vehiculos.index')->middleware('permission:lavadero.vehiculos');
+        Route::get('/lavadero/citas', [LavaderoController::class, 'citas'])->name('lavadero.citas.index')->middleware('permission:lavadero.citas');
+        Route::post('/lavadero/citas', [LavaderoController::class, 'storeCita'])->name('lavadero.citas.store')->middleware('permission:lavadero.citas');
+        Route::put('/lavadero/citas/{cita}', [LavaderoController::class, 'updateCita'])->name('lavadero.citas.update')->middleware('permission:lavadero.citas');
+        Route::delete('/lavadero/citas/{cita}', [LavaderoController::class, 'destroyCita'])->name('lavadero.citas.destroy')->middleware('permission:lavadero.citas');
+        Route::get('/lavadero/lavadores', [LavaderoController::class, 'lavadores'])->name('lavadero.lavadores.index')->middleware('permission:lavadero.lavadores');
+        Route::post('/lavadero/lavadores', [LavaderoController::class, 'storeLavador'])->name('lavadero.lavadores.store')->middleware('permission:lavadero.lavadores');
+        Route::put('/lavadero/lavadores/{lavador}', [LavaderoController::class, 'updateLavador'])->name('lavadero.lavadores.update')->middleware('permission:lavadero.lavadores');
+        Route::delete('/lavadero/lavadores/{lavador}', [LavaderoController::class, 'destroyLavador'])->name('lavadero.lavadores.destroy')->middleware('permission:lavadero.lavadores');
 
-    Route::get('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'index'])->name('alquileres.viviendas.index')->middleware('permission:alquileres.viviendas');
-    Route::get('/alquileres/viviendas/crear', [\App\Http\Controllers\AlquilerViviendaController::class, 'create'])->name('alquileres.viviendas.create')->middleware('permission:alquileres.viviendas');
-    Route::post('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'store'])->name('alquileres.viviendas.store')->middleware('permission:alquileres.viviendas');
-    Route::get('/alquileres/viviendas/{vivienda}/editar', [\App\Http\Controllers\AlquilerViviendaController::class, 'edit'])->name('alquileres.viviendas.edit')->middleware('permission:alquileres.viviendas');
-    Route::put('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'update'])->name('alquileres.viviendas.update')->middleware('permission:alquileres.viviendas');
-    Route::delete('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'destroy'])->name('alquileres.viviendas.destroy')->middleware('permission:alquileres.viviendas');
+        Route::get('/alquileres', [\App\Http\Controllers\AlquilerController::class, 'index'])->name('alquileres.index')->middleware('permission:alquileres.view');
 
-    Route::get('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'index'])->name('alquileres.inquilinos.index')->middleware('permission:alquileres.inquilinos');
-    Route::get('/alquileres/inquilinos/crear', [\App\Http\Controllers\AlquilerInquilinoController::class, 'create'])->name('alquileres.inquilinos.create')->middleware('permission:alquileres.inquilinos');
-    Route::post('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'store'])->name('alquileres.inquilinos.store')->middleware('permission:alquileres.inquilinos');
-    Route::get('/alquileres/inquilinos/{inquilino}/editar', [\App\Http\Controllers\AlquilerInquilinoController::class, 'edit'])->name('alquileres.inquilinos.edit')->middleware('permission:alquileres.inquilinos');
-    Route::put('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'update'])->name('alquileres.inquilinos.update')->middleware('permission:alquileres.inquilinos');
-    Route::delete('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'destroy'])->name('alquileres.inquilinos.destroy')->middleware('permission:alquileres.inquilinos');
+        Route::get('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'index'])->name('alquileres.viviendas.index')->middleware('permission:alquileres.viviendas');
+        Route::get('/alquileres/viviendas/crear', [\App\Http\Controllers\AlquilerViviendaController::class, 'create'])->name('alquileres.viviendas.create')->middleware('permission:alquileres.viviendas');
+        Route::post('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'store'])->name('alquileres.viviendas.store')->middleware('permission:alquileres.viviendas');
+        Route::get('/alquileres/viviendas/{vivienda}/editar', [\App\Http\Controllers\AlquilerViviendaController::class, 'edit'])->name('alquileres.viviendas.edit')->middleware('permission:alquileres.viviendas');
+        Route::put('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'update'])->name('alquileres.viviendas.update')->middleware('permission:alquileres.viviendas');
+        Route::delete('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'destroy'])->name('alquileres.viviendas.destroy')->middleware('permission:alquileres.viviendas');
 
-    Route::get('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'index'])->name('alquileres.contratos.index')->middleware('permission:alquileres.contratos');
-    Route::get('/alquileres/contratos/crear', [\App\Http\Controllers\AlquilerContratoController::class, 'create'])->name('alquileres.contratos.create')->middleware('permission:alquileres.contratos');
-    Route::post('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'store'])->name('alquileres.contratos.store')->middleware('permission:alquileres.contratos');
-    Route::get('/alquileres/contratos/{contrato}/editar', [\App\Http\Controllers\AlquilerContratoController::class, 'edit'])->name('alquileres.contratos.edit')->middleware('permission:alquileres.contratos');
-    Route::put('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'update'])->name('alquileres.contratos.update')->middleware('permission:alquileres.contratos');
-    Route::delete('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'destroy'])->name('alquileres.contratos.destroy')->middleware('permission:alquileres.contratos');
+        Route::get('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'index'])->name('alquileres.inquilinos.index')->middleware('permission:alquileres.inquilinos');
+        Route::get('/alquileres/inquilinos/crear', [\App\Http\Controllers\AlquilerInquilinoController::class, 'create'])->name('alquileres.inquilinos.create')->middleware('permission:alquileres.inquilinos');
+        Route::post('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'store'])->name('alquileres.inquilinos.store')->middleware('permission:alquileres.inquilinos');
+        Route::get('/alquileres/inquilinos/{inquilino}/editar', [\App\Http\Controllers\AlquilerInquilinoController::class, 'edit'])->name('alquileres.inquilinos.edit')->middleware('permission:alquileres.inquilinos');
+        Route::put('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'update'])->name('alquileres.inquilinos.update')->middleware('permission:alquileres.inquilinos');
+        Route::delete('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'destroy'])->name('alquileres.inquilinos.destroy')->middleware('permission:alquileres.inquilinos');
 
-    Route::get('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'index'])->name('alquileres.pagos.index')->middleware('permission:alquileres.pagos');
-    Route::get('/alquileres/pagos/crear', [\App\Http\Controllers\AlquilerPagoController::class, 'create'])->name('alquileres.pagos.create')->middleware('permission:alquileres.pagos');
-    Route::post('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'store'])->name('alquileres.pagos.store')->middleware('permission:alquileres.pagos');
-    Route::get('/alquileres/pagos/{pago}/editar', [\App\Http\Controllers\AlquilerPagoController::class, 'edit'])->name('alquileres.pagos.edit')->middleware('permission:alquileres.pagos');
-    Route::put('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'update'])->name('alquileres.pagos.update')->middleware('permission:alquileres.pagos');
-    Route::delete('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'destroy'])->name('alquileres.pagos.destroy')->middleware('permission:alquileres.pagos');
-});
+        Route::get('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'index'])->name('alquileres.contratos.index')->middleware('permission:alquileres.contratos');
+        Route::get('/alquileres/contratos/crear', [\App\Http\Controllers\AlquilerContratoController::class, 'create'])->name('alquileres.contratos.create')->middleware('permission:alquileres.contratos');
+        Route::post('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'store'])->name('alquileres.contratos.store')->middleware('permission:alquileres.contratos');
+        Route::get('/alquileres/contratos/{contrato}/editar', [\App\Http\Controllers\AlquilerContratoController::class, 'edit'])->name('alquileres.contratos.edit')->middleware('permission:alquileres.contratos');
+        Route::put('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'update'])->name('alquileres.contratos.update')->middleware('permission:alquileres.contratos');
+        Route::delete('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'destroy'])->name('alquileres.contratos.destroy')->middleware('permission:alquileres.contratos');
 
+        Route::get('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'index'])->name('alquileres.pagos.index')->middleware('permission:alquileres.pagos');
+        Route::get('/alquileres/pagos/crear', [\App\Http\Controllers\AlquilerPagoController::class, 'create'])->name('alquileres.pagos.create')->middleware('permission:alquileres.pagos');
+        Route::post('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'store'])->name('alquileres.pagos.store')->middleware('permission:alquileres.pagos');
+        Route::get('/alquileres/pagos/{pago}/editar', [\App\Http\Controllers\AlquilerPagoController::class, 'edit'])->name('alquileres.pagos.edit')->middleware('permission:alquileres.pagos');
+        Route::put('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'update'])->name('alquileres.pagos.update')->middleware('permission:alquileres.pagos');
+        Route::delete('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'destroy'])->name('alquileres.pagos.destroy')->middleware('permission:alquileres.pagos');
+    });
+
+// POS (Point of Sale)
 // POS (Point of Sale)
 Route::middleware(['auth'])->group(function () {
     Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
     Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+    Route::post('/pos/checkout-delivery', [PosController::class, 'checkoutDelivery'])->name('pos.checkout-delivery');
     Route::post('/pos/hold', [PosController::class, 'hold'])->name('pos.hold');
     Route::post('/pos/restore/{id}', [PosController::class, 'restore'])->name('pos.restore');
     Route::post('/pos/cancel/{id}', [PosController::class, 'cancel'])->name('pos.cancel');
+    Route::get('/pos/delivery/zones', [PosController::class, 'getDeliveryZones'])->name('pos.delivery.zones');
+    Route::get('/pos/delivery/companies', [PosController::class, 'getDeliveryCompanies'])->name('pos.delivery.companies');
 });
 
 // Categorías / Subcategorías
@@ -1250,27 +1404,6 @@ Route::middleware(['auth'])->prefix('tecnologia')->name('tecnologia.')->group(fu
     Route::get('/dashboard/recent-orders', [\App\Http\Controllers\DashboardTecnologiaController::class, 'getRecentOrders'])->name('dashboard.recent-orders')->middleware('permission:tecnologia.view');
 });
 
-// Equipos (Phones/Tablets)
-Route::middleware(['auth', 'permission:equipos.create'])->group(function () {
-    Route::get('equipos/create', [\App\Http\Controllers\EquipoController::class, 'create'])->name('equipos.create');
-    Route::post('equipos', [\App\Http\Controllers\EquipoController::class, 'store'])->name('equipos.store');
-});
-Route::middleware(['auth', 'permission:equipos.view'])->group(function () {
-    Route::get('equipos', [\App\Http\Controllers\EquipoController::class, 'index'])->name('equipos.index');
-    Route::get('equipos/buscar-imei', [\App\Http\Controllers\EquipoController::class, 'buscarPorImei'])->name('equipos.buscar-imei');
-    Route::get('equipos/exportar', [\App\Http\Controllers\EquipoController::class, 'exportarExcel'])->name('equipos.exportar');
-    Route::get('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'show'])->name('equipos.show');
-});
-Route::middleware(['auth', 'permission:equipos.edit'])->group(function () {
-    Route::get('equipos/{equipo}/edit', [\App\Http\Controllers\EquipoController::class, 'edit'])->name('equipos.edit');
-    Route::put('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'update'])->name('equipos.update');
-    Route::post('equipos/{equipo}/cambiar-estado', [\App\Http\Controllers\EquipoController::class, 'cambiarEstado'])->name('equipos.cambiar-estado');
-    Route::post('equipos/{equipo}/toggle-reservar', [\App\Http\Controllers\EquipoController::class, 'toggleReservar'])->name('equipos.toggle-reservar');
-});
-Route::middleware(['auth', 'permission:equipos.delete'])->group(function () {
-    Route::delete('equipos/{equipo}', [\App\Http\Controllers\EquipoController::class, 'destroy'])->name('equipos.destroy');
-});
-
 // Órdenes de Reparación
 Route::middleware(['auth', 'permission:tecnicas.view'])->group(function () {
     Route::get('tecnicas', [\App\Http\Controllers\OrdenReparacionController::class, 'index'])->name('tecnicas.index');
@@ -1369,6 +1502,11 @@ Route::middleware(['auth', 'permission:garantias.delete'])->group(function () {
 });
 
 // Marcas Tecnológicas
+// AJAX route para productos (debe ir ANTES de las rutas de marca-tecnologicas)
+Route::get('productos/ajax/marcas-tecnicas', [\App\Http\Controllers\ProductoController::class, 'ajaxMarcasTecnicas'])
+    ->middleware(['auth', 'permission:productos.view'])
+    ->name('productos.ajax.marcas-tecnicas');
+
 // create/edit fuera del grupo view para evitar conflicto con {marcaTecnologica} model binding
 Route::get('marcas-tecnologicas/create', [\App\Http\Controllers\MarcaTecnologicaController::class, 'create'])
     ->middleware(['auth', 'permission:marca-tecnologicas.create'])
@@ -1537,11 +1675,6 @@ Route::middleware(['auth', 'permission:garantias-config.edit'])->group(function 
 });
 Route::middleware(['auth', 'permission:garantias-config.delete'])->group(function () {
     Route::delete('garantias-config/{garantiasConfig}', [\App\Http\Controllers\GarantiasConfigController::class, 'destroy'])->name('garantias-config.destroy');
-});
-
-// UI System Demo
-Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function () {
-    Route::get('/', fn() => view('ui-demo.index'))->name('index');
 });
 
 // ============================================
@@ -1807,5 +1940,39 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+// =============================================
+// Laravel Telescope - Monitoring & Debugging
+// (Routes auto-registered by TelescopeServiceProvider)
+// =============================================
+// Access: /telescope - authorized by role: admin|owner|root|admin-business
+//
 require __DIR__ . '/auth.php';
 
+
+// =============================================
+// Two-Factor Authentication (2FA) Routes
+// =============================================
+Route::middleware(['auth', '2fa.verify'])->prefix('two-factor')->name('two-factor.')->group(function () {
+    // Dashboard de gestion 2FA
+    Route::get('/', [\App\Http\Controllers\Auth\TwoFactorController::class, 'index'])->name('index');
+
+    // Generar QR y secreto (AJAX)
+    Route::post('/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('enable');
+
+    // Confirmar codigo TOTP
+    Route::post('/confirm', [\App\Http\Controllers\Auth\TwoFactorController::class, 'confirmEnable'])->name('confirm');
+
+    // Desactivar 2FA
+    Route::post('/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('disable');
+
+    // Ver / regenerar codigos de recuperacion (AJAX)
+    Route::post('/recovery', [\App\Http\Controllers\Auth\TwoFactorController::class, 'showRecovery'])->name('recovery');
+    Route::post('/recovery/regenerate', [\App\Http\Controllers\Auth\TwoFactorController::class, 'regenerateRecovery'])->name('recovery.regenerate');
+});
+
+// Pantalla de verificacion 2FA (accedida tras login con 2FA activado)
+Route::middleware('auth')->prefix('two-factor')->name('two-factor.')->group(function () {
+    Route::get('/verify', [\App\Http\Controllers\Auth\TwoFactorVerifyController::class, 'show'])->name('verify');
+    Route::post('/verify', [\App\Http\Controllers\Auth\TwoFactorVerifyController::class, 'verify'])->name('verify.submit');
+    Route::post('/logout', [\App\Http\Controllers\Auth\TwoFactorVerifyController::class, 'logout'])->name('logout');
+});

@@ -29,7 +29,12 @@ trait TenantScope
             if (Auth::check() && Auth::user()->business_instance_id !== null) {
                 $model = $builder->getModel();
                 $column = $model->getTenantIdColumn();
-                $builder->where($model->getTable() . '.' . $column, Auth::user()->business_instance_id);
+                $table = $model->getTable() . '.' . $column;
+                // Incluye: globales (NULL) O los del tenant actual
+                $builder->where(function ($q) use ($table) {
+                    $q->whereNull($table)
+                      ->orWhere($table, Auth::user()->business_instance_id);
+                });
             }
         });
     }

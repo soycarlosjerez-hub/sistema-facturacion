@@ -147,6 +147,7 @@ body.dark-mode #mesas-table tbody tr:hover {
                 <thead>
                     <tr>
                         <th class="ps-4" style="width:50px;">#</th>
+                        <th class="text-center" style="width:50px;">Icono</th>
                         <th>Número</th>
                         <th>Nombre</th>
                         <th>Capacidad</th>
@@ -230,7 +231,35 @@ body.dark-mode #mesas-table tbody tr:hover {
 
 @push('scripts')
 <script>
+
+document.addEventListener("DOMContentLoaded", function() {
+    const iconPicker = document.getElementById("icon-picker");
+    const iconInput = document.getElementById("mesa-icono");
+    if (iconPicker) {
+        iconPicker.addEventListener("click", function(e) {
+            const btn = e.target.closest(".icon-pick");
+            if (!btn) return;
+            iconPicker.querySelectorAll(".icon-pick").forEach(function(b) {
+                b.classList.remove("active");
+                b.style.background = "";
+                b.style.color = "";
+            });
+            btn.classList.add("active");
+            btn.style.background = "#10b981";
+            btn.style.color = "#fff";
+            iconInput.value = btn.dataset.icon;
+        });
+    }
+});
+
 function abrirModalCrear() {
+    document.getElementById("mesa-icono").value = "";
+    document.querySelectorAll("#icon-picker .icon-pick").forEach(function(b) {
+        b.classList.remove("active");
+        b.style.background = "";
+        b.style.color = "";
+    });
+
     document.getElementById('mesa-modal-title').textContent = 'Nueva Mesa';
     document.getElementById('mesa-method').value = 'POST';
     document.getElementById('mesa-form').action = '{{ route("restaurante.mesa.store") }}';
@@ -282,6 +311,7 @@ $(function() {
                 }
             },
             {
+            {                data: 'icono',                className: 'text-center',                orderable: false,                searchable: false,                render: function(data) {                    if (data) {                        return ''<i class="bi ' + data + '" style="font-size:1.2rem;color:#10b981;"></i>'';                    }                    return ''<span class="text-muted">—</span>'';                }            },
                 data: 'numero',
                 orderable: true,
                 searchable: true,

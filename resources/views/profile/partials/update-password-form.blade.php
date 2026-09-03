@@ -1,48 +1,47 @@
-<section>
-    <header>
-        <h2 class="fs-5 font-medium text-dark">
-            {{ __('Update Password') }}
-        </h2>
+<form method="post" action="{{ route('password.update') }}" class="mt-5 space-y-6">
+    @csrf
+    @method('put')
 
-        <p class="mt-1 fs-6 text-secondary">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
-        </p>
-    </header>
-
-    <form method="post" action="{{ route('password.update') }}" class="mt-5 space-y-6">
-        @csrf
-        @method('put')
-
-        <div>
-            <x-input-label for="update_password_current_password" :value="__('Current Password')" />
-            <x-text-input id="update_password_current_password" name="current_password" type="password" class="mt-1 d-block w-100" autocomplete="current-password" />
-            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
+    <div>
+        <label class="ui-label" for="update_password_current_password">{{ __('Current Password') }}</label>
+        <div class="ui-input-group mt-1">
+            <span class="ui-input-group-text"><i class="bi bi-lock"></i></span>
+            <input id="update_password_current_password" name="current_password" type="password" class="ui-input" autocomplete="current-password" placeholder="Contraseña actual" />
         </div>
+        @error('current_password')<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
+    </div>
 
-        <div>
-            <x-input-label for="update_password_password" :value="__('New Password')" />
-            <x-text-input id="update_password_password" name="password" type="password" class="mt-1 d-block w-100" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
+    <div>
+        <label class="ui-label" for="update_password_password">{{ __('New Password') }}</label>
+        <div class="ui-input-group mt-1">
+            <span class="ui-input-group-text"><i class="bi bi-key"></i></span>
+            <input id="update_password_password" name="password" type="password" class="ui-input" autocomplete="new-password" placeholder="Nueva contraseña" />
         </div>
+        @error('password')<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
+    </div>
 
-        <div>
-            <x-input-label for="update_password_password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="mt-1 d-block w-100" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
+    <div>
+        <label class="ui-label" for="update_password_password_confirmation">{{ __('Confirm Password') }}</label>
+        <div class="ui-input-group mt-1">
+            <span class="ui-input-group-text"><i class="bi bi-key-fill"></i></span>
+            <input id="update_password_password_confirmation" name="password_confirmation" type="password" class="ui-input" autocomplete="new-password" placeholder="Confirma la contraseña" />
         </div>
+        @error('password_confirmation')<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ $message }}</div>@enderror
+    </div>
 
-        <div class="d-flex align-items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+    <div class="d-flex align-items-center gap-4 mt-4">
+        <button type="submit" class="ui-btn ui-btn-primary"><i class="bi bi-check-lg me-1"></i>{{ __('Save') }}</button>
 
-            @if (session('status') === 'password-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="fs-6 text-secondary"
-                >{{ __('Saved.') }}</p>
-            @endif
-        </div>
-    </form>
-</section>
+        @if (session('status') === 'password-updated')
+            <p
+                x-data="{ show: true }"
+                x-show="show"
+                x-transition
+                x-init="setTimeout(() => show = false, 2000)"
+                class="saved-indicator"
+            >
+                <i class="bi bi-check-circle-fill"></i>{{ __('Saved.') }}
+            </p>
+        @endif
+    </div>
+</form>

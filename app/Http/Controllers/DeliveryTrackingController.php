@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DeliveryTracking;
+use App\Models\DeliveryDriver;
 use App\Services\DriverAssignmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -237,5 +238,37 @@ class DeliveryTrackingController extends Controller
             'success' => true,
             'message' => 'Driver liberado correctamente.',
         ]);
+    }
+
+    /**
+     * Cola de Drivers — ver todo lo que tiene cada repartidor
+     */
+    public function driversQueue()
+    {
+        $drivers = DeliveryDriver::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        $drivers->each(function ($driver) {
+            $activeTrackings = DeliveryTracking::where('driver_id', $driver->id)
+                ->whereIn('status', ['creado', 'en_camino'])
+                ->with(['orden.cliente', 'orden.detalles'])
+                ->latest()
+                ->get();
+
+            $driver->pendientes = $activeTrackings->where('status', 'creado');
+            $driver->enCamino = $activeTrackings->where('status', 'en_camino');
+            $driver->totalActivas = $activeTrackings->count();
+
+            $todayStart = \Carbon\Carbon::today()->startOfDay();
+            $todayEnd = \Carbon\Carbon::today()->endOfDay();
+
+            $driver->entregadasHoy = DeliveryTracking::where('driver_id', $driver->id)
+                ->where('status', 'entregado')
+                ->whereBetween('created_at', [$todayStart, $todayEnd])
+                ->count();
+        });
+
+        return view('delivery-drivers.queue', compact('drivers'));
     }
 }

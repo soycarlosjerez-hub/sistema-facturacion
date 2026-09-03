@@ -57,6 +57,12 @@
                         <option value="inactivo" {{ request('status') === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
                     </select>
                 </div>
+                <div class="col-lg-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="show_trashed" id="show_trashed" value="1" {{ request('show_trashed') == '1' ? 'checked' : '' }}>
+                        <label class="form-check-label small" for="show_trashed">Mostrar borradas</label>
+                    </div>
+                </div>
                 <div class="col-lg-2 d-flex gap-2">
                     <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
                     <a href="{{ route('owner.instances.index') }}" class="ui-btn ui-btn-primary"><i class="bi bi-x-lg"></i></a>

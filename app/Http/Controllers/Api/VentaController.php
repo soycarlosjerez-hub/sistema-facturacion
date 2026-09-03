@@ -182,6 +182,10 @@ class VentaController extends Controller
                         ->value('stock') ?? 0)
                     : (int) $producto->stock;
 
+                if ($stockAlmacen === 0 && $almacenId) {
+                    $stockAlmacen = max($stockAlmacen, (int) $producto->stock);
+                }
+
                 if ($stockAlmacen < $cantidad || $producto->stock < $cantidad) {
                     return response()->json([
                         'message' => "Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$stockAlmacen}, Stock global: {$producto->stock})",

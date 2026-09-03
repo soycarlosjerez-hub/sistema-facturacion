@@ -45,6 +45,7 @@ class Producto extends Model
         'tipo_producto',
         'linea_negocio',
         'requiere_serial',
+        'serial_imei',
         'categoria_tecnica',
         'garantia_dias',
         'es_licencia',

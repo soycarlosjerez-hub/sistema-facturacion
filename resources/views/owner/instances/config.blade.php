@@ -190,7 +190,7 @@
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
                                             <label class="ui-label fw-bold small mb-0">
-                                                Validar Stock en Restaurante
+                                                Validar Stock
                                                 @if(isset($instanceConfig['restaurante_valida_stock']))
                                                     <span class="ui-badge ui-badge-warning rounded-pill ms-1" style="font-size:.55rem;">personalizado</span>
                                                 @else
@@ -198,11 +198,11 @@
                                                 @endif
                                             </label>
                                             <small class="text-muted d-block" style="font-size:.72rem;">
-                                                Si est&aacute; activo, solo se muestran productos con stock disponible.
+                                                Si está activo, solo se muestran productos con stock disponible.
                                             </small>
                                         </div>
                                         <div class="form-check form-switch m-0">
-                                            <input class="form-check-input" type="checkbox" name="restaurante_valida_stock" value="1"
+                                            <input class="form-check-input" type="checkbox" name="validar_stock" value="1"
                                                    {{ ($instanceConfig['restaurante_valida_stock'] ?? '1') === '1' ? 'checked' : '' }}>
                                         </div>
                                     </div>
@@ -453,5 +453,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection
 @endsection

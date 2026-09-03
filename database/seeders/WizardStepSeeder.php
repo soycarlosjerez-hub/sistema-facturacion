@@ -12,7 +12,6 @@ use App\Models\NcfSequence;
 use App\Models\MesaUbicacion;
 use App\Models\MesaCategoria;
 use App\Models\Mesa;
-use App\Models\LavaderoServicio;
 use App\Models\Lavador;
 use App\Models\Cliente;
 use App\Models\Proveedor;
@@ -174,7 +173,7 @@ class WizardStepSeeder extends Seeder
                 'icon' => 'bi-card-checklist',
                 'required' => true,
                 'skipable' => false,
-                'entity_class' => LavaderoServicio::class,
+                'entity_class' => Producto::class,
                 'orden' => 90,
             ],
             [

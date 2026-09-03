@@ -131,10 +131,10 @@ body.dark-mode .form-section-title { color: #94a3b8; border-bottom-color: #1e293
                     <div class="col-lg-3">
                         <label class="ui-label">Tipo de Cliente <span class="text-danger">*</span></label>
                         <select name="tipo_cliente" class="ui-select @error('tipo_cliente') is-invalid @enderror">
-                            <option value="regular" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'regular' ? 'selected' : '' }}>Regular</option>
-                            <option value="premium" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'premium' ? 'selected' : '' }}>Premium</option>
-                            <option value="mayorista" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'mayorista' ? 'selected' : '' }}>Mayorista</option>
-                            <option value="gobierno" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'gobierno' ? 'selected' : '' }}>Gobierno</option>
+                            <option value="consumo" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'consumo' ? 'selected' : '' }}>Consumo</option>
+                            <option value="credito_fiscal" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'credito_fiscal' ? 'selected' : '' }}>Crédito Fiscal</option>
+                            <option value="especial" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'especial' ? 'selected' : '' }}>Especial</option>
+                            <option value="gubernamental" {{ old('tipo_cliente', $cliente->tipo_cliente) === 'gubernamental' ? 'selected' : '' }}>Gubernamental</option>
                         </select>
                     </div>
                     <div class="col-lg-3">

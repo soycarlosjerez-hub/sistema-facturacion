@@ -292,6 +292,52 @@ body.dark-mode .pagos-table tbody td {
                     </div>
                 </div>
             </div>
+
+            @if($venta->splitBillPerson->count())
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-people me-2"></i>
+                    División de Cuenta ({{ $venta->splitBillPerson->count() }} personas)
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        @foreach($venta->splitBillPerson as $person)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px;">
+                                            <i class="bi bi-person-fill text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">{{ $person->persona_nombre ?? "Persona " . $person->persona_num }}</h6>
+                                            <small class="text-muted">Parte {{ $person->persona_num }}</small>
+                                        </div>
+                                        <div class="ms-auto text-end">
+                                            <span class="fs-5 fw-bold text-success">RD${{ number_format($person->subtotal, 2) }}</span>
+                                        </div>
+                                    </div>
+                                    @if(is_array($person->items) && count($person->items))
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach($person->items as $item)
+                                        <li class="d-flex justify-content-between small py-1 border-bottom">
+                                            <span>{{ $item["nombre"] ?? $item["name"] ?? "Item" }} × {{ $item["cantidad"] ?? $item["qty"] ?? 1 }}</span>
+                                            <span class="fw-semibold">RD${{ number_format($item["subtotal"] ?? $item["price"] ?? 0, 2) }}</span>
+                                        </li>
+                                        @endforeach
+                                    </ul>
+                                    @else
+                                    <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Sin items detallados.</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>

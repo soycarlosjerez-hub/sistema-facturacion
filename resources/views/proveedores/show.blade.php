@@ -82,10 +82,10 @@ body.dark-mode .compras-table tbody td {
                 </div>
             </div>
             <div class="ui-header-actions">
-                <a href="{{ route('proveedores.edit', $proveedore) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                <a href="{{ route('proveedores.edit', $proveedore) }}" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
                     <i class="bi bi-pencil-square me-1"></i>Editar
                 </a>
-                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
             </div>

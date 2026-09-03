@@ -34,7 +34,8 @@ class Venta extends Model
         'cliente_id', 'tipo_venta_id', 'sucursal_id', 'mesa_id',
         'fecha', 'subtotal', 'impuestos', 'descuento', 'general_descuento', 'total', 'estado',
         'descuento_tipo', 'descuento_motivo', 'notas', 'tipo_orden', 'propina',
-        'delivery_company_id', 'delivery_fee', 'cargo_servicio', 'vehiculo_id',
+        'delivery_company_id', 'delivery_fee', 'driver_id', 'delivery_address', 'cargo_servicio', 'vehiculo_id',
+        'delivery_zone_id', 'distancia_km', 'tarifa_delivery',
         'tenant_id', 'retenciones',
     ];
 
@@ -127,6 +128,11 @@ class Venta extends Model
     public function deliveryTracking()
     {
         return $this->hasOne(\App\Models\DeliveryTracking::class, 'orden_id');
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(\App\Models\DeliveryDriver::class);
     }
 
     public function usaEcf(): bool

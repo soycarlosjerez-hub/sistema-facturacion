@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use App\Models\Categoria;
+use App\Models\MarcaTecnologica;
 use App\Models\SystemSetting;
 use App\Exports\ProductosExport;
 use App\Imports\DynamicProductosImport;
@@ -73,6 +74,8 @@ class ProductoController extends Controller
                     'nombre' => $p->nombre,
                     'codigo_barras' => $p->codigo_barras ?? '',
                     'imagen_url' => $p->imagen_url,
+                    'serial_imei' => $p->serial_imei ?? '',
+                    'requiere_serial' => (bool) $p->requiere_serial,
                     'categoria' => $p->categoria ? ['id' => $p->categoria->id, 'nombre' => $p->categoria->nombre] : null,
                     'precio' => (float) $p->precio,
                     'precio_compra' => (float) ($p->precio_compra ?? 0),
@@ -219,7 +222,8 @@ class ProductoController extends Controller
     {
         $producto = new Producto();
         $categorias = Categoria::activas()->orderBy('nombre')->get();
-        return view('productos.create', compact('producto', 'categorias'));
+        $marcasTecnicas = MarcaTecnologica::activos()->ordered()->get();
+        return view('productos.create', compact('producto', 'categorias', 'marcasTecnicas'));
     }
 
     public function store(StoreProductoRequest $request)
@@ -243,7 +247,8 @@ class ProductoController extends Controller
     public function edit(Producto $producto)
     {
         $categorias = Categoria::activas()->orderBy('nombre')->get();
-        return view('productos.edit', compact('producto', 'categorias'));
+        $marcasTecnicas = MarcaTecnologica::activos()->ordered()->get();
+        return view('productos.edit', compact('producto', 'categorias', 'marcasTecnicas'));
     }
 
     public function update(UpdateProductoRequest $request, Producto $producto)
@@ -392,5 +397,24 @@ class ProductoController extends Controller
         }
 
         return ['headers' => [], 'delimiter' => $preferred];
+    }
+
+    public function ajaxMarcasTecnicas(Request $request)
+    {
+        $query = MarcaTecnologica::activos()->ordered()->select('id', 'nombre', 'logo_url');
+
+        if ($search = $request->input('search', '')) {
+            $query->where('nombre', 'like', '%' . $search . '%');
+        }
+
+        $marcas = $query->get();
+
+        return response()->json([
+            'data' => $marcas->map(fn($m) => [
+                'id' => (int) $m->id,
+                'nombre' => $m->nombre,
+                'logo_url' => $m->logo_url ? asset('storage/' . $m->logo_url) : null,
+            ]),
+        ]);
     }
 }

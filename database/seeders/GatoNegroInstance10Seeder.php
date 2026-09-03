@@ -19,6 +19,14 @@ use Illuminate\Support\Facades\Storage;
  *
  * Ejecutar solo para la instancia 10:
  *   php artisan db:seed --class=GatoNegroInstance10Seeder
+ *
+ * Categorias:
+ * - Artículos destacados: platos principales (nachos, smash, alitas, carne, etc.)
+ * - Combos: combos especiales
+ * - Gato Snacks: entrantes y snacks (quipes, empanadas, mozzarella, dip)
+ * - Especial del Gato: vacío (sin datos de Uber Eats)
+ * - Smash it: vacío (sin datos de Uber Eats)
+ * - Bebidas: vacío (sin datos de Uber Eats)
  */
 class GatoNegroInstance10Seeder extends Seeder
 {
@@ -73,7 +81,7 @@ class GatoNegroInstance10Seeder extends Seeder
                     'stock_minimo'       => 0,
                     'activo'             => true,
                     'incluir_kds'        => false,
-                    'imagen'             => $this->imagen,
+                    'imagen'             => null,
                     'tenant_id'          => $this->tenantId,
                     'created_at'         => $ahora,
                     'updated_at'         => $ahora,
@@ -114,6 +122,11 @@ class GatoNegroInstance10Seeder extends Seeder
      * Carta extraída del menú de Uber Eats de Gato Negro (Santiago, DR).
      * Las 3 últimas categorías aparecen vacías en el sitio (contenido no
      * renderizado por protección Cloudflare), se crean como categorías vacías.
+     *
+     * Productos duplicados eliminados:
+     * - Trío de Empanadas: estaba en Artículos destacados y Gato Snacks → queda solo en Gato Snacks
+     * - Mozzarella Sticks: estaba en Artículos destacados y Gato Snacks → queda solo en Gato Snacks
+     * - Trío de Quipes: estaba en Artículos destacados y Gato Snacks → queda solo en Gato Snacks
      */
     protected function menu(): array
     {
@@ -124,7 +137,6 @@ class GatoNegroInstance10Seeder extends Seeder
                     ['nombre' => 'Street Cat Nachos', 'precio' => 600.00, 'descripcion' => 'Nachos con queso, carne y salsas de la casa.'],
                     ['nombre' => 'Jungle Smash', 'precio' => 865.00, 'descripcion' => 'Smash burger estilo Jungle con doble carne y toppings.'],
                     ['nombre' => 'Alitas', 'precio' => 700.00, 'descripcion' => 'Alitas de pollo bañadas en salsa (BBQ/Búfalo).'],
-                    ['nombre' => 'Trío de Empanadas', 'precio' => 416.00, 'descripcion' => 'Empanadas hechas a mano (queso, pollo a la crema o res).'],
                     ['nombre' => 'Carne Salada 12 oz', 'precio' => 512.00, 'descripcion' => 'Carne salada 12 oz acompañada de su guarnición.'],
                     ['nombre' => 'Doble Smash Burger', 'precio' => 750.00, 'descripcion' => 'Doble smash burger con papas.'],
                     ['nombre' => 'Quesadillas', 'precio' => 505.00, 'descripcion' => 'Quesadillas rellenas de queso y pollo.'],
@@ -134,8 +146,6 @@ class GatoNegroInstance10Seeder extends Seeder
                     ['nombre' => 'Jungle Cat Fries', 'precio' => 635.00, 'descripcion' => 'Papas fritas estilo Jungle Cat con toppings.'],
                     ['nombre' => 'Tabla de Carnes', 'precio' => 1220.00, 'descripcion' => 'Tabla de carnes variadas para compartir.'],
                     ['nombre' => 'El Charro Smash', 'precio' => 710.00, 'descripcion' => 'Smash burger El Charro con ingredientes especiales.'],
-                    ['nombre' => 'Mozzarella Sticks', 'precio' => 416.00, 'descripcion' => 'Palitos de mozzarella con salsa marinara.'],
-                    ['nombre' => 'Trío de Quipes', 'precio' => 416.00, 'descripcion' => 'Trío de quipes rellenos de carne de res.'],
                 ],
             ],
             'Combos' => [

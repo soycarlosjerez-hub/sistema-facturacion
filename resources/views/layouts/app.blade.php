@@ -489,6 +489,23 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
         body.dark-mode #globalSearchInput::placeholder { color: #64748b; }
         .global-search-nores { padding: 24px; text-align: center; color: #94a3b8; font-size: 0.85rem; }
         .global-search-loading { padding: 20px; text-align: center; color: #94a3b8; }
+
+        /* Action Icon Buttons — override Bootstrap */
+        a.ui-action, button.ui-action, input.ui-action { display:inline-flex!important;align-items:center;justify-content:center;width:34px!important;height:34px!important;border-radius:.5rem!important;border:1.5px solid transparent!important;text-decoration:none!important;font-size:.85rem;transition:all .2s ease;cursor:pointer;padding:0;line-height:1; }
+        a.ui-action:focus-visible, button.ui-action:focus-visible, input.ui-action:focus-visible { outline:2px solid var(--accent,#3b82f6);outline-offset:2px; }
+        a.ui-action-view, button.ui-action-view, input.ui-action-view { background-color:rgba(59,130,246,.1)!important;color:#3b82f6!important;border-color:rgba(59,130,246,.2)!important; }
+        a.ui-action-view:hover, button.ui-action-view:hover, input.ui-action-view:hover { background-color:#3b82f6!important;color:#fff!important;border-color:#3b82f6!important;transform:translateY(-1px)!important;box-shadow:0 4px 12px rgba(59,130,246,.3)!important; }
+        a.ui-action-edit, button.ui-action-edit, input.ui-action-edit { background-color:rgba(245,158,11,.1)!important;color:#d97706!important;border-color:rgba(245,158,11,.2)!important; }
+        a.ui-action-edit:hover, button.ui-action-edit:hover, input.ui-action-edit:hover { background-color:#f59e0b!important;color:#fff!important;border-color:#f59e0b!important;transform:translateY(-1px)!important;box-shadow:0 4px 12px rgba(245,158,11,.3)!important; }
+        a.ui-action-delete, button.ui-action-delete, input.ui-action-delete { background-color:rgba(239,68,68,.1)!important;color:#dc2626!important;border-color:rgba(239,68,68,.2)!important; }
+        a.ui-action-delete:hover, button.ui-action-delete:hover, input.ui-action-delete:hover { background-color:#ef4444!important;color:#fff!important;border-color:#ef4444!important;transform:translateY(-1px)!important;box-shadow:0 4px 12px rgba(239,68,68,.3)!important; }
+        a.ui-action-print, button.ui-action-print, input.ui-action-print { background-color:rgba(100,116,139,.1)!important;color:#64748b!important;border-color:rgba(100,116,139,.2)!important; }
+        a.ui-action-print:hover, button.ui-action-print:hover, input.ui-action-print:hover { background-color:#64748b!important;color:#fff!important;border-color:#64748b!important;transform:translateY(-1px)!important;box-shadow:0 4px 12px rgba(100,116,139,.3)!important; }
+        body.dark-mode a.ui-action-view, body.dark-mode button.ui-action-view, body.dark-mode input.ui-action-view { background-color:rgba(59,130,246,.15)!important;border-color:rgba(59,130,246,.3)!important;color:#60a5fa!important; }
+        body.dark-mode a.ui-action-edit, body.dark-mode button.ui-action-edit, body.dark-mode input.ui-action-edit { background-color:rgba(245,158,11,.15)!important;border-color:rgba(245,158,11,.3)!important;color:#fbbf24!important; }
+        body.dark-mode a.ui-action-delete, body.dark-mode button.ui-action-delete, body.dark-mode input.ui-action-delete { background-color:rgba(239,68,68,.15)!important;border-color:rgba(239,68,68,.3)!important;color:#f87171!important; }
+        body.dark-mode a.ui-action-print, body.dark-mode button.ui-action-print, body.dark-mode input.ui-action-print { background-color:rgba(100,116,139,.15)!important;border-color:rgba(100,116,139,.3)!important;color:#94a3b8!important; }
+
     </style>
 </head>
 
@@ -639,7 +656,7 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         <div class="dropdown d-none d-md-inline-block">
                             <button class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 px-lg-3 border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
                                 <i class="bi bi-cash-stack"></i>
-                                <span class="fw-bold d-none d-sm-inline">{{ $sesionesCajaGlobales->first()?->caja->codigo ?? $sesionesCajaGlobales->first()?->caja->nombre }}</span>
+                                <span class="fw-bold d-none d-sm-inline">{{ $sesionesCajaGlobales->first()?->caja?->codigo ?? $sesionesCajaGlobales->first()?->caja?->nombre }}</span>
                                 <span class="badge bg-success text-white ms-1" style="font-size:0.6rem;">{{ $sesionesCajaGlobales->count() }}</span>
                                 <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
                             </button>
@@ -650,8 +667,8 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <i class="bi bi-cash-register me-1"></i>
-                                                <strong>{{ $sesion->caja->nombre }}</strong>
-                                                @if($sesion->caja->codigo)
+                                                <strong>{{ $sesion->caja?->nombre }}</strong>
+                                                @if($sesion->caja?->codigo)
                                                     <span class="badge bg-dark ms-1" style="font-size:0.6rem;">{{ $sesion->caja->codigo }}</span>
                                                 @endif
                                             </div>
@@ -692,13 +709,16 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                     {{-- Tipo de Negocio Badge --}}
                     @php
                         $tipoNegocio = null;
+                        $tipoNegocioNombre = null;
                         $user = auth()->user();
 
                         if ($user) {
                             if ($user->businessInstance && $user->businessInstance->businessType) {
                                 $tipoNegocio = $user->businessInstance->businessType->slug;
+                                $tipoNegocioNombre = $user->businessInstance->businessType->nombre;
                             } elseif ($user->businessType) {
                                 $tipoNegocio = $user->businessType->slug;
+                                $tipoNegocioNombre = $user->businessType->nombre;
                             }
                         }
 
@@ -730,9 +750,9 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
                         $icono = $iconos[$tipoNegocio] ?? 'grid';
                     @endphp
                     @if($tipoNegocio)
-                    <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} rounded-pill px-3 py-2 d-none d-xl-inline-flex align-items-center gap-1" style="cursor:help;" title="Tipo de negocio: {{ ucfirst($tipoNegocio) }}">
+                    <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} rounded-pill px-3 py-2 d-none d-xl-inline-flex align-items-center gap-1" style="cursor:help;" title="Tipo de negocio: {{ ucfirst($tipoNegocioNombre ?? $tipoNegocio) }}">
                         <i class="bi bi-{{ $icono }} me-1"></i>
-                        {{ ucfirst($tipoNegocio) }}
+                        {{ ucfirst($tipoNegocioNombre ?? $tipoNegocio) }}
                     </span>
                     @endif
 

@@ -27,7 +27,11 @@ class UpdateProductoRequest extends FormRequest
             'stock_minimo'    => 'nullable|integer|min:0',
             'activo'          => 'boolean',
             'incluir_kds'     => 'boolean',
+            'serial_imei'     => 'nullable|string|max:100|unique:productos,serial_imei,' . $productoId,
+            'requiere_serial' => 'boolean',
+            'vendible_imei'   => 'boolean',
             'imagen'          => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'marca_tecnologica_id' => 'nullable|exists:marca_tecnologicas,id',
         ];
     }
 

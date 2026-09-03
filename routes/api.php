@@ -20,7 +20,6 @@ use App\Http\Controllers\Api\CotizacionController;
 use App\Http\Controllers\Api\DevolucionController;
 use App\Http\Controllers\Api\AlquilerController;
 use App\Http\Controllers\Api\ConduceController;
-use App\Http\Controllers\Api\LavaderoController;
 use App\Http\Controllers\Api\ReservacionController;
 use App\Http\Controllers\Api\ListaPrecioController;
 use App\Http\Controllers\Api\BackupController;
@@ -41,6 +40,11 @@ use App\Http\Controllers\Api\Arte\ReportsController as ArteReportsController;
 use App\Http\Controllers\Api\Art\CatalogController;
 use App\Http\Controllers\Api\PosApiController;
 use App\Http\Controllers\Api\TiendaApiController;
+use App\Http\Controllers\Api\EcommCartController;
+use App\Http\Controllers\Api\EcommCheckoutController;
+use App\Http\Controllers\Api\EcommController;
+use App\Http\Controllers\Api\PromocionController;
+use App\Http\Controllers\Api\LealtadController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function () {
@@ -179,11 +183,6 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
         ->names('api.delivery')
         ->except(['edit', 'create']);
 
-    // Laundry
-    Route::apiResource('laundry', LavaderoController::class)
-        ->names('api.laundry')
-        ->except(['edit', 'create']);
-
     // Reservations
     Route::apiResource('reservations', ReservacionController::class)
         ->names('api.reservations')
@@ -212,17 +211,6 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
         Route::post('/restore/{id}', [PosApiController::class, 'restore']);
     });
 
-    // Lavadero (Car Wash) API
-    Route::prefix('lavadero')->group(function() {
-        Route::get('/servicios', [LavaderoController::class, 'servicios']);
-        Route::get('/paquetes', [LavaderoController::class, 'paquetes']);
-        Route::get('/paquetes/{id}', [LavaderoController::class, 'paqueteDetalle']);
-        Route::get('/lavadores', [LavaderoController::class, 'lavadores']);
-        Route::get('/vehiculos', [LavaderoController::class, 'vehiculos']);
-        Route::post('/vehiculos', [LavaderoController::class, 'storeVehiculo']);
-        Route::get('/citas', [LavaderoController::class, 'citas']);
-        Route::post('/citas', [LavaderoController::class, 'storeCita']);
-    });
 
     // Tienda API
     Route::prefix('tienda')->group(function() {
@@ -417,5 +405,68 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
 
         Route::post('request-quote', [CatalogController::class, 'requestQuote'])
             ->name('request-quote');
+    });
+
+    // ──────────────────────────────────────────────────────────────
+    // Ecomm / Flowhub API — Carritos, Checkout, Promos, Lealtad
+    // ──────────────────────────────────────────────────────────────
+    Route::prefix('ecomm')->group(function () {
+        // Carts
+        Route::get('carts', [EcommCartController::class, 'index']);
+        Route::post('carts', [EcommCartController::class, 'store']);
+
+        Route::get('carts/{id}', [EcommCartController::class, 'show']);
+        Route::put('carts/{id}', [EcommCartController::class, 'update']);
+        Route::delete('carts/{id}', [EcommCartController::class, 'clear']);
+
+        Route::post('carts/{id}/items', [EcommCartController::class, 'add']);
+        Route::put('carts/{cartId}/items/{itemId}', [EcommCartController::class, 'updateItem']);
+        Route::delete('carts/{cartId}/items/{itemId}', [EcommCartController::class, 'removeItem']);
+
+        // Checkout
+        Route::post('carts/{cartId}/checkout', [EcommCheckoutController::class, 'submit']);
+        Route::post('checkout/guest', [EcommCheckoutController::class, 'submitGuest']);
+
+        // Promociones
+        Route::get('promociones', [PromocionController::class, 'index']);
+        Route::post('promociones/validar', [PromocionController::class, 'validar']);
+        Route::post('carts/{cartId}/promo', [PromocionController::class, 'aplicar']);
+        Route::delete('carts/{cartId}/promo', [PromocionController::class, 'eliminar']);
+
+        // Lealtad
+        Route::get('lealtad', [LealtadController::class, 'get']);
+        Route::post('lealtad/canjear', [LealtadController::class, 'canjear']);
+        Route::get('lealtad/historial', [LealtadController::class, 'historial']);
+    });
+
+    // ──────────────────────────────────────────────────────────────
+    // Erpipos v3 API
+    // ──────────────────────────────────────────────────────────────
+    Route::prefix('erpipos/v3')->group(function () {
+        // Products
+        Route::get('products', [EcommController::class, 'products']);
+        Route::get('products/{id}', [EcommController::class, 'productShow']);
+
+        // Customers
+        Route::get('customers', [EcommController::class, 'customers']);
+        Route::post('customers', [EcommController::class, 'customerCreate']);
+
+        // Carts
+        Route::post('carts', [EcommController::class, 'cartCreate']);
+        Route::get('carts/{id}', [EcommController::class, 'cartShow']);
+        Route::post('carts/{id}/items', [EcommController::class, 'cartAddItem']);
+        Route::put('carts/{cartId}/items/{itemId}', [EcommController::class, 'cartUpdateItem']);
+        Route::delete('carts/{cartId}/items/{itemId}', [EcommController::class, 'cartRemoveItem']);
+
+        // Checkout
+        Route::post('checkout', [EcommController::class, 'checkout']);
+
+        // Deals
+        Route::get('deals', [EcommController::class, 'deals']);
+        Route::post('carts/{cartId}/deals', [EcommController::class, 'dealApply']);
+
+        // Rewards
+        Route::get('rewards', [EcommController::class, 'rewards']);
+        Route::post('rewards/redeem', [EcommController::class, 'rewardRedeem']);
     });
 });

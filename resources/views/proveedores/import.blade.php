@@ -45,7 +45,7 @@ body.dark-mode .drop-zone { background: rgba(15,23,42,.3); }
                 </div>
             </div>
             <div class="ui-header-actions">
-                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
             </div>

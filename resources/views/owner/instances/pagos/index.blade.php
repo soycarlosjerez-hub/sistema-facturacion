@@ -67,14 +67,19 @@
                         </td>
                         <td>{{ $pago->registradoPor?->name ?? '—' }}</td>
                         <td class="pe-4">
-                            @if($pago->estado_pago === 'pendiente')
-                                <form method="POST" action="{{ route('owner.instances.pagos.confirmar', [$instance, $pago]) }}" class="d-inline">
-                                    @csrf
-                                    <button class="btn btn-success btn-sm rounded-pill" onclick="return confirm('¿Confirmar este pago? La instancia quedará al día.')">
-                                        <i class="bi bi-check2-circle me-1"></i>Confirmar
-                                    </button>
-                                </form>
-                            @endif
+                            <div class="d-flex gap-1">
+                                <a href="{{ route('owner.instances.pagos.edit', [$instance, $pago]) }}" class="btn btn-sm btn-outline-primary rounded-pill" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                @if($pago->estado_pago === 'pendiente')
+                                    <form method="POST" action="{{ route('owner.instances.pagos.confirmar', [$instance, $pago]) }}" class="d-inline">
+                                        @csrf
+                                        <button class="btn btn-sm btn-success rounded-pill" onclick="return confirm('¿Confirmar este pago? La instancia quedará al día.')">
+                                            <i class="bi bi-check2-circle"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty

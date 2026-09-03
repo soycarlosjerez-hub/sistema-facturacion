@@ -7,6 +7,7 @@ use App\Traits\TenantScope;
 use App\Models\BusinessInstance;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class DeliveryTracking extends Model
 {
@@ -23,6 +24,7 @@ class DeliveryTracking extends Model
     protected $fillable = [
         'tenant_id',
         'orden_id',
+        'venta_id',
         'driver_id',
         'status',
         'notas',
@@ -36,9 +38,14 @@ class DeliveryTracking extends Model
         'longitud' => 'decimal:7',
     ];
 
-    public function orden(): BelongsTo
+    public function orden()
     {
         return $this->belongsTo(Orden::class);
+    }
+
+    public function venta()
+    {
+        return $this->belongsTo(Venta::class);
     }
 
     public function driver(): BelongsTo
@@ -56,13 +63,13 @@ class DeliveryTracking extends Model
         return $this->belongsTo(BusinessInstance::class, 'tenant_id');
     }
 
-    /**
-     * Acceso al tiempo estimado de la zona de delivery asociada.
-     * Nota: No existe delivery_zone_id en 'ordenes' ni 'delivery_tracking'.
-     * El valor siempre será 0 mientras no se agregue la columna a la tabla 'ordenes'.
-     */
+    public function ventaZone()
+    {
+        return $this->belongsTo(DeliveryZone::class, 'delivery_zone_id');
+    }
+
     public function getTiempoEstimadoMinutosAttribute()
     {
-        return $this->deliveryZone?->tiempo_estimado_minutos ?? 0;
+        return $this->ventaZone?->tiempo_estimado_minutos ?? 0;
     }
 }

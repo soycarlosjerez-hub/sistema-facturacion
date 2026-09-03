@@ -73,11 +73,11 @@
     border-radius: var(--radius-2xl);
     padding: 1.75rem 2.25rem;
     position: relative;
-    overflow: hidden;
     color: #fff;
     box-shadow: 0 8px 32px rgba(0,0,0,.1);
     margin-bottom: 1.25rem;
     animation-delay: var(--delay, 0s);
+    overflow: visible;
 }
 .ui-header::before {
     content: '';
@@ -147,6 +147,10 @@
     align-items: center;
     gap: .5rem;
     flex-shrink: 0;
+    overflow: visible;
+}
+.ui-header-actions .dropdown-menu {
+    --bs-dropdown-zindex: 99999;
 }
 
 /* Avatar dentro del header */

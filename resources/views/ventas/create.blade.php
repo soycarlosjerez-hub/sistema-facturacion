@@ -2283,6 +2283,15 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     @csrf
     <input type="hidden" name="sesion_caja_id" id="selected-sesion-id" value="{{ $sesion->id ?? '' }}">
     <input type="hidden" name="admin_token" id="admin-token" value="">
+    <input type="hidden" name="es_final_client" id="es-final-client" value="1">
+    <input type="hidden" name="order_type" id="order-type-field" value="mostrador">
+    <input type="hidden" name="delivery_company_id" id="delivery-company-field" value="">
+    <input type="hidden" name="delivery_zone_id" id="delivery-zone-field" value="">
+    <input type="hidden" name="driver_id" id="driver-id-field" value="">
+    <input type="hidden" name="delivery_address" id="delivery-address-field" value="">
+    <input type="hidden" name="delivery_fee" id="delivery-fee-field" value="0">
+    <input type="hidden" name="distancia_km" id="distancia-km-field" value="">
+    <input type="hidden" name="tarifa_delivery" id="tarifa-delivery-field" value="">
 
     <div class="pos-app" style="--delay:0s">
         <!-- ============ TOP BAR ============ -->
@@ -2291,6 +2300,40 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 <button type="button" class="btn btn-sm btn-light rounded-pill d-xl-none" onclick="POS.toggleSidebar()" aria-label="Menú lateral" aria-expanded="false" aria-controls="mainSidebar" style="width: 36px; height: 36px; padding: 0;">
                     <i class="bi bi-list fs-5"></i>
                 </button>
+            </div>
+
+            <!-- Delivery controls group -->
+            <div class="pos-delivery-controls" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <select id="order-type-select" class="form-select form-select-sm d-inline-block" style="background:var(--pos-card);border:2px solid #3b82f6;color:var(--pos-text);font-size:0.75rem;padding:3px 8px;border-radius:6px;min-width:130px;font-weight:700;" title="Tipo de orden" onchange="POS.toggleDelivery(this.value)">
+                    <option value="mostrador">🏪 Mostrador</option>
+                    <option value="delivery">🛵 Delivery</option>
+                </select>
+                <select id="delivery-company-select" class="form-select form-select-sm d-inline-block" style="background:var(--pos-card);border:2px solid #10b981;color:var(--pos-text);font-size:0.75rem;padding:3px 8px;border-radius:6px;min-width:150px;display:none;font-weight:700;" title="Empresa de delivery">
+                    <option value="">Seleccionar empresa...</option>
+                    @if(isset($deliveryCompanies) && count($deliveryCompanies) > 0)
+                        @foreach($deliveryCompanies as $dc)
+                            <option value="{{ $dc->id }}">{{ $dc->nombre }}</option>
+                        @endforeach
+                    @else
+                        <option value="" disabled>Sin empresas de delivery</option>
+                    @endif
+                </select>
+                <select id="delivery-zone-select" class="form-select form-select-sm d-inline-block" style="background:var(--pos-card);border:2px solid #06b6d4;color:var(--pos-text);font-size:0.75rem;padding:3px 8px;border-radius:6px;min-width:140px;display:none;font-weight:700;" title="Zona de entrega">
+                    <option value="">Cargar zona...</option>
+                </select>
+                <select id="delivery-driver-select" class="form-select form-select-sm d-inline-block" style="background:var(--pos-card);border:2px solid #f59e0b;color:var(--pos-text);font-size:0.75rem;padding:3px 8px;border-radius:6px;min-width:160px;display:none;font-weight:700;" title="Repartidor asignado">
+                    <option value="">Seleccionar repartidor...</option>
+                    @if(isset($deliveryDrivers) && count($deliveryDrivers) > 0)
+                        @foreach($deliveryDrivers as $driver)
+                            <option value="{{ $driver->id }}">
+                                {{ $driver->nombre }} {{ $driver->apellido }}
+                                @if($driver->telefono) - {{ $driver->telefono }}@endif
+                            </option>
+                        @endforeach
+                    @else
+                        <option value="" disabled>No hay repartidores disponibles</option>
+                    @endif
+                </select>
             </div>
 
             @if($almacenes->isNotEmpty() && !($modoObras ?? false))
@@ -2350,6 +2393,14 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         <div class="pos-body">
             <!-- LEFT: search + tabs + products + cart -->
             <div class="pos-left">
+                @if($sinAlmacen ?? false)
+                <div class="alert alert-warning d-flex align-items-center gap-2 m-0 py-2 px-3" role="alert" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.4);color:#f59e0b;font-size:0.82rem;border-radius:0;">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <div>
+                        <strong>Sin almacén configurado.</strong> No existe un almacén para esta instancia. Crea uno desde <a href="{{ route('almacenes.index') }}" style="color:#f59e0b;text-decoration:underline;">Almacenes</a> para poder facturar con control de inventario.
+                    </div>
+                </div>
+                @endif
                 <div class="d-flex gap-2 align-items-center">
                     <div class="search-mode-toggle">
                         <button type="button" class="active" data-mode="barcode" id="mode-barcode">
@@ -2467,6 +2518,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                                     data-tipo="{{ $cliente->tipo_cliente ?? 'consumo' }}"
                                     data-deuda="{{ $cliente->balance_pendiente ?? 0 }}"
                                     data-limite="{{ $cliente->limite_credito ?? 0 }}"
+                                    data-direccion="{{ $cliente->direccion ?? '' }}"
                                     {{ $cliente->id == $clienteConsumidorFinal->id ? 'selected' : '' }}>
                                 {{ $cliente->nombre }}
                                 @if($cliente->limite_credito > 0)
@@ -2530,6 +2582,13 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     <div class="pr-section-title">
                         <i class="bi bi-calculator"></i> Totales
                     </div>
+                    <div id="delivery-notice" style="display:none; padding: 8px 0; margin-bottom: 8px; background: rgba(245,158,11,.1); border-radius: 8px; border: 1px solid rgba(245,158,11,.2);">
+                        <small class="text-warning fw-semibold"><i class="bi bi-geo-alt me-1"></i>Delivery requiere cliente y dirección</small>
+                    </div>
+                    <div class="mb-2" id="delivery-address-input-wrap" style="display:none;">
+                        <label style="font-size:0.72rem;color:#64748b;margin-bottom:2px;font-weight:600;"><i class="bi bi-geo-alt me-1"></i>Dirección de Entrega</label>
+                        <input type="text" name="delivery_address" id="delivery-address-input-visible" class="form-control form-control-sm" style="font-size:0.82rem;padding:6px 10px;background:#f8f9fa;" readonly placeholder="Se carga desde el cliente seleccionado...">
+                    </div>
                     <div class="totals-row">
                         <span class="label">Subtotal</span>
                         <span class="val" id="display-subtotal">RD$0.00</span>
@@ -2543,6 +2602,13 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                         <div class="input-group input-group-sm" style="width: 130px;">
                             <span class="input-group-text bg-transparent border-end-0 text-muted" style="font-size: 0.75rem;">RD$</span>
                             <input type="number" name="general_descuento" id="input-general-descuento" class="form-control descuento-input" value="0" min="0" step="0.01">
+                        </div>
+                    </div>
+                    <div class="totals-row align-items-center delivery-row" id="delivery-fee-row" style="display:none;">
+                        <span class="label">Delivery Fee</span>
+                        <div class="input-group input-group-sm" style="width: 130px;">
+                            <span class="input-group-text bg-transparent border-end-0 text-muted" style="font-size: 0.75rem;">RD$</span>
+                            <input type="number" name="delivery_fee" id="delivery-fee-input" class="form-control descuento-input" value="0" min="0" step="0.01">
                         </div>
                     </div>
                     <div class="total-display">
@@ -3166,6 +3232,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     const equiposData = {!! json_encode($equipos ?? collect([])) !!};
     const puedeModificarPrecio = {!! json_encode($puedeModificarPrecio ?? false) !!};
     const tiposComprobantePermitidos = {!! json_encode($permitidos ?? ['sin', 'ncf', 'ecf']) !!};
+    const deliveryDrivers = {!! json_encode($deliveryDrivers ?? collect([])) !!};
 
     // ============ Estado ============
     const cart = [];
@@ -3385,6 +3452,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 showToast('Selecciona un almacén válido', 'danger');
                 return;
             }
+            if (validaStock && almacenes.length === 0) {
+                showToast('No hay almacén configurado. Crea uno desde Almacenes para facturar.', 'danger');
+                return;
+            }
             if (metodo === 'fiado' || metodo === 'cuenta_abierta') {
                 if (!validarCreditoFiado()) {
                     return;
@@ -3420,7 +3491,89 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             const modal = bootstrap.Modal.getInstance($('postPagoModal'));
             if (modal) modal.hide();
             $('scan-input').focus();
-        }
+        },
+
+        toggleDelivery(orderType) {
+            const companySelect = $('delivery-company-select');
+            const driverSelect = $('delivery-driver-select');
+            const zoneSelect = $('delivery-zone-select');
+            const feeRow = $('delivery-fee-row');
+            const notice = $('delivery-notice');
+            const addrWrap = $('delivery-address-input-wrap');
+            if (orderType === 'delivery') {
+                companySelect.style.display = 'block';
+                zoneSelect.style.display = 'block';
+                driverSelect.style.display = 'block';
+                feeRow.style.display = '';
+                $('order-type-field').value = 'delivery';
+                notice.style.display = '';
+                addrWrap.style.display = '';
+                $('btn-select-cliente').style.border = '2px solid #f59e0b';
+                $('btn-select-cliente').style.boxShadow = '0 0 0 3px rgba(245,158,11,.2)';
+                this.cargarZonasDelivery();
+            } else {
+                companySelect.style.display = 'none';
+                zoneSelect.style.display = 'none';
+                driverSelect.style.display = 'none';
+                feeRow.style.display = 'none';
+                $('order-type-field').value = 'mostrador';
+                notice.style.display = 'none';
+                addrWrap.style.display = 'none';
+                $('delivery-company-field').value = '';
+                $('delivery-zone-field').value = '';
+                $('driver-id-field').value = '';
+                $('delivery-fee-field').value = '0';
+                $('distancia-km-field').value = '';
+                $('tarifa-delivery-field').value = '';
+                $('btn-select-cliente').style.border = '';
+                $('btn-select-cliente').style.boxShadow = '';
+            }
+        },
+
+        cargarZonasDelivery() {
+            const zoneSelect = $('delivery-zone-select');
+            if (!zoneSelect) return;
+            fetch('{{ route("pos.delivery.zones") }}')
+                .then(r => r.json())
+                .then(data => {
+                    zoneSelect.innerHTML = '<option value="">Seleccionar zona...</option>';
+                    if (data.zones && data.zones.length > 0) {
+                        data.zones.forEach(z => {
+                            const opt = document.createElement('option');
+                            opt.value = z.id;
+                            opt.textContent = `${z.nombre} (${z.tiempo_estimado_minutos || 20} min)`;
+                            zoneSelect.appendChild(opt);
+                        });
+                    }
+                    zoneSelect.onchange = () => {
+                        $('delivery-zone-field').value = zoneSelect.value;
+                        this.calcularTarifaZona(zoneSelect.value);
+                    };
+                })
+                .catch(() => {});
+        },
+
+        calcularTarifaZona(zonaId) {
+            if (!zonaId) {
+                $('delivery-fee-field').value = '0';
+                $('distancia-km-field').value = '';
+                $('tarifa-delivery-field').value = '';
+                return;
+            }
+            fetch(`{{ route("pos.delivery.zones") }}`)
+                .then(r => r.json())
+                .then(data => {
+                    const zone = (data.zones || []).find(z => z.id == zonaId);
+                    if (zone) {
+                        const distancia = (zone.radio_km / 2).toFixed(2);
+                        const tarifa = (zone.tarifa_base + (distancia * zone.tarifa_por_km)).toFixed(2);
+                        $('distancia-km-field').value = distancia;
+                        $('tarifa-delivery-field').value = tarifa;
+                        $('delivery-fee-field').value = tarifa;
+                    }
+                })
+                .catch(() => {});
+        },
     };
     
     window.POS = POS;
@@ -3551,6 +3704,27 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         // Validate almacen before proceeding (only required if warehouses exist)
         const almacenId = getAlmacenId();
         if (!modoObras && validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (validaStock && almacenes.length === 0) { showToast('No hay almacén configurado. Crea uno desde Almacenes para facturar.', 'danger'); return; }
+
+        // Validate delivery: requiere cliente y dirección
+        const orderType = $('order-type-field').value;
+        if (orderType === 'delivery') {
+            // Sync visible address input to hidden field
+            if ($('delivery-address-input-visible')) {
+                $('delivery-address-field').value = $('delivery-address-input-visible').value;
+            }
+            const clienteOpt = $('cliente_id').options[$('cliente_id').selectedIndex];
+            if (clienteOpt && clienteOpt.dataset.esFinal === '1') {
+                showToast('Selecciona un cliente para el delivery', 'danger');
+                mostrarBuscarCliente();
+                return;
+            }
+            if (!$('delivery-address-field').value.trim()) {
+                showToast('Escribe la dirección de entrega', 'danger');
+                $('delivery-address-input-visible')?.focus();
+                return;
+            }
+        }
 
         isSubmitting = true;
         const btn = document.querySelector('.btn-cobrar-touch');
@@ -3575,6 +3749,17 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             formData.set('mixto_tarjeta', (parseFloat($p('mixto-tarjeta').value) || 0).toFixed(2));
             formData.set('mixto_transferencia', (parseFloat($p('mixto-transferencia').value) || 0).toFixed(2));
         }
+
+        // Add delivery fields
+        formData.set('order_type', $('order-type-field').value);
+        formData.set('delivery_company_id', $('delivery-company-field').value);
+        formData.set('delivery_zone_id', $('delivery-zone-field').value);
+        formData.set('delivery_fee', $('delivery-fee-field').value || '0');
+        formData.set('driver_id', $('driver-id-field').value);
+        formData.set('delivery_address', $('delivery-address-field').value);
+        formData.set('distancia_km', $('distancia-km-field').value || '');
+        formData.set('tarifa_delivery', $('tarifa-delivery-field').value || '');
+
         const pagoModal = document.getElementById('pagoModal');
         const bsSheet = document.getElementById('cobrarSheet');
         if (pagoModal && pagoModal.classList.contains('show')) {
@@ -3666,6 +3851,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         // Validate almacen before proceeding (only required if warehouses exist)
         const almacenId = getAlmacenId();
         if (!modoObras && validaStock && almacenes.length > 0 && !almacenId) { showToast('Selecciona un almacén válido', 'danger'); return; }
+        if (validaStock && almacenes.length === 0) { showToast('No hay almacén configurado. Crea uno desde Almacenes para facturar.', 'danger'); return; }
 
         isSubmitting = true;
         const btn = document.querySelector(`.btn-pay[data-metodo="${metodo}"]`);
@@ -4565,6 +4751,16 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         const esFinal = opt.dataset.esFinal === '1';
         const tipo = opt.dataset.tipo || 'consumo';
         const deuda = parseFloat(opt.dataset.deuda) || 0;
+        const direccion = opt.dataset.direccion || '';
+
+        $('es-final-client').value = esFinal ? '1' : '0';
+
+        if (direccion && $p('delivery-address-input-visible')) {
+            $p('delivery-address-input-visible').value = direccion;
+        }
+        if (direccion) {
+            $('delivery-address-field').value = direccion;
+        }
 
         const badge = $('cliente-tipo-badge');
         const tiposMap = {
@@ -4600,6 +4796,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         for (let opt of select.options) {
             if (parseInt(opt.value) == id) {
                 select.value = id;
+                $('delivery-address-field').value = opt.dataset.direccion || '';
                 break;
             }
         }
@@ -4615,6 +4812,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         if (finalOpt) {
             select.value = finalOpt.value;
             $('cliente-selected-name').textContent = finalOpt.textContent.trim();
+            $('delivery-address-field').value = '';
             onClienteChange();
         }
     }
@@ -4625,7 +4823,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         if (item) {
             const id = parseInt(item.dataset.clienteId);
             const nombre = item.dataset.clienteNombre;
-            if (id && nombre) seleccionarCliente(id, nombre);
+            const direccion = item.dataset.clienteDireccion || '';
+            if (id && nombre) {
+                seleccionarCliente(id, nombre);
+                $('delivery-address-field').value = direccion;
+            }
         }
     });
 
@@ -4652,8 +4854,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 const tipo = c.tipo_cliente === 'credito_fiscal' ? 'Crédito Fiscal' :
                             c.tipo_cliente === 'gubernamental' ? 'Gubernamental' :
                             c.tipo_cliente === 'especial' ? 'Especial' : 'Consumo';
+                const direccionSegura = escapeHtml(c.direccion || '');
                 const nombreSeguro = escapeHtml(c.nombre);
-                return `<div class="cliente-result-item" data-cliente-id="${c.id}" data-cliente-nombre='${nombreSeguro}'>
+                return `<div class="cliente-result-item" data-cliente-id="${c.id}" data-cliente-nombre='${nombreSeguro}' data-cliente-direccion='${direccionSegura}'>
                     <div class="cr-icon" style="background:rgba(59,130,246,0.1);color:#60a5fa;">${initial}</div>
                     <div class="cr-info">
                         <div class="cr-name">${escapeHtml(c.nombre)}</div>
@@ -5044,6 +5247,14 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 label: (e.marca || '') + ' ' + (e.modelo || '') + ' (' + (e.serial_imei || '') + ')',
                 precio: parseFloat(e.precio_venta) || 0,
             })));
+        }
+
+        // Delivery driver select change
+        const driverSelect = $('delivery-driver-select');
+        if (driverSelect) {
+            driverSelect.addEventListener('change', function() {
+                $('driver-id-field').value = this.value;
+            });
         }
     }
 

@@ -72,6 +72,7 @@ class DatabaseSeeder extends Seeder
         $this->call(Full\ProductosFullSeeder::class); // 217 filas
         $this->call(Full\ClientesFullSeeder::class); // 50 filas
         $this->call(Full\ProveedoresFullSeeder::class); // 14 filas
+        $this->call(MarcaTecnologicaSeeder::class); // Marcas tecnológicas globales (idempotente)
 
         // Secuencias fiscales (DGII)
         $this->call(Full\NcfSequencesFullSeeder::class); // 39 filas

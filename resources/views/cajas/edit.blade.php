@@ -147,13 +147,15 @@
                                     <div class="d-flex flex-wrap gap-3">
                                         @php
                                             $permitidos = $caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
-                                            $checkedSin = in_array('sin', $permitidos) ? 'checked' : (is_null(old('allowed_comprobante_types')) && empty($permitidos)) ? '' : '';
-                                            $checkedNcf = in_array('ncf', $permitidos) ? 'checked' : (is_null(old('allowed_comprobante_types')) && empty($permitidos)) ? '' : '';
-                                            $checkedEcf = in_array('ecf', $permitidos) ? 'checked' : (is_null(old('allowed_comprobante_types')) && empty($permitidos)) ? '' : '';
+                                            $defaultChecked = is_null(old('allowed_comprobante_types')) && empty($permitidos);
                                             if (old('allowed_comprobante_types')) {
                                                 $checkedSin = in_array('sin', old('allowed_comprobante_types')) ? 'checked' : '';
                                                 $checkedNcf = in_array('ncf', old('allowed_comprobante_types')) ? 'checked' : '';
                                                 $checkedEcf = in_array('ecf', old('allowed_comprobante_types')) ? 'checked' : '';
+                                            } else {
+                                                $checkedSin = in_array('sin', $permitidos) ? 'checked' : '';
+                                                $checkedNcf = in_array('ncf', $permitidos) ? 'checked' : '';
+                                                $checkedEcf = in_array('ecf', $permitidos) ? 'checked' : '';
                                             }
                                         @endphp
                                         <label class="form-check d-flex align-items-center gap-2 mb-0" style="cursor:pointer;">

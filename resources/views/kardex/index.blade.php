@@ -140,12 +140,12 @@
                         </div>
                     </td>
                     <td style="max-width:200px;">
-                        <div class="fw-bold text-dark fs-6 text-truncate" title="{{ $m->producto->nombre }}">{{ $m->producto->nombre }}</div>
-                        <div class="text-muted small"><i class="bi bi-upc-scan me-1"></i> ID: {{ $m->producto->id }}</div>
+                        <div class="fw-bold text-dark fs-6 text-truncate" title="{{ optional($m->producto)->nombre ?? "Producto Eliminado" }}">{{ optional($m->producto)->nombre ?? "Producto Eliminado" }}</div>
+                        <div class="text-muted small"><i class="bi bi-upc-scan me-1"></i> ID: {{ $m->producto_id ?? $m->producto->id }}</div>
                     </td>
                     <td class="text-center">
                         <span class="badge bg-light text-secondary border rounded-pill">
-                            <i class="bi bi-building me-1"></i> {{ $m->almacen->nombre }}
+                            <i class="bi bi-building me-1"></i> {{ optional($m->almacen)->nombre ?? "Almacén Eliminado" }}
                         </span>
                     </td>
                     <td class="text-center">

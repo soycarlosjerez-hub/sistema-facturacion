@@ -9,9 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pagos_instancia', function (Blueprint $table) {
-            $table->foreignId('plan_id')->nullable()->after('business_instance_id')->constrained('plans')->nullOnDelete();
-            $table->string('referencia_externa')->nullable()->after('metodo_pago');
-            $table->string('estado_pago')->default('completado')->after('referencia_externa');
+            if (!Schema::hasColumn('pagos_instancia', 'plan_id')) {
+                $table->foreignId('plan_id')->nullable()->after('business_instance_id')->constrained('plans')->nullOnDelete();
+            }
+            if (!Schema::hasColumn('pagos_instancia', 'referencia_externa')) {
+                $table->string('referencia_externa')->nullable()->after('metodo_pago');
+            }
+            if (!Schema::hasColumn('pagos_instancia', 'estado_pago')) {
+                $table->string('estado_pago')->default('completado')->after('referencia_externa');
+            }
         });
     }
 

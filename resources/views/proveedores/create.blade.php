@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="ui-header-actions">
-                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                <a href="{{ route('proveedores.index') }}" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
                     <i class="bi bi-arrow-left me-2"></i>Volver
                 </a>
             </div>
@@ -64,8 +64,8 @@
                 </div>
                 <div class="row g-4 mb-4">
                     <div class="col-lg-8">
-                        <label class="ui-label">Nombre comercial <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="ui-input @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required placeholder="Ej. Distribuidora Corripio">
+                        <label class="ui-label">Nombre comercial</label>
+                        <input type="text" name="nombre" class="ui-input @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" placeholder="Ej. Distribuidora Corripio">
                         @error('nombre') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-lg-4">
@@ -93,7 +93,7 @@
                 </div>
                 <div class="row g-4 mb-4">
                     <div class="col-lg-4">
-                        <label class="ui-label">RNC</label>
+                        <label class="ui-label">RNC (opcional)</label>
                         <input type="text" name="rnc" class="ui-input @error('rnc') is-invalid @enderror" value="{{ old('rnc') }}" placeholder="000-00000-0">
                         @error('rnc') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>

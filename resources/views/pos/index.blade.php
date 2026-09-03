@@ -155,6 +155,65 @@
     </div>
 
     <div class="row g-3 pos-main">
+
+    {{-- TOGGLE NORMAL/DELIVERY --}}
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="ui-card">
+                <div class="ui-card-accent"></div>
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="fw-bold small text-muted">Tipo de Venta:</span>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="tipoVenta" id="tipoNormal" value="normal" checked autocomplete="off" onchange="app.toggleDeliveryType()">
+                            <label class="btn btn-sm btn-outline-primary rounded-pill" for="tipoNormal" style="font-size:0.85rem;padding:0.4rem 1rem;">
+                                <i class="bi bi-cart-check me-1"></i>Normal
+                            </label>
+                            <input type="radio" class="btn-check" name="tipoVenta" id="tipoDelivery" value="delivery" autocomplete="off" onchange="app.toggleDeliveryType()">
+                            <label class="btn btn-sm btn-outline-warning rounded-pill" for="tipoDelivery" style="font-size:0.85rem;padding:0.4rem 1rem;">
+                                <i class="bi bi-truck me-1"></i>Delivery
+                            </label>
+                        </div>
+                    </div>
+                    <div id="delivery-fields" style="display:none;" class="mt-3 p-3" style="background:rgba(255,193,7,0.05);border-radius:0.75rem;border:1px dashed rgba(255,193,7,0.3);">
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm fw-bold">Empresa de Delivery</label>
+                                <select class="form-select form-select-sm" id="delivery-empresa">
+                                    <option value="">Seleccionar...</option>
+                                    @foreach(\App\Models\DeliveryCompany::where('activo', true)->orderBy('nombre')->get() as $empresa)
+                                    <option value="{{ $empresa->id }}">{{ $empresa->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm fw-bold">Zona de Cobertura</label>
+                                <select class="form-select form-select-sm" id="delivery-zona">
+                                    <option value="">Seleccionar empresa primero...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm fw-bold">Delivery Fee</label>
+                                <input type="number" class="form-control form-control-sm" id="delivery-fee" value="0.00" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm fw-bold">Dirección de Entrega</label>
+                                <input type="text" class="form-control form-control-sm" id="delivery-direccion" placeholder="Dirección completa...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm fw-bold">Teléfono Contacto</label>
+                                <input type="text" class="form-control form-control-sm" id="delivery-telefono" placeholder="Teléfono...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label form-label-sm fw-bold">Propina (opcional)</label>
+                                <input type="number" class="form-control form-control-sm" id="delivery-propina" value="0.00" step="0.01" min="0" oninput="app.calcularTotalDeliveryFee()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
         {{-- SERVICIOS --}}
         <div class="col-lg-4 col-xl-3">
             <div class="ui-card">
@@ -162,7 +221,7 @@
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <i class="bi bi-droplet-fill" style="color:#0ea5e9;font-size:1.15rem;"></i>
-                        <h6 class="fw-bold mb-0 text-dark">Servicios de Lavado</h6>
+                        <h6 class="fw-bold mb-0 text-dark">Servicios</h6>
                     </div>
                     <div class="row g-2" id="servicios-list">
                         @forelse($servicios as $svc)
@@ -399,19 +458,73 @@ const app = (() => {
             else { preview.style.display = 'none'; }
             document.getElementById('btn-confirmar').disabled = recibido < totalPuntos;
         },
-        confirmar() {
-            const btn = document.getElementById('btn-confirmar'); btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></i> Procesando...';
-            const data = { carrito, metodo_pago: metodoPago, notas: document.getElementById('cobro-notas').value };
-            fetch('{{ route("pos.checkout") }}', {
-                method: 'POST', headers: {'Content-Type':'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify(data)
-            }).then(r => r.json()).then(res => {
-                if (res.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalCobro')).hide();
-                    carrito = []; renderCarrito(); sessionStorage.removeItem('pos_hold');
-                    UI.toast.success('¡Cobro exitoso!');
-                } else { UI.toast.error(res.error); }
-                btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Confirmar Cobro';
-            }).catch(() => { UI.toast.error('Error de conexión'); btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Confirmar Cobro'; });
+        toggleDeliveryType() {
+            const isDelivery = document.getElementById('tipoDelivery').checked;
+            document.getElementById('delivery-fields').style.display = isDelivery ? '' : 'none';
+            if (isDelivery) {
+                this.cargarZonasPorEmpresa();
+            }
+        },
+        async cargarZonasPorEmpresa() {
+            const empresaId = document.getElementById('delivery-empresa').value;
+            const zonaSelect = document.getElementById('delivery-zona');
+            zonaSelect.innerHTML = '<option value="">Cargando...</option>';
+            try {
+                const resp = await fetch('/pos/delivery/zones');
+                const data = await resp.json();
+                zonaSelect.innerHTML = '<option value="">Seleccionar zona...</option>' +
+                    (data.zones || []).map(z => `<option value="${z.id}">${z.nombre} - ${z.tiempo_estimado_minutos || 20} min</option>`).join('');
+                zonaSelect.onchange = () => app.calcularTotalDeliveryFee();
+            } catch (e) {
+                zonaSelect.innerHTML = '<option value="">Error al cargar zonas</option>';
+            }
+        },
+        async confirmar() {
+            const btn = document.getElementById('btn-confirmar'); btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+            const isDelivery = document.getElementById('tipoDelivery').checked;
+            if (isDelivery) {
+                const data = {
+                    carrito,
+                    metodo_pago: metodoPago,
+                    notas: document.getElementById('cobro-notas').value,
+                    tipoVenta: isDelivery ? 'delivery' : 'normal',
+                    entrega_empresa_id: document.getElementById('delivery-empresa').value,
+                    delivery_zone_id: document.getElementById('delivery-zona').value,
+                    direccion_entrega: document.getElementById('delivery-direccion').value,
+                    telefono_contacto: document.getElementById('delivery-telefono').value,
+                    delivery_fee: parseFloat(document.getElementById('delivery-fee').value) || 0,
+                    propina: parseFloat(document.getElementById('delivery-propina').value) || 0,
+                };
+                try {
+                    const resp = await fetch('{{ route("pos.checkout-delivery") }}', {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+                        body: JSON.stringify(data)
+                    });
+                    const res = await resp.json();
+                    if (res.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('modalCobro')).hide();
+                        carrito = []; renderCarrito(); sessionStorage.removeItem('pos_hold');
+                        UI.toast.success('¡Venta de delivery creada! #' + res.venta_id);
+                    } else {
+                        UI.toast.error(res.error);
+                    }
+                } catch (e) {
+                    UI.toast.error('Error de conexión');
+                }
+            } else {
+                const data = { carrito, metodo_pago: metodoPago, notas: document.getElementById('cobro-notas').value };
+                fetch('{{ route("pos.checkout") }}', {
+                    method: 'POST', headers: {'Content-Type':'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}'}, body: JSON.stringify(data)
+                }).then(r => r.json()).then(res => {
+                    if (res.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('modalCobro')).hide();
+                        carrito = []; renderCarrito(); sessionStorage.removeItem('pos_hold');
+                        UI.toast.success('¡Cobro exitoso!');
+                    } else { UI.toast.error(res.error); }
+                }).catch(() => { UI.toast.error('Error de conexión'); });
+            }
+            btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Confirmar Cobro';
         }
     };
 

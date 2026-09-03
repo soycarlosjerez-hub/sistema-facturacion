@@ -32,6 +32,7 @@
     --bs-table-hover-bg: rgba(99,102,241,.04);
     width: 100%;
     margin: 0;
+    table-layout: auto;
 }
 .productos-table thead th {
     background: rgba(241,245,249,.8);
@@ -43,12 +44,22 @@
     padding: .85rem 1rem;
     border-bottom: 2px solid var(--dt-gray-200);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .productos-table tbody td {
     padding: .85rem 1rem;
     border-bottom: 1px solid var(--dt-gray-100);
     vertical-align: middle;
     font-size: .9rem;
+    overflow: hidden;
+    max-width: none;
+}
+.productos-table td.text-center,
+.productos-table td.text-end {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .productos-table tbody tr:last-child td { border-bottom: none; }
 .productos-table tbody tr { transition: background var(--dt-transition); }
@@ -70,7 +81,10 @@ tr:hover .producto-img { transform: scale(1.1); }
 .fs-7 { font-size: .85rem; }
 
 /* ===== DataTables Wrapper ===== */
-#productos-table_wrapper { padding: 0; }
+#productos-table_wrapper { padding: 0; overflow: hidden; }
+#productos-table_wrapper .dataTables_scrollBody { overflow-x: hidden !important; }
+#productos-table_wrapper .dataTables_scrollHead { overflow-x: hidden !important; }
+#productos-table_wrapper .dataTables_scroll { overflow-x: hidden !important; }
 #productos-table_wrapper > .row:first-child {
     padding: 0 1rem;
     margin-bottom: 0.5rem;
@@ -398,19 +412,21 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
 
     <div class="ui-card" style="--delay:.15s">
         <div class="ui-card-accent"></div>
-        <div class="card-body p-0">
+        <div class="card-body p-0" style="overflow-x:auto;">
             <div id="productos-table_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
-                <table id="productos-table" class="table productos-table nowrap no-footer" role="grid" style="width:100%" aria-label="Listado de productos">
+                <table id="productos-table" class="table productos-table no-footer" role="grid" aria-label="Listado de productos" style="min-width:800px;">
                     <thead>
                         <tr>
-                    <th class="ps-4" style="width:50px;" data-label="id">#</th>
-                    <th data-label="producto">Producto</th>
-                    <th data-label="categoria">Categoría</th>
-                    <th class="text-end" data-label="precios">Venta &amp; Costos</th>
-                    <th class="text-center" data-label="rentabilidad">Rentabilidad</th>
-                    <th class="text-center" data-label="inventario">Inventario</th>
-                    <th class="text-center" data-label="estado">Estado</th>
-                    <th class="text-end pe-4" data-label="acciones">Acciones</th>
+                    <th style="width:40px;" data-label="id">#</th>
+                    <th style="width:auto;min-width:200px;" data-label="producto">Producto</th>
+                    <th style="width:80px;" data-label="serial_imei">IMEI / Serial</th>
+                    <th style="width:80px;" data-label="categoria">Categoría</th>
+                    <th style="width:60px;" class="text-center" data-label="tipo">Tipo</th>
+                    <th style="width:110px;" class="text-end" data-label="precios">Venta</th>
+                    <th style="width:90px;" class="text-center" data-label="rentabilidad">Ganancia</th>
+                    <th style="width:75px;" class="text-center" data-label="inventario">Stock</th>
+                    <th style="width:60px;" class="text-center" data-label="estado">Estado</th>
+                    <th style="width:90px;" class="text-end pe-3" data-label="acciones">Acciones</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -574,30 +590,54 @@ $(function() {
                 data: null,
                 orderable: true,
                 searchable: true,
+                width: '200px',
                 render: function(data) {
                     const img = data.imagen_url || '<?php echo e(asset("img/producto-placeholder.svg")); ?>';
                     const nombre = escapeHtml(data.nombre || '');
                     const codigo = escapeHtml(data.codigo_barras || 'Sin código');
-                    return '<div class="d-flex align-items-center">' +
-                        '<img src="' + img + '" class="producto-img me-3 shadow-sm" alt="' + nombre + '">' +
-                        '<div class="text-truncate">' +
-                            '<div class="fw-bold fs-7 text-truncate text-brand" title="' + nombre + '">' + nombre + '</div>' +
-                            '<div class="text-muted small"><i class="bi bi-upc-scan me-1"></i>' + codigo + '</div>' +
+                    return '<div class="d-flex align-items-center" style="min-width:0">' +
+                        '<img src="' + img + '" class="producto-img me-3 shadow-sm" alt="' + nombre + '" style="flex-shrink:0">' +
+                        '<div style="min-width:0;max-width:100%">' +
+                            '<div class="fw-bold fs-7 text-brand" style="white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;line-height:1.3;">' + nombre + '</div>' +
+                            '<div class="text-muted small" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="bi bi-upc-scan me-1"></i>' + codigo + '</div>' +
                         '</div>' +
                     '</div>';
                 }
             },
             {
+                data: 'serial_imei',
+                orderable: true,
+                searchable: true,
+                responsivePriority: 2,
+                width: '100px',
+                render: function(data) {
+                    if (!data) return '<span class="text-muted small">—</span>';
+                    return '<span class="font-monospace small">' + escapeHtml(data) + '</span>';
+                }
+            },
+            {
                 data: 'categoria',
                 defaultContent: '<span class="text-muted small">—</span>',
+                width: '100px',
                 render: function(data) {
                     if (!data) return '<span class="text-muted small">—</span>';
                     return '<span class="badge rounded-pill" style="background:rgba(99,102,241,.1);color:#4f46e5;font-weight:600;"><i class="bi bi-tags me-1"></i>' + escapeHtml(data.nombre) + '</span>';
                 }
             },
             {
+                data: 'tipo_servicio',
+                className: 'text-center',
+                width: '80px',
+                render: function(data) {
+                    if (data === 'servicio') return '<span class="badge rounded-pill" style="background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-weight:700;font-size:.75rem;"><i class="bi bi-scissors me-1"></i>Servicio</span>';
+                    if (data === 'general') return '<span class="badge rounded-pill" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;font-weight:700;font-size:.75rem;"><i class="bi bi-card-heading me-1"></i>General</span>';
+                    return '<span class="badge rounded-pill" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:700;font-size:.75rem;"><i class="bi bi-box-seam me-1"></i>Producto</span>';
+                }
+            },
+            {
                 data: null,
                 className: 'text-end',
+                width: '120px',
                 render: function(data) {
                     const precio = parseFloat(data.precio || 0).toFixed(2);
                     const costo = parseFloat(data.precio_compra || 0).toFixed(2);
@@ -611,6 +651,7 @@ $(function() {
                 data: null,
                 className: 'text-center',
                 orderable: false,
+                width: '100px',
                 render: function(data) {
                     const precio = parseFloat(data.precio || 0);
                     const costo = parseFloat(data.precio_compra || 0);
@@ -627,6 +668,7 @@ $(function() {
             {
                 data: 'stock',
                 className: 'text-center',
+                width: '90px',
                 render: function(data) { return renderStock(data); }
             },
             {
@@ -634,6 +676,7 @@ $(function() {
                 className: 'text-center',
                 orderable: false,
                 searchable: false,
+                width: '70px',
                 render: function(data) { return renderEstado(data); }
             },
             {
@@ -641,6 +684,7 @@ $(function() {
                 className: 'text-end pe-4',
                 orderable: false,
                 searchable: false,
+                width: '100px',
                 render: function(data) {
                     let actions = '<div class="d-flex justify-content-end gap-1">';
                     actions += '<a href="' + API_BASE + '/' + data.id + '" class="ui-action ui-action-edit" title="Ver"><i class="bi bi-eye"></i></a>';
@@ -673,6 +717,8 @@ $(function() {
         pageLength: -1,
         lengthMenu: [[-1, 10, 25, 50, 100], ['Todos', 10, 25, 50, 100]],
         order: [[1, 'asc']],
+        autoWidth: false,
+        scrollCollapse: false,
         responsive: {
             details: {
                 type: 'column',

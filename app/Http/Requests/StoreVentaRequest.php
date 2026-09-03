@@ -8,6 +8,14 @@ use Illuminate\Validation\Rule;
 
 class StoreVentaRequest extends FormRequest
 {
+    protected function prepareForValidation()
+    {
+        $almacenId = $this->input('almacen_id');
+        if ($almacenId !== null && !is_array($almacenId)) {
+            $this->merge(['almacen_id' => array_filter([$almacenId], fn($v) => $v !== '' && $v !== null)]);
+        }
+    }
+
     public function authorize(): bool
     {
         $user = auth()->user();
@@ -30,9 +38,10 @@ class StoreVentaRequest extends FormRequest
 
         $reglas = [
             'cliente_id'    => [
-                Rule::requiredIf(fn () => in_array($this->metodo_pago, ['fiado', 'cuenta_abierta'])),
+                Rule::requiredIf(fn () => in_array($this->metodo_pago, ['fiado', 'cuenta_abierta']) || ($this->input('order_type') === 'delivery' && $this->input('es_final_client') != 1)),
                 'exists:clientes,id',
             ],
+            'es_final_client' => 'nullable|boolean',
             'tipo_venta_id' => 'required|exists:tipos_ventas,id',
             'producto_id'   => [$tieneObras || $tieneEquipos ? 'nullable' : 'required', 'array', 'min:1'],
             'producto_id.*' => 'exists:productos,id',
@@ -62,6 +71,10 @@ class StoreVentaRequest extends FormRequest
             'subtotal_final' => 'nullable|numeric|min:0',
             'propina'       => 'nullable|numeric|min:0',
             'delivery_fee'  => 'nullable|numeric|min:0',
+            'delivery_company_id' => 'nullable|integer|exists:delivery_companies,id',
+            'order_type'    => 'nullable|in:mostrador,delivery,pickup',
+            'driver_id'     => 'nullable|integer|exists:delivery_drivers,id',
+            'delivery_address' => 'nullable|string|max:1000',
             'cargo_servicio'=> 'nullable|numeric|min:0',
             'general_descuento' => 'nullable|numeric|min:0',
             'metodo_pago'   => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',

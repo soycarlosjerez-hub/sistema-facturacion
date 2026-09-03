@@ -18,6 +18,14 @@ class VentasFullSeeder extends Seeder
             return;
         }
 
+        if (!Schema::hasColumn('ventas', 'tipo_comprobante')) {
+            Schema::table('ventas', function (Blueprint $table) {
+                $table->string('tipo_comprobante', 10)->default('ncf')
+                    ->comment('ncf (formato anterior), ecf (electrónico), ticket, sin_comprobante')
+                    ->after('ncf_tipo');
+            });
+        }
+
         Schema::disableForeignKeyConstraints();
         DB::table('ventas')->truncate();
 

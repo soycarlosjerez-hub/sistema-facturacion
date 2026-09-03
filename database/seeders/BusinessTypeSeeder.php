@@ -165,7 +165,7 @@ class BusinessTypeSeeder extends Seeder
             [
                 'slug' => 'tecnologia',
                 'nombre' => 'Tienda de Tecnología',
-                'descripcion' => 'Venta de tecnología, equipos, software, redes, infraestructura y servicios técnicos especializados',
+                'descripcion' => 'Venta y servicios de equipos tecnológicos, hardware, software, redes e infraestructura',
                 'color' => 'primary',
                 'icon' => 'bi-cpu',
                 'activo' => true,

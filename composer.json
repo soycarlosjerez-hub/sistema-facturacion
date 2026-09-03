@@ -18,6 +18,8 @@
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
         "mike42/escpos-php": "^4.0",
+        "pragmarx/google2fa": "^9.1",
+        "pragmarx/google2fa-qrcode": "^4.0",
         "spatie/laravel-permission": "^6.19"
     },
     "require-dev": {
@@ -26,6 +28,7 @@
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.41",
+        "laravel/telescope": "^5.22",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^11.5.3"

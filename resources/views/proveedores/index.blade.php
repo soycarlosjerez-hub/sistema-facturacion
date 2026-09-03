@@ -59,7 +59,7 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
             </div>
             <div class="ui-header-actions">
                 @can('proveedores.create')
-                <a href="{{ route('proveedores.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                <a href="{{ route('proveedores.create') }}" class="ui-btn ui-btn-solid ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nuevo Proveedor
                 </a>
                 @endcan
@@ -89,13 +89,13 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                 </div>
                 <div class="col-lg-4 text-end">
                     <div class="d-flex gap-2 justify-content-end">
-                        <a href="{{ route('proveedores.importar') }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('proveedores.importar') }}" class="ui-btn ui-btn-solid rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-upload me-1"></i> Importar CSV
                         </a>
-                        <a href="{{ route('proveedores.exportar', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('proveedores.exportar', request()->all()) }}" class="ui-btn ui-btn-solid rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-excel me-1"></i> Excel
                         </a>
-                        <a href="{{ route('proveedores.pdf', request()->all()) }}" class="ui-btn ui-btn-primary rounded-pill shadow-sm fw-medium">
+                        <a href="{{ route('proveedores.pdf', request()->all()) }}" class="ui-btn ui-btn-solid rounded-pill shadow-sm fw-medium">
                             <i class="bi bi-file-pdf me-1"></i> PDF
                         </a>
                     </div>

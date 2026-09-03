@@ -397,12 +397,42 @@ class SaleService
                     'propina'          => $data['propina'] ?? 0,
                     'delivery_fee'     => $data['delivery_fee'] ?? 0,
                     'cargo_servicio'   => $data['cargo_servicio'] ?? 0,
+                    'tipo_orden'       => $data['order_type'] ?? 'mostrador',
+                    'delivery_company_id' => $data['delivery_company_id'] ?? null,
+                    'driver_id'        => $data['driver_id'] ?? null,
+                    'delivery_address' => $data['delivery_address'] ?? null,
+                    'delivery_zone_id' => $data['delivery_zone_id'] ?? null,
+                    'distancia_km'     => $data['distancia_km'] ?? null,
+                    'tarifa_delivery'  => $data['tarifa_delivery'] ?? null,
                     'tenant_id'        => Auth::user()->business_instance_id,
                 ]);
             }
 
             $this->procesarDetalles($venta, $data, $ventaExistente);
             $this->procesarPago($venta, $sesion, $metodo, $estado, $data);
+
+            // Crear delivery tracking si es venta con delivery
+            $esDelivery = ($data['order_type'] ?? 'mostrador') === 'delivery'
+                && ($data['delivery_address'] ?? '') !== ''
+                && $data['delivery_company_id'] ?? false;
+
+            if ($esDelivery && !($venta->driver_id ?? false)) {
+                try {
+                    $driverService = app(\App\Services\DriverAssignmentService::class);
+                    $zoneId = $data['delivery_zone_id'] ?? null;
+                    $driverResult = $driverService->asignarDriverAVenta($venta->id, null, $zoneId);
+
+                    if ($driverResult['success'] ?? false) {
+                        // Tracking ya fue creado por el servicio
+                    }
+                } catch (\Exception $e) {
+                    // Si falla la asignación del driver, no bloquear la venta
+                    \Illuminate\Support\Facades\Log::warning('No se pudo asignar driver a venta con delivery', [
+                        'venta_id' => $venta->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
 
             // Calcular y guardar retenciones ITBIS vendedor
             $cliente = $venta->cliente;
@@ -585,12 +615,7 @@ class SaleService
         }
         $almacenes = $almacenes->get();
 
-        if ($almacenes->isEmpty()) {
-            $defaultAlmacen = \App\Models\Almacen::where('tenant_id', $tenantId)->first();
-            if ($defaultAlmacen) {
-                $almacenes = collect([$defaultAlmacen]);
-            }
-        }
+        $sinAlmacen = $almacenes->isEmpty() && \App\Models\Almacen::where('tenant_id', $tenantId)->count() === 0;
 
         $modoObras = $this->facturaObrasArte();
         $itbisInstancia = $this->itbisPorcentajeInstancia();
@@ -632,7 +657,18 @@ class SaleService
             'rnc'        => $c->rnc ?? $c->rnc_cedula ?? '',
             'rnc_cedula' => $c->rnc_cedula ?? $c->rnc ?? '',
             'tipo_cliente' => $c->tipo_cliente ?? 'consumo',
+            'direccion'  => $c->direccion ?? '',
         ])->values()->all();
+
+        $deliveryCompanies = \App\Models\DeliveryCompany::where('tenant_id', $tenantId)
+            ->where('activo', true)
+            ->orderBy('nombre_corto')
+            ->get();
+
+        $deliveryDrivers = \App\Models\DeliveryDriver::where('tenant_id', $tenantId)
+            ->where('activo', true)
+            ->orderBy('nombre')
+            ->get();
 
         if ($modoObras) {
             $obras = ArteObra::where('tenant_id', $tenantId)
@@ -668,7 +704,8 @@ class SaleService
                 'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
                 'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
                 'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-                'modoObras', 'permitidos', 'facturacionModo'
+                'modoObras', 'permitidos', 'facturacionModo', 'deliveryCompanies', 'deliveryDrivers',
+                'sinAlmacen'
             );
         }
 
@@ -710,7 +747,8 @@ class SaleService
                 'clientes', 'tiposVenta', 'productos', 'almacenes', 'stocks', 'ncfSequences',
                 'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
                 'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
-                'modoObras', 'permitidos', 'equipos', 'facturacionModo'
+                'modoObras', 'permitidos', 'equipos', 'facturacionModo', 'deliveryCompanies', 'deliveryDrivers',
+                'sinAlmacen'
             );
         }
 
@@ -780,7 +818,7 @@ class SaleService
                 'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
                 'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
                 'modoObras', 'permitidos', 'facturacionModo', 'modoLavados', 'modoProductosYServicios',
-                'serviciosJs'
+                'serviciosJs', 'deliveryCompanies', 'deliveryDrivers', 'sinAlmacen'
             );
         }
 
@@ -829,7 +867,7 @@ class SaleService
             'sesiones', 'sesion', 'cajas', 'clienteConsumidorFinal', 'tipoVentaDefault',
             'productosJs', 'clientesJs', 'categoriasJs', 'validaStock', 'puedeModificarPrecio',
             'modoObras', 'permitidos', 'facturacionModo', 'modoLavados', 'modoProductosYServicios',
-            'serviciosJs'
+            'serviciosJs', 'deliveryCompanies', 'deliveryDrivers', 'sinAlmacen'
         );
     }
 
@@ -1009,6 +1047,9 @@ class SaleService
 
             if ($this->validaStock()) {
                 $disponiblePorAlmacen = $almacenId ? $this->checkStock($productoId, $almacenId) : $producto->stock;
+                if ($disponiblePorAlmacen === 0 && $almacenId) {
+                    $disponiblePorAlmacen = max($disponiblePorAlmacen, $producto->stock);
+                }
                 if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
                     throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
                 }
@@ -1171,6 +1212,9 @@ class SaleService
 
             if ($this->validaStock()) {
                 $disponiblePorAlmacen = $almacenId ? $this->checkStock($productoId, $almacenId) : $producto->stock;
+                if ($disponiblePorAlmacen === 0 && $almacenId) {
+                    $disponiblePorAlmacen = max($disponiblePorAlmacen, $producto->stock);
+                }
                 if ($disponiblePorAlmacen < $cantidad || $producto->stock < $cantidad) {
                     throw new \Exception("Stock insuficiente para: {$producto->nombre} (Disponible en almacén: {$disponiblePorAlmacen}, Stock global: {$producto->stock})");
                 }

@@ -6962,7 +6962,7 @@ INSERT INTO `business_types` (`id`, `slug`, `nombre`, `descripcion`, `color`, `i
 (5, 'lavadero', 'Lavadero de Carro', 'Servicio de lavado y detallado de vehículos', 'primary', 'bi-droplet', 1, 5, NULL, '2026-07-01 15:04:02', '2026-07-01 15:04:02'),
 (6, 'mixto', 'Mixto (Restaurante + Retail)', 'Negocio que combina restaurante y venta al por menor', 'secondary', 'bi-grid', 1, 6, NULL, '2026-07-01 15:04:03', '2026-07-01 15:04:03'),
 (9, 'climatizacion', 'Climatización / HVAC', 'Servicios de climatización, aire acondicionado y mantenimiento', 'purple', 'bi-wind', 1, 8, NULL, '2026-07-22 22:45:29', '2026-07-22 22:45:29'),
-(10, 'tecnologia', 'Tienda de Celulares / Reparaciones', 'Venta de celulares, accesorios y servicios técnicos de reparación', 'danger', 'bi-phone', 1, 9, NULL, '2026-07-22 23:36:18', '2026-07-22 23:36:18'),
+(10, 'tecnologia', 'Tienda de Tecnología', 'Venta y servicios de equipos tecnológicos, hardware, software, redes e infraestructura', 'danger', 'bi-phone', 1, 9, NULL, '2026-07-22 23:36:18', '2026-07-22 23:36:18'),
 (11, 'mecanica', 'Repuesto de Mecanica', 'Venta de repuestos automotrices y servicios de mecánica (cambio de aceite y filtros)', 'warning', 'bi-tools', 1, 10, NULL, '2026-08-04 11:05:19', '2026-08-04 11:05:19'),
 (12, 'arte_escultura', 'Arte / Escultura / Galería', 'Galería de arte y escultura — gestión de obras, encargos, consignaciones y exhibiciones', 'purple', 'bi-palette', 1, 11, '{\"facturacion_modo\": \"obras_arte\"}', '2026-08-11 15:48:39', '2026-08-14 18:51:37'),
 (13, 'embutidos', 'Embutidos / Charcutería', 'Venta de embutidos, carnes frías y productos de charcutería', 'danger', 'bi-egg-fried', 1, 12, NULL, '2026-08-12 12:33:52', '2026-08-12 12:33:52');

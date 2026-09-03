@@ -10,7 +10,6 @@ return [
         \App\Models\MesaUbicacion::class,
         \App\Models\MesaCategoria::class,
         \App\Models\Mesa::class,
-        \App\Models\LavaderoServicio::class,
         \App\Models\Lavador::class,
     ],
 ];

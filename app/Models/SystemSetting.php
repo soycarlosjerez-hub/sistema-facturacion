@@ -10,6 +10,32 @@ class SystemSetting extends Model
 {
     protected $fillable = ['clave', 'grupo', 'valor', 'tipo', 'descripcion', 'tenant_id'];
 
+    public function getAttribute($key)
+    {
+        return match($key) {
+            'key' => $this->getAttributeValue('clave'),
+            'value' => $this->getAttributeValue('valor'),
+            default => parent::getAttribute($key),
+        };
+    }
+
+    public function getAttributes()
+    {
+        $attributes = parent::getAttributes();
+        $attributes['key'] = $attributes['clave'] ?? null;
+        $attributes['value'] = $attributes['valor'] ?? null;
+        return $attributes;
+    }
+
+    public function setAttribute($key, $value)
+    {
+        return parent::setAttribute(match($key) {
+            'key' => 'clave',
+            'value' => 'valor',
+            default => $key,
+        }, $value);
+    }
+
     public const CACHE_TTL = 3600;
 
     /**

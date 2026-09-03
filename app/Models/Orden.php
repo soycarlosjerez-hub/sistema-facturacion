@@ -31,6 +31,7 @@ class Orden extends Model
         'terminal_id', 'user_id', 'caja_id', 'sesion_caja_id',
         'cliente_id', 'sucursal_id',
         'tipo_orden', 'entrega_empresa_id',
+        'driver_id', 'delivery_company_id', 'tracking_status',
         'direccion_entrega', 'telefono_contacto', 'hora_retiro',
         'subtotal', 'impuestos', 'descuento', 'total',
         'descuento_tipo', 'descuento_motivo', 'propina',

@@ -14,9 +14,24 @@ class InstanceRolesSeeder extends Seeder
         'restaurante', 'restaurante-kds', 'restaurante-reservaciones', 'restaurante-categorias',
         'clientes', 'cajas', 'sucursales', 'almacenes', 'cuentas-bancarias',
         'reportes-caja', 'reportes-restaurante', 'reportes-resumen', 'reportes-gastos',
+        'reportes-ventas', 'reportes-compras', 'reportes-stock', 'reportes-utilidades',
         'ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales',
         'configuracion-general', 'payment-processors', 'delivery-companies',
-        'auditoria', 'backups', 'plantilla-gastos',
+        'delivery-dashboard', 'delivery-drivers', 'delivery-zones', 'delivery-tracking', 'delivery-earnings',
+        'ventas', 'conduces', 'ordenes', 'ordenes-kds', 'cobros',
+        'devoluciones', 'gastos', 'plantilla-gastos', 'cotizaciones',
+        'auditoria', 'backups',
+        'lavadero-vehiculos', 'lavadero-citas', 'lavadero-lavadores',
+        'tecnologia', 'equipos', 'tecnicas', 'tecnicos', 'domotica', 'garantias',
+        'marca-tecnologicas', 'licencias-software', 'redes-config', 'presupuestos',
+        'tecnica-especialidades', 'garantias-config',
+        'arte', 'arte-obras', 'arte-artistas', 'arte-colecciones', 'arte-exhibiciones', 'arte-consignaciones',
+        'alquileres', 'alquileres-viviendas', 'alquileres-inquilinos', 'alquileres-contratos', 'alquileres-pagos',
+        'climatizacion', 'climatizacion-tipos-equipos', 'climatizacion-instalaciones',
+        'climatizacion-contratos', 'climatizacion-mantenimientos', 'climatizacion-ordenes-emergencia', 'climatizacion-garantias',
+        'tattoo', 'tattoo-artistas', 'tattoo-disenos', 'tattoo-citas',
+        'libros-ventas', 'libros-compras', 'reportes-retenciones', 'reportes-fiscales', 'formulario-14-14',
+        'sgc-datos',
     ];
 
     private array $roleModules = [
@@ -40,9 +55,13 @@ class InstanceRolesSeeder extends Seeder
         ],
         'delivery' => [
             'dashboard', 'restaurante', 'clientes',
+            'delivery-dashboard', 'delivery-tracking', 'delivery-earnings',
+            'delivery-zones', 'delivery-companies',
+            'conduces', 'ordenes',
         ],
         'cajero' => [
             'dashboard', 'restaurante', 'clientes', 'cajas', 'reportes-caja',
+            'ventas', 'conduces', 'ordenes', 'cobros',
         ],
         'contador' => [
             'dashboard', 'clientes', 'proveedores', 'kardex',

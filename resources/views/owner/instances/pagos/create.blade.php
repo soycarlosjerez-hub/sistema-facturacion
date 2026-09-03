@@ -52,8 +52,8 @@
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold small">M&eacute;todo de Pago</label>
-                    <select name="metodo_pago" class="ui-select rounded-pill">
+                    <label class="form-label fw-bold small">M&eacute;todo de Pago <span class="text-danger">*</span></label>
+                    <select name="metodo_pago" class="ui-select rounded-pill @error('metodo_pago') is-invalid @enderror" required>
                         <option value="">Seleccionar...</option>
                         <option value="Transferencia" {{ old('metodo_pago') === 'Transferencia' ? 'selected' : '' }}>Transferencia</option>
                         <option value="Efectivo" {{ old('metodo_pago') === 'Efectivo' ? 'selected' : '' }}>Efectivo</option>
@@ -61,6 +61,7 @@
                         <option value="Tarjeta" {{ old('metodo_pago') === 'Tarjeta' ? 'selected' : '' }}>Tarjeta</option>
                         <option value="PayPal" {{ old('metodo_pago') === 'PayPal' ? 'selected' : '' }}>PayPal</option>
                     </select>
+                    @error('metodo_pago') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold small">Notas</label>

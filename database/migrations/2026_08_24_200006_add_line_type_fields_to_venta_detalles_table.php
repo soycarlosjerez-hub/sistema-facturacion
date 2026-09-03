@@ -8,7 +8,10 @@ return new class extends Migration
 {
     /**
      * Agregar campos de línea de negocio y lavadero a los detalles de venta.
-     * Permite distinguir entre servicio de lavadero, alimentos/bebidas, y accesorios.
+     * tipo_linea: distingue entre servicio de lavadero, alimentos/bebidas, accesorios.
+     * lavador_id: asigna lavador(es) a una venta de servicio.
+     * Nota: servicio_id fue eliminado porque los servicios se almacenan como
+     * productos con tipo_servicio='servicio', por lo que producto_id basta.
      */
     public function up(): void
     {
@@ -18,12 +21,8 @@ return new class extends Migration
                     ->nullable()->after('subtotal');
             }
 
-            if (!Schema::hasColumn('venta_detalles', 'servicio_id')) {
-                $table->foreignId('servicio_id')->nullable()->constrained('lavadero_servicios')->nullOnDelete()->after('producto_id');
-            }
-
             if (!Schema::hasColumn('venta_detalles', 'lavador_id')) {
-                $table->foreignId('lavador_id')->nullable()->constrained('lavadores')->nullOnDelete()->after('servicio_id');
+                $table->foreignId('lavador_id')->nullable()->constrained('lavadores')->nullOnDelete()->after('producto_id');
             }
 
             // Índice para filtrar por tipo de línea
@@ -42,10 +41,6 @@ return new class extends Migration
             if (Schema::hasColumn('venta_detalles', 'lavador_id')) {
                 $table->dropForeign(['lavador_id']);
                 $table->dropColumn('lavador_id');
-            }
-            if (Schema::hasColumn('venta_detalles', 'servicio_id')) {
-                $table->dropForeign(['servicio_id']);
-                $table->dropColumn('servicio_id');
             }
         });
     }

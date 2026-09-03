@@ -45,7 +45,7 @@ class ProveedorController extends Controller
     public function store(Request $request)
     {
         $tenantId = auth()->user()->business_instance_id;
-        $nombreRules = 'required|string|max:255';
+        $nombreRules = 'nullable|string|max:255';
         if ($tenantId) {
             $nombreRules .= '|unique:proveedores,nombre,NULL,id,tenant_id,' . $tenantId;
         } else {
@@ -58,12 +58,12 @@ class ProveedorController extends Controller
             'telefono'              => 'nullable|string|max:30',
             'direccion'             => 'nullable|string|max:255',
             'rnc'                   => 'nullable|string|max:20',
-            'tipo_persona'          => 'required|string|in:fisica,juridica',
+            'tipo_persona'          => 'nullable|string|in:fisica,juridica',
             'sujeto_retencion_isr'  => 'boolean',
             'sujeto_retencion_itbis' => 'boolean',
             'activo'                => 'boolean',
         ], [
-            'tipo_persona.required' => 'Debe seleccionar el tipo de persona (Física o Jurídica).',
+            'tipo_persona.in' => 'El tipo de persona debe ser Física o Jurídica.',
         ]);
 
         $this->proveedorService->create($data);
@@ -85,7 +85,7 @@ class ProveedorController extends Controller
     public function update(Request $request, Proveedor $proveedore)
     {
         $tenantId = auth()->user()->business_instance_id;
-        $nombreRules = 'required|string|max:255';
+        $nombreRules = 'nullable|string|max:255';
         if ($tenantId) {
             $nombreRules .= '|unique:proveedores,nombre,' . $proveedore->id . ',id,tenant_id,' . $tenantId;
         } else {
@@ -98,12 +98,12 @@ class ProveedorController extends Controller
             'telefono'              => 'nullable|string|max:30',
             'direccion'             => 'nullable|string|max:255',
             'rnc'                   => 'nullable|string|max:20',
-            'tipo_persona'          => 'required|string|in:fisica,juridica',
+            'tipo_persona'          => 'nullable|string|in:fisica,juridica',
             'sujeto_retencion_isr'  => 'boolean',
             'sujeto_retencion_itbis' => 'boolean',
             'activo'                => 'boolean',
         ], [
-            'tipo_persona.required' => 'Debe seleccionar el tipo de persona (Física o Jurídica).',
+            'tipo_persona.in' => 'El tipo de persona debe ser Física o Jurídica.',
         ]);
 
         $this->proveedorService->update($proveedore, $data);
