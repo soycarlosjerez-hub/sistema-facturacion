@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AlmacenMovimiento;
 use App\Models\DeliveryCompany;
-use App\Models\DeliveryDriver;
 use App\Models\DeliveryZone;
-use App\Services\DeliveryService;
+use App\Models\Producto;
 use App\Services\DriverAssignmentService;
 use App\Services\PosService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 class PosController extends Controller
 {
@@ -28,7 +30,7 @@ class PosController extends Controller
         $servicios = \App\Models\LavaderoServicio::activos()->orderBy('orden')->get();
         $paquetes = \App\Models\LavaderoPaquete::activos()->orderBy('orden')->get();
         $productos = \App\Models\Producto::activos()->orderBy('nombre')->get();
-        $categorias = \App\Models\Categoria::activas()->orderBy('nombre')->get();
+        $categorias = \App\Models\Category::activas()->orderBy('nombre')->get();
         $lavadores = \App\Models\Lavador::activos()->orderBy('nombre')->get();
         $clientes = \App\Models\Cliente::orderBy('nombre')->limit(50)->get();
 
@@ -48,13 +50,13 @@ class PosController extends Controller
     {
         try {
             $data = $request->validate([
-                'cliente_id'   => 'nullable|exists:clientes,id',
-                'vehiculo_id'  => 'nullable|exists:vehiculos,id',
-                'metodo_pago'  => 'required|string|in:efectivo,tarjeta,transferencia,fiado',
-                'tipo_venta_id'=> 'nullable|exists:tipos_ventas,id',
-                'servicios'    => 'nullable|array',
-                'productos'    => 'nullable|array',
-                'paquetes'     => 'nullable|array',
+                'cliente_id' => 'nullable|exists:clientes,id',
+                'vehiculo_id' => 'nullable|exists:vehiculos,id',
+                'metodo_pago' => 'required|string|in:efectivo,tarjeta,transferencia,fiado',
+                'tipo_venta_id' => 'nullable|exists:tipos_ventas,id',
+                'servicios' => 'nullable|array',
+                'productos' => 'nullable|array',
+                'paquetes' => 'nullable|array',
             ]);
 
             $result = $this->service->checkout($data);
@@ -63,7 +65,7 @@ class PosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 422);
         }
     }
@@ -81,12 +83,12 @@ class PosController extends Controller
         return response()->json([
             'productos' => $productos->map(function ($p) {
                 return [
-                    'id'           => (int) $p->id,
-                    'nombre'       => $p->nombre,
-                    'codigo_barras'=> $p->codigo_barras,
-                    'precio'       => (float) $p->precio,
-                    'stock'        => (int) $p->stock,
-                    'imagen'       => $p->imagen,
+                    'id' => (int) $p->id,
+                    'nombre' => $p->nombre,
+                    'codigo_barras' => $p->codigo_barras,
+                    'precio' => (float) $p->precio,
+                    'stock' => (int) $p->stock,
+                    'imagen' => $p->imagen,
                     'categoria_id' => (int) $p->categoria_id,
                 ];
             }),
@@ -100,13 +102,13 @@ class PosController extends Controller
     {
         try {
             $data = $request->validate([
-                'cliente_id'  => 'nullable|exists:clientes,id',
+                'cliente_id' => 'nullable|exists:clientes,id',
                 'vehiculo_id' => 'nullable|exists:vehiculos,id',
-                'servicios'   => 'nullable|array',
-                'productos'   => 'nullable|array',
-                'paquetes'    => 'nullable|array',
+                'servicios' => 'nullable|array',
+                'productos' => 'nullable|array',
+                'paquetes' => 'nullable|array',
                 'metodo_pago' => 'nullable|string|in:efectivo,tarjeta,transferencia',
-                'total'       => 'nullable|numeric|min:0',
+                'total' => 'nullable|numeric|min:0',
             ]);
 
             $result = $this->service->holdSale($data);
@@ -115,7 +117,7 @@ class PosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 422);
         }
     }
@@ -128,10 +130,10 @@ class PosController extends Controller
         try {
             $holdId = $request->input('hold_id');
 
-            if (!$holdId) {
+            if (! $holdId) {
                 return response()->json([
                     'success' => false,
-                    'error'   => 'Se requiere hold_id',
+                    'error' => 'Se requiere hold_id',
                 ], 422);
             }
 
@@ -141,7 +143,7 @@ class PosController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 422);
         }
     }
@@ -164,15 +166,15 @@ class PosController extends Controller
     public function holdsList()
     {
         $userId = auth()->id();
-        $prefix = 'hold_' . $userId . '_';
+        $prefix = 'hold_'.$userId.'_';
         $holds = [];
 
         foreach (session()->all() as $key => $value) {
             if (str_starts_with($key, $prefix)) {
                 $holdId = str_replace($prefix, '', $key);
                 $holds[] = [
-                    'hold_id'   => $holdId,
-                    'data'      => $value,
+                    'hold_id' => $holdId,
+                    'data' => $value,
                 ];
             }
         }
@@ -187,7 +189,7 @@ class PosController extends Controller
     {
         $zones = DeliveryZone::where('activo', true)
             ->orderBy('nombre')
-            ->get(['id', 'nombre', 'descripcion', 'tiempo_estimado_minutos', 'radio_km']);
+            ->get(['id', 'nombre', 'descripcion', 'tiempo_estimado_minutos', 'radio_km', 'tarifa_base', 'tarifa_por_km']);
 
         return response()->json(['zones' => $zones]);
     }
@@ -210,11 +212,11 @@ class PosController extends Controller
     public function checkoutDelivery(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'carrito'           => 'required|array',
-            'carrito.*.id'      => 'required',
-            'carrito.*.cantidad'=> 'required|integer|min:1',
-            'carrito.*.precio'  => 'required|numeric|min:0',
-            'metodo_pago'       => 'required|string|in:efectivo,tarjeta,transferencia,fiado',
+            'carrito' => 'required|array',
+            'carrito.*.id' => 'required',
+            'carrito.*.cantidad' => 'required|integer|min:1',
+            'carrito.*.precio' => 'required|numeric|min:0',
+            'metodo_pago' => 'required|string|in:efectivo,tarjeta,transferencia,fiado',
             'direccion_entrega' => 'required_if:tipoVenta,delivery|string|max:500',
             'telefono_contacto' => 'required_if:tipoVenta,delivery|string|max:30',
         ]);
@@ -237,6 +239,15 @@ class PosController extends Controller
             $direccion = $request->input('direccion_entrega');
             $telefono = $request->input('telefono_contacto');
             $clienteId = $request->input('cliente_id');
+
+            // Lookup zone tarifa as fallback if delivery_fee is 0
+            $tarifaDelivery = $deliveryFee;
+            if ($tarifaDelivery <= 0 && $zonaId) {
+                $zona = \App\Models\DeliveryZone::find($zonaId);
+                if ($zona) {
+                    $tarifaDelivery = (float) $zona->tarifa_base;
+                }
+            }
 
             // Buscar producto/servicio por ID (soporta ambos)
             $lineItems = [];
@@ -266,12 +277,12 @@ class PosController extends Controller
                 $subtotal += $totalLinea;
 
                 $lineItems[] = [
-                    'tipo'      => $tipo,
-                    'id'        => $item['id'],
-                    'cantidad'  => $cantidad,
-                    'precio'    => $precio,
-                    'subtotal'  => $totalLinea,
-                    'linea'     => $linea,
+                    'tipo' => $tipo,
+                    'id' => $item['id'],
+                    'cantidad' => $cantidad,
+                    'precio' => $precio,
+                    'subtotal' => $totalLinea,
+                    'linea' => $linea,
                 ];
             }
 
@@ -289,12 +300,12 @@ class PosController extends Controller
                 $isElevated = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])
                     || auth()->user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
                 $sesionQuery = \App\Models\SesionCaja::where('estado', 'abierta');
-                if (!$isElevated) {
+                if (! $isElevated) {
                     $sesionQuery->where('user_id', auth()->id());
                 }
                 $sesionCaja = $sesionQuery->first();
 
-                if (!$sesionCaja) {
+                if (! $sesionCaja) {
                     return response()->json([
                         'success' => false,
                         'error' => 'No hay una sesión de caja activa. Por favor abra la caja primero.',
@@ -302,7 +313,7 @@ class PosController extends Controller
                 }
 
                 // Consumidor final si no hay cliente
-                if (!$clienteId) {
+                if (! $clienteId) {
                     $consumidorFinal = \App\Models\Cliente::consumidorFinal($tenantId);
                     $clienteId = $consumidorFinal->id;
                 }
@@ -320,80 +331,117 @@ class PosController extends Controller
 
                 // Crear la venta con campos de delivery
                 $venta = \App\Models\Venta::create([
-                    'ncf'              => '',
-                    'ncf_tipo'         => 'sin',
+                    'ncf' => '',
+                    'ncf_tipo' => 'sin',
                     'tipo_comprobante' => $tipoComprobante,
-                    'user_id'          => auth()->id(),
-                    'sucursal_id'      => session('sucursal_id'),
-                    'caja_id'          => $sesionCaja->caja_id,
-                    'sesion_caja_id'   => $sesionCaja->id,
-                    'cliente_id'       => $clienteId,
-                    'tipo_orden'       => 'delivery',
-                    'fecha'            => now(),
-                    'subtotal'         => $subtotal,
-                    'impuestos'        => $impuestos,
-                    'total'            => round($total + $impuestos + $cargoServicio, 2),
-                    'estado'           => $estado,
-                    'propina'          => $propina,
-                    'delivery_fee'     => $deliveryFee,
-                    'cargo_servicio'   => $cargoServicio,
+                    'user_id' => auth()->id(),
+                    'sucursal_id' => session('sucursal_id'),
+                    'caja_id' => $sesionCaja->caja_id,
+                    'sesion_caja_id' => $sesionCaja->id,
+                    'cliente_id' => $clienteId,
+                    'tipo_orden' => 'delivery',
+                    'fecha' => now(),
+                    'subtotal' => $subtotal,
+                    'impuestos' => $impuestos,
+                    'total' => round($total + $impuestos + $cargoServicio, 2),
+                    'estado' => $estado,
+                    'propina' => $propina,
+                    'delivery_fee' => $deliveryFee,
+                    'cargo_servicio' => $cargoServicio,
                     'delivery_company_id' => $empresaId,
                     'delivery_address' => $direccion,
-                    'tenant_id'        => $tenantId,
+                    'delivery_zone_id' => $zonaId,
+                    'tarifa_delivery' => $tarifaDelivery,
+                    'tenant_id' => $tenantId,
                 ]);
 
                 // Crear detalles de venta
                 foreach ($lineItems as $line) {
                     if ($line['tipo'] === 'servicio') {
                         \App\Models\VentaDetalle::create([
-                            'venta_id'         => $venta->id,
-                            'servicio_id'      => $line['id'],
-                            'cantidad'         => $line['cantidad'],
-                            'precio_unitario'  => $line['precio'],
-                            'subtotal'         => $line['subtotal'],
-                            'tenant_id'        => $tenantId,
-                            'tipo_linea'       => 'servicio',
+                            'venta_id' => $venta->id,
+                            'servicio_id' => $line['id'],
+                            'cantidad' => $line['cantidad'],
+                            'precio_unitario' => $line['precio'],
+                            'subtotal' => $line['subtotal'],
+                            'tenant_id' => $tenantId,
+                            'tipo_linea' => 'servicio',
                         ]);
                     } elseif ($line['tipo'] === 'paquete') {
                         \App\Models\VentaDetalle::create([
-                            'venta_id'         => $venta->id,
-                            'cantidad'         => $line['cantidad'],
-                            'precio_unitario'  => $line['precio'],
-                            'subtotal'         => $line['subtotal'],
-                            'tenant_id'        => $tenantId,
-                            'tipo_linea'       => 'paquete',
+                            'venta_id' => $venta->id,
+                            'cantidad' => $line['cantidad'],
+                            'precio_unitario' => $line['precio'],
+                            'subtotal' => $line['subtotal'],
+                            'tenant_id' => $tenantId,
+                            'tipo_linea' => 'paquete',
                         ]);
                     } else {
                         \App\Models\VentaDetalle::create([
-                            'venta_id'         => $venta->id,
-                            'producto_id'      => $line['id'],
-                            'cantidad'         => $line['cantidad'],
-                            'precio_unitario'  => $line['precio'],
-                            'subtotal'         => $line['subtotal'],
-                            'tenant_id'        => $tenantId,
-                            'tipo_linea'       => 'producto',
+                            'venta_id' => $venta->id,
+                            'producto_id' => $line['id'],
+                            'cantidad' => $line['cantidad'],
+                            'precio_unitario' => $line['precio'],
+                            'subtotal' => $line['subtotal'],
+                            'tenant_id' => $tenantId,
+                            'tipo_linea' => 'producto',
                         ]);
 
-                        // Reducir stock
-                        $producto = \App\Models\Producto::find($line['id']);
-                        if ($producto && $producto->tiene_almacen) {
+                        // Reducir stock y registrar movimiento de almacén
+                        $producto = Producto::where('id', $line['id'])
+                            ->where('tenant_id', $tenantId)
+                            ->lockForUpdate()
+                            ->first();
+
+                        if ($producto && $producto->stock >= $line['cantidad']) {
                             $producto->decrement('stock', $line['cantidad']);
+
+                            AlmacenMovimiento::create([
+                                'tenant_id' => $tenantId,
+                                'producto_id' => $producto->id,
+                                'almacen_id' => null,
+                                'tipo' => 'salida',
+                                'cantidad' => $line['cantidad'],
+                                'nota' => 'Venta Delivery POS #' . $venta->id . ' - ' . $line['nombre'],
+                                'user_id' => Auth::id(),
+                            ]);
+
+                            $producto->increment('ventas_count', $line['cantidad']);
+
+                            if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
+                                Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
+                            }
                         }
                     }
+                }
+
+                // Crear detalle de delivery fee como ítem en la factura
+                if ($deliveryFee > 0) {
+                    \App\Models\VentaDetalle::create([
+                        'venta_id' => $venta->id,
+                        'tipo_linea' => 'delivery',
+                        'cantidad' => 1,
+                        'precio_unitario' => $deliveryFee,
+                        'subtotal' => $deliveryFee,
+                        'sin_itbis' => true,
+                        'itbis_porcentaje' => 0,
+                        'notas' => 'Cargo por servicio de delivery',
+                        'tenant_id' => $tenantId,
+                    ]);
                 }
 
                 // Procesar pago
                 if ($estado !== 'pendiente') {
                     $montoPago = round($total + $impuestos + $cargoServicio, 2);
                     \App\Models\Pago::create([
-                        'venta_id'     => $venta->id,
-                        'monto'        => $montoPago,
-                        'metodo_pago'  => $metodoPago,
-                        'tenant_id'    => $tenantId,
+                        'venta_id' => $venta->id,
+                        'monto' => $montoPago,
+                        'metodo_pago' => $metodoPago,
+                        'tenant_id' => $tenantId,
                     ]);
 
                     // Actualizar caja
-                    $cobrosColumn = 'cobros_' . $metodoPago;
+                    $cobrosColumn = 'cobros_'.$metodoPago;
                     \App\Models\Caja::where('id', $sesionCaja->caja_id)
                         ->increment($cobrosColumn, $montoPago);
                 }
@@ -442,14 +490,14 @@ class PosController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('POS Checkout Delivery Error: ' . $e->getMessage(), [
+            \Log::error('POS Checkout Delivery Error: '.$e->getMessage(), [
                 'request' => $request->all(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'error' => 'Error al procesar la venta: ' . $e->getMessage(),
+                'error' => 'Error al procesar la venta: '.$e->getMessage(),
             ], 500);
         }
     }

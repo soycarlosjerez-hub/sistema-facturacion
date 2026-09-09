@@ -47,13 +47,20 @@
             <div class="mb-3 campo-producto">
                 <label class="ui-label small fw-semibold">Código de Barras</label>
                 <div class="ui-input-group input-group-lg">
-                    <input type="text" id="codigo_barras" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras ?? '') }}" class="ui-input @error('codigo_barras') is-invalid @enderror" placeholder="Escanear o generar" autocomplete="off">
+                    <input type="text" id="codigo_barras" name="codigo_barras" value="{{ old('codigo_barras', $producto->codigo_barras ?? '') }}" class="ui-input @error('codigo_barras') is-invalid @enderror" placeholder="Escaneá o generar" autocomplete="off">
                     <button class="ui-btn ui-btn-ghost px-3" type="button" id="btnGenerarBarcode" title="Generar código de barras">
                         <i class="bi bi-magic"></i>
                     </button>
                 </div>
                 @error('codigo_barras')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                <small class="text-muted">Escanea con tu lector o haz clic en <i class="bi bi-magic"></i> para generar uno único.</small>
+                <small class="text-muted">Escaneá con tu lector o hacé clic en <i class="bi bi-magic"></i> para generar uno único.</small>
+            </div>
+
+            <div class="mb-3 campo-producto">
+                <label class="ui-label small fw-semibold">Código Referencia</label>
+                <input type="text" name="codigo_referencia" value="{{ old('codigo_referencia', $producto->codigo_referencia ?? '') }}" class="ui-input @error('codigo_referencia') is-invalid @enderror" placeholder="Ej. REF-001, SKU-INT-123" maxlength="100">
+                @error('codigo_referencia')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                <small class="text-muted">Código interno de referencia (opcional, diferente al código de barras).</small>
             </div>
 
             <div class="mb-3">
@@ -174,6 +181,7 @@
     </div>
     <div class="row g-4">
         <div class="col-md-12">
+            <input type="hidden" name="activo" value="0">
             <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(5,150,105,.05);">
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" name="activo" value="1" id="chk-activo" {{ old('activo', !isset($producto->exists) || !$producto->exists ? true : $producto->activo) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
@@ -198,6 +206,7 @@
         </h6>
     </div>
     <div class="row g-4 campo-producto">
+        <input type="hidden" name="incluir_kds" value="0">
         <div class="col-md-12">
             <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(249,115,22,.06);">
                 <div class="form-check form-switch mb-0">
@@ -269,17 +278,56 @@
                 <input type="text" name="color" value="{{ old('color', $producto->color ?? '') }}" class="ui-input" placeholder="Ej. Negro, Plateado">
             </div>
             <div class="mb-3">
-                <label class="ui-label small fw-semibold">Garantía (días)</label>
-                <input type="number" name="garantia_dias" value="{{ old('garantia_dias', $producto->garantia_dias ?? '') }}" class="ui-input" min="0" placeholder="Ej. 365">
+                <label class="ui-label small fw-semibold">Garantía (meses)</label>
+                @php
+                    $garantiaActual = old('garantia_dias', $producto->garantia_dias ?? 0);
+                    $opcionesGarantia = [
+                        0 => 'Sin garantía',
+                        30 => '1 mes',
+                        60 => '2 meses',
+                        90 => '3 meses',
+                        180 => '6 meses',
+                        365 => '12 meses (1 año)',
+                        540 => '18 meses',
+                        730 => '24 meses (2 años)',
+                        1095 => '36 meses (3 años)',
+                        1500 => '60 meses (5 años)',
+                    ];
+                    $mejorMatch = 0;
+                    foreach (array_keys($opcionesGarantia) as $opcion) {
+                        if ($opcion <= $garantiaActual) {
+                            $mejorMatch = $opcion;
+                        }
+                    }
+                    if ($garantiaActual > 0 && !isset($opcionesGarantia[$garantiaActual])) {
+                        $mejorMatch = $garantiaActual;
+                    }
+                @endphp
+                <select name="garantia_dias" class="ui-select" id="garantia_dias_select">
+                    @foreach($opcionesGarantia as $dias => $label)
+                        <option value="{{ $dias }}" data-meses="{{ $dias >= 0 ? (int)ceil($dias / 30.44) : 0 }}" {{ $mejorMatch == $dias ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <input type="hidden" name="garantia_meses" id="garantia_meses_hidden" value="{{ old('garantia_meses', $producto->garantia_meses ?? 0) }}">
+            </div>
+            <div class="mb-3">
+                <label class="ui-label small fw-semibold">
+                    <i class="bi bi-file-earmark-text me-1"></i>Terminos de Garantía
+                </label>
+                <textarea name="garantia_terminos" class="ui-input @error('garantia_terminos') is-invalid @enderror" rows="3" placeholder="Ej: Garantía de 90 días contra defectos de fábrica. No cubre daños por agua, caídas o uso indebido.">{{ old('garantia_terminos', $producto->garantia_terminos ?? '') }}</textarea>
+                @error('garantia_terminos')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                <small class="text-muted">Estos términos se aplicarán automáticamente a las garantías de este producto al venderlo.</small>
             </div>
         </div>
         <div class="col-md-4">
+            <input type="hidden" name="vendible_imei" value="0">
             <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style="background:rgba(59,130,246,.05);">
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" name="vendible_imei" value="1" id="chk-vendible-imei" {{ old('vendible_imei', $producto->vendible_imei ?? false) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
                     <label class="form-check-label fw-semibold ms-2" for="chk-vendible-imei">Control IMEI</label>
                 </div>
             </div>
+            <input type="hidden" name="requiere_serial" value="0">
             <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style="background:rgba(59,130,246,.05);">
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" name="requiere_serial" value="1" id="chk-requiere-serial" {{ old('requiere_serial', $producto->requiere_serial ?? false) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
@@ -294,6 +342,7 @@
                     <small class="text-muted">Número de serie o IMEI del equipo para trazabilidad.</small>
                 </div>
             </div>
+            <input type="hidden" name="es_licencia" value="0">
             <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style="background:rgba(59,130,246,.05);">
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" name="es_licencia" value="1" id="chk-es-licencia" {{ old('es_licencia', $producto->es_licencia ?? false) ? 'checked' : '' }} role="switch" style="width:3em;height:1.5em;">
@@ -400,6 +449,7 @@
         </h6>
     </div>
     <div class="row g-4 mb-4 seccion-arte">
+        <input type="hidden" name="is_art_piece" value="0">
         <div class="col-md-4">
             <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(236,72,153,.05);">
                 <div class="form-check form-switch mb-0">
@@ -650,5 +700,18 @@
             }
         }, 4000);
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const select = document.getElementById('garantia_dias_select');
+        const hidden = document.getElementById('garantia_meses_hidden');
+        if (select && hidden) {
+            function updateMeses() {
+                const option = select.options[select.selectedIndex];
+                hidden.value = option.dataset.meses || 0;
+            }
+            updateMeses();
+            select.addEventListener('change', updateMeses);
+        }
+    });
 </script>
 @endpush

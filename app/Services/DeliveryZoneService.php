@@ -16,7 +16,7 @@ class DeliveryZoneService
             ->where('activo', true)
             ->first();
 
-        if (!$zona) {
+        if (! $zona) {
             return [
                 'tarifa' => 50.00,
                 'distancia_km' => $distanciaKm,
@@ -79,7 +79,7 @@ class DeliveryZoneService
     {
         $zona = DeliveryZone::find($zonaId);
 
-        if (!$zona) {
+        if (! $zona) {
             return [
                 'dentro_zona' => false,
                 'distancia_km' => 0,
@@ -89,11 +89,8 @@ class DeliveryZoneService
 
         $radioKm = $zona->radio_km ?? 10;
 
-        // Centro por defecto (Santo Domingo)
-        $centroLat = $zona->poligono_centro_lat ?? 18.4861;
-        $centroLng = $zona->poligono_centro_lng ?? -69.9312;
-
-        $distancia = $this->calcularDistanciaHaversine($lat, $lng, $centroLat, $centroLng);
+        $centro = $this->calcularCentroPoligono($zona->zona_poligono);
+        $distancia = $this->calcularDistanciaHaversine($lat, $lng, $centro['lat'], $centro['lng']);
 
         return [
             'dentro_zona' => $distancia <= $radioKm,
@@ -122,5 +119,26 @@ class DeliveryZoneService
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $radioTierra * $c;
+    }
+
+    private function calcularCentroPoligono($poligono): array
+    {
+        if (empty($poligono) || ! is_array($poligono)) {
+            return ['lat' => 18.4861, 'lng' => -69.9312];
+        }
+
+        $sumLat = 0;
+        $sumLng = 0;
+        $count = count($poligono);
+
+        foreach ($poligono as $punto) {
+            $sumLat += $punto[0] ?? 0;
+            $sumLng += $punto[1] ?? 0;
+        }
+
+        return [
+            'lat' => $sumLat / $count,
+            'lng' => $sumLng / $count,
+        ];
     }
 }

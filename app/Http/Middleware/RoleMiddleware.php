@@ -17,8 +17,15 @@ class RoleMiddleware
         $user = Auth::user();
 
         foreach ($roles as $rol) {
-            if ($user->role === $rol || $user->hasRole($rol)) {
+            if ($user->role === $rol) {
                 return $next($request);
+            }
+            try {
+                if ($user->hasRole($rol)) {
+                    return $next($request);
+                }
+            } catch (\Throwable $e) {
+                report($e);
             }
         }
 

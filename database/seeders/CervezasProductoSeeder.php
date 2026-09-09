@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\BusinessInstance;
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Producto;
 use Illuminate\Database\Seeder;
 
@@ -29,12 +29,12 @@ class CervezasProductoSeeder extends Seeder
 
         $this->command->info("Instancia {$tenantId} encontrada: {$instancia->nombre}");
 
-        $categoria = Categoria::where('nombre', 'Cervezas')
+        $categoria = Category::where('nombre', 'Cervezas')
             ->where('tenant_id', $tenantId)
             ->first();
 
         if (! $categoria) {
-            $categoria = Categoria::create([
+            $categoria = Category::create([
                 'nombre' => 'Cervezas',
                 'descripcion' => 'Cervezas nacionales e importadas',
                 'activa' => true,

@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Producto;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -14,7 +14,7 @@ class ProductoFactory extends Factory
     public function definition(): array
     {
         return [
-            'categoria_id' => Categoria::factory(),
+            'categoria_id' => Category::factory(),
             'nombre' => fake()->words(3, true),
             'codigo_barras' => fake()->ean13(),
             'descripcion' => fake()->sentence(),
@@ -54,7 +54,7 @@ class ProductoFactory extends Factory
     public function conCategoria(): Factory
     {
         return $this->state(fn (array $attributes) => [
-            'categoria_id' => Categoria::factory(),
+            'categoria_id' => Category::factory(),
         ]);
     }
 }

@@ -108,6 +108,7 @@
                 <thead>
                     <tr>
                         <th class="ps-4">Repartidor</th>
+                        <th>Usuario</th>
                         <th>Cédula</th>
                         <th>Contacto</th>
                         <th>Licencia</th>
@@ -131,6 +132,21 @@
                                     </small>
                                 </div>
                             </div>
+                        </td>
+                        <td>
+                            @if($driver->user)
+                                <div>
+                                    <a href="{{ route('usuarios.edit', $driver->user) }}" class="text-decoration-none fw-semibold">
+                                        {{ $driver->user->name }}
+                                    </a>
+                                    <div class="text-muted" style="font-size:.75rem;">{{ $driver->user->email }}</div>
+                                </div>
+                                @if($driver->user->hasRole('delivery'))
+                                    <span class="badge bg-success" style="font-size:.65rem;">delivery</span>
+                                @endif
+                            @else
+                                <span class="text-muted" style="font-size:.8rem;">—</span>
+                            @endif
                         </td>
                         <td><span class="ui-badge ui-badge-neutral">{{ $driver->cedula }}</span></td>
                         <td>
@@ -168,9 +184,9 @@
                                 </a>
                                 @endcan
                                 @can('delivery-drivers.delete')
-                                <form action="{{ route('delivery-drivers.destroy', $driver) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Eliminar este repartidor?')">
+                                <form action="{{ route('delivery-drivers.destroy', $driver) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
-                                    <button class="ui-action ui-action-delete" type="submit">
+                                    <button class="ui-action ui-action-delete" type="submit" onclick="event.preventDefault(); UI.confirm.action({title:'¿Eliminar este repartidor?', icon:'error', callback: () => this.closest('form').submit()})">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -180,7 +196,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
+                        <td colspan="8" class="text-center py-5 text-muted">
                             <i class="bi bi-truck fs-1 d-block mb-2"></i>
                             No hay repartidores registrados
                         </td>

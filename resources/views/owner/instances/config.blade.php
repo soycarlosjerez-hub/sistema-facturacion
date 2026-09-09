@@ -211,6 +211,82 @@
                         </div>
 
                         <hr>
+                        <h6 class="fw-bold text-muted mb-3"><i class="bi bi-receipt me-2"></i>Modos de Venta</h6>
+                        <div class="p-4 rounded-4 border mb-4" style="background: rgba(59,130,246,0.04); border-color: rgba(59,130,246,0.2) !important;">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div>
+                                    <label class="ui-label fw-bold small mb-0">
+                                        Tipos de Comprobante Permitidos
+                                        @if(isset($instanceConfig['allowed_comprobante_types']))
+                                            <span class="ui-badge ui-badge-warning rounded-pill ms-1" style="font-size:.55rem;">personalizado</span>
+                                        @else
+                                            <span class="ui-badge ui-badge-neutral rounded-pill ms-1" style="font-size:.55rem;">global</span>
+                                        @endif
+                                    </label>
+                                    <small class="text-muted d-block" style="font-size:.72rem;">
+                                        Define los modos de venta que esta instancia puede utilizar. Las cajas heredarán esta configuración.
+                                    </small>
+                                </div>
+                            </div>
+                            @php
+                                $instanceComprobantes = $instanceConfig['allowed_comprobante_types'] ?? ['sin', 'ncf', 'ecf'];
+                            @endphp
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-4 border h-100" style="background: rgba(239,68,68,0.04); border-color: rgba(239,68,68,0.2) !important;">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <label class="ui-label fw-bold small mb-0">
+                                                    <i class="bi bi-x-circle me-1 text-danger"></i>Sin Comprobante
+                                                </label>
+                                                <small class="text-muted d-block" style="font-size:.7rem;">Ventas sin comprobante fiscal</small>
+                                            </div>
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" name="allowed_comprobante_types[]" value="sin"
+                                                       {{ in_array('sin', $instanceComprobantes) ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-4 border h-100" style="background: rgba(245,158,11,0.04); border-color: rgba(245,158,11,0.2) !important;">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <label class="ui-label fw-bold small mb-0">
+                                                    <i class="bi bi-file-earmark-text me-1 text-warning"></i>NCF
+                                                </label>
+                                                <small class="text-muted d-block" style="font-size:.7rem;">N&uacute;mero de Comprobante Fiscal tradicional</small>
+                                            </div>
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" name="allowed_comprobante_types[]" value="ncf"
+                                                       {{ in_array('ncf', $instanceComprobantes) ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded-4 border h-100" style="background: rgba(16,185,129,0.04); border-color: rgba(16,185,129,0.2) !important;">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <label class="ui-label fw-bold small mb-0">
+                                                    <i class="bi bi-shield-check me-1 text-success"></i>E-CF
+                                                </label>
+                                                <small class="text-muted d-block" style="font-size:.7rem;">Comprobante Fiscal Electr&oacute;nico</small>
+                                            </div>
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" name="allowed_comprobante_types[]" value="ecf"
+                                                       {{ in_array('ecf', $instanceComprobantes) ? 'checked' : '' }}>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @if(!isset($instanceConfig['allowed_comprobante_types']))
+                                <small class="text-muted mt-2 d-block"><i class="bi bi-info-circle me-1"></i>Global: Sin, NCF, E-CF (todos habilitados)</small>
+                            @endif
+                        </div>
+
+                        <hr>
                         <h6 class="fw-bold text-muted mb-3"><i class="bi bi-bell me-2"></i>Notificaciones</h6>
 
                         <div class="p-3 rounded-4 border mb-3" style="background: rgba(139,92,246,0.04); border-color: rgba(139,92,246,0.2) !important;">

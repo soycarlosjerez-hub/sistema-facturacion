@@ -6,38 +6,23 @@ use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\InstanceErrorLog;
 use App\Models\User;
+use App\Services\OwnerService;
 use App\Services\PlanLimitService;
 use App\Services\TenantCleanupService;
+use App\Traits\LogsOwnerAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
 
 class OwnerInstanceController extends Controller
 {
+    use LogsOwnerAction;
+
     public function __construct()
     {
         $this->middleware(['auth', 'role:owner']);
-    }
-
-    private function logOwnerAction(string $action, string $description, ?array $oldValues = null, ?array $newValues = null, ?Model $model = null): void
-    {
-        try {
-            \App\Models\AuditLog::create([
-                'user_id' => auth()->id(),
-                'action' => $action,
-                'model_type' => $model ? get_class($model) : null,
-                'model_id' => $model?->id,
-                'description' => $description,
-                'old_values' => $oldValues ? json_encode($oldValues) : null,
-                'new_values' => $newValues ? json_encode($newValues) : null,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'tenant_id' => null,
-            ]);
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to log owner action: ' . $e->getMessage());
-        }
     }
 
     /**
@@ -51,14 +36,135 @@ class OwnerInstanceController extends Controller
             $query->withTrashed();
         }
 
+        if (request('search')) {
+            $search = request('search');
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%")
+                  ->orWhere('rnc', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if (request('business_type')) {
+            $query->where('business_type_id', request('business_type'));
+        }
+
+        if (request('status')) {
+            match(request('status')) {
+                'al-dia' => $query->where('activo', true)
+                    ->where('bloqueado', false)
+                    ->where(function($q) {
+                        $q->whereNull('fecha_vencimiento')
+                          ->orWhere('fecha_vencimiento', '>=', now());
+                    }),
+                'atrasado' => $query->where('activo', true)
+                    ->where('bloqueado', false)
+                    ->where(function($q) {
+                        $q->whereNull('fecha_vencimiento')
+                          ->orWhere('fecha_vencimiento', '<', now());
+                    }),
+                'bloqueado' => $query->where('bloqueado', true),
+                'vencido' => $query->where('activo', true)
+                    ->whereNotNull('fecha_vencimiento')
+                    ->where('fecha_vencimiento', '<', now()),
+                'inactivo' => $query->where('activo', false),
+                'pendiente' => $query->where('aprobado', false),
+                default => null,
+            };
+        }
+
         $instances = $query
-            ->orderByRaw('bloqueado DESC, activo DESC')
-            ->latest()
+            ->orderByRaw('bloqueado DESC, activo DESC, aprobado ASC')
+            ->orderByDesc('created_at')
             ->paginate(15);
 
-        $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
+        // KPIs
+        $totalInstances = BusinessInstance::withTrashed()->count();
+        $totalActivas = BusinessInstance::where('activo', true)->where('bloqueado', false)->count();
+        $totalBloqueadas = BusinessInstance::where('bloqueado', true)->count();
+        $totalAtrasadas = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->where(function($q) {
+                $q->whereNull('fecha_vencimiento')
+                  ->orWhere('fecha_vencimiento', '<', now());
+            })->count();
+        $totalPendientes = BusinessInstance::where('aprobado', false)->count();
 
-        return view('owner.instances.index', compact('instances', 'businessTypes'));
+        $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
+        $systemMoneda = \App\Models\SystemSetting::get('moneda_simbolo', 'RD$');
+
+        return view('owner.instances.index', compact(
+            'instances', 'businessTypes', 'systemMoneda',
+            'totalInstances', 'totalActivas', 'totalBloqueadas', 'totalAtrasadas', 'totalPendientes'
+        ));
+    }
+
+    public function approveInstance($id): \Illuminate\Http\RedirectResponse
+    {
+        $instance = BusinessInstance::where('aprobado', false)->findOrFail($id);
+
+        try {
+            DB::transaction(function () use ($instance) {
+                $instance->update([
+                    'aprobado' => true,
+                    'aprobado_en' => now(),
+                ]);
+
+                $instance->update([
+                    'trial_started_at' => now(),
+                    'trial_ends_at' => now()->addDays($instance->trialDays()),
+                ]);
+            });
+
+            try {
+                Mail::to($instance->owner_email)->send(new \App\Mail\SolicitudAprobadaMail($instance));
+            } catch (\Throwable $e) {
+                Log::warning('No se pudo enviar email de aprobación: ' . $e->getMessage());
+            }
+
+            return redirect()->route('owner.instances.index')
+                ->with('success', "La solicitud de '{$instance->nombre}' ha sido aprobada exitosamente.");
+        } catch (\Throwable $e) {
+            Log::error('Error al aprobar solicitud', [
+                'instance_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Error al aprobar la solicitud. Intente nuevamente.');
+        }
+    }
+
+    public function rejectInstance($id, Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'motivo' => ['required', 'string', 'max:500'],
+        ]);
+
+        $instance = BusinessInstance::where('aprobado', false)->findOrFail($id);
+
+        try {
+            $instance->update([
+                'rechazo_motivo' => $request->motivo,
+            ]);
+
+            try {
+                Mail::to($instance->owner_email)
+                    ->send(new \App\Mail\SolicitudRechazadaMail($instance, $request->motivo));
+            } catch (\Throwable $e) {
+                Log::warning('No se pudo enviar email de rechazo: ' . $e->getMessage());
+            }
+
+            return redirect()->route('owner.instances.index')
+                ->with('success', "La solicitud de '{$instance->nombre}' ha sido rechazada.");
+        } catch (\Throwable $e) {
+            Log::error('Error al rechazar solicitud', [
+                'instance_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Error al rechazar la solicitud. Intente nuevamente.');
+        }
     }
 
     /**
@@ -67,7 +173,7 @@ class OwnerInstanceController extends Controller
     public function instancesCreate(): \Illuminate\View\View
     {
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
-        $owners = User::role('owner')->orderBy('name')->get();
+        $owners = OwnerService::getOwnerUsers();
         $plans = \App\Models\Plan::active();
         return view('owner.instances.create', compact('businessTypes', 'owners', 'plans'));
     }
@@ -205,7 +311,7 @@ class OwnerInstanceController extends Controller
     {
         $instance = BusinessInstance::withTrashed()->findOrFail($id);
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
-        $owners = User::role('owner')->orderBy('name')->get();
+        $owners = OwnerService::getOwnerUsers();
         $plans = \App\Models\Plan::active();
         return view('owner.instances.edit', compact('instance', 'businessTypes', 'owners', 'plans'));
     }

@@ -1,0 +1,1 @@
+<?php /**PATH /var/www/html/sistema-facturacion/resources/views/alquileres/viviendas/index.blade.php ENDPATH**/ ?>

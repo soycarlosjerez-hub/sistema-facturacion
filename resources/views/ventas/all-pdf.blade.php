@@ -17,7 +17,9 @@
         <img src="{{ $pdfLogoUrl }}" style="max-width: 80px; max-height: 60px; object-fit: contain; margin-bottom: 5px;" alt="Logo">
         @endif
         <h2 style="margin:0;">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h2>
-        <small style="color:#666;">RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}</small>
+        @if(!empty($empresa['empresa_rnc']))
+        <small style="color:#666;">RNC: {{ $empresa['empresa_rnc'] }}</small>
+        @endif
     </div>
     <h3>Listado de Ventas</h3>
     <table>

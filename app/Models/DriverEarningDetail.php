@@ -25,8 +25,8 @@ class DriverEarningDetail extends Model
 
     protected $casts = [
         'monto_ganancia' => 'decimal:2',
-        'propina'        => 'decimal:2',
-        'fecha'          => 'datetime',
+        'propina' => 'decimal:2',
+        'fecha' => 'datetime',
     ];
 
     public function tenant(): BelongsTo
@@ -47,11 +47,6 @@ class DriverEarningDetail extends Model
     public function venta(): BelongsTo
     {
         return $this->belongsTo(Venta::class);
-    }
-
-    public function driver(): BelongsTo
-    {
-        return $this->belongsTo(DeliveryDriver::class);
     }
 
     // Alias para la vista: monto_base = monto_ganancia

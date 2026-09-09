@@ -3,13 +3,69 @@
 
 @push('styles')
 @include('partials.premium-ui')
-@include('partials.datatable-ui')
 <style>
 :root {
     --dt-accent: #ec4899;
     --dt-accent-gradient: linear-gradient(135deg, #ec4899, #f472b6);
     --dt-accent-rgb: 236,72,153;
+    --dt-indigo: #6366f1;
+    --dt-violet: #4f46e5;
+    --dt-success: #22c55e;
+    --dt-success-dark: #16a34a;
+    --dt-danger: #ef4444;
+    --dt-warning: #f59e0b;
+    --dt-gray-50: #f8fafc;
+    --dt-gray-100: #f1f5f9;
+    --dt-gray-200: #e2e8f0;
+    --dt-gray-300: #cbd5e1;
+    --dt-gray-400: #94a3b8;
+    --dt-gray-500: #64748b;
+    --dt-gray-600: #475569;
+    --dt-gray-700: #334155;
+    --dt-gray-800: #1e293b;
+    --dt-gray-900: #0f172a;
+    --dt-radius: 0.5rem;
+    --dt-shadow: 0 2px 8px rgba(236,72,153,.25);
+    --dt-transition: 0.15s;
 }
+.categorias-table {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: rgba(236,72,153,.04);
+    width: 100%;
+    margin: 0;
+    table-layout: auto;
+}
+.categorias-table thead th {
+    background: rgba(241,245,249,.8);
+    color: var(--dt-gray-500);
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 700;
+    padding: .85rem 1rem;
+    border-bottom: 2px solid var(--dt-gray-200);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.categorias-table tbody td {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid var(--dt-gray-100);
+    vertical-align: middle;
+    font-size: .9rem;
+    overflow: hidden;
+    max-width: none;
+}
+.categorias-table td.text-center,
+.categorias-table td.text-end {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.categorias-table tbody tr:last-child td { border-bottom: none; }
+.categorias-table tbody tr { transition: background var(--dt-transition); }
+.categorias-table tbody tr:hover { background: rgba(236,72,153,.03); }
+
 .status-badge {
     padding: 0.4em 0.8em;
     border-radius: 2rem;
@@ -20,7 +76,13 @@
     transition: all .2s;
 }
 .status-badge:hover { filter: brightness(1.1); }
-body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
+
+.text-brand { color: var(--dt-violet); }
+
+@keyframes pulse-activo {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.02); }
+}
 </style>
 @endpush
 
@@ -41,7 +103,7 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
                 </div>
             </div>
             <div class="ui-header-actions">
-                @can('productos.create')
+                @can('categorias.create')
                 <a href="{{ route('categorias.create') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                     <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
                 </a>
@@ -93,19 +155,21 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
     <div class="ui-card" style="--delay:.15s">
         <div class="ui-card-accent"></div>
         <div class="card-body p-0">
-            <table id="categorias-table" class="table dt-table nowrap no-footer" style="width:100%">
-                <thead>
-                    <tr>
-                        <th class="ps-4" style="width:50px;">#</th>
-                        <th>Categoría</th>
-                        <th>Descripción</th>
-                        <th class="text-center">Productos</th>
-                        <th class="text-center">Estado</th>
-                        <th class="text-end pe-4">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div id="categorias-table_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
+                <table id="categorias-table" class="table categorias-table no-footer" style="min-width:700px;">
+                    <thead>
+                        <tr>
+                            <th class="ps-4" style="width:50px;" data-label="#">#</th>
+                            <th style="min-width:200px;" data-label="categoría">Categoría</th>
+                            <th style="min-width:250px;" data-label="descripción">Descripción</th>
+                            <th style="width:100px;" class="text-center" data-label="productos">Productos</th>
+                            <th style="width:100px;" class="text-center" data-label="estado">Estado</th>
+                            <th style="width:100px;" class="text-end pe-3" data-label="acciones">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -114,34 +178,108 @@ body.dark-mode .fw-bold.text-dark { color: #f1f5f9 !important; }
 @push('scripts')
 <script>
 $(function() {
-    const data = @json($categorias);
+    const API_BASE = '/categorias';
     const csrfToken = '{{ csrf_token() }}';
+    const canEdit = {{ auth()->user()->can('categorias.edit') ? 'true' : 'false' }};
+    const canDelete = {{ auth()->user()->can('categorias.delete') ? 'true' : 'false' }};
+
+    // Auto-refresh state
+    let lastDataHash = '';
+
+    function generateHash(obj) {
+        return btoa(JSON.stringify(obj).substring(0, 200));
+    }
+
+    function showRefreshToast(changed) {
+        if (typeof Swal !== 'undefined') {
+            const toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: changed ? '#fef3c7' : '#ffffff',
+                color: changed ? '#92400e' : '#64748b',
+                icon: 'info'
+            });
+            if (changed) {
+                toast.fire({ icon: 'info', title: '⚡ Datos actualizados' });
+            } else {
+                toast.fire({ title: 'Datos sincronizados' });
+            }
+        }
+    }
+
+    function swalExito(text) {
+        if (typeof Swal !== 'undefined') Swal.fire({ icon: 'success', title: 'Listo', text: text, timer: 1500, showConfirmButton: false });
+    }
+    function swalError(text) {
+        if (typeof Swal !== 'undefined') Swal.fire({ icon: 'error', title: 'Error', text: text });
+    }
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, function(c) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+        });
+    }
+
+    function renderEstado(activa) {
+        const cls = activa ? 'success' : 'secondary';
+        const icon = activa ? 'check-circle-fill' : 'x-circle-fill';
+        const label = activa ? 'Activa' : 'Inactiva';
+        return '<span class="badge rounded-pill bg-' + cls + ' bg-opacity-10 text-' + cls + ' fw-semibold">' +
+            '<i class="bi bi-' + icon + ' me-1"></i>' + label + '</span>';
+    }
+
+    function renderAcciones(data) {
+        let html = '<div class="d-flex justify-content-end gap-1">';
+        html += '<a href="' + API_BASE + '/' + data.id + '" class="ui-action" title="Ver"><i class="bi bi-eye"></i></a>';
+        if (canEdit) {
+            html += '<a href="' + API_BASE + '/' + data.id + '/edit" class="ui-action" title="Editar"><i class="bi bi-pencil"></i></a>';
+        }
+        if (canDelete) {
+            html += '<button type="button" class="ui-action btn-delete-categoria" title="Eliminar" data-id="' + data.id + '" data-nombre="' + escapeHtml(data.nombre || '') + '"><i class="bi bi-trash"></i></button>';
+        }
+        html += '</div>';
+        return html;
+    }
 
     const table = $('#categorias-table').DataTable({
-        data: data,
+        ajax: {
+            url: '{{ route("categorias.ajax") }}',
+            type: 'GET',
+            dataSrc: function(json) {
+                const newHash = generateHash(json.data);
+                if (lastDataHash && newHash !== lastDataHash) {
+                    showRefreshToast(true);
+                }
+                lastDataHash = newHash;
+                return json.data;
+            }
+        },
         columns: [
             {
                 data: null,
                 className: 'text-center ps-4',
-                orderable: false,
+                orderable: true,
                 searchable: false,
                 width: '50px',
-                render: function(data, type, row, meta) {
-                    return '<span class="text-muted fw-bold">' + (meta.row + meta.settings._iDisplayStart + 1) + '</span>';
+                render: function(data, type) {
+                    if (type === 'display') return '<span class="text-muted fw-bold">' + data.id + '</span>';
+                    return data.id;
                 }
             },
             {
-                data: null,
+                data: 'nombre',
                 orderable: true,
                 searchable: true,
-                render: function(data) {
-                    const nombre = escapeHtml(data.nombre || '');
-                    const initial = nombre.charAt(0).toUpperCase();
-                    const colors = ['#f87171','#60a5fa','#34d399','#fbbf24','#a78bfa','#f472b6','#f97316','#14b8a6'];
-                    const color = colors[crc32(nombre) % colors.length];
+                render: function(data, type, row) {
+                    const initial = (data || '?').charAt(0).toUpperCase();
+                    const color = row.color || '#6366f1';
+                    const icono = row.icono || 'bi-grid';
                     return '<div class="d-flex align-items-center">' +
-                        '<div class="avatar-circle text-white me-3 shadow-sm" style="background:' + color + ';">' + initial + '</div>' +
-                        '<div class="fw-bold text-dark fs-6">' + nombre + '</div>' +
+                        '<div class="avatar-circle text-white me-3 shadow-sm" style="background:' + color + ';width:36px;height:36px;font-size:1rem;">' + initial + '</div>' +
+                        '<div class="fw-bold fs-6 text-brand">' + escapeHtml(data || '') + '</div>' +
                     '</div>';
                 }
             },
@@ -150,7 +288,7 @@ $(function() {
                 defaultContent: '<span class="text-muted small">Sin descripción</span>',
                 render: function(data) {
                     if (!data) return '<span class="text-muted small">Sin descripción</span>';
-                    return '<div class="text-muted small text-truncate" style="max-width:300px;" title="' + escapeHtml(data) + '">' + escapeHtml(data) + '</div>';
+                    return '<div class="text-muted small text-truncate" style="max-width:250px;" title="' + escapeHtml(data) + '">' + escapeHtml(data) + '</div>';
                 }
             },
             {
@@ -159,19 +297,19 @@ $(function() {
                 render: function(data) {
                     const count = parseInt(data || 0);
                     return '<span class="badge bg-light text-secondary border rounded-pill">' +
-                        '<i class="bi bi-box-seam me-1"></i> ' + count + ' prod.</span>';
+                        '<i class="bi bi-box-seam me-1"></i> ' + count + '</span>';
                 }
             },
             {
                 data: 'activa',
                 className: 'text-center',
+                orderable: false,
                 render: function(data, type, row) {
-                    const id = row.id;
-                    return data
-                        ? '<span class="status-badge bg-success bg-opacity-10 text-success toggle-activa" data-id="' + id + '">' +
-                            '<i class="bi bi-check-circle-fill me-1"></i> Activa</span>'
-                        : '<span class="status-badge bg-secondary bg-opacity-10 text-secondary toggle-activa" data-id="' + id + '">' +
-                            '<i class="bi bi-x-circle-fill me-1"></i> Inactiva</span>';
+                    const cls = data ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary';
+                    const icon = data ? 'check-circle-fill' : 'x-circle-fill';
+                    const label = data ? 'Activa' : 'Inactiva';
+                    return '<span class="badge rounded-pill ' + cls + '" style="cursor:pointer;" data-id="' + row.id + '" title="Clic para cambiar estado">' +
+                        '<i class="bi bi-' + icon + ' me-1"></i> <span class="badge-label">' + label + '</span></span>';
                 }
             },
             {
@@ -180,13 +318,7 @@ $(function() {
                 orderable: false,
                 searchable: false,
                 render: function(data) {
-                    return renderAcciones(data.id, {
-                        show: '/categorias/' + data.id,
-                        edit: '/categorias/' + data.id + '/edit',
-                        delete: '/categorias/' + data.id,
-                        csrf: csrfToken,
-                        nombre: data.nombre
-                    });
+                    return renderAcciones(data);
                 }
             }
         ],
@@ -202,68 +334,48 @@ $(function() {
                 next: '<i class="bi bi-chevron-right"></i>',
                 previous: '<i class="bi bi-chevron-left"></i>'
             },
-            zeroRecords: '<div class="text-center py-5">' +
-                '<i class="bi bi-tags d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i>' +
-                '<p class="fw-semibold mb-1" style="color:#475569;">No se encontraron categorías</p>' +
-                '<p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>'
+            zeroRecords: '<div class="text-center py-5"><i class="bi bi-tags d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i><p class="fw-semibold mb-1" style="color:#475569;">No se encontraron categorías</p><p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>'
         },
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Todos']],
+        pageLength: 25,
+        lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'Todos']],
         order: [[1, 'asc']],
-        responsive: {
-            details: {
-                type: 'column',
-                target: 'tr',
-                renderer: function(api, rowIdx, columns) {
-                    let data = '';
-                    columns.forEach(function(col) {
-                        if (col.hidden) {
-                            data += '<li>' +
-                                '<span class="child-label">' + col.title + '</span>' +
-                                '<span class="child-value">' + col.data + '</span>' +
-                            '</li>';
-                        }
-                    });
-                    return data ? $('<ul class="d-flex flex-wrap gap-2 p-2 mb-0">' + data + '</ul>') : false;
-                }
-            }
-        },
+        autoWidth: false,
+        responsive: false,
         dom: '<"row px-3 pt-2"<"col-sm-6"l><"col-sm-6"f>>' +
              '<"row"<"col-12"tr>>' +
              '<"row px-3 pb-2"<"col-sm-5"i><"col-sm-7"p>>'
     });
 
-    // Filter form
-    $('#filtros-form').on('submit', function(e) {
-        e.preventDefault();
+    // Filter
+    function reloadWithFilters() {
+        const params = new URLSearchParams();
         const nombre = $('#busqueda-categoria').val();
         const activo = $('#filter-activo').val();
+        if (nombre) params.set('nombre', nombre);
+        if (activo) params.set('activo', activo);
+        table.ajax.url('{{ route("categorias.ajax") }}?' + params.toString()).load();
+    }
 
-        table.search(nombre).draw();
-
-        $.fn.dataTable.ext.search.push(function(settings, data) {
-            const isActivo = (data[4] || '').indexOf('Activa') !== -1;
-            if (activo === '1' && !isActivo) return false;
-            if (activo === '0' && isActivo) return false;
-            return true;
-        });
-
-        table.draw();
-        $.fn.dataTable.ext.search.pop();
+    $('#filtros-form').on('submit', function(e) {
+        e.preventDefault();
+        reloadWithFilters();
     });
 
     // Real-time search
-    let searchTimeout;
+    let searchTimeout = null;
     $('#busqueda-categoria').on('input', function() {
         clearTimeout(searchTimeout);
-        const val = $(this).val();
         searchTimeout = setTimeout(function() {
-            table.search(val).draw();
+            reloadWithFilters();
         }, 300);
     });
 
-    // Toggle activa via SweetAlert2
-    $('#categorias-table').on('click', '.toggle-activa', function() {
+    $('#filter-activo').on('change', function() {
+        reloadWithFilters();
+    });
+
+    // Toggle activa
+    $(document).on('click', '.badge[data-id]', function() {
         const id = $(this).data('id');
         const badge = $(this);
         const isActive = badge.hasClass('text-success');
@@ -277,45 +389,50 @@ $(function() {
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sí, ' + (isActive ? 'desactivar' : 'activar'),
             cancelButtonText: 'Cancelar'
-        }).then(result => {
+        }).then(function(result) {
             if (result.isConfirmed) {
-                $.ajax({
-                    url: '/categorias/' + id + '/toggle',
+                fetch(API_BASE + '/' + id + '/toggle', {
                     method: 'PUT',
-                    data: { _token: csrfToken },
-                    success: function(res) {
-                        if (res.success) {
-                            const row = table.row($(badge).closest('tr'));
-                            row.data().activa = res.activa;
-                            row.invalidate();
-                            table.draw(false);
-                            Swal.fire({
-                                icon: 'success',
-                                title: res.activa ? 'Categoría activada' : 'Categoría desactivada',
-                                toast: true,
-                                position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 2500
-                            });
-                        }
-                    },
-                    error: function() {
-                        Swal.fire('Error', 'No se pudo cambiar el estado.', 'error');
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
+                }).then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (res.success) {
+                        badge.removeClass('bg-success bg-opacity-10 text-success bg-secondary bg-opacity-10 text-secondary');
+                        if (res.activa) {
+                            badge.classList.add('bg-success', 'bg-opacity-10', 'text-success');
+                            badge.querySelector('i').className = 'bi bi-check-circle-fill me-1';
+                        } else {
+                            badge.classList.add('bg-secondary', 'bg-opacity-10', 'text-secondary');
+                            badge.querySelector('i').className = 'bi bi-x-circle-fill me-1';
+                        }
+                        const labelEl = badge.querySelector('.badge-label');
+                        if (labelEl) {
+                            labelEl.textContent = res.activa ? 'Activa' : 'Inactiva';
+                        }
+                        Swal.fire({ icon: 'success', title: res.activa ? 'Categoría activada' : 'Categoría desactivada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                    }
+                })
+                .catch(function() {
+                    Swal.fire('Error', 'No se pudo cambiar el estado.', 'error');
                 });
             }
         });
     });
 
-    // Delete via AJAX
+    // Delete
     $(document).on('click', '.btn-delete-categoria', function() {
         const btn = $(this);
+        const row = btn.closest('tr')[0];
         const id = btn.data('id');
         const nombre = btn.data('nombre');
 
         Swal.fire({
             title: '¿Eliminar categoría?',
-            text: 'Se eliminará: "' + nombre + '". Solo es posible si no tiene productos asociados.',
+            text: 'Se eliminará: "' + escapeHtml(nombre) + '". Los productos quedarán sin categoría.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
@@ -324,78 +441,28 @@ $(function() {
             cancelButtonText: 'Cancelar'
         }).then(function(result) {
             if (result.isConfirmed) {
-                deleteCategoria(id, btn);
+                fetch(API_BASE + '/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        table.row(row).remove().draw();
+                        Swal.fire({ icon: 'success', title: 'Eliminado', text: data.message, timer: 1500, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'No se pudo eliminar', text: data.message });
+                    }
+                })
+                .catch(function() {
+                    Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+                });
             }
         });
     });
-
-    function deleteCategoria(id, btn) {
-        const formData = new FormData();
-        formData.append('_method', 'DELETE');
-        formData.append('_token', csrfToken);
-
-        const row = btn.closest('tr')[0];
-        if (row) row.style.opacity = '0.5';
-
-        fetch('/categorias/' + id, {
-            method: 'POST',
-            headers: { 'Accept': 'application/json' },
-            body: formData
-        })
-        .then(function(r) {
-            if (!r.ok) throw new Error('El servidor respondió con estado ' + r.status);
-            const ct = r.headers.get('content-type') || '';
-            if (ct.indexOf('application/json') === -1) throw new Error('Respuesta inesperada del servidor.');
-            return r.json();
-        })
-        .then(function(data) {
-            if (data.success) {
-                if (row && row.closest('tbody')) {
-                    table.row(row).remove().draw();
-                }
-                Swal.fire({ icon: 'success', title: 'Eliminado', text: data.message, timer: 1500, showConfirmButton: false });
-            } else {
-                if (row) row.style.opacity = '1';
-                Swal.fire({ icon: 'error', title: 'No se pudo eliminar', text: data.message });
-            }
-        })
-        .catch(function(err) {
-            if (row) row.style.opacity = '1';
-            Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo conectar con el servidor.' });
-        });
-    }
-
-    function renderAcciones(id, opts) {
-        let html = '<div class="d-flex justify-content-end gap-1">';
-        if (opts.show) {
-            html += '<a href="' + opts.show + '" class="ui-action ui-action-edit" title="Ver">' +
-                '<i class="bi bi-eye"></i></a>';
-        }
-        html += '<a href="' + opts.edit + '" class="ui-action ui-action-edit" title="Editar">' +
-            '<i class="bi bi-pencil"></i></a>';
-        if (opts.delete) {
-            html += '<button type="button" class="ui-action ui-action-delete border-0 btn-delete-categoria" data-id="' + id + '" data-nombre="' + escapeHtml(opts.nombre || '') + '" title="Eliminar">' +
-                '<i class="bi bi-trash"></i></button>';
-        }
-        html += '</div>';
-        return html;
-    }
-
-    function escapeHtml(str) {
-        return String(str || '').replace(/[&<>"']/g, function(c) {
-            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-        });
-    }
-
-    function crc32(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return Math.abs(hash);
-    }
 });
 </script>
 @endpush

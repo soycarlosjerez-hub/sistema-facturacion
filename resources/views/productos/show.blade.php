@@ -591,6 +591,18 @@
                         </div>
                         @endif
 
+                        @if($producto->garantia_terminos)
+                        <div class="col-12">
+                            <div class="p-3 rounded-3" style="background:rgba(139,92,246,.03);border:1px solid rgba(139,92,246,.08);">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-file-earmark-text" style="font-size:1.1rem;color:#8b5cf6;"></i>
+                                    <span class="fw-bold text-uppercase" style="font-size:.7rem;color:#8b5cf6;letter-spacing:.5px;">Términos de Garantía</span>
+                                </div>
+                                <div style="white-space:pre-line;font-size:.85rem;color:#475569;line-height:1.6;">{{ $producto->garantia_terminos }}</div>
+                            </div>
+                        </div>
+                        @endif
+
                         @if($producto->es_licencia)
                         <div class="col-12 col-md-4">
                             <div class="p-3 rounded-3" style="background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.1);">

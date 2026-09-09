@@ -2,24 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Producto extends Model
 {
-    use HasFactory, Auditable, TenantScope;
+    use Auditable, HasFactory, TenantScope;
+
     protected $fillable = [
         'categoria_id',
         'category_subcategory_id',
         'nombre',
         'codigo_barras',
+        'codigo_referencia',
         'descripcion',
         'marca',
         'modelo',
@@ -48,30 +49,49 @@ class Producto extends Model
         'serial_imei',
         'categoria_tecnica',
         'garantia_dias',
+        'garantia_meses',
+        'garantia_terminos',
         'es_licencia',
         'tipo_licencia',
         'licencia_max_usuarios',
         'requires_setup',
         'marca_tecnologica_id',
+        'tipo_servicio',
+        'especializacion',
+        'vendible_imei',
+        'requiere_imei',
+        'almacenamiento_gb',
+        'color',
+        'precio_servicio',
+        'duracion_servicio_horas',
+        'product_type',
+        'is_art_piece',
     ];
 
     protected $casts = [
-        'precio'           => 'decimal:2',
-        'precio_compra'    => 'decimal:2',
+        'precio' => 'decimal:2',
+        'precio_compra' => 'decimal:2',
         'itbis_porcentaje' => 'decimal:2',
-        'stock'            => 'integer',
-        'stock_minimo'     => 'integer',
-        'activo'            => 'boolean',
-        'incluir_kds'       => 'boolean',
+        'stock' => 'integer',
+        'stock_minimo' => 'integer',
+        'activo' => 'boolean',
+        'incluir_kds' => 'boolean',
         'capacidad_toneladas' => 'decimal:2',
-        'capacidad_btu'    => 'integer',
-        'eficiencia_seer'  => 'decimal:1',
-        'peso_kg'          => 'decimal:2',
-        'requiere_serial'  => 'boolean',
-        'garantia_dias'    => 'integer',
-        'es_licencia'      => 'boolean',
+        'capacidad_btu' => 'integer',
+        'eficiencia_seer' => 'decimal:1',
+        'peso_kg' => 'decimal:2',
+        'requiere_serial' => 'boolean',
+        'garantia_dias' => 'integer',
+        'garantia_meses' => 'integer',
+        'es_licencia' => 'boolean',
         'licencia_max_usuarios' => 'integer',
-        'requires_setup'   => 'boolean',
+        'requires_setup' => 'boolean',
+        'vendible_imei' => 'boolean',
+        'requiere_imei' => 'boolean',
+        'precio_servicio' => 'decimal:2',
+        'duracion_servicio_horas' => 'integer',
+        'is_art_piece' => 'boolean',
+        'product_type' => 'string',
     ];
 
     public function scopeActivos($query)
@@ -80,13 +100,14 @@ class Producto extends Model
     }
 
     protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen', 'can_delete'];
+
     protected $attributes = [
         'precio_compra' => 0,
     ];
 
     public function categoria()
     {
-        return $this->belongsTo(Categoria::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function categorySubcategory()
@@ -120,6 +141,7 @@ class Producto extends Model
         if ($compra <= 0) {
             return 0.0;
         }
+
         return round((($this->precio - $compra) / $compra) * 100, 2);
     }
 
@@ -132,6 +154,7 @@ class Producto extends Model
         if ($stock <= 15) {
             return 'low';
         }
+
         return 'ok';
     }
 
@@ -154,6 +177,7 @@ class Producto extends Model
                 && ($this->attributes['ingredientes_count'] ?? 0) == 0
                 && ($this->attributes['instalacion_productos_count'] ?? 0) == 0;
         }
+
         return $this->ventaDetalles()->doesntExist()
             && $this->detallesCompras()->doesntExist()
             && $this->movimientosAlmacen()->doesntExist()
@@ -169,8 +193,9 @@ class Producto extends Model
     public function getImagenUrlAttribute(): string
     {
         if (! empty($this->imagen) && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->imagen)) {
-            return asset('storage/' . $this->imagen);
+            return asset('storage/'.$this->imagen);
         }
+
         return asset('img/producto-placeholder.svg');
     }
 

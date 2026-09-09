@@ -2,22 +2,23 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\Auditable;
-use App\Traits\TenantScope;
 
 class Garantia extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
     use TenantScope;
 
     protected $table = 'garantias';
 
     protected $fillable = [
         'tenant_id',
+        'venta_id',
         'orden_reparacion_id',
         'equipo_id',
         'tipo',
@@ -41,6 +42,11 @@ class Garantia extends Model
     public function equipo(): BelongsTo
     {
         return $this->belongsTo(Equipo::class);
+    }
+
+    public function venta(): BelongsTo
+    {
+        return $this->belongsTo(Venta::class);
     }
 
     public function scopeVigentes($query)
@@ -91,7 +97,7 @@ class Garantia extends Model
 
     public function getDiasRestantesAttribute(): int
     {
-        if (!$this->fecha_fin) {
+        if (! $this->fecha_fin) {
             return 0;
         }
 

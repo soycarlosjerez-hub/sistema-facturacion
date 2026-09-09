@@ -8,6 +8,7 @@ use App\Models\Pago;
 use App\Models\SesionCaja;
 use App\Models\Venta;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class CajaService
 {
@@ -120,47 +121,56 @@ class CajaService
             return ['success' => false, 'message' => 'Esta caja está inactiva.'];
         }
 
-        // Regla: máximo 1 sesión abierta por caja (sin importar el usuario)
-        $sesionMismaCaja = SesionCaja::where('caja_id', $caja->id)
-            ->where('estado', 'abierta')
-            ->first();
+        return DB::transaction(function () use ($caja, $montoInicial) {
+            // Bloquear la fila de la caja para prevenir race conditions
+            $cajaLocked = Caja::where('id', $caja->id)->lockForUpdate()->first();
 
-        if ($sesionMismaCaja) {
-            return ['success' => false, 'message' => 'La caja "' . $caja->nombre . '" ya está abierta.'];
-        }
+            if (!$cajaLocked->activo) {
+                return ['success' => false, 'message' => 'Esta caja está inactiva.'];
+            }
 
-        // Regla: un usuario no-elevado solo puede tener 1 caja abierta a la vez
-        $isElevated = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])
-            || auth()->user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
-
-        if (!$isElevated) {
-            $otraSesion = SesionCaja::with('caja')
-                ->where('user_id', auth()->id())
+            // Regla: máximo 1 sesión abierta por caja (sin importar el usuario)
+            $sesionMismaCaja = SesionCaja::where('caja_id', $caja->id)
                 ->where('estado', 'abierta')
                 ->first();
 
-            if ($otraSesion) {
-                return ['success' => false, 'message' => 'Ya tienes otra caja abierta ("' . $otraSesion->caja->nombre . '"). Ciérrala antes de abrir una nueva.'];
+            if ($sesionMismaCaja) {
+                return ['success' => false, 'message' => 'La caja "' . $caja->nombre . '" ya está abierta.'];
             }
-        }
 
-        $sesion = SesionCaja::create([
-            'tenant_id'      => auth()->user()->business_instance_id,
-            'caja_id'        => $caja->id,
-            'user_id'        => auth()->id(),
-            'fecha_apertura' => now(),
-            'monto_inicial'  => $montoInicial,
-            'estado'         => 'abierta',
-        ]);
+            // Regla: un usuario no-elevado solo puede tener 1 caja abierta a la vez
+            $isElevated = in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])
+                || auth()->user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
 
-        $caja->update(['estado' => 'abierta']);
+            if (!$isElevated) {
+                $otraSesion = SesionCaja::with('caja')
+                    ->where('user_id', auth()->id())
+                    ->where('estado', 'abierta')
+                    ->first();
 
-        return [
-            'success'  => true,
-            'message'  => 'Caja "' . $caja->nombre . '" abierta.',
-            'redirect' => route('cajas.index'),
-            'sesion'   => $sesion->load('caja'),
-        ];
+                if ($otraSesion) {
+                    return ['success' => false, 'message' => 'Ya tienes otra caja abierta ("' . $otraSesion->caja->nombre . '"). Ciérrala antes de abrir una nueva.'];
+                }
+            }
+
+            $sesion = SesionCaja::create([
+                'tenant_id'      => auth()->user()->business_instance_id,
+                'caja_id'        => $caja->id,
+                'user_id'        => auth()->id(),
+                'fecha_apertura' => now(),
+                'monto_inicial'  => $montoInicial,
+                'estado'         => 'abierta',
+            ]);
+
+            $cajaLocked->update(['estado' => 'abierta']);
+
+            return [
+                'success'  => true,
+                'message'  => 'Caja "' . $caja->nombre . '" abierta.',
+                'redirect' => route('cajas.index'),
+                'sesion'   => $sesion->load('caja'),
+            ];
+        });
     }
 
     public function resumenCierre(?SesionCaja $sesion = null): array
@@ -168,9 +178,7 @@ class CajaService
         if (!$sesion) {
             $query = SesionCaja::where('estado', 'abierta');
 
-            if (in_array(auth()->user()->role, ['admin', 'owner'])) {
-                $query->withoutGlobalScope('tenant');
-            } else {
+            if (!in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root'])) {
                 $query->where('user_id', auth()->id());
             }
 

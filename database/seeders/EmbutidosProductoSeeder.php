@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Producto;
 use Illuminate\Database\Seeder;
 
@@ -225,6 +225,6 @@ class EmbutidosProductoSeeder extends Seeder
 
     private function catId(string $nombre): ?int
     {
-        return Categoria::where('nombre', $nombre)->whereNull('tenant_id')->value('id');
+        return Category::where('nombre', $nombre)->whereNull('tenant_id')->value('id');
     }
 }

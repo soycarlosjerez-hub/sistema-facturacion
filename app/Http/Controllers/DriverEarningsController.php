@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DeliveryDriver;
 use App\Models\DriverEarning;
 use App\Models\DriverEarningDetail;
-use App\Models\DeliveryTracking;
+use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -14,6 +14,24 @@ class DriverEarningsController extends Controller
 {
     public function index(Request $request)
     {
+        $drivers = DeliveryDriver::activos()->orderBy('nombre')->get(['id', 'nombre', 'apellido', 'telefono']);
+
+        // Stats calculados en tiempo real desde ventas delivery
+        $monthStart = now()->startOfMonth();
+        $monthEnd = now()->endOfDay();
+
+        $stats = Venta::where('tipo_orden', 'delivery')
+            ->where('estado', 'completada')
+            ->whereNotNull('driver_id')
+            ->selectRaw('driver_id, COUNT(*) as entregas, COALESCE(SUM(delivery_fee), 0) as ganancias, COALESCE(SUM(propina), 0) as propinas')
+            ->groupBy('driver_id')
+            ->get();
+
+        $totalGanancias = $stats->sum('ganancias');
+        $totalPropinas = $stats->sum('propinas');
+        $totalEntregas = $stats->sum('entregas');
+
+        // Períodos guardados
         $query = DriverEarning::query()->with(['driver']);
 
         if ($driverId = $request->input('driver_id')) {
@@ -30,9 +48,14 @@ class DriverEarningsController extends Controller
 
         $earnings = $query->latest()->paginate(15)->withQueryString();
 
-        $drivers = DeliveryDriver::activos()->orderBy('nombre')->get(['id', 'nombre', 'apellido']);
-
-        return view('driver-earnings.index', compact('earnings', 'drivers'));
+        return view('driver-earnings.index', compact(
+            'earnings',
+            'drivers',
+            'stats',
+            'totalGanancias',
+            'totalPropinas',
+            'totalEntregas'
+        ));
     }
 
     public function show($id)
@@ -67,47 +90,43 @@ class DriverEarningsController extends Controller
             'periodo_fin' => 'required|date|after_or_equal:periodo_inicio',
         ]);
 
+        $driver = DeliveryDriver::where('id', $data['driver_id'])
+            ->where('tenant_id', Auth::user()->business_instance_id)
+            ->first();
+
+        if (! $driver) {
+            return back()->with('error', 'Driver no encontrado en esta instancia.');
+        }
+
         $driverId = $data['driver_id'];
         $inicio = $data['periodo_inicio'];
         $fin = $data['periodo_fin'];
 
-        // Obtener entregas completadas en el período
-        $trackings = DeliveryTracking::where('driver_id', $driverId)
-            ->where('status', DeliveryTracking::STATUS_ENTREGADO)
-            ->whereBetween('created_at', [$inicio, $fin . ' 23:59:59'])
-            ->with(['orden.pagos'])
+        $ventas = Venta::where('driver_id', $driverId)
+            ->where('tipo_orden', 'delivery')
+            ->where('estado', 'completada')
+            ->whereBetween('created_at', [$inicio, $fin.' 23:59:59'])
             ->get();
 
         $totalGanancias = 0;
-        $totalEntregas = $trackings->count();
+        $totalEntregas = $ventas->count();
         $detalles = [];
 
-        foreach ($trackings as $tracking) {
-            // Calcular ganancia: tarifa_delivery + propina si existe
-            $ganancia = 0;
-            $propina = 0;
-
-            if ($tracking->orden) {
-                $ganancia = floatval($tracking->orden->delivery_fee ?? 0);
-                $propina = floatval($tracking->orden->propina ?? 0);
-            } elseif ($tracking->venta) {
-                $ganancia = floatval($tracking->venta->delivery_fee ?? 0);
-                $propina = floatval($tracking->venta->propina ?? 0);
-            }
+        foreach ($ventas as $venta) {
+            $ganancia = floatval($venta->delivery_fee ?? 0);
+            $propina = floatval($venta->propina ?? 0);
 
             $totalGanancias += $ganancia + $propina;
 
             $detalles[] = [
-                'tracking_id' => $tracking->id,
-                'orden_id' => $tracking->orden_id,
-                'venta_id' => $tracking->venta_id,
+                'venta_id' => $venta->id,
+                'orden_id' => $venta->orden?->id,
                 'monto_ganancia' => round($ganancia, 2),
                 'propina' => round($propina, 2),
-                'fecha' => $tracking->created_at?->format('Y-m-d H:i:s'),
+                'fecha' => $venta->created_at?->format('Y-m-d H:i:s'),
             ];
         }
 
-        // Guardar o actualizar el registro de ganancias
         $earning = DriverEarning::firstOrCreate(
             [
                 'driver_id' => $driverId,
@@ -124,7 +143,6 @@ class DriverEarningsController extends Controller
             'total_ganancias' => round($totalGanancias, 2),
         ]);
 
-        // Limpiar y recrear detalles
         DriverEarningDetail::where('driver_earning_id', $earning->id)->delete();
 
         foreach ($detalles as $detalle) {
@@ -159,10 +177,10 @@ class DriverEarningsController extends Controller
         $query = DriverEarningDetail::query()->with(['orden', 'venta', 'earning.driver']);
 
         if ($driverId = $data['driver_id']) {
-            $query->whereHas('earning', fn($q) => $q->where('driver_id', $driverId));
+            $query->whereHas('earning', fn ($q) => $q->where('driver_id', $driverId));
         }
 
-        $query->whereHas('earning', fn($q) => $q
+        $query->whereHas('earning', fn ($q) => $q
             ->where('periodo_inicio', '>=', $data['periodo_inicio'])
             ->where('periodo_fin', '<=', $data['periodo_fin'])
         );
@@ -173,10 +191,8 @@ class DriverEarningsController extends Controller
             $handle = fopen('php://output', 'w');
             stream_set_encoding($handle, 'UTF-8');
 
-            // BOM para Excel
-            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Headers
             fputcsv($handle, [
                 'ID Detalle',
                 'Driver',
@@ -188,9 +204,8 @@ class DriverEarningsController extends Controller
                 'Total',
             ]);
 
-            // Datos
             foreach ($details as $detail) {
-                $driverName = $detail->earning?->driver ? $detail->earning->driver->nombre_completo : 'N/A';
+                $driverName = $detail->earning?->driver ? $detail->earning->driver->nombreCompleto : 'N/A';
                 $ordenRef = $detail->orden ? $detail->orden->ncf : ($detail->venta ? $detail->venta->ncf : 'N/A');
                 $total = round(floatval($detail->monto_ganancia) + floatval($detail->propina), 2);
 
@@ -210,7 +225,7 @@ class DriverEarningsController extends Controller
         });
 
         $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
-        $response->headers->set('Content-Disposition', 'attachment; filename="ganancias_drivers_' . date('Y-m-d') . '.csv"');
+        $response->headers->set('Content-Disposition', 'attachment; filename="ganancias_drivers_'.date('Y-m-d').'.csv"');
 
         return $response;
     }

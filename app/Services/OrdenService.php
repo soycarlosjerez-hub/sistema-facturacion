@@ -145,6 +145,17 @@ class OrdenService
 
             if ($this->restauranteValidaStock()) {
                 $producto->decrement('stock', $cantidad);
+                $producto->increment('ventas_count', $cantidad);
+
+                AlmacenMovimiento::create([
+                    'tenant_id'   => $orden->tenant_id,
+                    'producto_id' => $producto->id,
+                    'almacen_id'  => null,
+                    'tipo'        => 'salida',
+                    'cantidad'    => $cantidad,
+                    'nota'        => 'Orden #' . $orden->numero . ' - ' . $producto->nombre,
+                    'user_id'     => Auth::id(),
+                ]);
 
                 if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
                     Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
@@ -183,6 +194,21 @@ class OrdenService
 
             if ($detalle->producto && $this->restauranteValidaStock()) {
                 $detalle->producto->increment('stock', $detalle->cantidad);
+                $detalle->producto->decrement('ventas_count', $detalle->cantidad);
+                if ($detalle->producto->ventas_count < 0) {
+                    $detalle->producto->update(['ventas_count' => 0]);
+                }
+
+                AlmacenMovimiento::create([
+                    'tenant_id'   => $orden->tenant_id,
+                    'producto_id' => $detalle->producto_id,
+                    'almacen_id'  => null,
+                    'tipo'        => 'entrada',
+                    'cantidad'    => $detalle->cantidad,
+                    'nota'        => 'Devuelta Orden #' . $orden->numero . ' - ' . $detalle->producto->nombre,
+                    'user_id'     => Auth::id(),
+                ]);
+
                 foreach ($detalle->producto->ingredientes as $ingrediente) {
                     $ingrediente->increment('stock', $ingrediente->pivot->cantidad * $detalle->cantidad);
                 }
@@ -223,7 +249,37 @@ class OrdenService
             $detalle->save();
 
             if ($producto && $this->restauranteValidaStock()) {
-                $producto->decrement('stock', $diferencia);
+                if ($diferencia > 0) {
+                    $producto->decrement('stock', $diferencia);
+                    $producto->increment('ventas_count', $diferencia);
+
+                    AlmacenMovimiento::create([
+                        'tenant_id'   => $orden->tenant_id,
+                        'producto_id' => $producto->id,
+                        'almacen_id'  => null,
+                        'tipo'        => 'salida',
+                        'cantidad'    => $diferencia,
+                        'nota'        => 'Orden #' . $orden->numero . ' - Ajuste +' . $diferencia . ' ' . $producto->nombre,
+                        'user_id'     => Auth::id(),
+                    ]);
+                } elseif ($diferencia < 0) {
+                    $producto->increment('stock', abs($diferencia));
+                    $producto->decrement('ventas_count', abs($diferencia));
+                    if ($producto->ventas_count < 0) {
+                        $producto->update(['ventas_count' => 0]);
+                    }
+
+                    AlmacenMovimiento::create([
+                        'tenant_id'   => $orden->tenant_id,
+                        'producto_id' => $producto->id,
+                        'almacen_id'  => null,
+                        'tipo'        => 'entrada',
+                        'cantidad'    => abs($diferencia),
+                        'nota'        => 'Orden #' . $orden->numero . ' - Ajuste ' . $diferencia . ' ' . $producto->nombre,
+                        'user_id'     => Auth::id(),
+                    ]);
+                }
+
                 if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
                     Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
                 }
@@ -291,6 +347,20 @@ class OrdenService
                 foreach ($orden->detalles as $detalle) {
                     if ($detalle->producto) {
                         $detalle->producto->increment('stock', $detalle->cantidad);
+                        $detalle->producto->decrement('ventas_count', $detalle->cantidad);
+                        if ($detalle->producto->ventas_count < 0) {
+                            $detalle->producto->update(['ventas_count' => 0]);
+                        }
+
+                        AlmacenMovimiento::create([
+                            'tenant_id'   => $orden->tenant_id,
+                            'producto_id' => $detalle->producto_id,
+                            'almacen_id'  => null,
+                            'tipo'        => 'entrada',
+                            'cantidad'    => $detalle->cantidad,
+                            'nota'        => 'Anulada Orden #' . $orden->numero . ' - ' . $detalle->producto->nombre,
+                            'user_id'     => Auth::id(),
+                        ]);
                     }
                 }
             }

@@ -265,6 +265,7 @@ class VentaController extends Controller
                     ]);
 
                     Producto::where('id', $detalle['producto_id'])->decrement('stock', $detalle['cantidad']);
+                    Producto::where('id', $detalle['producto_id'])->increment('ventas_count', $detalle['cantidad']);
                 }
             }
 

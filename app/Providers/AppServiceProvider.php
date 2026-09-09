@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
@@ -52,6 +53,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
         Schema::defaultStringLength(191);
+
+        // Route model binding: 'categoria' resolves to Categoria model (ERP)
+        Route::bind('categoria', function ($value) {
+            // Only resolve if it's a numeric ID
+            if (!is_numeric($value)) {
+                abort(404, "No query results for model [App\Models\Categoria] $value");
+            }
+            return \App\Models\Categoria::where('id', (int) $value)->first();
+        });
 
         BusinessInstance::observe(\App\Observers\BusinessInstanceObserver::class);
 

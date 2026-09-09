@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
-use App\Traits\TenantScope;
 
 class GarantiasConfig extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
     use TenantScope;
 
     protected $table = 'garantia_config';
@@ -22,6 +22,7 @@ class GarantiasConfig extends Model
         'dias_garantia',
         'tipo_garantia',
         'cobertura',
+        'terminos_por_defecto',
         'activo',
         'orden',
         'tenant_id',
@@ -29,9 +30,9 @@ class GarantiasConfig extends Model
 
     protected $casts = [
         'dias_garantia' => 'integer',
-        'activo'        => 'boolean',
-        'orden'         => 'integer',
-        'cobertura'     => 'array',
+        'activo' => 'boolean',
+        'orden' => 'integer',
+        'cobertura' => 'array',
     ];
 
     protected $appends = ['activo_label', 'tipo_garantia_label'];
@@ -59,11 +60,11 @@ class GarantiasConfig extends Model
     public function getTipoGarantiaLabelAttribute(): ?string
     {
         return match ($this->tipo_garantia) {
-            'fabrica'     => 'Garantía de Fábrica',
-            'extendida'   => 'Garantía Extendida',
-            'parcial'     => 'Garantía Parcial',
-            'servicio'    => 'Garantía de Servicio',
-            default       => null,
+            'fabrica' => 'Garantía de Fábrica',
+            'extendida' => 'Garantía Extendida',
+            'parcial' => 'Garantía Parcial',
+            'servicio' => 'Garantía de Servicio',
+            default => null,
         };
     }
 
@@ -73,14 +74,16 @@ class GarantiasConfig extends Model
 
         if ($dias >= 365) {
             $anios = intdiv($dias, 365);
-            return $anios . ($anios > 1 ? ' años' : ' año');
+
+            return $anios.($anios > 1 ? ' años' : ' año');
         }
 
         if ($dias >= 30) {
             $meses = intdiv($dias, 30);
-            return $meses . ($meses > 1 ? ' meses' : ' mes');
+
+            return $meses.($meses > 1 ? ' meses' : ' mes');
         }
 
-        return $dias . ($dias !== 1 ? ' días' : ' día');
+        return $dias.($dias !== 1 ? ' días' : ' día');
     }
 }

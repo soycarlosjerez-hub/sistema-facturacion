@@ -2,17 +2,17 @@
 
 namespace App\Exports;
 
-use App\Models\Categoria;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Illuminate\Support\Facades\Auth;
 
 class CategoriaExport implements FromCollection, WithHeadings, WithMapping
 {
     public function collection()
     {
-        $query = Categoria::orderBy('nombre');
+        $query = DB::table('categorias')->orderBy('nombre');
 
         if (Auth::check() && Auth::user()->business_instance_id !== null) {
             $query->where('tenant_id', Auth::user()->business_instance_id);
@@ -40,7 +40,10 @@ class CategoriaExport implements FromCollection, WithHeadings, WithMapping
             $categoria->nombre,
             $categoria->descripcion ?? '',
             $categoria->activa ? 'Sí' : 'No',
-            $categoria->productos()->count(),
+            DB::table('productos')
+                ->where('categoria_id', $categoria->id)
+                ->where('tenant_id', $categoria->tenant_id)
+                ->count(),
             $categoria->created_at->format('d/m/Y'),
         ];
     }

@@ -14,7 +14,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable, Auditable, TenantScope;
+    use Auditable, HasApiTokens, HasFactory, HasRoles, Notifiable, TenantScope;
 
     protected string $tenantColumn = 'business_instance_id';
 
@@ -53,8 +53,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'last_seen_at'      => 'datetime',
-            'password'          => 'hashed',
+            'last_seen_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 
@@ -95,6 +95,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(BusinessInstance::class, 'owner_user_id')
             ->where('activo', true);
+    }
+
+    public function deliveryDriver()
+    {
+        return $this->belongsTo(DeliveryDriver::class);
     }
 
     protected function getAuditableIgnored(): array

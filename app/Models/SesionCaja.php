@@ -45,7 +45,7 @@ class SesionCaja extends Model
 
     public function caja(): BelongsTo
     {
-        return $this->belongsTo(Caja::class);
+        return $this->belongsTo(Caja::class)->withoutGlobalScope('tenant');
     }
 
     public function user(): BelongsTo

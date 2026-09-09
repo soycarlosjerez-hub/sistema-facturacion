@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (!Schema::hasColumn('business_instances', 'logo')) {
+            Schema::table('business_instances', function (Blueprint $table) {
+                $table->string('logo')->nullable()->after('direccion');
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        if (Schema::hasColumn('business_instances', 'logo')) {
+            Schema::table('business_instances', function (Blueprint $table) {
+                $table->dropColumn('logo');
+            });
+        }
+    }
+};

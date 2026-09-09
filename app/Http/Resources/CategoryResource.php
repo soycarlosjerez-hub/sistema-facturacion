@@ -42,7 +42,7 @@ class CategoryResource extends JsonResource
     protected function pivotData($businessType): array
     {
         $pivot = $this->businessTypes()
-            ->where('business_types.key', $businessType->key)
+            ->where('business_types.slug', $businessType->slug)
             ->first()?->pivot;
 
         if (!$pivot) return [];

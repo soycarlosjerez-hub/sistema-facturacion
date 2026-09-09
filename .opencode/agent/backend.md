@@ -1,5 +1,5 @@
 ---
-description: "Especialista en backend Laravel/PHP. Maneja controladores, servicios, modelos, middleware, APIs, autenticación, permisos, roles, policies, jobs, queues, eventos, listeners. Trigger keywords: backend, controlador, servicio, modelo, API, middleware, policy, gate, permiso, rol, job, queue, evento, listener, validación, request."
+description: "Especialista en backend Laravel/PHP. Maneja controladores, servicios, modelos, APIs, autenticación, permisos, roles, policies, jobs, queues, eventos, listeners. Trigger keywords: backend, controlador, servicio, modelo, API, middleware, policy, gate, permiso, rol, job, queue, evento, listener, validación, request, tenancy."
 mode: subagent
 ---
 
@@ -17,8 +17,8 @@ Eres un especialista senior en backend Laravel/PHP para el sistema-facturacion, 
 ## Convenciones del Código
 
 ### Modelos
-- Usar trait `HasFactory, TenantScope`
-- Campos fillable explícitos
+- Usar trait `HasFactory, TenantScope, Auditable` donde aplique
+- Campos fillables explícitos
 - Casting de fechas y decimales
 - Relación `belongsTo`/`hasMany` definida
 - Nunca aceptar `tenant_id` del usuario, asignar desde `auth()->user()->business_instance_id`
@@ -38,7 +38,7 @@ Eres un especialista senior en backend Laravel/PHP para el sistema-facturacion, 
 - Retornar Collections o Eloquent models
 
 ### Políticas/Gates
-- Verificar permisos con `Gate::authorize()` o `$this->authorize()`
+- Verificar permisos con `hasAnyRole()` / `hasPermissionTo('{modulo}.{accion}')`, `Gate::authorize()` o `$this->authorize()`
 - Permisos en formato `{modulo}.{accion}`: view, create, edit, delete
 
 ## Patrones Comunes
@@ -77,3 +77,4 @@ public function list()
 4. Seguir convención de nomenclatura: snake_case para DB, PascalCase para clases
 5. Respetar roles y permisos existentes
 6. No modificar configuración global sin autorización
+7. Para reglas fiscales DGII/e-CF: consulta al agente `dgii-fiscal`

@@ -451,8 +451,7 @@ body.dark-mode .ui-btn-ghost { color: #cbd5e1; border-color: #334155; }
                         </div>
 
                         <hr class="my-4" style="opacity:.5;">
-                        <a href="#" class="text-decoration-none small text-muted"
-                           onclick="event.preventDefault(); confirmAction({title:'Reiniciar Asistente', text:'¿Reiniciar la configuración inicial? Se marcarán como pendientes los pasos incompletos.', icon:'warning', color:'#f59e0b', confirmText:'Reiniciar', onSubmit:function(){ var f=document.createElement('form');f.method='POST';f.action='{{ route('setup.restart') }}';f.innerHTML='<input type=hidden name=_token value={{ csrf_token() }}>';document.body.appendChild(f);f.submit(); }}">
+                        <a href="#" class="text-decoration-none small text-muted" id="btnReiniciarWizard">
                             <i class="bi bi-arrow-counterclockwise me-1"></i> Reiniciar configuración
                         </a>
                     </div>
@@ -536,4 +535,23 @@ body.dark-mode .ui-btn-ghost { color: #cbd5e1; border-color: #334155; }
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+document.getElementById('btnReiniciarWizard')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (confirm('¿Reiniciar la configuración inicial? Se marcarán como pendientes los pasos incompletos.')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route('setup.restart') }}';
+        const token = document.querySelector('meta[name="csrf-token"]')?.content
+            || document.querySelector('input[name="_token"]')?.value
+            || '{{ csrf_token() }}';
+        form.innerHTML = '<input type="hidden" name="_token" value="' + token + '">';
+        document.body.appendChild(form);
+        form.submit();
+    }
+});
+</script>
+@endpush
 @endsection

@@ -16,7 +16,7 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $query = Category::with(['businessTypes' => function ($q) {
-            $q->select('business_types.id', 'business_types.key', 'business_types.nombre', 'business_types.color_default', 'business_types.icono_default');
+            $q->select('business_types.id', 'business_types.slug', 'business_types.nombre', 'business_types.color_default', 'business_types.icono_default');
         }])
             ->withCount(['products', 'tables']);
 
@@ -118,7 +118,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'items' => 'required|array',
-            'items.*.id' => 'required|exists:categories,id',
+            'items.*.id' => 'required|exists:categorias,id',
             'items.*.orden' => 'required|integer|min:0',
         ]);
 
@@ -136,13 +136,13 @@ class CategoryController extends Controller
         $this->authorize('update', $category);
 
         $request->validate([
-            'type_key' => 'required|string|exists:business_types,key',
+            'type_slug' => 'required|string|exists:business_types,slug',
             'action' => 'required|in:attach,detach',
             'configuracion' => 'nullable|array',
             'soft_delete_enabled' => 'boolean',
         ]);
 
-        $type = BusinessType::where('key', $request->type_key)->firstOrFail();
+        $type = BusinessType::where('slug', $request->type_slug)->firstOrFail();
 
         if ($request->action === 'attach') {
             $category->businessTypes()->syncWithoutDetaching([
@@ -159,15 +159,15 @@ class CategoryController extends Controller
         return new CategoryResource($category->load('businessTypes'));
     }
 
-    private function syncBusinessTypes(Category $category, array $typeKeys, array $typeConfigs = [])
+    private function syncBusinessTypes(Category $category, array $typeSlugs, array $typeConfigs = [])
     {
-        $types = BusinessType::whereIn('key', $typeKeys)->get()->keyBy('key');
+        $types = BusinessType::whereIn('slug', $typeSlugs)->get()->keyBy('slug');
         
         $syncData = [];
-        foreach ($typeKeys as $key) {
-            $type = $types[$key];
+        foreach ($typeSlugs as $slug) {
+            $type = $types[$slug];
             $syncData[$type->id] = [
-                'configuracion' => $typeConfigs[$key] ?? [],
+                'configuracion' => $typeConfigs[$slug] ?? [],
                 'soft_delete_enabled' => $type->soft_delete_default,
                 'orden' => 0,
             ];

@@ -75,8 +75,8 @@ class OrdenEmergenciaController extends Controller
 
             return response()->json([
                 'draw' => (int) request('draw', 1),
-                'recordsTotal' => $total->count(),
-                'recordsFiltered' => $total->count(),
+                'recordsTotal' => $total,
+                'recordsFiltered' => $total,
                 'data' => $rows,
             ]);
         }

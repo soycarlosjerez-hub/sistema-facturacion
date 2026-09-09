@@ -47,7 +47,7 @@
 
     <!-- Lista de Almacenes -->
     <div class="row g-4">
-        <?php $__empty_1 = true; $__currentLoopData = $almacenes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $a): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+        <?php $__empty_0 = true; $__currentLoopData = $almacenes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $a): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
         <div class="col-md-6 col-lg-4">
             <div class="ui-card h-100" style="--delay:.2s">
                 <div class="ui-card-accent"></div>
@@ -93,7 +93,7 @@
                 </div>
             </div>
         </div>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
         <div class="col-12">
             <div class="ui-empty-state">
                 <i class="bi bi-building-x"></i>

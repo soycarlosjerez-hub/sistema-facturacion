@@ -5,6 +5,14 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// Force HTTPS behind Cloudflare reverse proxy
+if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'on') {
+    $_SERVER['HTTPS'] = 'on';
+}
+if (!isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+    $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+}
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;

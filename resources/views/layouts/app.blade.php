@@ -798,9 +798,16 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
 
             @php
                 $subBannerUser = auth()->user();
-                $subBannerInstance = ($subBannerUser && $subBannerUser->business_instance_id && ! $subBannerUser->hasRole('owner') && ! $subBannerUser->hasRole('root'))
-                    ? $subBannerUser->businessInstance
-                    : null;
+                $subBannerInstance = null;
+                if ($subBannerUser && $subBannerUser->business_instance_id) {
+                    try {
+                        if (! $subBannerUser->hasRole('owner') && ! $subBannerUser->hasRole('root')) {
+                            $subBannerInstance = $subBannerUser->businessInstance;
+                        }
+                    } catch (\Throwable $e) {
+                        $subBannerInstance = $subBannerUser->businessInstance;
+                    }
+                }
                 $subBannerEstado = $subBannerInstance ? $subBannerInstance->estadoSuscripcion() : null;
             @endphp
             @if($subBannerInstance && $subBannerEstado !== 'activa')

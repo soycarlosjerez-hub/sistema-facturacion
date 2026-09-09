@@ -2,18 +2,19 @@
 
 namespace App\Services;
 
+use App\Models\AlmacenMovimiento;
 use App\Models\Cliente;
 use App\Models\LavaderoPaquete;
 use App\Models\LavaderoServicio;
+use App\Models\Pago;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\SystemSetting;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
-use App\Models\Pago;
-use App\Traits\TenantScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 class PosService
 {
@@ -30,9 +31,9 @@ class PosService
                     ->where('nombre', 'Consumidor Final')
                     ->first();
 
-                if (!$consumidorFinal) {
+                if (! $consumidorFinal) {
                     $consumidorFinal = Cliente::create([
-                        'nombre'   => 'Consumidor Final',
+                        'nombre' => 'Consumidor Final',
                         'rnc_cedula' => '00000000000',
                         'tenant_id' => $tenantId,
                     ]);
@@ -47,27 +48,31 @@ class PosService
             $lineItems = [];
 
             // Servicios de lavadero
-            if (!empty($data['servicios'])) {
+            if (! empty($data['servicios'])) {
                 foreach ($data['servicios'] as $s) {
                     $servicio = LavaderoServicio::find($s['id'] ?? $s);
-                    if (!$servicio) continue;
+                    if (! $servicio) {
+                        continue;
+                    }
 
                     $lineItems[] = [
-                        'tipo'         => 'servicio',
-                        'nombre'       => $servicio->nombre,
-                        'precio'       => (float) ($s['precio'] ?? $servicio->precio),
-                        'cantidad'     => 1,
-                        'subtotal'     => (float) ($s['precio'] ?? $servicio->precio),
-                        'itbis_p'      => (float) ($cliente?->itbis_exento ? 0 : SystemSetting::itbisDefault()),
+                        'tipo' => 'servicio',
+                        'nombre' => $servicio->nombre,
+                        'precio' => (float) ($s['precio'] ?? $servicio->precio),
+                        'cantidad' => 1,
+                        'subtotal' => (float) ($s['precio'] ?? $servicio->precio),
+                        'itbis_p' => (float) ($cliente?->itbis_exento ? 0 : SystemSetting::itbisDefault()),
                     ];
                 }
             }
 
             // Productos físicos
-            if (!empty($data['productos'])) {
+            if (! empty($data['productos'])) {
                 foreach ($data['productos'] as $p) {
                     $producto = Producto::find($p['id'] ?? $p);
-                    if (!$producto) continue;
+                    if (! $producto) {
+                        continue;
+                    }
 
                     $cantidad = $p['cantidad'] ?? 1;
                     $precio = (float) ($p['precio'] ?? $producto->precio);
@@ -75,36 +80,37 @@ class PosService
                     $itbisPct = $cliente && $cliente->itbis_exento ? 0 : ($producto->itbis_porcentaje ?? SystemSetting::itbisDefault());
 
                     $lineItems[] = [
-                        'tipo'         => 'producto',
-                        'nombre'       => $producto->nombre,
-                        'precio'       => $precio,
-                        'cantidad'     => $cantidad,
-                        'subtotal'     => $subtotal,
-                        'itbis_p'      => $itbisPct,
-                        'producto_id'  => $producto->id,
-                        'stock'        => $producto->stock,
+                        'tipo' => 'producto',
+                        'nombre' => $producto->nombre,
+                        'precio' => $precio,
+                        'cantidad' => $cantidad,
+                        'subtotal' => $subtotal,
+                        'itbis_p' => $itbisPct,
+                        'producto_id' => $producto->id,
                     ];
                 }
             }
 
             // Paquetes de lavadero
-            if (!empty($data['paquetes'])) {
+            if (! empty($data['paquetes'])) {
                 foreach ($data['paquetes'] as $pk) {
                     $paquete = LavaderoPaquete::find($pk['id'] ?? $pk);
-                    if (!$paquete) continue;
+                    if (! $paquete) {
+                        continue;
+                    }
 
                     $cantidad = $pk['cantidad'] ?? 1;
                     $precio = (float) ($paquete->precio);
                     $subtotal = round($precio * $cantidad, 2);
 
                     $lineItems[] = [
-                        'tipo'         => 'paquete',
-                        'nombre'       => $paquete->nombre . ' (x' . $cantidad . ')',
-                        'precio'       => $precio,
-                        'cantidad'     => $cantidad,
-                        'subtotal'     => $subtotal,
-                        'itbis_p'      => (float) ($cliente?->itbis_exento ? 0 : SystemSetting::itbisDefault()),
-                        'paquete_id'   => $paquete->id,
+                        'tipo' => 'paquete',
+                        'nombre' => $paquete->nombre.' (x'.$cantidad.')',
+                        'precio' => $precio,
+                        'cantidad' => $cantidad,
+                        'subtotal' => $subtotal,
+                        'itbis_p' => (float) ($cliente?->itbis_exento ? 0 : SystemSetting::itbisDefault()),
+                        'paquete_id' => $paquete->id,
                     ];
                 }
             }
@@ -126,56 +132,79 @@ class PosService
             $estado = $metodoPago === 'fiado' ? 'pendiente' : 'completada';
 
             $venta = Venta::create([
-                'user_id'          => Auth::id(),
-                'sucursal_id'      => session('sucursal_id'),
-                'caja_id'          => $sesionActiva?->caja_id,
-                'sesion_caja_id'   => $sesionActiva?->id,
-                'cliente_id'       => $data['cliente_id'],
-                'tipo_venta_id'    => $data['tipo_venta_id'] ?? null,
-                'fecha'            => now(),
-                'subtotal'         => $subtotal,
-                'impuestos'        => $itbisTotal,
-                'total'            => $total,
-                'estado'           => $estado,
-                'notas'            => 'Venta mixta (lavadero + tienda)',
-                'tenant_id'        => $tenantId,
+                'user_id' => Auth::id(),
+                'sucursal_id' => session('sucursal_id'),
+                'caja_id' => $sesionActiva?->caja_id,
+                'sesion_caja_id' => $sesionActiva?->id,
+                'cliente_id' => $data['cliente_id'],
+                'tipo_venta_id' => $data['tipo_venta_id'] ?? null,
+                'fecha' => now(),
+                'subtotal' => $subtotal,
+                'impuestos' => $itbisTotal,
+                'total' => $total,
+                'estado' => $estado,
+                'notas' => 'Venta mixta (lavadero + tienda)',
+                'tenant_id' => $tenantId,
             ]);
 
-            // Crear detalles de venta
+            // Crear detalles de venta y reducir stock
             foreach ($lineItems as $item) {
                 VentaDetalle::create([
-                    'venta_id'         => $venta->id,
-                    'producto_id'      => $item['producto_id'] ?? null,
-                    'cantidad'         => $item['cantidad'],
-                    'precio_unitario'  => $item['precio'],
-                    'subtotal'         => $item['subtotal'],
-                    'notas'            => $item['nombre'],
+                    'venta_id' => $venta->id,
+                    'producto_id' => $item['producto_id'] ?? null,
+                    'cantidad' => $item['cantidad'],
+                    'precio_unitario' => $item['precio'],
+                    'subtotal' => $item['subtotal'],
+                    'notas' => $item['notas'] ?? $item['nombre'],
                     'itbis_porcentaje' => $item['itbis_p'],
-                    'tenant_id'        => $tenantId,
+                    'tenant_id' => $tenantId,
                 ]);
 
-                // Descuento de stock si es producto físico
-                if ($item['tipo'] === 'producto' && isset($item['producto_id']) && $item['stock'] >= $item['cantidad']) {
-                    Producto::where('id', $item['producto_id'])->decrement('stock', $item['cantidad']);
+                // Reducir stock del producto vendido (solo productos físicos)
+                if ($item['tipo'] === 'producto' && isset($item['producto_id'])) {
+                    $producto = Producto::where('id', $item['producto_id'])
+                        ->where('tenant_id', $tenantId)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($producto && $producto->stock >= $item['cantidad']) {
+                        $producto->decrement('stock', $item['cantidad']);
+
+                        AlmacenMovimiento::create([
+                            'tenant_id' => $tenantId,
+                            'producto_id' => $producto->id,
+                            'almacen_id' => null,
+                            'tipo' => 'salida',
+                            'cantidad' => $item['cantidad'],
+                            'nota' => 'Venta POS #' . $venta->id . ' - ' . $item['nombre'],
+                            'user_id' => Auth::id(),
+                        ]);
+
+                        $producto->increment('ventas_count', $item['cantidad']);
+
+                        if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
+                            Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
+                        }
+                    }
                 }
             }
 
             // Registrar pago
             if (in_array($metodoPago, ['efectivo', 'tarjeta', 'transferencia'])) {
                 Pago::create([
-                    'tenant_id'      => $tenantId,
-                    'venta_id'       => $venta->id,
-                    'caja_id'        => $sesionActiva?->caja_id,
+                    'tenant_id' => $tenantId,
+                    'venta_id' => $venta->id,
+                    'caja_id' => $sesionActiva?->caja_id,
                     'sesion_caja_id' => $sesionActiva?->id,
-                    'monto'          => $total,
-                    'metodo_pago'    => $metodoPago,
-                    'fecha_pago'     => now(),
+                    'monto' => $total,
+                    'metodo_pago' => $metodoPago,
+                    'fecha_pago' => now(),
                 ]);
 
                 if ($sesionActiva) {
                     match ($metodoPago) {
-                        'efectivo'      => $sesionActiva->increment('ventas_efectivo', $total),
-                        'tarjeta'       => $sesionActiva->increment('ventas_tarjeta', $total),
+                        'efectivo' => $sesionActiva->increment('ventas_efectivo', $total),
+                        'tarjeta' => $sesionActiva->increment('ventas_tarjeta', $total),
                         'transferencia' => $sesionActiva->increment('ventas_transferencia', $total),
                     };
                 }
@@ -183,9 +212,9 @@ class PosService
 
             return [
                 'success' => true,
-                'venta'   => $venta->load(['cliente', 'detalles', 'pagos']),
-                'total'   => $total,
-                'venta_id'=> $venta->id,
+                'venta' => $venta->load(['cliente', 'detalles', 'pagos']),
+                'total' => $total,
+                'venta_id' => $venta->id,
             ];
         });
     }
@@ -195,13 +224,13 @@ class PosService
         $queryBuilder = Producto::activos()
             ->where(function ($q) use ($query) {
                 $q->where('nombre', 'like', "%{$query}%")
-                  ->orWhere('codigo_barras', 'like', "%{$query}%");
+                    ->orWhere('codigo_barras', 'like', "%{$query}%");
             })
             ->select('id', 'nombre', 'codigo_barras', 'precio', 'stock', 'categoria_id', 'imagen')
             ->orderBy('stock', 'desc');
 
         if ($linea) {
-            $queryBuilder->where('categoria_id', fn ($q) => \App\Models\Categoria::where('slug', $linea)->value('id') ?: 0);
+            $queryBuilder->where('categoria_id', fn ($q) => \App\Models\Category::where('slug', $linea)->value('id') ?: 0);
         }
 
         return $queryBuilder->limit(20)->get();
@@ -209,41 +238,41 @@ class PosService
 
     public function holdSale(array $data): array
     {
-        $sessionId = 'hold_' . Auth::id() . '_' . now()->timestamp;
+        $sessionId = 'hold_'.Auth::id().'_'.now()->timestamp;
 
         session([
-            'hold_' . $sessionId => [
+            'hold_'.$sessionId => [
                 'cliente_id' => $data['cliente_id'] ?? null,
-                'vehiculo_id'=> $data['vehiculo_id'] ?? null,
-                'servicios'  => $data['servicios'] ?? [],
-                'productos'  => $data['productos'] ?? [],
-                'paquetes'   => $data['paquetes'] ?? [],
-                'metodo_pago'=> $data['metodo_pago'] ?? 'efectivo',
-                'total'      => $data['total'] ?? 0,
+                'vehiculo_id' => $data['vehiculo_id'] ?? null,
+                'servicios' => $data['servicios'] ?? [],
+                'productos' => $data['productos'] ?? [],
+                'paquetes' => $data['paquetes'] ?? [],
+                'metodo_pago' => $data['metodo_pago'] ?? 'efectivo',
+                'total' => $data['total'] ?? 0,
                 'created_at' => now()->toIso8601String(),
             ],
         ]);
 
         return [
-            'success'   => true,
-            'hold_id'   => $sessionId,
-            'total'     => $data['total'] ?? 0,
+            'success' => true,
+            'hold_id' => $sessionId,
+            'total' => $data['total'] ?? 0,
             'items_count' => count($data['servicios'] ?? []) + count($data['productos'] ?? []) + count($data['paquetes'] ?? []),
         ];
     }
 
     public function restoreSale(string $holdId): ?array
     {
-        $key = 'hold_' . Auth::id() . '_' . $holdId;
+        $key = 'hold_'.Auth::id().'_'.$holdId;
         // Try different patterns
-        $holdData = session()->get('hold_' . $holdId);
+        $holdData = session()->get('hold_'.$holdId);
 
-        if (!$holdData) {
+        if (! $holdData) {
             // Try the full pattern
-            $holdData = session()->get('hold_' . $holdId);
+            $holdData = session()->get('hold_'.$holdId);
         }
 
-        if (!$holdData) {
+        if (! $holdData) {
             throw new \Exception('Venta en espera no encontrada.');
         }
 
@@ -264,17 +293,17 @@ class PosService
             $itbisAmount = round($itemSubtotal * ($itbisPct / 100), 2);
             $itbisTotal += $itbisAmount;
 
-            if (!isset($itbisByRate[$itbisPct])) {
+            if (! isset($itbisByRate[$itbisPct])) {
                 $itbisByRate[$itbisPct] = 0;
             }
             $itbisByRate[$itbisPct] += $itbisAmount;
         }
 
         return [
-            'subtotal'      => round($subtotal, 2),
-            'itbis_total'   => round($itbisTotal, 2),
+            'subtotal' => round($subtotal, 2),
+            'itbis_total' => round($itbisTotal, 2),
             'itbis_by_rate' => $itbisByRate,
-            'total'         => round($subtotal + $itbisTotal, 2),
+            'total' => round($subtotal + $itbisTotal, 2),
         ];
     }
 
@@ -284,7 +313,7 @@ class PosService
             || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
 
         $query = SesionCaja::where('estado', 'abierta');
-        if (!$isElevated) {
+        if (! $isElevated) {
             $query->where('user_id', Auth::id());
         }
 

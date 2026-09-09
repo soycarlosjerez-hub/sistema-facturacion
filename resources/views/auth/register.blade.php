@@ -151,51 +151,6 @@
         .invalid-feedback { color: #f87171; font-size: 0.8rem; margin-top: 6px; padding-left: 4px; }
         .field-label { display: block; color: rgba(203,213,225,0.9); font-size: 0.8rem; font-weight: 600; margin-bottom: 8px; }
 
-        /* ── Plan cards ── */
-        .plan-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 14px; }
-        .plan-card {
-            position: relative; background: rgba(255,255,255,0.04);
-            border: 1.5px solid rgba(255,255,255,0.08); border-radius: 16px;
-            padding: 18px 16px; cursor: pointer; transition: all 0.25s ease; height: 100%;
-            display: flex; flex-direction: column;
-        }
-        .plan-card:hover { border-color: rgba(96,165,250,0.4); transform: translateY(-2px); }
-        .plan-card.selected {
-            border-color: var(--primary);
-            background: rgba(59,130,246,0.1);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.18), 0 10px 30px -10px rgba(59,130,246,0.35);
-        }
-        .plan-card input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
-        .plan-badge {
-            position: absolute; top: -10px; right: 12px;
-            background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff;
-            font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-            padding: 4px 10px; border-radius: 999px; box-shadow: 0 4px 12px rgba(245,158,11,0.35);
-        }
-        .plan-name { color: #f1f5f9; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
-        .plan-price { margin: 10px 0 2px; }
-        .plan-price .amount { color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
-        .plan-price .per { color: rgba(148,163,184,0.7); font-size: 0.78rem; }
-        .plan-launch { color: rgba(148,163,184,0.65); font-size: 0.75rem; margin-bottom: 10px; }
-        .plan-desc { color: rgba(148,163,184,0.75); font-size: 0.78rem; line-height: 1.5; margin-bottom: 12px; flex: 1; }
-        .plan-features { list-style: none; padding: 0; margin: 0 0 12px; }
-        .plan-features li { color: rgba(203,213,225,0.8); font-size: 0.75rem; padding: 3px 0; display: flex; align-items: center; gap: 7px; }
-        .plan-features li i { color: #34d399; font-size: 0.7rem; flex-shrink: 0; }
-        .plan-check {
-            display: flex; align-items: center; gap: 8px; margin-top: auto;
-            color: rgba(148,163,184,0.8); font-size: 0.78rem;
-        }
-        .plan-check .radio-dot {
-            width: 18px; height: 18px; border-radius: 50%;
-            border: 2px solid rgba(148,163,184,0.5); display: inline-flex;
-            align-items: center; justify-content: center; transition: all 0.25s ease; flex-shrink: 0;
-        }
-        .plan-card.selected .radio-dot { border-color: var(--primary); }
-        .plan-card.selected .radio-dot::after {
-            content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--primary);
-        }
-        .plan-card.selected .plan-check { color: #c7d2fe; }
-
         /* ── Submit ── */
         .btn-register {
             width: 100%; padding: 14px; margin-top: 8px;
@@ -325,11 +280,11 @@
                     </div>
                 </div>
 
-                {{-- ====== 2. TU NEGOCIO ====== --}}
+                {{-- ====== 2. ELIGE TU NEGOCIO ====== --}}
                 <div class="section-title">
                     <div class="step-num">2</div>
                     <div>
-                        <h2>Tu Negocio</h2>
+                        <h2>Elige tu Negocio</h2>
                         <p>Los datos de la empresa que vas a gestionar</p>
                     </div>
                 </div>
@@ -386,55 +341,10 @@
                     </div>
                 </div>
 
-                {{-- ====== 3. ELIGE TU PLAN ====== --}}
-                <div class="section-title">
-                    <div class="step-num">3</div>
-                    <div>
-                        <h2>Elige tu Plan</h2>
-                        <p>Precios mensuales en RD$ — primer mes al precio de lanzamiento</p>
-                    </div>
-                </div>
-                <div class="plan-grid">
-                    @php
-                        $selectedPlan = old('plan_id') ?? $plans->firstWhere('recomendado', true)?->id ?? $plans->first()?->id;
-                    @endphp
-                    @foreach ($plans as $plan)
-                        <label class="plan-card @if ((int) $selectedPlan === (int) $plan->id) selected @endif" for="plan_{{ $plan->id }}">
-                            <input type="radio" name="plan_id" id="plan_{{ $plan->id }}" value="{{ $plan->id }}"
-                                   @if ((int) $selectedPlan === (int) $plan->id) checked @endif required>
-                            @if ($plan->recomendado)
-                                <span class="plan-badge">Recomendado</span>
-                            @endif
-                            <div class="plan-name">{{ $plan->nombre }}</div>
-                            <div class="plan-price">
-                                <span class="amount">RD$ {{ number_format((float) $plan->precio_mensual, 2) }}</span>
-                                <span class="per">/mes</span>
-                            </div>
-                            <div class="plan-launch">
-                                Lanzamiento: RD$ {{ number_format((float) $plan->costoImplementacionEfectivo(), 2) }} (1er mes)
-                            </div>
-                            <div class="plan-desc">{{ $plan->descripcion }}</div>
-                            <ul class="plan-features">
-                                @forelse (collect($plan->features ?? [])->take(5) as $feature)
-                                    <li><i class="bi bi-check-circle-fill"></i>{{ $feature }}</li>
-                                @empty
-                                    <li><i class="bi bi-check-circle-fill"></i>Sin límites de módulos</li>
-                                @endforelse
-                            </ul>
-                            <div class="plan-check">
-                                <span class="radio-dot"></span> Seleccionar este plan
-                            </div>
-                        </label>
-                    @endforeach
-                </div>
-                @error('plan_id')
-                    <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                @enderror
-
                 {{-- Submit --}}
                 <button type="submit" class="btn-register" id="btnRegister">
                     <span class="btn-text">
-                        <i class="bi bi-rocket-takeoff me-2"></i>Crear mi Empresa
+                        <i class="bi bi-send-check me-2"></i>Enviar Solicitud
                     </span>
                     <span class="spinner-border spinner-border-sm" role="status"></span>
                 </button>
@@ -459,15 +369,6 @@
                 icon.className = 'bi bi-eye';
             }
         }
-
-        document.querySelectorAll('.plan-card input[type="radio"]').forEach(function (radio) {
-            radio.addEventListener('change', function () {
-                document.querySelectorAll('.plan-card').forEach(function (card) {
-                    card.classList.remove('selected');
-                });
-                this.closest('.plan-card').classList.add('selected');
-            });
-        });
 
         document.getElementById('registerForm').addEventListener('submit', function () {
             document.getElementById('btnRegister').classList.add('loading');

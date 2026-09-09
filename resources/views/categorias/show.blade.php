@@ -20,7 +20,7 @@
                 </div>
                 <div>
                     <h4 class="ui-header-title">{{ $categoria->nombre }}</h4>
-                    <div class="ui-header-meta">{{ $categoria->productos->count() }} producto(s)</div>
+                    <div class="ui-header-meta">{{ $productos->count() }} producto(s)</div>
                 </div>
             </div>
             <div class="ui-header-actions">
@@ -50,15 +50,30 @@
             </div>
             <div class="ui-detail-row">
                 <span class="ui-detail-label">Productos</span>
-                <span class="ui-detail-value fw-bold fs-4">{{ $categoria->productos->count() }}</span>
+                <span class="ui-detail-value fw-bold fs-4">{{ $productos->count() }}</span>
             </div>
+            @if($categoria->icono)
+            <div class="ui-detail-row">
+                <span class="ui-detail-label">Icono</span>
+                <span class="ui-detail-value"><i class="{{ $categoria->icono }}"></i> {{ $categoria->icono }}</span>
+            </div>
+            @endif
+            @if($categoria->color)
+            <div class="ui-detail-row">
+                <span class="ui-detail-label">Color</span>
+                <span class="ui-detail-value">
+                    <span style="display:inline-block;width:20px;height:20px;background:{{ $categoria->color }};border-radius:4px;vertical-align:middle;"></span>
+                    {{ $categoria->color }}
+                </span>
+            </div>
+            @endif
         </div>
     </div>
 
     <div class="ui-card">
         <div class="ui-card-title"><i class="bi bi-box-seam me-2"></i> Productos en esta categoría</div>
         <div class="card-body">
-                @if($categoria->productos->count())
+                @if($productos->count())
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
@@ -69,7 +84,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($categoria->productos as $p)
+                                @foreach($productos as $p)
                                     <tr>
                                         <td class="ps-3">{{ $p->nombre }}</td>
                                         <td class="text-end">RD$ {{ number_format($p->precio, 2) }}</td>

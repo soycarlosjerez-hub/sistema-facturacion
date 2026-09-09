@@ -6,7 +6,7 @@ use App\Models\WizardStep;
 use App\Models\Sucursal;
 use App\Models\Caja;
 use App\Models\Almacen;
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Producto;
 use App\Models\NcfSequence;
 use App\Models\MesaUbicacion;
@@ -79,7 +79,7 @@ class WizardStepSeeder extends Seeder
                 'icon'         => 'bi-tags',
                 'required'     => false,
                 'skipable'     => false,
-                'entity_class' => Categoria::class,
+                'entity_class' => Category::class,
                 'orden'        => 35,
             ],
             [

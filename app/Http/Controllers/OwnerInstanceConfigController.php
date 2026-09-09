@@ -74,6 +74,8 @@ class OwnerInstanceConfigController extends Controller
             'prefijo_ncf' => 'nullable|string|max:10',
             'dias_credito' => 'nullable|integer|min:0|max:365',
             'impresora_papel_default' => 'nullable|in:58mm,80mm',
+            'allowed_comprobante_types' => 'nullable|array',
+            'allowed_comprobante_types.*' => 'in:sin,ncf,ecf',
             'restaurante_valida_stock' => 'nullable|string',
             'enabled' => 'nullable|boolean',
             'sale_created' => 'nullable|boolean',
@@ -123,6 +125,8 @@ class OwnerInstanceConfigController extends Controller
         }
 
         $data['restaurante_valida_stock'] = $request->has('restaurante_valida_stock') ? '1' : '0';
+
+        $data['allowed_comprobante_types'] = $request->input('allowed_comprobante_types', []);
 
         $existingConfig = $instance->configuracion ?? [];
         $mergedConfig = array_merge($existingConfig, array_filter($data, fn($v) => !is_null($v)));

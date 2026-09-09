@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Caja;
+use App\Models\BusinessInstance;
 use App\Models\SesionCaja;
 use App\Models\Sucursal;
 use App\Services\CajaService;
@@ -72,6 +73,11 @@ class CajaController extends Controller
             $data['allowed_comprobante_types'] = ['sin', 'ncf', 'ecf'];
         }
 
+        $instanceConfig = BusinessInstance::find(auth()->user()->business_instance_id)?->configuracion ?? [];
+        if (!empty($instanceConfig['allowed_comprobante_types'])) {
+            $data['allowed_comprobante_types'] = array_values(array_intersect($data['allowed_comprobante_types'], $instanceConfig['allowed_comprobante_types']));
+        }
+
         $data['activo'] = $request->boolean('activo');
 
         $this->cajaService->create($data);
@@ -103,6 +109,11 @@ class CajaController extends Controller
 
         if (empty($data['allowed_comprobante_types'])) {
             $data['allowed_comprobante_types'] = ['sin', 'ncf', 'ecf'];
+        }
+
+        $instanceConfig = BusinessInstance::find(auth()->user()->business_instance_id)?->configuracion ?? [];
+        if (!empty($instanceConfig['allowed_comprobante_types'])) {
+            $data['allowed_comprobante_types'] = array_values(array_intersect($data['allowed_comprobante_types'], $instanceConfig['allowed_comprobante_types']));
         }
 
         $data['activo'] = $request->boolean('activo');
@@ -176,7 +187,7 @@ class CajaController extends Controller
 
         $sesion = SesionCaja::where('caja_id', $caja->id)
             ->where('estado', 'abierta')
-            ->when(!in_array(auth()->user()->role, ['admin', 'owner']), function ($q) {
+            ->when(!in_array(auth()->user()->role, ['admin', 'owner', 'admin-business', 'root']), function ($q) {
                 $q->where('user_id', auth()->id());
             })
             ->firstOrFail();

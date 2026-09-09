@@ -1,0 +1,119 @@
+﻿
+
+<?php $__env->startSection('title', 'Historial de Movimientos'); ?>
+
+<?php $__env->startPush('styles'); ?>
+<?php echo $__env->make('partials.premium-ui', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="ui-page" style="--accent:#14b8a6;--accent-rgb:20,184,166;--accent-hover:#0d9488;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Movimientos de Inventario</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-arrow-left-right me-1"></i>
+                        <span>Historial de entradas, salidas y traslados de productos</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('almacenes.movements')): ?>
+                <a href="<?php echo e(route('almacenes.movimientos.create')); ?>" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-plus-lg me-1"></i> Nuevo Movimiento
+                </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui-card mb-4" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body">
+            <form method="GET" id="filter-form" class="row g-2 align-items-end">
+                <div class="col-lg-4">
+                    <div class="ui-input-group">
+                        <span class="ui-input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" name="buscar" class="ui-input" placeholder="Buscar por producto o nota..." value="<?php echo e(request('buscar')); ?>" autocomplete="off">
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <select name="tipo" class="ui-select">
+                        <option value="">Todos</option>
+                        <option value="entrada" <?php echo e(request('tipo') == 'entrada' ? 'selected' : ''); ?>>Entrada</option>
+                        <option value="salida" <?php echo e(request('tipo') == 'salida' ? 'selected' : ''); ?>>Salida</option>
+                        <option value="traslado" <?php echo e(request('tipo') == 'traslado' ? 'selected' : ''); ?>>Traslado</option>
+                    </select>
+                </div>
+                <div class="col-lg-2">
+                    <button type="submit" class="ui-btn ui-btn-solid rounded-pill w-100"><i class="bi bi-funnel me-1"></i>Filtrar</button>
+                </div>
+                <div class="col-lg-2">
+                    <a href="<?php echo e(route('almacenes.movimientos')); ?>" class="ui-btn ui-btn-ghost rounded-pill w-100">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="ui-card overflow-hidden" style="--delay:.2s">
+        <div class="ui-card-accent"></div>
+        <div class="table-responsive" id="movimientos-table">
+            <?php echo $__env->make('almacenes._movimientos-table', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+        </div>
+    </div>
+
+    <div class="mt-4" id="movimientos-pagination">
+        <?php if($movimientos->hasPages()): ?>
+            <?php echo e($movimientos->withQueryString()->links()); ?>
+
+        <?php endif; ?>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filters = document.querySelectorAll('#filter-form input, #filter-form select');
+        const tableWrap = document.getElementById('movimientos-table');
+        const paginationWrap = document.getElementById('movimientos-pagination');
+        let timeout = null;
+
+        filters.forEach(filter => {
+            const eventType = filter.tagName === 'SELECT' || filter.type === 'date' ? 'change' : 'input';
+            filter.addEventListener(eventType, function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    const params = new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString();
+                    const url = `<?php echo e(route('almacenes.movimientos')); ?>?${params}`;
+
+                    tableWrap.style.opacity = '0.4';
+
+                    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(r => {
+                        if (!r.ok) throw new Error('Error');
+                        return r.json();
+                    })
+                    .then(data => {
+                        tableWrap.innerHTML = data.html;
+                        paginationWrap.innerHTML = data.pagination;
+                        tableWrap.style.opacity = '1';
+                    })
+                    .catch(() => {
+                        window.location.href = url;
+                    });
+                }, 300);
+            });
+        });
+    });
+</script>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/sistema-facturacion/resources/views/almacenes/movimientos.blade.php ENDPATH**/ ?>

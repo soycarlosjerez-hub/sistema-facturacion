@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use App\Models\Category;
 
 class Obra extends Model
 {
@@ -114,7 +115,7 @@ class Obra extends Model
 
     public function categoria(): BelongsTo
     {
-        return $this->belongsTo(Categoria::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function certificado(): HasOne

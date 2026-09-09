@@ -110,6 +110,9 @@
             <i class="bi bi-info-circle me-2" style="color:#ec4899;"></i>
             <span class="fw-semibold">Estás editando la categoría:</span>
             <strong>{{ $categoria->nombre }}</strong>
+            <span class="badge rounded-pill ms-2" style="background:rgba(99,102,241,0.1);color:#6366f1;">
+            <i class="bi bi-building me-1"></i>Instancia #{{ $categoria->tenant_id }}
+        </span>
         </div>
 
         <form id="categoriaForm" action="{{ route('categorias.update', $categoria) }}" method="POST">
@@ -136,6 +139,29 @@
                             <div class="mb-3">
                                 <label class="ui-label small fw-semibold">Descripción</label>
                                 <textarea name="descripcion" class="ui-textarea ui-input-lg" rows="3" placeholder="Descripción opcional de la categoría">{{ old('descripcion', $categoria->descripcion) }}</textarea>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="ui-label small fw-semibold">Icono</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i id="editIconPreview" class="{{ $categoria->icono ?? 'bi-grid' }}"></i></span>
+                                        <input type="text" name="icono" id="editIcono" class="ui-input" value="{{ old('icono', $categoria->icono ?? 'bi-grid') }}" placeholder="bi-box">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="ui-label small fw-semibold">Color</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="color" name="color_picker" id="editColorPicker" class="form-control form-control-color" value="{{ old('color', $categoria->color ?? '#6366f1') }}" style="width: 40px; height: 32px;">
+                                        <input type="text" name="color" id="editColor" class="ui-input flex-grow-1" value="{{ old('color', $categoria->color ?? '#6366f1') }}" maxlength="7">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="ui-label small fw-semibold">Orden</label>
+                                <input type="number" name="orden" class="ui-input" value="{{ old('orden', $categoria->orden ?? 0) }}" min="0" placeholder="0">
+                                <small class="text-muted">Posición de la categoría en la lista.</small>
                             </div>
 
                             <div class="p-3 bg-light rounded-3">
@@ -198,7 +224,7 @@
                                     @foreach($productos as $producto)
                                         @php
                                             $isChecked = $producto->categoria_id == $categoria->id;
-                                            $catName = $producto->categoria ? $producto->categoria->nombre : null;
+                                            $catName = $categoriaNombres[$producto->categoria_id] ?? null;
                                         @endphp
                                         <div class="col-md-6 producto-filterable" data-text="{{ strtolower($producto->nombre) }}">
                                             <label class="producto-toggle {{ $isChecked ? 'is-checked' : '' }}">
@@ -288,5 +314,27 @@
             el.style.display = el.dataset.text.includes(q) ? '' : 'none';
         });
     });
+
+    // Color picker and icon preview
+    const editColorPicker = document.getElementById('editColorPicker');
+    const editColor = document.getElementById('editColor');
+    const editIcono = document.getElementById('editIcono');
+    const editIconPreview = document.getElementById('editIconPreview');
+
+    if (editColorPicker && editColor) {
+        editColorPicker.addEventListener('input', function() {
+            editColor.value = this.value;
+        });
+    }
+    if (editColor && editColorPicker) {
+        editColor.addEventListener('input', function() {
+            editColorPicker.value = this.value;
+        });
+    }
+    if (editIcono && editIconPreview) {
+        editIcono.addEventListener('input', function() {
+            editIconPreview.className = this.value || 'bi-grid';
+        });
+    }
 </script>
 @endsection

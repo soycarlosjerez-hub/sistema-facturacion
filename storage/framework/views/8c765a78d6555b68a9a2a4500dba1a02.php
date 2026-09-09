@@ -1,0 +1,122 @@
+<?php $__env->startSection('title', 'Nueva Sucursal'); ?>
+
+<?php $__env->startPush('styles'); ?>
+<?php echo $__env->make('partials.premium-ui', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<style>
+body.dark-mode .sucursales-form-card {
+    background: rgba(15,23,42,.8);
+    border-color: rgba(255,255,255,.08);
+}
+body.dark-mode .sucursales-form-card .form-control {
+    background: rgba(15,23,42,.6);
+    border-color: #334155;
+    color: #f1f5f9;
+}
+body.dark-mode .sucursales-form-card .form-label { color: #94a3b8; }
+</style>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="container-fluid px-4 py-3 ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>    <div class="bubble"></div>    <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle"><i class="bi bi-geo-alt"></i></div>
+                <div>
+                    <h4 class="ui-header-title">Nueva Sucursal</h4>
+                    <div class="ui-header-meta"><i class="bi bi-geo-alt me-1"></i> <span>Registra una nueva sucursal en el sistema</span></div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <a href="<?php echo e(route('sucursales.index')); ?>" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+            </div>
+        </div>
+    </div>
+
+    <?php if(session('error')): ?>
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <?php echo e(session('error')); ?>
+
+        </div>
+    <?php endif; ?>
+
+    <?php if($errors->any()): ?>
+        <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+            <ul class="mb-0">
+                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <li><?php echo e($error); ?></li>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <div class="ui-card sucursales-form-card" style="--delay:.1s">
+        <div class="ui-card-accent"></div>
+        <div class="premium-card-title">
+            <i class="bi bi-building icon-purple"></i>
+            Información de la Sucursal
+        </div>
+        <div class="card-body">
+            <form action="<?php echo e(route('sucursales.store')); ?>" method="POST" id="instanceForm">
+                <?php echo csrf_field(); ?>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="ui-label">C&oacute;digo <span class="text-danger">*</span></label>
+                        <input type="text" name="codigo" class="ui-input" value="<?php echo e(old('codigo')); ?>" required maxlength="20" placeholder="SUC-001">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="ui-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" class="ui-input" value="<?php echo e(old('nombre')); ?>" required maxlength="255" placeholder="Sucursal Principal">
+                    </div>
+                    <div class="col-12">
+                        <label class="ui-label">Direcci&oacute;n</label>
+                        <input type="text" name="direccion" class="ui-input" value="<?php echo e(old('direccion')); ?>" maxlength="500" placeholder="Calle, n&uacute;mero, sector, ciudad">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="ui-label">Tel&eacute;fono</label>
+                        <input type="text" name="telefono" class="ui-input" value="<?php echo e(old('telefono')); ?>" maxlength="50" placeholder="809-555-0101">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="ui-label">Email</label>
+                        <input type="email" name="email" class="ui-input" value="<?php echo e(old('email')); ?>" maxlength="255" placeholder="sucursal@ejemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="ui-label">RNC</label>
+                        <input type="text" name="rnc" class="ui-input" value="<?php echo e(old('rnc')); ?>" maxlength="20" placeholder="123456789">
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" role="switch" id="es_matriz" name="es_matriz" value="1" <?php echo e(old('es_matriz') ? 'checked' : ''); ?>>
+                            <label class="form-check-label fw-semibold" for="es_matriz">Es Matriz</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox" role="switch" id="activa" name="activa" value="1" <?php echo e(old('activa', true) ? 'checked' : ''); ?>>
+                            <label class="form-check-label fw-semibold" for="activa">Activa</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="premium-sticky-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small d-none d-md-inline">
+            <i class="bi bi-info-circle me-1"></i> Creando nueva sucursal
+        </span>
+        <div class="d-flex gap-2 ms-auto">
+            <a href="<?php echo e(route('sucursales.index')); ?>" class="btn-cancel">Cancelar</a>
+            <button type="submit" form="instanceForm" class="btn-save">
+                <i class="bi bi-save me-2"></i>Guardar Sucursal
+            </button>
+        </div>
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/sistema-facturacion/resources/views/sucursales/create.blade.php ENDPATH**/ ?>

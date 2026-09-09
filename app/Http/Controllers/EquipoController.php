@@ -118,7 +118,7 @@ class EquipoController extends Controller
     public function create()
     {
         $categorias = Producto::select('categoria_id')->distinct()->pluck('categoria_id');
-        $categorias = \App\Models\Categoria::whereIn('id', $categorias)->orderBy('nombre')->get();
+        $categorias = \App\Models\Category::whereIn('id', $categorias)->orderBy('nombre')->get();
         $proveedores = Proveedor::orderBy('nombre')->get();
 
         return view('equipos.create', compact('categorias', 'proveedores'));
@@ -177,7 +177,7 @@ class EquipoController extends Controller
      */
     public function edit(Equipo $equipo)
     {
-        $categorias = \App\Models\Categoria::orderBy('nombre')->get();
+        $categorias = \App\Models\Category::orderBy('nombre')->get();
         $proveedores = Proveedor::orderBy('nombre')->get();
 
         return view('equipos.edit', compact('equipo', 'categorias', 'proveedores'));

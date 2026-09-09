@@ -14,8 +14,21 @@ class Sidebar
             return [];
         }
 
-        $isAdmin = $user->role === 'admin' || $user->hasRole('admin') || $user->hasRole('admin-business') || $user->hasRole('root');
-        $can = fn(string $p) => $isAdmin || $user->can($p);
+        $isAdmin = $user->role === 'admin';
+        try {
+            $isAdmin = $isAdmin || $user->hasRole('admin') || $user->hasRole('admin-business') || $user->hasRole('root');
+        } catch (\Throwable $e) {
+            report($e);
+        }
+        $can = function(string $p) use ($isAdmin, $user) {
+            if ($isAdmin) return true;
+            try {
+                return $user->can($p);
+            } catch (\Throwable $e) {
+                report($e);
+                return false;
+            }
+        };
 
         ///dd(session('business_type_slug'));
 
@@ -50,7 +63,9 @@ class Sidebar
         $items[] = ['section' => 'Principal'];
 
         // Dueño del Sistema (Owner) — única sección visible para este rol
-        if ($user->hasRole('owner')) {
+        $isOwner = false;
+        try { $isOwner = $user->hasRole('owner'); } catch (\Throwable $e) { report($e); }
+        if ($isOwner) {
             if ($user->can('owner.dashboard')) {
                 $items[] = [
                     'route' => 'owner.dashboard',
@@ -855,7 +870,9 @@ class Sidebar
         }
 
         // API — solo Owner puede gestionar APIs de sus instancias
-        if ($user->hasRole('owner')) {
+        $isOwner2 = false;
+        try { $isOwner2 = $user->hasRole('owner'); } catch (\Throwable $e) { report($e); }
+        if ($isOwner2) {
             $items[] = ['section' => 'API'];
             $items[] = [
                 'route'  => 'owner.instances.index',
@@ -921,9 +938,24 @@ class Sidebar
             }
             if ($hasConf('configuracion-general') && $can('configuracion.view')) {
                 $items[] = ['route' => 'configuracion.index', 'icon' => 'bi-sliders', 'label' => 'Parámetros', 'is_route' => 'configuracion.*', 'exact_route' => 'configuracion.index'];
-                if ($user->hasRole('owner') || $user->hasRole('root')) {
+                $isOwnerRoot = false;
+                try { $isOwnerRoot = $user->hasRole('owner') || $user->hasRole('root'); } catch (\Throwable $e) { report($e); }
+                if ($isOwnerRoot) {
                     $items[] = ['route' => 'configuracion.index', 'url' => route('configuracion.index') . '#correo-smtp', 'icon' => 'bi-envelope-at', 'label' => 'Correo SMTP', 'is_route' => 'configuracion.index', 'exact_route' => 'configuracion.index'];
                 }
+            }
+
+            // Usuarios de Instancia (solo para usuarios con business_instance_id, no owner/root)
+            $isOwnerRoot2 = false;
+            try { $isOwnerRoot2 = $user->hasRole('owner') || $user->hasRole('root'); } catch (\Throwable $e) { report($e); }
+            if ($user->business_instance_id && ! $isOwnerRoot2) {
+                $items[] = [
+                    'url'       => url('/instance/' . $user->business_instance_id . '/users'),
+                    'icon'      => 'bi-people',
+                    'label'     => 'Usuarios',
+                    'is_route'  => 'instance.users*',
+                    'exact_route' => 'instance.users.index',
+                ];
             }
         }
         return array_values(array_filter($items, fn($i) => !isset($i['show']) || $i['show'] !== false));

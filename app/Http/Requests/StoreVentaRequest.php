@@ -65,6 +65,8 @@ class StoreVentaRequest extends FormRequest
             'itbis_porcentaje.*' => 'numeric|min:0|max:100',
             'sin_itbis' => 'nullable|array',
             'sin_itbis.*' => 'boolean',
+            'notas'     => 'nullable|array',
+            'notas.*'   => 'nullable|string|max:200',
             'admin_token' => 'nullable|string',
             'total'         => 'required|numeric|min:0',
             'impuestos'     => 'nullable|numeric|min:0',
@@ -125,11 +127,29 @@ class StoreVentaRequest extends FormRequest
 
             if ($tipoComprobante && $sesionCajaId) {
                 $sesion = SesionCaja::with('caja')->find($sesionCajaId);
+
+                if (!$sesion || $sesion->estado !== 'abierta') {
+                    $validator->errors()->add('sesion_caja_id', 'La sesión de caja seleccionada ya está cerrada.');
+                    return;
+                }
+
                 if ($sesion && $sesion->caja) {
                     $tiposPermitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
                     if (!in_array($tipoComprobante, $tiposPermitidos, true)) {
                         $validator->errors()->add('tipo_comprobante', "El tipo de comprobante '{$tipoComprobante}' no está permitido en este terminal.");
                     }
+
+                    $instanceConfig = \App\Models\BusinessInstance::find(auth()->user()->business_instance_id)?->configuracion ?? [];
+                    if (!empty($instanceConfig['allowed_comprobante_types'])) {
+                        if (!in_array($tipoComprobante, $instanceConfig['allowed_comprobante_types'], true)) {
+                            $validator->errors()->add('tipo_comprobante', "El tipo de comprobante '{$tipoComprobante}' no está habilitado para esta instancia.");
+                        }
+                    }
+                }
+            } elseif ($sesionCajaId) {
+                $sesion = SesionCaja::find($sesionCajaId);
+                if (!$sesion || $sesion->estado !== 'abierta') {
+                    $validator->errors()->add('sesion_caja_id', 'La sesión de caja seleccionada ya está cerrada.');
                 }
             }
         });

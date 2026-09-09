@@ -99,7 +99,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $__empty_1 = true; $__currentLoopData = $logs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <?php $__empty_0 = true; $__currentLoopData = $logs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
                         <tr>
                             <td class="ps-4">
                                 <span class="small fw-semibold"><?php echo e($log->created_at->format('d/m/Y')); ?></span>
@@ -132,7 +132,7 @@
                                 </a>
                             </td>
                         </tr>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-1"></i>

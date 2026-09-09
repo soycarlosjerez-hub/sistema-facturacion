@@ -61,6 +61,15 @@
     </style>
 </head>
 <body>
+    <?php $garantiaTerminos = []; ?>
+    <?php foreach($venta->detalles->where('tipo_linea', '!=', 'delivery') as $d): ?>
+        <?php if(!empty($d->producto->garantia_terminos)): ?>
+            <?php $_key = $d->producto->id . '_' . md5($d->producto->garantia_terminos); ?>
+            <?php if(!isset($garantiaTerminos[$_key])): ?>
+                <?php $garantiaTerminos[$_key] = ['producto' => $d->producto->nombre, 'terminos' => $d->producto->garantia_terminos]; ?>
+            <?php endif; ?>
+        <?php endif; ?>
+    <?php endforeach; ?>
     <div class="ticket">
         <div class="header center">
             @if($pdfLogoUrl)
@@ -69,7 +78,10 @@
             </div>
             @endif
             <h1 class="bold">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h1>
-            <p>RNC: {{ \App\Models\SystemSetting::get('empresa_rnc', 'N/A') }}</p>
+            @php $rnc = \App\Models\SystemSetting::get('empresa_rnc'); @endphp
+            @if(!empty($rnc))
+            <p>RNC: {{ $rnc }}</p>
+            @endif
             <p>{{ \App\Models\SystemSetting::get('empresa_direccion', '') }}</p>
             @if(!empty(\App\Models\SystemSetting::get('empresa_telefono', '')))
             <p>Tel: {{ \App\Models\SystemSetting::get('empresa_telefono') }}</p>
@@ -122,12 +134,22 @@
 
         <table class="items-table">
             <tbody>
-            @foreach($venta->detalles as $d)
+            @foreach($venta->detalles->where('tipo_linea', '!=', 'delivery') as $d)
                 <tr>
                     <td class="name">{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Producto' }}</td>
                     <td class="qty">{{ $d->cantidad }} x {{ number_format($d->precio_unitario, 2) }}</td>
                     <td class="total">RD{{ number_format($d->subtotal, 2) }}</td>
                 </tr>
+                @if(!empty($d->producto->garantia_dias) && $d->producto->garantia_dias > 0)
+                <tr>
+                    <td colspan="3" style="font-size: 0.65rem; color: #0d6efd; padding-left: 24px;">Garantia: {{ $d->producto->garantia_meses }} meses</td>
+                </tr>
+                @endif
+                @if($d->notas)
+                <tr>
+                    <td colspan="3" style="font-size: 0.65rem; font-style: italic; color: #666; padding-left: 24px;">{{ $d->notas }}</td>
+                </tr>
+                @endif
             @endforeach
             </tbody>
         </table>
@@ -138,11 +160,20 @@
                 <span>Subtotal:</span>
                 <span>RD{{ number_format($venta->subtotal, 2) }}</span>
             </div>
+            @php $deliveryFee = (float) $venta->delivery_fee; @endphp
+            @if($deliveryFee > 0)
+            <div class="row">
+                <span>Cargo Delivery:</span>
+                <span>RD{{ number_format($deliveryFee, 2) }}</span>
+            </div>
+            @endif
+            @if($venta->impuestos > 0)
             <div class="row">
                 <span>Impuestos (ITBIS):</span>
                 <span>RD{{ number_format($venta->impuestos, 2) }}</span>
             </div>
-            @if($venta->detalles->contains(fn($d) => $d->sin_itbis))
+            @endif
+            @if($venta->detalles->where('tipo_linea', '!=', 'delivery')->contains(fn($d) => $d->sin_itbis))
             <div class="row" style="color:#dc3545;font-weight:700;">
                 <span>Incluye líneas sin ITBIS</span>
                 <span></span>
@@ -191,6 +222,14 @@
             @endif
         </div>
 
+        @php $slogan = \App\Models\SystemSetting::get('sistema_slogan'); @endphp
+        @if($slogan)
+        <div class="separator"></div>
+        <p style="font-style:italic; color:#666; text-align:center; font-size:9px; margin:6px 0;">
+            {{ $slogan }}
+        </p>
+        @endif
+
         @if($venta->ncf)
         <div class="separator"></div>
         <div class="ncf" style="background: #f0f0f0; padding: 4px; margin: 6px 0;">
@@ -207,6 +246,17 @@
         <div class="encf" style="background: {{ $ecfActual->estado == 'aprobado' ? '#e8f5e9' : '#fff3e0' }}; padding: 4px; margin: 6px 0; border: 1px solid {{ $ecfActual->estado == 'aprobado' ? '#4caf50' : '#ff9800' }}">
             <span style="font-size: 9px; color: #666;">e-CF {{ strtoupper($ecfActual->estado) }}</span>
             <span>{{ $ecfActual->encf }}</span>
+        </div>
+        @endif
+
+        @if(count($garantiaTerminos) > 0)
+        <div class="separator"></div>
+        <div style="font-size: 0.6rem; color: #333; line-height: 1.4; padding: 4px 0;">
+            <strong style="font-size: 0.65rem; display: block; margin-bottom: 4px;">Términos de Garantía:</strong>
+            @foreach($garantiaTerminos as $t)
+                <strong style="font-size: 0.6rem; display: block; margin-top: 6px;">{{ $t['producto'] }}:</strong>
+                <p style="margin-bottom: 4px; margin-left: 6px; font-size: 0.55rem; text-align: left;">{{ $t['terminos'] }}</p>
+            @endforeach
         </div>
         @endif
 

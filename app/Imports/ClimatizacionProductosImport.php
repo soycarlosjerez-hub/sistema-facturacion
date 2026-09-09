@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Producto;
 use App\Models\SystemSetting;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -138,10 +138,10 @@ class ClimatizacionProductosImport implements ToModel, WithHeadingRow, SkipsOnFa
     {
         if (!$value) return null;
         if (is_numeric($value)) {
-            $cat = Categoria::find((int) $value);
+            $cat = Category::find((int) $value);
             return $cat?->id;
         }
-        $cat = Categoria::where('nombre', $value)->first();
+        $cat = Category::where('nombre', $value)->first();
         return $cat?->id;
     }
 

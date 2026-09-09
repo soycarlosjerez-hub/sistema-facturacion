@@ -29,11 +29,59 @@ use Illuminate\Support\Str;
  */
 class EcommController extends Controller
 {
-    private int $tenantId;
+    private ?int $tenantId = null;
+    private bool $tenantResolved = false;
 
     public function __construct()
     {
-        $this->tenantId = Auth::user()->business_instance_id ?? 0;
+        // Don't resolve here — middleware hasn't run yet, Auth::user() is null.
+        // Tenant is resolved lazily in ensureTenant() after middleware runs.
+    }
+
+    private function ensureTenant(): void
+    {
+        if ($this->tenantResolved) {
+            return;
+        }
+
+        $this->tenantResolved = true;
+        $this->tenantId = $this->resolveTenantId();
+
+        if ($this->tenantId === null || $this->tenantId <= 0) {
+            abort(401, 'No se pudo resolver la instancia del tenant.');
+        }
+    }
+
+    private function resolveTenantId(): ?int
+    {
+        // 0. Check explicit resolved_tenant_id set by TenantMiddleware
+        $resolved = request()->attributes()->get('resolved_tenant_id');
+        if ($resolved) {
+            return (int) $resolved;
+        }
+
+        // 1. Try Auth::user() (session, Sanctum, API key)
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user instanceof \App\Models\Cliente) {
+                return $user->tenant_id;
+            }
+
+            return $user->business_instance_id ?: null;
+        }
+
+        // 2. Fallback: client token via request resolver
+        $clientToken = request()->attributes()->get('client_api_token');
+        if ($clientToken && $clientToken->cliente) {
+            return $clientToken->cliente->tenant_id;
+        }
+
+        // 3. Fallback: explicit tenant_id from header, query, or body
+        $tenantId = request()->header('X-Tenant-ID')
+            ?? request()->query('tenant_id')
+            ?? request()->input('tenant_id');
+
+        return $tenantId ? (int) $tenantId : null;
     }
 
     // ─── Helpers ───────────────────────────────────────────────
@@ -122,6 +170,7 @@ class EcommController extends Controller
 
     public function products(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $query = Producto::where('tenant_id', $this->tenantId)
             ->where('activo', true)
             ->select('id', 'nombre', 'descripcion', 'precio', 'stock', 'codigo_barras',
@@ -172,6 +221,7 @@ class EcommController extends Controller
 
     public function productShow(string $id): JsonResponse
     {
+        $this->ensureTenant();
         $realId = $this->mapId($id, 'Producto') ?? $id;
         $p = Producto::where('id', $realId)
             ->where('tenant_id', $this->tenantId)
@@ -200,6 +250,7 @@ class EcommController extends Controller
 
     public function customers(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $query = Cliente::where('tenant_id', $this->tenantId);
 
         if ($request->filled('search')) {
@@ -241,6 +292,7 @@ class EcommController extends Controller
 
     public function customerCreate(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'firstName' => 'required|string|max:255',
             'lastName' => 'nullable|string|max:255',
@@ -272,6 +324,7 @@ class EcommController extends Controller
 
     public function cartCreate(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'customerFlowId' => 'nullable|string',
             'sessionId' => 'nullable|string|max:255',
@@ -300,6 +353,7 @@ class EcommController extends Controller
 
     public function cartShow(string $id): JsonResponse
     {
+        $this->ensureTenant();
         $realId = $this->mapId($id, 'Cart') ?? $id;
         $cart = Cart::with('items.producto')
             ->where('id', $realId)
@@ -311,6 +365,7 @@ class EcommController extends Controller
 
     public function cartAddItem(Request $request, string $cartId): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'productId' => 'required|string',
             'quantity' => 'required|integer|min:1',
@@ -354,6 +409,7 @@ class EcommController extends Controller
 
     public function cartUpdateItem(Request $request, string $cartId, string $itemId): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'quantity' => 'required|integer|min:1',
         ]);
@@ -383,6 +439,7 @@ class EcommController extends Controller
 
     public function cartRemoveItem(string $cartId, string $itemId): JsonResponse
     {
+        $this->ensureTenant();
         $realCartId = $this->mapId($cartId, 'Cart') ?? $cartId;
         $realItemId = $this->mapId($itemId, 'CartItem') ?? $itemId;
 
@@ -405,6 +462,7 @@ class EcommController extends Controller
 
     public function checkout(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'cartId' => 'required|string',
             'paymentMethod' => 'required|string|in:efectivo,tarjeta,transferencia,mixto,fiado',
@@ -541,6 +599,7 @@ class EcommController extends Controller
 
     public function deals(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $promos = Promocion::where('tenant_id', $this->tenantId)
             ->activas()
             ->get()
@@ -565,6 +624,7 @@ class EcommController extends Controller
 
     public function dealApply(Request $request, string $cartId): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'code' => 'required|string',
         ]);
@@ -615,6 +675,7 @@ class EcommController extends Controller
 
     public function rewards(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'customerFlowId' => 'required|string',
         ]);
@@ -653,6 +714,7 @@ class EcommController extends Controller
 
     public function rewardRedeem(Request $request): JsonResponse
     {
+        $this->ensureTenant();
         $data = $request->validate([
             'customerFlowId' => 'required|string',
             'rewardId' => 'required|string',

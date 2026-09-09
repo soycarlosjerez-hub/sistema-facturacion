@@ -281,8 +281,9 @@
             </h6>
             <div class="d-flex gap-2 flex-wrap">
                 @if(in_array($tracking->status, ['creado', 'cancelado']))
-                <form action="{{ route('delivery-tracking.updateStatus', [$tracking, 'en_camino']) }}" method="POST" class="d-inline">
+                <form action="{{ route('delivery-tracking.updateStatus', $tracking) }}" method="POST" class="d-inline">
                     @csrf
+                    <input type="hidden" name="status" value="en_camino">
                     <button type="submit" class="ui-btn ui-btn-solid rounded-pill">
                         <i class="bi bi-truck me-1"></i>Marcar en Camino
                     </button>
@@ -296,8 +297,9 @@
                 @endif
 
                 @if(in_array($tracking->status, ['creado', 'en_camino']))
-                <form action="{{ route('delivery-tracking.updateStatus', [$tracking, 'fallido']) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Marcar esta entrega como fallida?')">
+                <form action="{{ route('delivery-tracking.updateStatus', $tracking) }}" method="POST" class="d-inline" onsubmit="return UI.confirm.delete('¿Marcar esta entrega como fallida?')">
                     @csrf
+                    <input type="hidden" name="status" value="fallido">
                     <button type="submit" class="ui-btn ui-btn-danger rounded-pill">
                         <i class="bi bi-x-circle me-1"></i>Marcar Fallido
                     </button>
@@ -317,8 +319,9 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('delivery-tracking.updateStatus', [$tracking, 'entregado']) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('delivery-tracking.updateStatus', $tracking) }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    <input type="hidden" name="status" value="entregado">
                     <div class="mb-3">
                         <label class="ui-label">Foto de Entrega (opcional)</label>
                         <input type="file" name="foto_entrega" accept="image/*" class="form-control rounded-3">

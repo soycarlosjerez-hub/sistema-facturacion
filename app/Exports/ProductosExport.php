@@ -16,9 +16,7 @@ class ProductosExport implements FromQuery, WithHeadings, WithMapping, WithStyle
 {
     use Exportable;
 
-    public function __construct(private ?Builder $query = null)
-    {
-    }
+    public function __construct(private ?Builder $query = null) {}
 
     public function query()
     {
@@ -31,44 +29,74 @@ class ProductosExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             'ID',
             'Nombre',
             'Código de Barras',
+            'Código Referencia',
             'Descripción',
+            'Categoría',
             'Unidad',
+            'Tipo Servicio',
+            'Tipo Producto',
             'Precio Venta',
             'Precio Compra',
             'ITBIS %',
             'Stock',
+            'Stock Mínimo',
             'Ganancia',
             'Margen %',
             'Estado Stock',
             'Estado',
+            'Marca',
+            'Modelo',
+            'Especialización',
+            'IMEI/Serial',
+            'Garantía (días)',
+            'Color',
+            'Almacenamiento (GB)',
+            'Tipo Licencia',
+            'Max Usuarios',
+            'Línea Negocio',
         ];
     }
 
     public function map($producto): array
     {
         $ganancia = (float) $producto->precio - (float) ($producto->precio_compra ?? 0);
-        $compra   = (float) ($producto->precio_compra ?? 0);
-        $margen   = $compra > 0 ? round((($producto->precio - $compra) / $compra) * 100, 2) : 0;
-        $estado   = match ($producto->estado_stock) {
+        $compra = (float) ($producto->precio_compra ?? 0);
+        $margen = $compra > 0 ? round((($producto->precio - $compra) / $compra) * 100, 2) : 0;
+        $estado = match ($producto->estado_stock) {
             'critical' => 'Crítico',
-            'low'      => 'Bajo',
-            default    => 'Normal',
+            'low' => 'Bajo',
+            default => 'Normal',
         };
 
         return [
             $producto->id,
             $producto->nombre,
             $producto->codigo_barras ?? '',
+            $producto->codigo_referencia ?? '',
             $producto->descripcion ?? '',
+            $producto->categoria?->nombre ?? '',
             $producto->unidad_medida ?? 'Unidad',
+            $producto->tipo_servicio ?? 'producto',
+            $producto->tipo_producto ?? '',
             number_format($producto->precio, 2, '.', ''),
             number_format($producto->precio_compra ?? 0, 2, '.', ''),
             number_format($producto->itbis_porcentaje ?? SystemSetting::itbisDefault(), 2, '.', ''),
             $producto->stock,
+            $producto->stock_minimo ?? 0,
             number_format($ganancia, 2, '.', ''),
             number_format($margen, 2, '.', ''),
             $estado,
             $producto->activo_label,
+            $producto->marca ?? '',
+            $producto->modelo ?? '',
+            $producto->especializacion ?? '',
+            $producto->serial_imei ?? '',
+            $producto->garantia_dias ?? 0,
+            $producto->color ?? '',
+            $producto->almacenamiento_gb ?? '',
+            $producto->tipo_licencia ?? '',
+            $producto->licencia_max_usuarios ?? '',
+            $producto->linea_negocio ?? '',
         ];
     }
 

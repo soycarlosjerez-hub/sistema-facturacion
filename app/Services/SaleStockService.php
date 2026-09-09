@@ -55,6 +55,10 @@ class SaleStockService
                 ? $this->checkStock($productoId, $almacenId)
                 : $producto->stock;
 
+            if ($disponiblePorAlmacen < 0 && $almacenId) {
+                $disponiblePorAlmacen = $producto->stock;
+            }
+
             if ($disponiblePorAlmacen === 0 && $almacenId) {
                 $disponiblePorAlmacen = max($disponiblePorAlmacen, $producto->stock);
             }
@@ -244,7 +248,12 @@ class SaleStockService
 
         if (!empty($stockUpdates)) {
             foreach ($stockUpdates as $productId => $qty) {
-                Producto::where('id', $productId)->increment('stock', $qty);
+                Producto::where('id', $productId)
+                    ->increment('stock', $qty)
+                    ->decrement('ventas_count', $qty);
+                Producto::where('id', $productId)
+                    ->where('ventas_count', '<', 0)
+                    ->update(['ventas_count' => 0]);
             }
         }
     }

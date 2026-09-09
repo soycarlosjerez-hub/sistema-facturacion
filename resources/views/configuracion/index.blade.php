@@ -177,8 +177,7 @@ body.dark-mode .ui-sticky-bar .ui-btn-solid {
                                 <i class="bi bi-check-circle"></i> Completado
                             </div>
                             <div class="mt-2 text-center">
-                                <a href="{{ route('setup.restart') }}" class="text-muted small"
-                                   onclick="confirmAction({title:'Reiniciar Configuración', text:'¿Reiniciar la configuración? Se perderán todos los ajustes personalizados.', icon:'warning', color:'#f59e0b', confirmText:'Reiniciar', onSubmit:function(){ var f=document.createElement('form');f.method='POST';f.action=this.getAttribute('href');f.innerHTML='@csrf';document.body.appendChild(f);f.submit(); }})">
+                                <a href="{{ route('setup.restart') }}" class="text-muted small" id="btnReiniciarSetup">
                                     <i class="bi bi-arrow-counterclockwise me-1"></i> Reiniciar
                                 </a>
                             </div>
@@ -337,6 +336,22 @@ function confirmDeleteLogo() {
             leftEl.innerHTML = '<i class="bi bi-info-circle text-primary"></i><span class="fw-semibold d-none d-sm-inline">Configuración del Sistema</span>';
         }
     });
+
+    // Reiniciar setup
+    const btnReiniciar = document.getElementById('btnReiniciarSetup');
+    if (btnReiniciar) {
+        btnReiniciar.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('¿Reiniciar la configuración? Se perderán todos los ajustes personalizados.')) {
+                const f = document.createElement('form');
+                f.method = 'POST';
+                f.action = this.getAttribute('href');
+                f.innerHTML = '<input type="hidden" name="_token" value="' + document.querySelector('form[action*="configuracion"] input[name="_token"]').value + '">';
+                document.body.appendChild(f);
+                f.submit();
+            }
+        });
+    }
 })();
 </script>
 @endsection

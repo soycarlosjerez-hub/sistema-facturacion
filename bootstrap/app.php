@@ -25,17 +25,21 @@ return Application::configure(basePath: dirname(__DIR__))
             'plan.limits'      => \App\Http\Middleware\EnforcePlanLimits::class,
             'ai'               => \App\Http\Middleware\AiMiddleware::class,
             'ai.chat.method'   => \App\Http\Middleware\AiChatMethodGuard::class,
+            'instance.aprobada' => \App\Http\Middleware\CheckInstanceAprobada::class,
+            'owner.dangerous'  => \App\Http\Middleware\RateLimiterMiddleware::class,
         ]);
 
         $middleware->web([], [], [], [
             \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class
                 => \App\Http\Middleware\VerifyCsrfToken::class,
         ]);
+        $middleware->appendToGroup('web', \App\Http\Middleware\TrustProxies::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\TrackLastSeen::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckInstanceBlocked::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSetupWizard::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\TenantMailConfig::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnforcePlanLimits::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\TrustProxies::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\TenantMailConfig::class);
 
     })
@@ -64,99 +68,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             if ($e->getStatusCode() === 404) {
                 return response()->view('errors.404', ['message' => $e->getMessage()], 404);
-            }
-        });
-
-        $exceptions->reportable(function (\Throwable $e) {
-            try {
-                // Apply global SMTP config from owner settings (never .env, never tenant-specific)
-                \App\Services\ErrorMailer::applyGlobalSmtp();
-
-                $request = request();
-                $userId = \Illuminate\Support\Facades\Auth::id();
-                
-                // Obtener datos del usuario
-                $user = null;
-                $userName = null;
-                $userEmail = null;
-                $userRole = null;
-                $userBusinessInstanceId = null;
-                if ($userId) {
-                    $user = \App\Models\User::find($userId);
-                    $userName = $user?->name;
-                    $userEmail = $user?->email;
-                    $userRole = $user?->roles?->first()?->name ?? 'Sin rol';
-                    $userBusinessInstanceId = $user?->business_instance_id;
-                }
-
-                $tenantId = $userBusinessInstanceId;
-                $tenant = $tenantId ? \App\Models\BusinessInstance::find($tenantId) : null;
-
-                $errorLog = \App\Models\InstanceErrorLog::create([
-                    'tenant_id' => $tenantId,
-                    'level' => 'error',
-                    'title' => mb_substr($e->getMessage() ?: get_class($e), 0, 255),
-                    'message' => $e->getMessage() . "\n\n" . $e->getTraceAsString(),
-                    'context' => [
-                        'exception' => get_class($e),
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine(),
-                        'http_method' => $request?->method(),
-                        'url' => $request?->fullUrl(),
-                        'referer' => $request?->headers->get('referer'),
-                        'user_id' => $userId,
-                        'user_name' => $userName,
-                        'user_email' => $userEmail,
-                        'user_role' => $userRole,
-                        'tenant_id' => $tenantId,
-                        'tenant_name' => $tenant?->name,
-                        'session_id' => $request?->session()?->getId(),
-                        'ip_address' => $request?->ip(),
-                        'user_agent' => $request?->userAgent(),
-                        'inputs' => $request?->except(['password', 'password_confirmation', '_token']),
-                    ],
-                    'source' => 'exception',
-                    'user_id' => $userId,
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'ip_address' => $request?->ip(),
-                    'user_agent' => $request?->userAgent(),
-                ]);
-
-                $alertEmail = \App\Services\ErrorMailer::getAlertEmail();
-                if ($alertEmail) {
-                    $cacheKey = 'error_alert:' . md5(get_class($e) . $e->getMessage());
-                    if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
-                        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300);
-                        \Illuminate\Support\Facades\Mail::to($alertEmail)
-                            ->send(new \App\Mail\ErrorAlertMail(
-                                level: 'error',
-                                title: $errorLog->title,
-                                errorMessage: $errorLog->message,
-                                exceptionClass: get_class($e),
-                                file: $e->getFile(),
-                                line: $e->getLine(),
-                                ipAddress: $request?->ip(),
-                                userAgent: $request?->userAgent(),
-                                context: $errorLog->context,
-                                source: 'exception',
-                                createdAt: $errorLog->created_at->format('Y-m-d H:i:s'),
-                                tenantName: $tenant?->name,
-                                tenantId: $tenantId,
-                                userId: $userId,
-                                userName: $userName,
-                                userEmail: $userEmail,
-                                userRole: $userRole,
-                                httpMethod: $request?->method(),
-                                url: $request?->fullUrl(),
-                                referer: $request?->headers->get('referer'),
-                                sessionId: $request?->session()?->getId(),
-                                inputs: $request?->except(['password', 'password_confirmation', '_token']),
-                            ));
-                    }
-                }
-            } catch (\Throwable $dbEx) {
-                // Si la tabla no existe aún o hay error de BD, ignorar
             }
         });
     })->create();

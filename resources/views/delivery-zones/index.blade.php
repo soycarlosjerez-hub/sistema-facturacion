@@ -132,7 +132,7 @@
                         </div>
                     </div>
 
-                    @if($zone->minimo_para_envio_grafico ?? $zone->minimo_para_envio_gratis)
+                    @if($zone->minimo_para_envio_gratis)
                     <div class="mb-3">
                         <span class="free-shipping-badge">
                             <i class="bi bi-truck"></i> Envío gratis ≥ ${{ number_format($zone->minimo_para_envio_gratis ?? 0, 2) }}

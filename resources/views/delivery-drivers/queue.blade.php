@@ -210,11 +210,12 @@ body.dark-mode .driver-stat { background: rgba(30,41,59,.8); }
                     </h7>
                     <ul class="orden-list">
                         @foreach($driver->pendientes as $p)
+                        @if($p->orden)
                         <li class="orden-item">
                             <div class="d-flex justify-content-between align-items-start gap-2">
                                 <div class="flex-grow-1">
                                     <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span class="fw-bold" style="font-size:0.8rem">#{{ $p->orden_id }}</span>
+                                        <span class="fw-bold" style="font-size:0.8rem">#{{ $p->orden->id }}</span>
                                         <span class="status-badge creado"><i class="bi bi-circle-fill" style="font-size:0.4rem"></i> Creado</span>
                                     </div>
                                     <div class="small text-muted mb-1">
@@ -230,15 +231,16 @@ body.dark-mode .driver-stat { background: rgba(30,41,59,.8); }
                                     </div>
                                 </div>
                                 <div class="d-flex flex-column gap-1">
-                                    <a href="{{ route('delivery-tracking.show', $p) }}" class="action-btn action-btn-go" title="Ver tracking" data-bs-toggle="tooltip">
+                                    <a href="{{ $p->deliveryTracking ? route('delivery-tracking.show', $p->deliveryTracking) : route('ventas.show', $p) }}" class="action-btn action-btn-go" title="Ver detalle" data-bs-toggle="tooltip">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <button type="button" class="action-btn action-btn-cancel btn-sm" title="Liberar driver" onclick="liberarDriver({{ $p->orden_id }}, {{ $driver->id }})">
+                                    <button type="button" class="action-btn action-btn-cancel btn-sm" title="Liberar driver" onclick="liberarDriver({{ $p->orden->id }}, {{ $driver->id }})">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </div>
                             </div>
                         </li>
+                        @endif
                         @endforeach
                     </ul>
                 </div>
@@ -252,11 +254,12 @@ body.dark-mode .driver-stat { background: rgba(30,41,59,.8); }
                     </h7>
                     <ul class="orden-list">
                         @foreach($driver->enCamino as $e)
+                        @if($e->orden)
                         <li class="orden-item">
                             <div class="d-flex justify-content-between align-items-start gap-2">
                                 <div class="flex-grow-1">
                                     <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span class="fw-bold" style="font-size:0.8rem">#{{ $e->orden_id }}</span>
+                                        <span class="fw-bold" style="font-size:0.8rem">#{{ $e->orden->id }}</span>
                                         <span class="status-badge en_camino"><i class="bi bi-circle-fill" style="font-size:0.4rem"></i> En Camino</span>
                                     </div>
                                     <div class="small text-muted mb-1">
@@ -272,18 +275,22 @@ body.dark-mode .driver-stat { background: rgba(30,41,59,.8); }
                                     </div>
                                 </div>
                                 <div class="d-flex flex-column gap-1">
-                                    <a href="{{ route('delivery-tracking.show', $e) }}" class="action-btn action-btn-go" title="Ver tracking" data-bs-toggle="tooltip">
+                                    <a href="{{ $e->deliveryTracking ? route('delivery-tracking.show', $e->deliveryTracking) : route('ventas.show', $e) }}" class="action-btn action-btn-go" title="Ver tracking" data-bs-toggle="tooltip">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <form method="POST" action="{{ route('delivery-tracking.updateStatus', [$e, 'entregado']) }}" class="d-inline">
+                                    @if($e->deliveryTracking)
+                                    <form method="POST" action="{{ route('delivery-tracking.updateStatus', $e->deliveryTracking) }}" class="d-inline">
                                         @csrf
+                                        <input type="hidden" name="status" value="entregado">
                                         <button type="submit" class="action-btn action-btn-assign" title="Confirmar entrega" data-bs-toggle="tooltip">
                                             <i class="bi bi-check-lg"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </div>
                             </div>
                         </li>
+                        @endif
                         @endforeach
                     </ul>
                 </div>

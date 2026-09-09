@@ -89,16 +89,15 @@
                                         </thead>
                                         <tbody>
                                             @php
-                                             $denominations = [
-                                                 ['value' => 5000,  'label' => 'RD$5,000',  'type' => 'bill'],
-                                                 ['value' => 2000,  'label' => 'RD$2,000',  'type' => 'bill'],
-                                                 ['value' => 1000,  'label' => 'RD$1,000',  'type' => 'bill'],
-                                                 ['value' => 500,   'label' => 'RD$500',    'type' => 'bill'],
-                                                 ['value' => 200,   'label' => 'RD$200',    'type' => 'bill'],
-                                                 ['value' => 100,   'label' => 'RD$100',    'type' => 'bill'],
-                                                 ['value' => 50,    'label' => 'RD$50',     'type' => 'bill'],
-                                                 ['value' => 20,    'label' => 'RD$20',     'type' => 'bill'],
-                                             ];
+                                              $denominations = [
+                                                  ['value' => 2000,  'label' => 'RD$2,000',  'type' => 'bill'],
+                                                  ['value' => 1000,  'label' => 'RD$1,000',  'type' => 'bill'],
+                                                  ['value' => 500,   'label' => 'RD$500',    'type' => 'bill'],
+                                                  ['value' => 200,   'label' => 'RD$200',    'type' => 'bill'],
+                                                  ['value' => 100,   'label' => 'RD$100',    'type' => 'bill'],
+                                                  ['value' => 50,    'label' => 'RD$50',     'type' => 'bill'],
+                                                  ['value' => 20,    'label' => 'RD$20',     'type' => 'bill'],
+                                              ];
                                              $coins = [
                                                  ['value' => 25, 'label' => 'RD$25'],
                                                  ['value' => 10, 'label' => 'RD$10'],

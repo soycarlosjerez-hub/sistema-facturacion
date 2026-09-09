@@ -54,8 +54,12 @@ class TenantMailConfig
             // Ignore global settings errors
         }
 
-        if ($user->hasRole('owner') || $user->hasRole('root')) {
-            return $next($request);
+        try {
+            if ($user->hasRole('owner') || $user->hasRole('root')) {
+                return $next($request);
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         $tenantId = $user->business_instance_id ?? null;

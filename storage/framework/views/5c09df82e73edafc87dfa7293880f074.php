@@ -1,0 +1,268 @@
+<?php $__env->startSection('title', "Nuevo Rol - {$instance->nombre}"); ?>
+
+<?php
+    $categoriaIconos = [
+        'core' => 'bi-box-seam', 'operaciones' => 'bi-cart-check', 'clientes' => 'bi-people',
+        'organizacion' => 'bi-building', 'lavadero' => 'bi-droplet',
+        'restaurante' => 'bi-cup-straw', 'reportes' => 'bi-graph-up',
+        'sistema' => 'bi-gear', 'configuracion' => 'bi-sliders',
+        'alquileres' => 'bi-building', 'tattoo' => 'bi-brush',
+        'climatizacion' => 'bi-wind', 'tecnologia' => 'bi-phone',
+    ];
+    $categoriaColores = [
+        'core' => '#3b82f6', 'operaciones' => '#22c55e', 'clientes' => '#ec4899',
+        'organizacion' => '#10b981', 'lavadero' => '#06b6d4',
+        'restaurante' => '#f97316', 'reportes' => '#a855f7',
+        'sistema' => '#64748b', 'configuracion' => '#6366f1',
+        'alquileres' => '#8b5cf6', 'tattoo' => '#f43f5e',
+        'climatizacion' => '#0ea5e9', 'tecnologia' => '#ef4444',
+    ];
+    $selectedMods = old('modulos', []);
+?>
+
+<?php $__env->startPush('styles'); ?>
+<?php echo $__env->make('partials.premium-ui', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php echo $__env->make('roles._styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
+
+    <div class="ui-header mb-4" style="--delay:.1s;background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%)">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-shield"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">Nuevo Rol</h2>
+                    <p class="mb-0 opacity-75 small"><?php echo e($instance->nombre); ?></p>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <span class="badge bg-white bg-opacity-25 text-white px-3 py-1 rounded-pill" style="font-size:.7rem;letter-spacing:.5px;">
+                    <i class="bi bi-plus-circle me-1"></i>NUEVO
+                </span>
+                <a href="<?php echo e(route('owner.instances.roles', $instance)); ?>" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <?php if(session('error')): ?>
+    <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4"><?php echo e(session('error')); ?></div>
+    <?php endif; ?>
+
+    <form action="<?php echo e(route('owner.instances.roles.store', $instance)); ?>" method="POST" id="roleForm">
+        <?php echo csrf_field(); ?>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="ui-card mb-3" style="--delay:.15s">
+                    <div class="ui-card-accent" style="background:#8b5cf6"></div>
+                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-tag text-primary me-2"></i>Nombre del Rol</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="form-floating-modern">
+                            <i class="bi bi-shield form-icon"></i>
+                            <input type="text" name="name" id="name" class="ui-input <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                   value="<?php echo e(old('name')); ?>" placeholder=" " required>
+                            <label class="form-label-float" for="name">Nombre del rol</label>
+                            <?php $__errorArgs = ['name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="text-danger small mt-1 ms-1"><i class="bi bi-exclamation-circle me-1"></i><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui-card" style="--delay:.2s">
+                    <div class="ui-card-accent" style="background:#10b981"></div>
+                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4">
+                        <h6 class="fw-bold mb-0"><i class="bi bi-stars text-primary me-2"></i>Acciones Rápidas</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-success text-start rounded-3 py-2 mod-template" data-template="all">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-check-all fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold">Todos los módulos</div>
+                                        <small class="text-muted" style="font-size:.7rem;">Acceso completo</small>
+                                    </div>
+                                </div>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning text-start rounded-3 py-2 mod-template" data-template="clear">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-x-lg fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold">Limpiar selección</div>
+                                        <small class="text-muted" style="font-size:.7rem;">Empezar desde cero</small>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui-card mt-3" style="--delay:.25s;background:linear-gradient(135deg,rgba(99,102,241,.05),rgba(79,70,229,.05))">
+                    <div class="card-body p-3 text-center">
+                        <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size:.7rem;letter-spacing:.5px;">Módulos Seleccionados</div>
+                        <div class="fs-1 fw-bold" id="modCount" style="color:#4f46e5;">0</div>
+                        <small class="text-muted">de <?php echo e($totalModulos); ?> disponibles</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="ui-card" style="--delay:.3s">
+                    <div class="ui-card-accent" style="background:#3b82f6"></div>
+                    <div class="card-header bg-transparent border-0 pt-4 pb-0 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-0"><i class="bi bi-grid text-primary me-2"></i>Módulos</h5>
+                            <small class="text-muted">Selecciona los módulos que los usuarios con este rol podrán ver</small>
+                        </div>
+                        <div class="input-group" style="max-width:280px">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" id="modFilter" class="ui-input border-0 bg-light ps-0" placeholder="Buscar módulo...">
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <?php $__currentLoopData = $modulos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $categoria => $modulosCategoria): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="perm-module-card mb-3 mod-filterable" data-text="<?php echo e(strtolower($categoria)); ?>" style="--accent-color:<?php echo e($categoriaColores[$categoria] ?? '#38bdf8'); ?>;">
+                                <div class="module-header">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="module-icon">
+                                            <i class="bi <?php echo e($categoriaIconos[$categoria] ?? 'bi-folder'); ?>"></i>
+                                        </div>
+                                        <div class="module-title"><?php echo e(ucfirst($categoria)); ?></div>
+                                        <span class="badge bg-light text-muted ms-1"><?php echo e($modulosCategoria->count()); ?></span>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input module-check" data-module="<?php echo e($categoria); ?>" id="cat-<?php echo e($categoria); ?>">
+                                        <label class="form-check-label small fw-bold" for="cat-<?php echo e($categoria); ?>">Todos</label>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <?php $__currentLoopData = $modulosCategoria; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $modulo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <?php $checked = in_array($modulo->key, $selectedMods); ?>
+                                        <div class="col-md-6">
+                                            <label class="perm-toggle <?php echo e($checked ? 'is-checked' : ''); ?> mod-filterable" data-text="<?php echo e(strtolower($modulo->key)); ?> <?php echo e(strtolower($modulo->label)); ?> <?php echo e(strtolower($categoria)); ?>">
+                                                <input type="checkbox" name="modulos[]" value="<?php echo e($modulo->key); ?>"
+                                                       data-module="<?php echo e($categoria); ?>"
+                                                       <?php echo e($checked ? 'checked' : ''); ?>>
+                                                <i class="bi <?php echo e($checked ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'); ?>"></i>
+                                                <span class="perm-name"><?php echo e($modulo->label); ?></span>
+                                                <small class="text-muted" style="font-size:.65rem;"><?php echo e($modulo->key); ?></small>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </div>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2" id="saveBarLeft">
+            <i class="bi bi-info-circle text-primary"></i>
+            <span class="fw-semibold d-none d-sm-inline">Nuevo Rol de Instancia</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="<?php echo e(route('owner.instances.roles', $instance)); ?>" class="ui-btn ui-btn-ghost btn-sm">
+                <i class="bi bi-x-lg me-1"></i>Cancelar
+            </a>
+            <button type="submit" form="roleForm" class="ui-btn ui-btn-solid ui-btn-pill px-4 fw-bold">
+                <i class="bi bi-check-lg me-1"></i>Crear Rol
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+    const updateCount = () => {
+        document.getElementById('modCount').textContent = document.querySelectorAll('input[name="modulos[]"]:checked').length;
+    };
+
+    const updateVisual = (checkbox) => {
+        const toggle = checkbox.closest('.perm-toggle');
+        const icon = toggle.querySelector('i');
+        if (checkbox.checked) {
+            toggle.classList.add('is-checked');
+            icon.className = 'bi bi-check-circle-fill text-success';
+        } else {
+            toggle.classList.remove('is-checked');
+            icon.className = 'bi bi-circle text-muted';
+        }
+        updateCount();
+    };
+
+    document.querySelectorAll('input[name="modulos[]"]').forEach(cb => {
+        cb.addEventListener('change', () => {
+            updateVisual(cb);
+            const mod = cb.dataset.module;
+            const all = document.querySelectorAll(`input[name="modulos[]"][data-module="${mod}"]`);
+            const checked = document.querySelectorAll(`input[name="modulos[]"][data-module="${mod}"]:checked`);
+            const modCheck = document.querySelector(`.module-check[data-module="${mod}"]`);
+            if (modCheck) modCheck.checked = all.length === checked.length;
+        });
+        if (cb.checked) updateVisual(cb);
+    });
+
+    document.querySelectorAll('.module-check').forEach(mc => {
+        mc.addEventListener('change', () => {
+            document.querySelectorAll(`input[name="modulos[]"][data-module="${mc.dataset.module}"]`).forEach(cb => {
+                cb.checked = mc.checked;
+                updateVisual(cb);
+            });
+        });
+    });
+
+    document.querySelectorAll('.mod-template').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const t = btn.dataset.template;
+            document.querySelectorAll('input[name="modulos[]"]').forEach(cb => {
+                cb.checked = t === 'all';
+                updateVisual(cb);
+            });
+            document.querySelectorAll('.module-check').forEach(mc => {
+                const mod = mc.dataset.module;
+                const all = document.querySelectorAll(`input[name="modulos[]"][data-module="${mod}"]`);
+                const checked = document.querySelectorAll(`input[name="modulos[]"][data-module="${mod}"]:checked`);
+                mc.checked = all.length === checked.length;
+            });
+        });
+    });
+
+    document.getElementById('modFilter')?.addEventListener('input', function(e) {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('.mod-filterable').forEach(el => {
+            el.style.display = el.dataset.text.includes(q) ? '' : 'none';
+        });
+    });
+</script>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/sistema-facturacion/resources/views/owner/instances/roles/create.blade.php ENDPATH**/ ?>

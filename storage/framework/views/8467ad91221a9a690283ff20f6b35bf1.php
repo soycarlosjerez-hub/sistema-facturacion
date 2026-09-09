@@ -429,6 +429,38 @@ body:not(.dark-mode) {
         background: rgba(var(--pos-danger-rgb), 0.2);
     }
     
+    .ci-price {
+        cursor: pointer;
+        user-select: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        transition: opacity 0.15s;
+        font-weight: 600;
+    }
+    .ci-price:hover {
+        opacity: 0.8;
+    }
+    .ci-price.editing {
+        cursor: default;
+        opacity: 1;
+    }
+    .ci-price-input {
+        width: 90px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 2px solid var(--pos-accent);
+        border-radius: 6px;
+        color: var(--pos-text);
+        padding: 2px 6px;
+        font-size: inherit;
+        font-weight: 600;
+        text-align: right;
+    }
+    .ci-price-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    
     .pos-right .pr-section {
         border-bottom: 1px solid var(--pos-border);
     }
@@ -1201,6 +1233,20 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         font-size: 0.65rem;
         color: var(--pos-text-muted);
     }
+    
+    .cart-item .ci-notas {
+        font-size: 0.65rem;
+        color: var(--pos-warning);
+        font-style: italic;
+        margin-top: 2px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+    .cart-item .ci-notas i {
+        font-size: 0.7rem;
+    }
+    
     .cart-item .ci-remove {
         background: transparent;
         border: none;
@@ -2543,7 +2589,6 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     </div>
                     <div class="comprobante-grid">
                         <?php
-                            $permitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
                             $defaultTipo = in_array('ncf', $permitidos, true) ? 'ncf' : (in_array('sin', $permitidos, true) ? 'sin' : 'ecf');
                         ?>
                         <?php if(in_array('sin', $permitidos, true)): ?>
@@ -3259,10 +3304,19 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     let adminToken = '';
     let adminTokenExp = 0;
     let pendingSinItbis = null;
+    let authModalInstance = null;
+    // Autorización admin para modificar precios
+    let adminPrecioToken = '';
+    let adminPrecioTokenExp = 0;
+    let pendingPriceEdit = null;
     const currentUserEmail = <?php echo json_encode(auth()->user()->email); ?>;
 
     function adminTokenValid() {
         return adminToken !== '' && Date.now() < adminTokenExp;
+    }
+
+    function adminPrecioTokenValid() {
+        return adminPrecioToken !== '' && Date.now() < adminPrecioTokenExp;
     }
 
     function playBeep(type) {
@@ -3403,6 +3457,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 cart.forEach(i => i.sin_itbis = false);
                 adminToken = '';
                 adminTokenExp = 0;
+                adminPrecioToken = '';
+                adminPrecioTokenExp = 0;
                 $('admin-token').value = '';
                 if (habiaSinItbis) {
                     showToast('Los comprobantes fiscales no permiten quitar el ITBIS. Marcas eliminadas.', 'warning');
@@ -3422,7 +3478,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 // Activar: requiere autorización de administrador
                 if (!adminTokenValid()) {
                     pendingSinItbis = index;
-                    mostrarModalAutorizarAdmin();
+                    openModalAutorizarAdmin('sinitbis');
                     return;
                 }
             }
@@ -3447,7 +3503,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 if (!adminTokenValid()) {
                     showToast('Se requiere autorización de administrador para las líneas sin ITBIS.', 'warning');
                     pendingSinItbis = cart.findIndex(i => i.sin_itbis);
-                    mostrarModalAutorizarAdmin();
+                    openModalAutorizarAdmin('sinitbis');
                     return;
                 }
             }
@@ -3544,7 +3600,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                         data.zones.forEach(z => {
                             const opt = document.createElement('option');
                             opt.value = z.id;
-                            opt.textContent = `${z.nombre} (${z.tiempo_estimado_minutos || 20} min)`;
+                            opt.setAttribute('data-tarifa', z.tarifa_base || 0);
+                            opt.textContent = `${z.nombre} - RD$ ${parseFloat(z.tarifa_base || 0).toFixed(2)} - ${z.tiempo_estimado_minutos || 20} min`;
                             zoneSelect.appendChild(opt);
                         });
                     }
@@ -3559,23 +3616,18 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         calcularTarifaZona(zonaId) {
             if (!zonaId) {
                 $('delivery-fee-field').value = '0';
-                $('distancia-km-field').value = '';
+                $('delivery-fee-input').value = '0';
                 $('tarifa-delivery-field').value = '';
+                $('distancia-km-field').value = '';
+                calculateTotals();
                 return;
             }
-            fetch(`<?php echo e(route("pos.delivery.zones")); ?>`)
-                .then(r => r.json())
-                .then(data => {
-                    const zone = (data.zones || []).find(z => z.id == zonaId);
-                    if (zone) {
-                        const distancia = (zone.radio_km / 2).toFixed(2);
-                        const tarifa = (zone.tarifa_base + (distancia * zone.tarifa_por_km)).toFixed(2);
-                        $('distancia-km-field').value = distancia;
-                        $('tarifa-delivery-field').value = tarifa;
-                        $('delivery-fee-field').value = tarifa;
-                    }
-                })
-                .catch(() => {});
+            const opt = $('delivery-zone-select').selectedOptions[0];
+            const tarifa = opt ? parseFloat(opt.getAttribute('data-tarifa')) || 0 : 0;
+            $('delivery-fee-field').value = tarifa;
+            $('delivery-fee-input').value = tarifa.toFixed(2);
+            $('tarifa-delivery-field').value = tarifa;
+            calculateTotals();
         },
     };
     
@@ -4013,7 +4065,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         $('modal-buscar-producto').value = '';
         $('modal-btn-limpiar').style.display = 'none';
         $('modal-item-notas').value = '';
-        $('modal-item-curso').value = 'fuerte';
+        $('modal-item-curso').value = 'entrada';
         $('modal-categoria-filtro').value = '';
         modalCategoriaFiltro = '';
         cantidadesModal = {};
@@ -4124,10 +4176,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         const p = productos.find(x => x.id === id);
         if (!p) { showToast('Producto no encontrado', 'danger'); return; }
         if (!modoObras && validaStock && p.stock <= 0) { showToast('Producto sin stock', 'warning'); return; }
+        const itemNotas = $('modal-item-notas')?.value?.trim() || '';
         if (modoObras) {
             const existing = cart.find(x => x.id === id);
             if (existing) { showToast(`La obra "${p.nombre}" ya está en el carrito`, 'warning'); return; }
-            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', sin_itbis: false, es_obra: true });
+            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', sin_itbis: false, es_obra: true, notas: itemNotas });
             renderCart('add');
             cerrarModalProductos();
             return;
@@ -4136,8 +4189,9 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         const existing = cart.find(x => x.id === id);
         if (existing) {
             existing.qty += qty;
+            existing.notas = itemNotas;
         } else {
-            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: qty, stock: p.stock, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', sin_itbis: false });
+            cart.push({ id: p.id, nombre: p.nombre, precio: p.precio, itbis_p: p.itbis_p, qty: qty, stock: p.stock, imagen_url: p.imagen_url, descuento: 0, descuento_tipo: 'monto', sin_itbis: false, notas: itemNotas });
         }
         renderCart('add');
         cerrarModalProductos();
@@ -4169,6 +4223,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 descuento: 0,
                 descuento_tipo: 'monto',
                 sin_itbis: false,
+                notas: '',
             });
             renderCart('add');
             playBeep('scan');
@@ -4285,22 +4340,22 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             cart.push({
                 id: p.id, nombre: p.nombre, precio: p.precio,
                 itbis_p: p.itbis_p, qty: 1, stock: 1, imagen_url: p.imagen_url,
-                descuento: 0, descuento_tipo: 'monto', sin_itbis: false, es_obra: true
+                descuento: 0, descuento_tipo: 'monto', sin_itbis: false, es_obra: true, notas: ''
             });
         } else if (existing) {
             existing.qty++;
         } else {
-            const item = {
+            const newItem = {
                 id: p.id, nombre: p.nombre, precio: p.precio,
                 itbis_p: p.itbis_p, qty: 1, stock: p.stock || 999, imagen_url: p.imagen_url,
-                descuento: 0, descuento_tipo: 'monto', sin_itbis: false
+                descuento: 0, descuento_tipo: 'monto', sin_itbis: false, notas: ''
             };
             if (isServicio) {
-                item.es_servicio = true;
-                item.servicio_id = p.id;
-                item.itbis_porcentaje = p.itbis_p;
+                newItem.es_servicio = true;
+                newItem.servicio_id = p.id;
+                newItem.itbis_porcentaje = p.itbis_p;
             }
-            cart.push(item);
+            cart.push(newItem);
         }
         if (fromScanner) {
             $('scan-input').classList.add('scanner-flash');
@@ -4344,15 +4399,17 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 const subtotalConDesc = Math.max(0, subtotal - descuentoAplicado);
                 const itbis = subtotalConDesc * (item.sin_itbis ? 0 : item.itbis_p / 100);
                 return `
-                <div class="cart-item ${anim === 'add' && index === cart.length-1 ? 'adding' : ''}" data-index="${index}">
+                <div class="cart-item ${anim === 'add' && index === cart.length-1 ? 'adding' : ''}" data-index="${index}" ondblclick="agregarNotaProducto(this)">
                     ${item.es_equipo
                         ? `<div class="ci-img" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--pos-accent);"><i class="bi bi-phone"></i></div>
-                           <div class="ci-info">
-                               <div class="ci-name">${escapeHtml(item.nombre)}</div>
-                               <div class="ci-meta">
-                                   <span class="qty-val">1</span>
-                                   <span>× ${fmt(item.precio)}</span>
-                               </div>
+                            <div class="ci-info">
+                                <div class="ci-name">${escapeHtml(item.nombre)}</div>
+                                <div class="ci-meta">
+                                    <span class="qty-val">1</span>
+                                    <span class="ci-price" data-action="edit-price" data-index="${index}" title="Click para editar precio">
+                                        ${fmt(item.precio)} <i class="bi bi-pencil-square" style="font-size:0.75rem;opacity:0.6;"></i>
+                                    </span>
+                                </div>
                                ${item.serial_imei ? '<div class="ci-meta" style="font-size:0.6rem;">IMEI: ' + escapeHtml(item.serial_imei) + '</div>' : ''}
                                ${item.color ? '<div class="ci-meta" style="font-size:0.6rem;">Color: ' + escapeHtml(item.color) + '</div>' : ''}
                                ${item.almacenamiento_gb ? '<div class="ci-meta" style="font-size:0.6rem;">' + escapeHtml(item.almacenamiento_gb) + 'GB</div>' : ''}
@@ -4372,9 +4429,11 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                                        <button type="button" data-action="dec" data-index="${index}" aria-label="Disminuir cantidad">−</button>
                                        <span class="qty-val" aria-label="Cantidad">${item.qty}</span>
                                        <button type="button" data-action="inc" data-index="${index}" aria-label="Aumentar cantidad">+</button>
-                                   </span>`}
-                                   <span>× ${fmt(item.precio)}</span>
-                               </div>
+                                    </span>`}
+                                    <span class="ci-price" data-action="edit-price" data-index="${index}" title="Click para editar precio">
+                                        ${fmt(item.precio)} <i class="bi bi-pencil-square" style="font-size:0.75rem;opacity:0.6;"></i>
+                                    </span>
+                                </div>
                                ${modoObras ? '' : `<div class="ci-discount">
                                    <label for="desc-${index}" class="visually-hidden">Descuento línea ${index + 1}</label>
                                    <div class="discount-input-group">
@@ -4403,6 +4462,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                                    </button>
                                </div>
                            </div>`}
+                    ${item.notas ? `<div class="ci-notas"><i class="bi bi-journal-text"></i> ${escapeHtml(item.notas)}</div>` : ''}
                     <div class="ci-right">
                         <div class="ci-subtotal">${fmt(subtotalConDesc)}</div>
                         <div class="ci-itbis">${item.sin_itbis ? '<span style="color:#fca5a5;font-weight:700;">Sin ITBIS</span>' : '+ ITBIS ' + fmt(itbis)}</div>
@@ -4424,11 +4484,115 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                     <input type="hidden" name="descuento_tipo[]" value="${item.descuento_tipo}">
                     <input type="hidden" name="itbis_porcentaje[]" value="${item.itbis_p}">
                     <input type="hidden" name="sin_itbis[]" value="${item.sin_itbis ? 1 : 0}">
+                    <input type="hidden" name="notas[]" value="${escapeHtml(item.notas || '')}">
                 </div>`;
             }).join('');
         }
         calculateTotals();
     }
+
+    function agregarNotaProducto(itemElement) {
+        const index = itemElement.dataset.index;
+        const cartItem = cart[index];
+        if (!cartItem) return;
+        
+        const notas = prompt(`Comentario para "${cartItem.nombre}":`, cartItem.notas || '');
+        if (notas !== null) {
+            cartItem.notas = notas || '';
+            // Actualizar inmediatamente el input hidden para asegurar que el valor se propague
+            const hiddenInputs = document.querySelectorAll('input[name="notas[]"]');
+            hiddenInputs.forEach((input, i) => {
+                if (i === index) {
+                    input.value = cartItem.notas || '';
+                }
+            });
+            renderCart();
+        }
+    }
+
+    function editarPrecioProducto(index) {
+        console.log('[PRECIO] editarPrecioProducto:', index, 'tokenValid:', adminPrecioTokenValid());
+        
+        const item = cart[index];
+        if (!item) return;
+        
+        if (adminPrecioTokenValid()) {
+            console.log('[PRECIO] Ya autorizado, mostrando input');
+            showPriceEdit(index);
+        } else {
+            console.log('[PRECIO] Necesita autorizacion, pendingPriceEdit =', index);
+            pendingPriceEdit = index;
+            openModalAutorizarAdmin('precio');
+        }
+    }
+    
+    function showPriceEdit(index) {
+        console.log('[PRECIO] showPriceEdit:', index);
+        const priceEl = document.querySelector(`.ci-price[data-index="${index}"]`);
+        if (!priceEl) {
+            console.error('[PRECIO] priceEl no encontrado para index:', index);
+            return;
+        }
+        
+        const item = cart[index];
+        const currentPrice = item.precio;
+        priceEl.classList.add('editing');
+        priceEl.innerHTML = `<input type="number" class="ci-price-input" value="${currentPrice.toFixed(2)}" 
+            min="0.01" step="0.01" data-index="${index}" 
+            onclick="event.stopPropagation()"
+            onkeydown="console.log('[PRECIO] keydown:', event.key); handlePrecioKey(event, ${index}, this)">`;
+        const input = priceEl.querySelector('input');
+        if (input) {
+            input.focus();
+            input.select();
+            console.log('[PRECIO] Input creado y enfocado. Presiona Enter o haz click en el precio para guardar.');
+        } else {
+            console.error('[PRECIO] Input no encontrado en DOM');
+        }
+    }
+    
+    function confirmarPrecio(index, input) {
+        console.log('[PRECIO] confirmarPrecio:', index, 'input:', input);
+        const item = cart[index];
+        if (!item) return;
+        
+        const newPrice = parseFloat(input.value);
+        if (isNaN(newPrice) || newPrice <= 0) {
+            console.error('[PRECIO] Precio inválido:', input.value);
+            showToast('Precio inválido', 'warning');
+            renderCart();
+            return;
+        }
+        
+        console.log('[PRECIO] Actualizando precio:', item.precio, '->', newPrice);
+        item.precio = newPrice;
+        showToast('Precio actualizado a ' + fmt(newPrice), 'success');
+        playBeep('success');
+        renderCart();
+    }
+    window.confirmarPrecio = confirmarPrecio;
+    
+    function handlePrecioKey(event, index, input) {
+        console.log('[PRECIO] handlePrecioKey:', event.key);
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            console.log('[PRECIO] Enter presionado, confirmando...');
+            confirmarPrecio(index, input);
+        } else if (event.key === 'Escape') {
+            event.preventDefault();
+            console.log('[PRECIO] Escape presionado, cancelando...');
+            renderCart();
+        }
+    }
+    window.handlePrecioKey = handlePrecioKey;
+    
+    document.addEventListener('click', function(e) {
+        const priceEl = e.target.closest('[data-action="edit-price"]');
+        if (priceEl) {
+            e.preventDefault();
+            editarPrecioProducto(parseInt(priceEl.dataset.index));
+        }
+    });
 
     function calculateTotals() {
         const descuentoGeneral = parseFloat($('input-general-descuento').value) || 0;
@@ -4461,7 +4625,8 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             });
         }
         const descuentoTotal = totalDescuentos + descuentoGeneral;
-        const total = Math.max(0, subtotal - descuentoTotal + itbis);
+        const deliveryFee = parseFloat($('delivery-fee-field')?.value) || 0;
+        const total = Math.max(0, subtotal - descuentoTotal + itbis + deliveryFee);
         $('display-subtotal').innerText = fmt(subtotal);
         $('display-itbis').innerText = fmt(itbis);
         $('display-total').innerText = fmt(total);
@@ -4958,18 +5123,99 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 e.preventDefault();
                 if (!isNaN(index)) POS.toggleSinItbis(index);
                 break;
+            case 'edit-price':
+                e.preventDefault();
+                if (!isNaN(index)) editarPrecioProducto(index);
+                break;
         }
     }
 
-    // ============ Autorización de administrador para quitar ITBIS ============
-    function mostrarModalAutorizarAdmin() {
-        const emailInput = $('auth-admin-email');
-        const errorBox = $('auth-admin-error');
-        if (emailInput && !emailInput.value) emailInput.value = currentUserEmail;
-        if (errorBox) errorBox.style.display = 'none';
-        $('auth-admin-password').value = '';
-        new bootstrap.Modal($('modalAutorizarAdmin')).show();
-        setTimeout(() => $('auth-admin-password').focus(), 400);
+    function openModalAutorizarAdmin(context = 'sinitbis') {
+        console.log('[MODAL] Abriendo modal, context:', context);
+        console.log('[MODAL] pendingPriceEdit:', pendingPriceEdit);
+        
+        try {
+            const modalEl = document.getElementById('modalAutorizarAdmin');
+            console.log('[MODAL] Modal element found:', !!modalEl);
+            
+            if (!modalEl) {
+                alert('ERROR: No se encontró el modal en el DOM');
+                return;
+            }
+            
+            const emailInput = document.getElementById('auth-admin-email');
+            if (emailInput && !emailInput.value) emailInput.value = currentUserEmail;
+            
+            const passwordInput = document.getElementById('auth-admin-password');
+            if (passwordInput) passwordInput.value = '';
+            
+            const errorBox = document.getElementById('auth-admin-error');
+            if (errorBox) errorBox.style.display = 'none';
+            
+            const titleEl = modalEl.querySelector('.admin-header h5');
+            const subtitleEl = modalEl.querySelector('.admin-header small');
+            const warningEl = modalEl.querySelector('.admin-warning span');
+            
+            if (context === 'precio') {
+                if (titleEl) titleEl.textContent = 'Autorización para Modificar Precio';
+                if (subtitleEl) subtitleEl.textContent = 'Acción sensible · Modificar precio';
+                if (warningEl) warningEl.innerHTML = 'Para <strong style="color:var(--pos-text);">modificar el precio</strong> de este producto se requiere autorización de un usuario con rol de administrador.';
+            } else {
+                if (titleEl) titleEl.textContent = 'Autorización de Administrador';
+                if (subtitleEl) subtitleEl.textContent = 'Acción sensible · Quitar ITBIS';
+                if (warningEl) warningEl.innerHTML = 'Para quitar el <strong style="color:var(--pos-text);">ITBIS</strong> de esta línea se requiere autorización de un usuario con rol de administrador. Solo aplica a ventas <strong style="color:var(--pos-text);">Sin Comprobante</strong>.';
+            }
+            
+            console.log('[MODAL] Bootstrap Modal available:', typeof bootstrap !== 'undefined', !!bootstrap.Modal);
+            
+            if (!bootstrap || !bootstrap.Modal) {
+                alert('ERROR: Bootstrap no está cargado');
+                console.error('[MODAL] Bootstrap no disponible');
+                return;
+            }
+            
+            const modal = new bootstrap.Modal(modalEl);
+            authModalInstance = modal;
+            console.log('[MODAL] Bootstrap Modal instance created and stored');
+            modal.show();
+            console.log('[MODAL] Modal.show() called');
+            
+            setTimeout(() => {
+                if (passwordInput) passwordInput.focus();
+            }, 400);
+            
+        } catch (err) {
+            console.error('[MODAL] Error al abrir modal:', err);
+            alert('Error al abrir modal: ' + err.message);
+        }
+    }
+    
+    function showPriceEdit(index) {
+        console.log('[PRECIO] showPriceEdit:', index);
+        const priceEl = document.querySelector(`.ci-price[data-index="${index}"]`);
+        if (!priceEl) {
+            console.error('[PRECIO] priceEl no encontrado para index:', index);
+            return;
+        }
+        
+        const item = cart[index];
+        const currentPrice = item.precio;
+        console.log('[PRECIO] currentPrice:', currentPrice);
+        
+        priceEl.classList.add('editing');
+        priceEl.innerHTML = `<input type="number" class="ci-price-input" value="${currentPrice.toFixed(2)}" 
+            min="0.01" step="0.01" data-index="${index}" 
+            onclick="event.stopPropagation()"
+            onblur="console.log('[PRECIO] blur disparado'); confirmarPrecio(${index}, this)" 
+            onkeydown="console.log('[PRECIO] keydown:', event.key); handlePrecioKey(event, ${index}, this)">`;
+        const input = priceEl.querySelector('input');
+        if (input) {
+            input.focus();
+            input.select();
+            console.log('[PRECIO] Input creado, enfocado y seleccionado');
+        } else {
+            console.error('[PRECIO] Input no encontrado en DOM');
+        }
     }
 
     function enviarAutorizacionAdmin() {
@@ -4977,6 +5223,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         const password = $('auth-admin-password').value;
         const errorBox = $('auth-admin-error');
         const btn = $('btn-auth-admin-submit');
+        const context = pendingPriceEdit !== null ? 'precio' : 'sinitbis';
 
         if (errorBox) errorBox.style.display = 'none';
         if (!email || !password) {
@@ -4994,17 +5241,43 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
             },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, context }),
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                adminToken = data.token;
-                adminTokenExp = Date.now() + (5 * 60 * 1000);
-                $('admin-token').value = adminToken;
-                bootstrap.Modal.getInstance($('modalAutorizarAdmin'))?.hide();
+                if (context === 'precio') {
+                    adminPrecioToken = data.token;
+                    adminPrecioTokenExp = Date.now() + (5 * 60 * 1000);
+                }
+                if (context === 'sinitbis') {
+                    adminToken = data.token;
+                    adminTokenExp = Date.now() + (5 * 60 * 1000);
+                }
+                $('admin-token').value = data.token;
+                if (authModalInstance) {
+                    authModalInstance.dispose();
+                    authModalInstance = null;
+                }
+                // Limpiar backdrop y body
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+                const modalEl = document.getElementById('modalAutorizarAdmin');
+                if (modalEl) {
+                    modalEl.classList.remove('show');
+                    modalEl.style.display = 'none';
+                    setTimeout(() => { if (modalEl) modalEl.style.display = ''; }, 50);
+                }
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
                 showToast(`Autorizado por ${data.admin}`, 'success');
-                if (pendingSinItbis !== null) {
+                playBeep('success');
+                
+                if (context === 'precio' && pendingPriceEdit !== null) {
+                    editarPrecioProducto(pendingPriceEdit);
+                    pendingPriceEdit = null;
+                } else if (pendingSinItbis !== null) {
                     const idx = pendingSinItbis;
                     pendingSinItbis = null;
                     if (cart[idx]) {
@@ -5179,6 +5452,15 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             }
         });
 
+        // Delivery Fee — sync hidden field and recalculate total
+        const deliveryFeeInput = $('delivery-fee-input');
+        if (deliveryFeeInput) {
+            deliveryFeeInput.addEventListener('input', function() {
+                $('delivery-fee-field').value = this.value || '0';
+                calculateTotals();
+            });
+        }
+
         // Cliente - cambiar a botón que abre modal
         const clienteSelect = $('cliente_id');
         if (clienteSelect) {
@@ -5310,6 +5592,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
     window.teclaMayusculas = teclaMayusculas;
     window.teclaBorrar = teclaBorrar;
     window.teclaEnter = teclaEnter;
+    window.agregarNotaProducto = agregarNotaProducto;
 
     // Init on DOMContentLoaded
     if (document.readyState === 'loading') {

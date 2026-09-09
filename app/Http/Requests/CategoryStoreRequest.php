@@ -19,18 +19,10 @@ class CategoryStoreRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('categories')->where(fn ($q) => $q->where('tenant_id', $this->user()->business_instance_id)),
+                Rule::unique('categorias')->where(fn ($q) => $q->where('tenant_id', $this->user()->business_instance_id)),
             ],
-            'descripcion' => 'nullable|string|max:500',
+            'descripcion' => 'nullable|string|max:255',
             'activa' => 'boolean',
-            'color' => ['nullable', 'string', 'max:7', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'icono' => 'nullable|string|max:50',
-            'orden' => 'integer|min:0',
-            'configuracion' => 'nullable|array',
-            'type_keys' => 'required|array|min:1',
-            'type_keys.*' => 'string|exists:business_types,key',
-            'type_configs' => 'nullable|array',
-            'type_configs.*' => 'array',
         ];
     }
 
@@ -38,9 +30,7 @@ class CategoryStoreRequest extends FormRequest
     {
         return [
             'nombre.unique' => 'Ya existe una categoría con este nombre en tu tenant.',
-            'type_keys.required' => 'Debes seleccionar al menos un tipo de negocio.',
-            'type_keys.*.exists' => 'El tipo de negocio seleccionado no existe.',
-            'color.regex' => 'El color debe ser un código hexadecimal válido (ej: #3b82f6).',
+            'descripcion.max' => 'La descripción no puede exceder los 255 caracteres.',
         ];
     }
 
@@ -48,7 +38,6 @@ class CategoryStoreRequest extends FormRequest
     {
         $this->merge([
             'activa' => $this->boolean('activa', true),
-            'orden' => $this->integer('orden', 0),
         ]);
     }
 }

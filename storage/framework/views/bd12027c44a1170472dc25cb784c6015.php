@@ -1,0 +1,189 @@
+<?php $__env->startSection('title', 'Historial de Cambios — ' . $listaPrecio->nombre); ?>
+
+<?php $__env->startPush('styles'); ?>
+<?php echo $__env->make('partials.premium-ui', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<style>
+    .log-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    .log-timeline::before {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #8b5cf6, rgba(139,92,246,0.1));
+    }
+    .log-entry {
+        position: relative;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.75rem;
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(139,92,246,0.1);
+        border-radius: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    .log-entry:hover {
+        border-color: rgba(139,92,246,0.3);
+        box-shadow: 0 4px 12px rgba(139,92,246,0.08);
+    }
+    .log-entry::before {
+        content: '';
+        position: absolute;
+        left: -1.75rem;
+        top: 1.35rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #8b5cf6;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px rgba(139,92,246,0.2);
+    }
+    .change-badge {
+        font-size: 0.7rem;
+        padding: 0.3em 0.7em;
+        border-radius: 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .change-price { background: rgba(25,135,84,0.1); color: #198754; }
+    .change-vigencia { background: rgba(13,202,240,0.1); color: #0dcaf0; }
+    .change-activo { background: rgba(108,117,125,0.1); color: #6c757d; }
+    .change-codigo { background: rgba(255,193,7,0.1); color: #b8860b; }
+    .change-nombre { background: rgba(111,66,193,0.1); color: #6f42c1; }
+    .price-change {
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        font-size: 0.85rem;
+    }
+    .arrow-icon { color: #8b5cf6; margin: 0 0.5rem; }
+    body.dark-mode .log-entry {
+        background: rgba(15,23,42,0.8);
+        border-color: rgba(139,92,246,0.15);
+    }
+    body.dark-mode .log-entry:hover {
+        border-color: rgba(139,92,246,0.3);
+    }
+    body.dark-mode .log-entry::before {
+        border-color: #0f172a;
+    }
+    body.dark-mode .price-change span:first-child { color: #64748b !important; }
+    body.dark-mode .log-entry .small.text-dark { color: #e2e8f0 !important; }
+</style>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed;">
+
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Historial de Cambios</h4>
+                    <div class="ui-header-meta"><?php echo e($listaPrecio->nombre); ?></div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <a href="<?php echo e(route('listas-precio.show', $listaPrecio)); ?>" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-3">
+        <div class="col-12">
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Registro de Cambios
+                </div>
+                <div class="ui-card-subtitle">Todos los cambios realizados en esta lista de precios</div>
+                <div class="card-body">
+                    <?php if($logs->isEmpty()): ?>
+                        <div class="ui-empty-state py-5">
+                            <i class="bi bi-clock ui-empty-state-icon"></i>
+                            <p class="ui-empty-state-text">Sin registros de cambios</p>
+                            <p class="text-muted small">Los cambios de precio e información aparecerán aquí.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="log-timeline">
+                            <?php $__currentLoopData = $logs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <div class="log-entry">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="change-badge change-<?php echo e(str_replace(',', '-', $log->cambio_en ?? 'precio')); ?>">
+                                            <?php echo e(str_replace(',', ', ', $log->cambio_en)); ?>
+
+                                        </span>
+                                        <?php if($log->producto): ?>
+                                        <span class="small fw-semibold text-dark">
+                                            <i class="bi bi-box-seam me-1"></i><?php echo e($log->producto->nombre); ?>
+
+                                        </span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        <?php echo e($log->created_at->format('d/m/Y H:i')); ?>
+
+                                    </small>
+                                </div>
+
+                                <?php if($log->precio_anterior !== null && $log->precio_nuevo !== null): ?>
+                                <div class="price-change mt-2">
+                                    <span class="text-muted text-decoration-line-through">
+                                        RD$ <?php echo e(number_format($log->precio_anterior, 2)); ?>
+
+                                    </span>
+                                    <i class="bi bi-arrow-right arrow-icon"></i>
+                                    <span class="text-success fw-bold">
+                                        RD$ <?php echo e(number_format($log->precio_nuevo, 2)); ?>
+
+                                    </span>
+                                </div>
+                                <?php elseif($log->precio_nuevo === null): ?>
+                                <div class="small text-danger mt-2">
+                                    <i class="bi bi-trash me-1"></i>Producto removido de la lista
+                                </div>
+                                <?php endif; ?>
+
+                                <?php if($log->observacion): ?>
+                                <div class="small text-muted mt-2">
+                                    <i class="bi bi-chat-dots me-1"></i><?php echo e($log->observacion); ?>
+
+                                </div>
+                                <?php endif; ?>
+
+                                <?php if($log->usuario): ?>
+                                <div class="small text-muted mt-1">
+                                    <i class="bi bi-person me-1"></i>Por: <?php echo e($log->usuario->name ?? 'N/A'); ?>
+
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-center">
+                            <?php echo e($logs->links()); ?>
+
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/sistema-facturacion/resources/views/listas-precio/logs.blade.php ENDPATH**/ ?>

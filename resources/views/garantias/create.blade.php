@@ -60,6 +60,18 @@
             <div class="ui-card-body">
                 <div class="row g-3">
                     <div class="col-lg-6">
+                        <label class="ui-label">Venta / Comprobante</label>
+                        <select name="venta_id" id="ventaSelector" class="ui-select @error('venta_id') is-invalid @enderror">
+                            <option value="">Seleccionar venta...</option>
+                            @foreach($ventas as $venta)
+                                <option value="{{ $venta->id }}" data-venta-equipos="{{ json_encode($venta->detalles->map(fn($d) => ['equipo_id' => $d->equipo_id, 'serial' => $d->equipo->serial_imei ?? ''])) }}" {{ old('venta_id') == $venta->id ? 'selected' : '' }}>
+                                    #{{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }} - {{ $venta->ncf ?? 'Sin NCF' }} - {{ $venta->cliente->nombre ?? 'Consumidor' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('venta_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-lg-6">
                         <label class="ui-label">Equipo</label>
                         <select name="equipo_id" class="ui-select @error('equipo_id') is-invalid @enderror">
                             <option value="">Seleccionar equipo...</option>
@@ -140,6 +152,23 @@
 
 <div style="height: 80px;"></div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ventaSelector = document.getElementById('ventaSelector');
+    if (!ventaSelector) return;
+    const equipoSelect = ventaSelector.closest('form').querySelector('select[name="equipo_id"]');
+
+    ventaSelector.addEventListener('change', function() {
+        if (!this.value || !equipoSelect) return;
+        const selected = this.options[this.selectedIndex];
+        const ventaEquipos = JSON.parse(selected.getAttribute('data-venta-equipos') || '[]');
+        if (ventaEquipos.length > 0 && ventaEquipos[0].equipo_id) {
+            equipoSelect.value = ventaEquipos[0].equipo_id;
+        }
+    });
+});
+</script>
 
 <div class="ui-sticky-bar">
     <div class="ui-sticky-bar-inner">

@@ -69,6 +69,7 @@ class DatabaseSeeder extends Seeder
 
         // Maestros de inventario
         $this->call(Full\CategoriasFullSeeder::class); // 18 filas
+        $this->call(BusinessTypeCategoriasSeeder::class); // Recrea todas las categorías según business type
         $this->call(Full\ProductosFullSeeder::class); // 217 filas
         $this->call(Full\ClientesFullSeeder::class); // 50 filas
         $this->call(Full\ProveedoresFullSeeder::class); // 14 filas

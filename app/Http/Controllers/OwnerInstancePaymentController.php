@@ -5,34 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\BusinessInstance;
 use App\Models\PagoInstancia;
 use App\Models\User;
+use App\Traits\LogsOwnerAction;
 use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Model;
 
 class OwnerInstancePaymentController extends Controller
 {
+    use LogsOwnerAction;
+
     public function __construct()
     {
         $this->middleware(['auth', 'role:owner']);
-    }
-
-    private function logOwnerAction(string $action, string $description, ?array $oldValues = null, ?array $newValues = null, ?Model $model = null): void
-    {
-        try {
-            \App\Models\AuditLog::create([
-                'user_id' => auth()->id(),
-                'action' => $action,
-                'model_type' => $model ? get_class($model) : null,
-                'model_id' => $model?->id,
-                'description' => $description,
-                'old_values' => $oldValues ? json_encode($oldValues) : null,
-                'new_values' => $newValues ? json_encode($newValues) : null,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'tenant_id' => null,
-            ]);
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to log owner action: ' . $e->getMessage());
-        }
     }
 
     /**

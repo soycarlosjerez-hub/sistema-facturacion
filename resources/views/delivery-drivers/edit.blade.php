@@ -124,6 +124,38 @@
                     @error('notas') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
+                <div class="mb-4 pb-3 border-bottom mt-4">
+                    <h6 class="fw-bold mb-0" style="color:#0ea5e9;">
+                        <i class="bi bi-link-45deg me-2"></i>Asignar Usuario
+                    </h6>
+                    <p class="text-muted small mb-3">
+                        Vincula un usuario existente para que pueda loguearse como repartidor
+                        y acceder a "Mis Entregas".
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <label for="user_id" class="ui-label">Usuario</label>
+                    <select name="user_id" id="user_id" class="ui-select @error('user_id') is-invalid @enderror">
+                        <option value="">Sin usuario vinculado</option>
+                        @foreach($allUsers as $user)
+                            <option value="{{ $user->id }}"
+                                {{ old('user_id', $driver->user_id) == $user->id ? 'selected' : '' }}>
+                                {{ $user->name }} ({{ $user->email }})
+                                @if($user->hasRole('delivery'))
+                                    🟢 delivery
+                                @else
+                                    🔵 {{ $user->role ?? 'sin rol' }}
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('user_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <small class="form-text text-muted">
+                        Si asignas un usuario, podrá loguearse y ver sus entregas asignadas.
+                    </small>
+                </div>
+
                 <div class="form-check form-switch mt-2">
                     <input type="checkbox" name="activo" id="activo" class="form-check-input" value="1" {{ old('activo', $driver->activo) ? 'checked' : '' }}>
                     <label for="activo" class="form-check-label small fw-semibold">Repartidor Activo</label>

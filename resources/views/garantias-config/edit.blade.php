@@ -82,6 +82,17 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="terminos_por_defecto" class="form-label fw-bold">
+                                <i class="bi bi-file-earmark-text me-1"></i>Terminos por Defecto
+                            </label>
+                            <textarea name="terminos_por_defecto" id="terminos_por_defecto" class="form-control @error('terminos_por_defecto') is-invalid @enderror" rows="3">{{ old('terminos_por_defecto', $garantiasConfig->terminos_por_defecto) }}</textarea>
+                            <small class="text-muted">Se aplicaran automaticamente cuando un producto de este tipo no tenga terminos propios definidos.</small>
+                            @error('terminos_por_defecto')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="activo" id="activo" {{ old('activo', $garantiasConfig->activo) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="activo">Configuración Activa</label>

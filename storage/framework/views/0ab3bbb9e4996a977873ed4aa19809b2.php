@@ -6,7 +6,7 @@
             <div class="ui-card-body">
                 <h5 class="fw-bold mb-0"><i class="bi bi-person-badge me-2" style="color:var(--accent);"></i>Ranking cajeros</h5>
                 <small class="text-muted d-block mb-3">Ventas del mes</small>
-                <?php $__empty_1 = true; $__currentLoopData = $rankingUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                <?php $__empty_0 = true; $__currentLoopData = $rankingUsuarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:32px;height:32px;font-size:.85rem;background:<?php echo e($i === 0 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : ($i === 1 ? 'linear-gradient(135deg,#94a3b8,#64748b)' : ($i === 2 ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(0,0,0,.05)'))); ?>;color:<?php echo e($i < 3 ? '#fff' : '#64748b'); ?>;">
                             <?php echo e($i + 1); ?>
@@ -18,7 +18,7 @@
                         </div>
                         <small class="fw-bold flex-shrink-0"><?php echo e($moneda); ?> <?php echo e(number_format($user->total_vendido, 0)); ?></small>
                     </div>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
                     <div class="ui-empty-state">
                         <i class="bi bi-person-x"></i>
                         <p>Sin actividad</p>
@@ -50,7 +50,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php $__empty_1 = true; $__currentLoopData = $activity['ultimasVentas']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $venta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <?php $__empty_0 = true; $__currentLoopData = $activity['ultimasVentas']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $venta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
                                 <tr>
                                     <td><a href="<?php echo e(route('ventas.show', $venta)); ?>" class="fw-bold text-decoration-none">#<?php echo e(str_pad($venta->id, 5, '0', STR_PAD_LEFT)); ?></a></td>
                                     <td><span class="small fw-semibold"><?php echo e($venta->cliente->nombre ?? 'Consumidor Final'); ?></span></td>
@@ -65,7 +65,7 @@
                                     </td>
                                     <td><small class="text-muted"><?php echo e($venta->created_at->diffForHumans()); ?></small></td>
                                 </tr>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
                                 <tr><td colspan="6" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1"></i>
                                     <p class="mt-2 mb-0">Sin ventas registradas</p>

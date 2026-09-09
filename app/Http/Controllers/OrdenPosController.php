@@ -255,12 +255,7 @@ class OrdenPosController extends Controller
 
     public function imprimir(Orden $orden)
     {
-        try {
-            $this->printService->printOrden($orden);
-            return redirect()->back()->with('success', 'Impresión enviada.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al imprimir: ' . $e->getMessage());
-        }
+        return redirect()->route('ordenes.ticket', $orden);
     }
 
     private function restauranteValidaStock(): bool

@@ -18,7 +18,23 @@ class EcommCheckoutController extends Controller
 {
     private function tenant(): int
     {
-        return Auth::user()->business_instance_id;
+        $user = $this->resolveAuthUser();
+        if ($user instanceof Cliente) {
+            return $user->tenant_id;
+        }
+        return $user->business_instance_id;
+    }
+
+    private function resolveAuthUser()
+    {
+        if (Auth::check()) {
+            return Auth::user();
+        }
+        $clientToken = request()->attributes->get('client_api_token');
+        if ($clientToken && $clientToken->cliente) {
+            return $clientToken->cliente;
+        }
+        return null;
     }
 
     public function submit(Request $request): JsonResponse
@@ -39,7 +55,7 @@ class EcommCheckoutController extends Controller
             'redirect_url' => 'nullable|url',
         ]);
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $request) {
             // 1. Obtener carrito
             $cart = Cart::with('items.producto')
                 ->where('id', $data['cart_id'])
@@ -61,6 +77,11 @@ class EcommCheckoutController extends Controller
 
             // 2. Resolver/crear cliente
             $clienteId = $data['customer']['id'] ?? null;
+
+            // If no customer ID provided, try to use the authenticated Cliente
+            if (!$clienteId && $request->user() instanceof Cliente) {
+                $clienteId = $request->user()->id;
+            }
             if (!$clienteId) {
                 $email = $data['customer']['email'] ?? $cart->email;
                 $phone = $data['customer']['phone'] ?? null;
@@ -112,6 +133,7 @@ class EcommCheckoutController extends Controller
                     'descuento_tipo' => 'monto',
                     'itbis_porcentaje' => $item->itbis_porcentaje,
                     'sin_itbis' => $item->sin_itbis,
+                    'notas' => $item->notas ?? '',
                 ];
             }
 
@@ -186,25 +208,28 @@ class EcommCheckoutController extends Controller
         ]);
 
         return DB::transaction(function () use ($data) {
-            // Similar a submit() pero sin buscar cliente existente
-            // Crear cliente walk-in
-
             $cart = Cart::where('id', $data['cart_id'])
                 ->where('tenant_id', $this->tenant())
                 ->where('estado', 'active')
                 ->firstOrFail();
 
-            // Crear cliente walk-in
-            $cliente = Cliente::create([
-                'tenant_id' => $this->tenant(),
-                'nombre' => $data['customer_name'],
-                'email' => $data['customer_email'],
-                'telefono' => $data['customer_phone'],
-                'direccion' => $data['customer_address'] ?? null,
-                'tipo_cliente' => 'consumo',
-                'origen_cliente' => 'web',
-                'activo' => true,
-            ]);
+            // Detect existing customer by email before creating a new one
+            $cliente = Cliente::where('email', $data['customer_email'])
+                ->where('tenant_id', $this->tenant())
+                ->first();
+
+            if (!$cliente) {
+                $cliente = Cliente::create([
+                    'tenant_id' => $this->tenant(),
+                    'nombre' => $data['customer_name'],
+                    'email' => $data['customer_email'],
+                    'telefono' => $data['customer_phone'],
+                    'direccion' => $data['customer_address'] ?? null,
+                    'tipo_cliente' => 'consumo',
+                    'origen_cliente' => 'web',
+                    'activo' => true,
+                ]);
+            }
 
             // Continuar con el mismo flujo que submit()...
             // (reutilizar la lógica de submitGuest)
@@ -221,6 +246,23 @@ class EcommCheckoutController extends Controller
 
     private function getSessionCaja(): SesionCaja
     {
+        $user = $this->resolveAuthUser();
+
+        // Para tokens de cliente: buscar cualquier sesión abierta del tenant
+        if ($user instanceof Cliente) {
+            $sesion = SesionCaja::where('estado', 'abierta')
+                ->where('tenant_id', $this->tenant())
+                ->latest()
+                ->first();
+
+            if (!$sesion) {
+                throw new \Exception('No hay sesiones de caja abiertas para esta tienda. El admin debe abrir una caja primero.');
+            }
+
+            return $sesion;
+        }
+
+        // Para staff: buscar sesión de este usuario
         $sesion = SesionCaja::where('estado', 'abierta')
             ->where('user_id', Auth::id())
             ->first();

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Caja;
+use App\Models\DeliveryZone;
 use App\Models\Mesa;
 use App\Models\Producto;
 use App\Models\VentaDetalle;
-use App\Services\RestaurantOrderService;
+use App\Services\DeliveryService;
+use App\Services\DriverAssignmentService;
 use App\Services\Ecf\EcfService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\RestaurantOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,10 +25,11 @@ class OrdenController extends Controller
     private function restauranteValidaStock(): bool
     {
         $user = auth()->user();
-        if (!$user || !$user->businessInstance) {
+        if (! $user || ! $user->businessInstance) {
             return true;
         }
         $config = $user->businessInstance->configuracion ?? [];
+
         return ($config['restaurante_valida_stock'] ?? '1') === '1';
     }
 
@@ -38,6 +41,7 @@ class OrdenController extends Controller
             $orden->load('detalles.producto', 'cliente', 'usuario', 'deliveryCompany');
         }
         $reservacion = $mesa->reservacion;
+
         return response()->json(compact('mesa', 'orden', 'reservacion'));
     }
 
@@ -51,7 +55,7 @@ class OrdenController extends Controller
 
         $productos = $query->get(['id', 'nombre', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'codigo_barras', 'imagen', 'categoria_id']);
 
-        $categorias = \App\Models\Categoria::orderBy('nombre')->get(['id', 'nombre']);
+        $categorias = \App\Models\Category::orderBy('nombre')->get(['id', 'nombre']);
 
         return response()->json(compact('productos', 'categorias'));
     }
@@ -64,7 +68,7 @@ class OrdenController extends Controller
         }
         $query = Producto::where(function ($q) use ($termino) {
             $q->where('nombre', 'like', "%{$termino}%")
-              ->orWhere('codigo_barras', 'like', "%{$termino}%");
+                ->orWhere('codigo_barras', 'like', "%{$termino}%");
         });
 
         if ($this->restauranteValidaStock()) {
@@ -80,8 +84,8 @@ class OrdenController extends Controller
     public function abrirMesa(Request $request, Mesa $mesa)
     {
         $request->validate([
-            'cliente_id'          => 'nullable|exists:clientes,id',
-            'tipo_orden'          => 'nullable|in:mesa,delivery,para_llevar',
+            'cliente_id' => 'nullable|exists:clientes,id',
+            'tipo_orden' => 'nullable|in:mesa,delivery,para_llevar',
             'delivery_company_id' => 'nullable|exists:delivery_companies,id|required_if:tipo_orden,delivery',
         ]);
 
@@ -103,9 +107,9 @@ class OrdenController extends Controller
     {
         $request->validate([
             'producto_id' => 'required|exists:productos,id',
-            'cantidad'    => 'required|integer|min:1',
-            'notas'       => 'nullable|string|max:200',
-            'curso'       => 'nullable|in:entrada,fuerte,postre,bebida',
+            'cantidad' => 'required|integer|min:1',
+            'notas' => 'nullable|string|max:200',
+            'curso' => 'nullable|in:entrada,fuerte,postre,bebida',
         ]);
 
         $result = $this->orderService->agregarItem(
@@ -152,19 +156,19 @@ class OrdenController extends Controller
     public function cobrar(Request $request, Mesa $mesa)
     {
         $request->validate([
-            'metodo_pago'          => 'required|string|in:efectivo,tarjeta,transferencia,mixto',
-            'monto_recibido'       => 'nullable|numeric|min:0',
-            'monto_tarjeta'        => 'nullable|numeric|min:0',
-            'monto_transferencia'  => 'nullable|numeric|min:0',
-            'propina'              => 'nullable|numeric|min:0',
-            'admin_token'          => 'nullable|string',
-            'split'                => 'nullable|boolean',
-            'personas'             => 'nullable|integer|min:2|max:10|required_if:split,true',
-            'split_persons'        => 'nullable|array|required_if:split,true',
-            'split_persons.*.num'  => 'required_with:split_persons|integer|min:1',
-            'split_persons.*.nombre'=> 'nullable|string|max:100',
+            'metodo_pago' => 'required|string|in:efectivo,tarjeta,transferencia,mixto',
+            'monto_recibido' => 'nullable|numeric|min:0',
+            'monto_tarjeta' => 'nullable|numeric|min:0',
+            'monto_transferencia' => 'nullable|numeric|min:0',
+            'propina' => 'nullable|numeric|min:0',
+            'admin_token' => 'nullable|string',
+            'split' => 'nullable|boolean',
+            'personas' => 'nullable|integer|min:2|max:10|required_if:split,true',
+            'split_persons' => 'nullable|array|required_if:split,true',
+            'split_persons.*.num' => 'required_with:split_persons|integer|min:1',
+            'split_persons.*.nombre' => 'nullable|string|max:100',
             'split_persons.*.subtotal' => 'required_with:split_persons|numeric|min:0',
-            'totales'              => 'nullable|array|required_if:split,true',
+            'totales' => 'nullable|array|required_if:split,true',
         ]);
 
         $result = $this->orderService->cobrar($mesa, $request->all());
@@ -234,14 +238,15 @@ class OrdenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'encf'    => $ecf->encf,
-                'ecf_id'  => $ecf->id,
+                'encf' => $ecf->encf,
+                'ecf_id' => $ecf->id,
                 'message' => "e-CF {$ecf->encf} generado y enviado a DGII",
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Error facturando orden restaurante: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al facturar: ' . $e->getMessage()], 500);
+            Log::error('Error facturando orden restaurante: '.$e->getMessage());
+
+            return response()->json(['error' => 'Error al facturar: '.$e->getMessage()], 500);
         }
     }
 
@@ -260,12 +265,12 @@ class OrdenController extends Controller
     public function aplicarDescuento(Request $request, Mesa $mesa)
     {
         $request->validate([
-            'tipo'   => 'required|in:porcentaje,monto',
-            'valor'  => 'required|numeric|min:0',
+            'tipo' => 'required|in:porcentaje,monto',
+            'valor' => 'required|numeric|min:0',
             'motivo' => 'required|string|max:200',
         ]);
 
-        $result = $this->orderService->aplicarDescuento($mesa, $request->tipo, (float)$request->valor, $request->motivo);
+        $result = $this->orderService->aplicarDescuento($mesa, $request->tipo, (float) $request->valor, $request->motivo);
 
         if (isset($result['error'])) {
             return response()->json($result, $result['code']);
@@ -298,6 +303,7 @@ class OrdenController extends Controller
             ->get();
 
         $html = view('restaurante._historial', compact('ordenes', 'mesa'))->render();
+
         return response()->json(compact('html'));
     }
 
@@ -307,12 +313,14 @@ class OrdenController extends Controller
             ->findOrFail($request->input('venta_id'));
         $empresa = (object) config('app.empresa', []);
         $paper = (int) $request->get('paper', 80);
+
         return view('restaurante.ticket', compact('venta', 'mesa', 'empresa', 'paper'));
     }
 
     public function imprimirTicket(Request $request, Mesa $mesa)
     {
         $venta = \App\Models\Venta::findOrFail($request->input('venta_id'));
+
         return redirect()->route('restaurante.mesa.ticket', ['mesa' => $mesa, 'venta_id' => $venta->id]);
     }
 
@@ -322,6 +330,7 @@ class OrdenController extends Controller
             ->findOrFail($request->input('venta_id'));
         $text = "MESA: {$mesa->numero}\n\n";
         $text .= "Ticket de venta #{$venta->id}\n";
+
         return response($text, 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8')
             ->header('Content-Disposition', "inline; filename=ticket-mesa-{$mesa->numero}.txt");
@@ -330,6 +339,7 @@ class OrdenController extends Controller
     public function cajasDisponibles()
     {
         $cajas = Caja::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'codigo', 'estado']);
+
         return response()->json(['cajas' => $cajas]);
     }
 
@@ -347,11 +357,11 @@ class OrdenController extends Controller
     public function abrirCaja(Request $request)
     {
         $data = $request->validate([
-            'caja_id'       => 'required|exists:cajas,id',
+            'caja_id' => 'required|exists:cajas,id',
             'monto_inicial' => 'required|numeric|min:0',
         ]);
 
-        $result = $this->orderService->abrirCaja($data['caja_id'], (float)$data['monto_inicial']);
+        $result = $this->orderService->abrirCaja($data['caja_id'], (float) $data['monto_inicial']);
 
         if (isset($result['error'])) {
             return response()->json($result, $result['code']);
@@ -363,8 +373,8 @@ class OrdenController extends Controller
     public function crearCaja(Request $request)
     {
         $data = $request->validate([
-            'nombre'    => 'required|string|max:100',
-            'codigo'    => 'nullable|string|max:20|unique:cajas,codigo',
+            'nombre' => 'required|string|max:100',
+            'codigo' => 'nullable|string|max:20|unique:cajas,codigo',
             'ubicacion' => 'nullable|string|max:100',
         ]);
 
@@ -376,7 +386,7 @@ class OrdenController extends Controller
     public function resumenCierre(Request $request)
     {
         $request->validate(['caja_id' => 'required|exists:cajas,id']);
-        $result = $this->orderService->resumenCierre((int)$request->caja_id);
+        $result = $this->orderService->resumenCierre((int) $request->caja_id);
 
         if (isset($result['error'])) {
             return response()->json($result, $result['code']);
@@ -388,21 +398,21 @@ class OrdenController extends Controller
     public function cerrarCaja(Request $request)
     {
         $data = $request->validate([
-            'caja_id'             => 'required|exists:cajas,id',
-            'monto_declarado'     => 'required|numeric|min:0',
-            'cobros_efectivo'     => 'required|numeric|min:0',
-            'cobros_tarjeta'      => 'required|numeric|min:0',
-            'cobros_transferencia'=> 'required|numeric|min:0',
-            'notas'               => 'nullable|string|max:500',
+            'caja_id' => 'required|exists:cajas,id',
+            'monto_declarado' => 'required|numeric|min:0',
+            'cobros_efectivo' => 'required|numeric|min:0',
+            'cobros_tarjeta' => 'required|numeric|min:0',
+            'cobros_transferencia' => 'required|numeric|min:0',
+            'notas' => 'nullable|string|max:500',
         ]);
 
         $result = $this->orderService->cerrarCaja(
-            (int)$data['caja_id'],
-            (float)$data['monto_declarado'],
+            (int) $data['caja_id'],
+            (float) $data['monto_declarado'],
             [
-                'efectivo' => (float)$data['cobros_efectivo'],
-                'tarjeta' => (float)$data['cobros_tarjeta'],
-                'transferencia' => (float)$data['cobros_transferencia'],
+                'efectivo' => (float) $data['cobros_efectivo'],
+                'tarjeta' => (float) $data['cobros_tarjeta'],
+                'transferencia' => (float) $data['cobros_transferencia'],
             ],
             $data['notas'] ?? null
         );
@@ -418,6 +428,7 @@ class OrdenController extends Controller
     {
         $request->validate(['estado' => 'required|string|in:disponible,ocupada,reservada,inactiva']);
         $mesa->update(['estado' => $request->estado]);
+
         return response()->json(['success' => true, 'mesa' => $mesa]);
     }
 
@@ -425,6 +436,7 @@ class OrdenController extends Controller
     {
         $data = $request->validate(['pos_x' => 'required|integer|min:0', 'pos_y' => 'required|integer|min:0']);
         $mesa->update($data);
+
         return response()->json(['success' => true]);
     }
 
@@ -436,13 +448,13 @@ class OrdenController extends Controller
             ->orderBy('ventas_count', 'desc')
             ->take(12)
             ->get(['id', 'nombre', 'precio', 'imagen', 'stock'])
-            ->map(fn($p) => [
-                'id'          => $p->id,
-                'nombre'      => $p->nombre,
-                'precio'      => (float) $p->precio,
-                'imagen'      => $p->imagen_url,
-                'iniciales'   => strtoupper(substr($p->nombre, 0, 2)),
-                'stock'       => (int) $p->stock,
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'nombre' => $p->nombre,
+                'precio' => (float) $p->precio,
+                'imagen' => $p->imagen_url,
+                'iniciales' => strtoupper(substr($p->nombre, 0, 2)),
+                'stock' => (int) $p->stock,
             ]);
 
         return response()->json($productos);
@@ -451,14 +463,133 @@ class OrdenController extends Controller
     public function saveAllPosiciones(Request $request)
     {
         $mesas = $request->validate([
-            'mesas'           => 'required|array',
-            'mesas.*.id'      => 'required|exists:mesas,id',
-            'mesas.*.pos_x'   => 'required|integer',
-            'mesas.*.pos_y'   => 'required|integer',
+            'mesas' => 'required|array',
+            'mesas.*.id' => 'required|exists:mesas,id',
+            'mesas.*.pos_x' => 'required|integer',
+            'mesas.*.pos_y' => 'required|integer',
         ]);
         foreach ($mesas['mesas'] as $m) {
             Mesa::where('id', $m['id'])->update(['pos_x' => $m['pos_x'], 'pos_y' => $m['pos_y']]);
         }
+
         return response()->json(['success' => true]);
+    }
+
+    // ====== DELIVERY METHODS ======
+
+    public function getDeliveryZones()
+    {
+        $zones = DeliveryZone::where('activo', true)
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'radio_km', 'tarifa_base', 'tarifa_por_km', 'tiempo_estimado_minutos', 'minimo_para_envio_gratis']);
+
+        return response()->json(['zones' => $zones]);
+    }
+
+    public function getAvailableDrivers()
+    {
+        $drivers = app(DriverAssignmentService::class)
+            ->obtenerDriversDisponibles()
+            ->map(fn ($d) => [
+                'id' => $d->id,
+                'nombre' => $d->nombreCompleto,
+                'telefono' => $d->telefono,
+                'ordenes_activas' => $d->ordenes_activas ?? 0,
+            ]);
+
+        return response()->json(['drivers' => $drivers]);
+    }
+
+    public function configurarDelivery(Request $request, Mesa $mesa)
+    {
+        $data = $request->validate([
+            'direccion_entrega' => 'required|string|max:500',
+            'telefono_contacto' => 'nullable|string|max:20',
+            'delivery_zone_id' => 'nullable|exists:delivery_zones,id',
+            'delivery_fee' => 'nullable|numeric|min:0',
+        ]);
+
+        $tenantId = auth()->user()->business_instance_id;
+
+        $venta = $mesa->ventas()
+            ->where('tenant_id', $tenantId)
+            ->where('estado', 'abierta')
+            ->latest()
+            ->first();
+
+        if (! $venta) {
+            return response()->json(['success' => false, 'message' => 'No hay venta activa para esta mesa.'], 404);
+        }
+
+        $venta->update([
+            'delivery_address' => $data['direccion_entrega'],
+            'delivery_zone_id' => $data['delivery_zone_id'] ?? null,
+            'delivery_fee' => $data['delivery_fee'] ?? 0,
+        ]);
+
+        if ($mesa->tipo_orden !== 'delivery') {
+            $mesa->update(['tipo_orden' => 'delivery']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Delivery configurado.']);
+    }
+
+    public function asignarDriver(Request $request, Mesa $mesa)
+    {
+        $data = $request->validate([
+            'driver_id' => 'required|exists:delivery_drivers,id',
+        ]);
+
+        $tenantId = auth()->user()->business_instance_id;
+
+        $venta = $mesa->ventas()
+            ->where('tenant_id', $tenantId)
+            ->where('estado', 'abierta')
+            ->latest()
+            ->first();
+
+        if (! $venta) {
+            return response()->json(['success' => false, 'message' => 'No hay venta activa para esta mesa.'], 404);
+        }
+
+        $result = app(DriverAssignmentService::class)
+            ->asignarDriverAVenta($venta->id, $data['driver_id']);
+
+        if (isset($result['error'])) {
+            return response()->json(['success' => false, 'message' => $result['error']], $result['code'] ?? 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Driver asignado.',
+            'driver' => $result['driver'],
+        ]);
+    }
+
+    public function verificarCobertura(Request $request)
+    {
+        $data = $request->validate([
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+            'zona_id' => 'required|exists:delivery_zones,id',
+        ]);
+
+        $result = app(DeliveryService::class)
+            ->verificarZonaCobertura($data['lat'], $data['lng'], $data['zona_id']);
+
+        return response()->json($result);
+    }
+
+    public function calcularTarifaDelivery(Request $request)
+    {
+        $data = $request->validate([
+            'distancia_km' => 'required|numeric|min:0',
+            'zona_id' => 'required|exists:delivery_zones,id',
+        ]);
+
+        $result = app(DeliveryService::class)
+            ->calcularTarifaDelivery($data['distancia_km'], $data['zona_id']);
+
+        return response()->json($result);
     }
 }

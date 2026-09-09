@@ -1,63 +1,61 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Mail;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\ProveedorController;
-use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\CompraController;
-use App\Http\Controllers\VentaController;
-use App\Http\Controllers\PagoController;
 use App\Http\Controllers\AlmacenController;
-use App\Http\Controllers\KardexController;
-use App\Http\Controllers\NcfController;
-use App\Http\Controllers\ConfigurationController;
-use App\Http\Controllers\CajaController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\EcfController;
-use App\Http\Controllers\SecuenciaEcfController;
-use App\Http\Controllers\CertificadoDigitalController;
-use App\Http\Controllers\PaymentProcessorController;
-use App\Http\Controllers\CotizacionController;
-use App\Http\Controllers\ConduceController;
-use App\Http\Controllers\GastoController;
-use App\Http\Controllers\PlantaGastoController;
-use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BackupController;
-use App\Http\Controllers\OwnerBackupController;
-use App\Http\Controllers\ReporteFiscalController;
-use App\Http\Controllers\ReporteController;
-use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\BusinessTypeController;
+use App\Http\Controllers\CajaController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\CategorySubcategoryController;
+use App\Http\Controllers\CertificadoDigitalController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\CompraController;
+use App\Http\Controllers\ConduceController;
+use App\Http\Controllers\ConfigurationController;
+use App\Http\Controllers\CotizacionController;
+use App\Http\Controllers\CuentaBancariaController;
 use App\Http\Controllers\DeliveryCompanyController;
 use App\Http\Controllers\DevolucionController;
-use App\Http\Controllers\ListaPrecioController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\RestauranteController;
-use App\Http\Controllers\OrdenController;
-use App\Http\Controllers\MesaController;
-use App\Http\Controllers\MesaCategoriaController;
-use App\Http\Controllers\MesaUbicacionController;
-use App\Http\Controllers\ReservacionController;
-use App\Http\Controllers\WaitlistController;
+use App\Http\Controllers\DocumentoSgcController;
+use App\Http\Controllers\EcfController;
+use App\Http\Controllers\Formulario1414Controller;
+use App\Http\Controllers\GastoController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\KardexController;
 use App\Http\Controllers\KdsController;
-use App\Http\Controllers\RetencionExportController;
-use App\Http\Controllers\BusinessTypeController;
-use App\Http\Controllers\ModuloController;
-use App\Http\Controllers\PosController;
-use App\Http\Controllers\CategorySubcategoryController;
-use App\Http\Controllers\VehiculoTipoController;
 use App\Http\Controllers\LavaderoController;
-use App\Http\Controllers\CuentaBancariaController;
-use App\Http\Controllers\LibroVentasController;
 use App\Http\Controllers\LibroComprasController;
 use App\Http\Controllers\LibroRetencionesController;
-use App\Http\Controllers\Formulario1414Controller;
-use App\Http\Controllers\DocumentoSgcController;
-use App\Http\Middleware\RoleMiddleware;
+use App\Http\Controllers\LibroVentasController;
+use App\Http\Controllers\ListaPrecioController;
+use App\Http\Controllers\MesaCategoriaController;
+use App\Http\Controllers\MesaController;
+use App\Http\Controllers\MesaUbicacionController;
+use App\Http\Controllers\ModuloController;
+use App\Http\Controllers\NcfController;
+use App\Http\Controllers\OrdenController;
+use App\Http\Controllers\OwnerBackupController;
+use App\Http\Controllers\PagoController;
+use App\Http\Controllers\PaymentProcessorController;
+use App\Http\Controllers\PlantaGastoController;
+use App\Http\Controllers\PosController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\ReporteFiscalController;
+use App\Http\Controllers\ReservacionController;
+use App\Http\Controllers\RestauranteController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SecuenciaEcfController;
+use App\Http\Controllers\SolicitudPendienteController;
+use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VehiculoTipoController;
+use App\Http\Controllers\VentaController;
+use App\Http\Controllers\WaitlistController;
+use Illuminate\Support\Facades\Route;
 
 // Home / Welcome
 Route::get('/', function () {
@@ -67,6 +65,7 @@ Route::get('/', function () {
 // Constraints: las rutas {modelo} solo matchean IDs numéricos.
 // Esto evita que URLs como /compras/create matcheen /compras/{compra} antes.
 Route::pattern('caja', '[0-9]+');
+Route::pattern('categoria', '[0-9]+');
 Route::pattern('cliente', '[0-9]+');
 Route::pattern('proveedor', '[0-9]+');
 Route::pattern('producto', '[0-9]+');
@@ -90,7 +89,7 @@ Route::pattern('orden', '[0-9]+');
 Route::pattern('detalle', '[0-9]+');
 
 // Dashboard
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'instance.aprobada'])->group(function () {
     Route::post('/toggle-dark-mode', [HomeController::class, 'toggleDarkMode'])->name('toggleDarkMode');
     Route::post('/sucursal-activa', [HomeController::class, 'setSucursalActiva'])->name('sucursal.set-activa');
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
@@ -305,8 +304,8 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-    // Operational routes
-    Route::middleware(['auth'])->group(function () {
+// Operational routes
+Route::middleware(['auth'])->group(function () {
 
     Route::get('/search', [SearchController::class, 'search'])->name('search.global');
 
@@ -375,7 +374,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('permission:ventas.view,ventas.view.own')->group(function () {
-    Route::get('/ventas/pdf/{id}', [VentaController::class, 'exportPdf'])->name('venta.pdf');
+        Route::get('/ventas/pdf/{id}', [VentaController::class, 'exportPdf'])->name('venta.pdf');
     });
 
     Route::match(['GET', 'POST'], '/ventas/facturar/{id}', [VentaController::class, 'facturar'])->name('ventas.facturar');
@@ -417,7 +416,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::resource('cotizaciones', CotizacionController::class)->parameters([
-        'cotizaciones' => 'cotizacione'
+        'cotizaciones' => 'cotizacione',
     ])->names('cotizaciones');
 
     // Conduces (Notas de Entrega)
@@ -430,7 +429,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{conduce}/ticket-text', [ConduceController::class, 'ticketText'])->name('ticketText')->where('conduce', '[0-9]+');
     });
     Route::resource('conduces', ConduceController::class)->parameters([
-        'conduces' => 'conduce'
+        'conduces' => 'conduce',
     ])->names('conduces');
 
     // Productos
@@ -438,46 +437,39 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/productos', [ProductoController::class, 'index'])->name('productos.index');
         Route::get('/productos/ajax', [ProductoController::class, 'indexAjax'])->name('productos.ajax');
+        Route::get('/productos/create', [ProductoController::class, 'create'])->name('productos.create');
+        Route::post('/productos', [ProductoController::class, 'store'])->name('productos.store');
         Route::get('/productos/import', [ProductoController::class, 'showImportForm'])->name('productos.import');
         Route::post('/productos/import/preview', [ProductoController::class, 'uploadPreview'])->name('productos.import.preview');
         Route::post('/productos/import/process', [ProductoController::class, 'processImport'])->name('productos.import.process');
         Route::get('/productos/exportar', [ProductoController::class, 'exportExcel'])->name('productos.exportar');
         Route::get('/productos/pdf', [ProductoController::class, 'exportPdf'])->name('productos.pdf');
         Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');
+        Route::get('/productos/{producto}/edit', [ProductoController::class, 'edit'])->name('productos.edit');
+        Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
+        Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
+
+    });
+
+    // Categorías
+    Route::middleware(['auth', 'permission:categorias.view'])->group(function () {
 
         Route::get('/categorias', [CategoriaController::class, 'index'])->name('categorias.index');
+        Route::get('/categorias/ajax', [CategoriaController::class, 'indexAjax'])->name('categorias.ajax');
         Route::get('/categorias/exportar', [CategoriaController::class, 'exportExcel'])->name('categorias.exportar');
         Route::get('/categorias/pdf', [CategoriaController::class, 'pdf'])->name('categorias.pdf');
         Route::get('/categorias/create', [CategoriaController::class, 'create'])->name('categorias.create');
         Route::get('/categorias/importar', [CategoriaController::class, 'showImportForm'])->name('categorias.importar');
+        Route::get('/categorias/{categoria}/edit', [CategoriaController::class, 'edit'])->name('categorias.edit');
         Route::get('/categorias/{categoria}', [CategoriaController::class, 'show'])->name('categorias.show');
-    });
-
-    Route::middleware('permission:productos.create')->group(function () {
-        Route::get('/productos/create', [ProductoController::class, 'create'])->name('productos.create');
-        Route::post('/productos', [ProductoController::class, 'store'])->name('productos.store');
-        Route::post('/productos/import', [ProductoController::class, 'uploadPreview'])->name('productos.import.store');
+        Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update');
+        Route::put('/categorias/{categoria}/toggle', [CategoriaController::class, 'toggleActiva'])->name('categorias.toggle');
+        Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy');
 
         Route::post('/categorias', [CategoriaController::class, 'store'])->name('categorias.store');
         Route::post('/categorias/importar', [CategoriaController::class, 'import'])->name('categorias.importar.procesar');
     });
 
-    Route::middleware('permission:productos.edit')->group(function () {
-        Route::get('/productos/{producto}/edit', [ProductoController::class, 'edit'])->name('productos.edit');
-        Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
-        Route::put('/productos/{producto}/toggle', [ProductoController::class, 'toggleActivo'])->name('productos.toggle');
-
-        Route::get('/categorias/{categoria}/edit', [CategoriaController::class, 'edit'])->name('categorias.edit');
-        Route::put('/categorias/{categoria}', [CategoriaController::class, 'update'])->name('categorias.update');
-        Route::put('/categorias/{categoria}/toggle', [CategoriaController::class, 'toggleActiva'])->name('categorias.toggle');
-    });
-
-    Route::middleware('permission:productos.delete')->group(function () {
-        Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
-        Route::post('/productos/{producto}/delete-ajax', [ProductoController::class, 'destroyAjax'])->name('productos.destroy-ajax');
-
-        Route::delete('/categorias/{categoria}', [CategoriaController::class, 'destroy'])->name('categorias.destroy');
-    });
     // Clientes
     Route::middleware('permission:clientes.view')->group(function () {
         Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
@@ -611,9 +603,9 @@ Route::middleware('auth')->group(function () {
         Route::get('almacenes-movimientos', [AlmacenController::class, 'movimientos'])->name('almacenes.movimientos');
         Route::get('almacenes-movimientos/create', [AlmacenController::class, 'createMovimiento'])->name('almacenes.movimientos.create');
         Route::post('almacenes-movimientos', [AlmacenController::class, 'storeMovimiento'])->name('almacenes.movimientos.store');
-    Route::get('almacenes-movimientos/pdf', [AlmacenController::class, 'exportMovimientosPdf'])->name('almacenes.movimientos.pdf');
-    Route::get('almacenes-movimientos/excel', [AlmacenController::class, 'exportMovimientosExcel'])->name('almacenes.movimientos.excel');
-    Route::get('/almacenes/inventario-almacen', [AlmacenController::class, 'inventarioAlmacen'])->name('almacenes.inventario');
+        Route::get('almacenes-movimientos/pdf', [AlmacenController::class, 'exportMovimientosPdf'])->name('almacenes.movimientos.pdf');
+        Route::get('almacenes-movimientos/excel', [AlmacenController::class, 'exportMovimientosExcel'])->name('almacenes.movimientos.excel');
+        Route::get('/almacenes/inventario-almacen', [AlmacenController::class, 'inventarioAlmacen'])->name('almacenes.inventario');
     });
 
     // Kardex
@@ -735,29 +727,29 @@ Route::middleware('auth')->group(function () {
         Route::get('/reportes/gastos/csv', [ReporteController::class, 'gastosCsv'])->name('reportes.gastos.csv');
         Route::get('/reportes/gastos/pdf', [ReporteController::class, 'gastosPdf'])->name('reportes.gastos.pdf');
 
-    // Retenciones
-    Route::get('/reportes/retenciones', [ReporteController::class, 'retenciones'])->name('reportes.retenciones');
-    Route::get('/reportes/retenciones/csv', [ReporteController::class, 'retencionesCsv'])->name('reportes.retenciones.csv');
+        // Retenciones
+        Route::get('/reportes/retenciones', [ReporteController::class, 'retenciones'])->name('reportes.retenciones');
+        Route::get('/reportes/retenciones/csv', [ReporteController::class, 'retencionesCsv'])->name('reportes.retenciones.csv');
 
-    // Libros Fiscales (DGII)
-    Route::middleware('permission:reportes.view')->group(function () {
-        Route::get('/libros/ventas', [LibroVentasController::class, 'index'])->name('libros.ventas.index');
-        Route::get('/libros/ventas/csv', [LibroVentasController::class, 'exportCsv'])->name('libros.ventas.csv');
-        Route::get('/libros/ventas/pdf', [LibroVentasController::class, 'exportPdf'])->name('libros.ventas.pdf');
+        // Libros Fiscales (DGII)
+        Route::middleware('permission:reportes.view')->group(function () {
+            Route::get('/libros/ventas', [LibroVentasController::class, 'index'])->name('libros.ventas.index');
+            Route::get('/libros/ventas/csv', [LibroVentasController::class, 'exportCsv'])->name('libros.ventas.csv');
+            Route::get('/libros/ventas/pdf', [LibroVentasController::class, 'exportPdf'])->name('libros.ventas.pdf');
 
-        Route::get('/libros/compras', [LibroComprasController::class, 'index'])->name('libros.compras.index');
-        Route::get('/libros/compras/csv', [LibroComprasController::class, 'exportCsv'])->name('libros.compras.csv');
-        Route::get('/libros/compras/pdf', [LibroComprasController::class, 'exportPdf'])->name('libros.compras.pdf');
+            Route::get('/libros/compras', [LibroComprasController::class, 'index'])->name('libros.compras.index');
+            Route::get('/libros/compras/csv', [LibroComprasController::class, 'exportCsv'])->name('libros.compras.csv');
+            Route::get('/libros/compras/pdf', [LibroComprasController::class, 'exportPdf'])->name('libros.compras.pdf');
 
-        Route::get('/formulario-14-14', [Formulario1414Controller::class, 'index'])->name('formulario.14-14.index');
-        Route::get('/formulario-14-14/pdf', [Formulario1414Controller::class, 'exportPdf'])->name('formulario.14-14.pdf');
-        Route::get('/formulario-14-14/csv', [Formulario1414Controller::class, 'exportCsv'])->name('formulario.14-14.csv');
+            Route::get('/formulario-14-14', [Formulario1414Controller::class, 'index'])->name('formulario.14-14.index');
+            Route::get('/formulario-14-14/pdf', [Formulario1414Controller::class, 'exportPdf'])->name('formulario.14-14.pdf');
+            Route::get('/formulario-14-14/csv', [Formulario1414Controller::class, 'exportCsv'])->name('formulario.14-14.csv');
 
-        // Libro de Retenciones Consolidado
-        Route::get('/libros-retenciones', [LibroRetencionesController::class, 'index'])->name('libros-retenciones.index');
-        Route::get('/libros-retenciones/excel', [LibroRetencionesController::class, 'exportExcel'])->name('libros-retenciones.excel');
-        Route::get('/libros-retenciones/pdf', [LibroRetencionesController::class, 'exportPdf'])->name('libros-retenciones.pdf');
-    });
+            // Libro de Retenciones Consolidado
+            Route::get('/libros-retenciones', [LibroRetencionesController::class, 'index'])->name('libros-retenciones.index');
+            Route::get('/libros-retenciones/excel', [LibroRetencionesController::class, 'exportExcel'])->name('libros-retenciones.excel');
+            Route::get('/libros-retenciones/pdf', [LibroRetencionesController::class, 'exportPdf'])->name('libros-retenciones.pdf');
+        });
 
         // Fiscales (606/607) - existing
         Route::get('/reportes/fiscales', [ReporteFiscalController::class, 'index'])->name('reportes.fiscales');
@@ -849,6 +841,17 @@ Route::middleware(['auth', 'role:admin|owner'])->group(function () {
     Route::get('roles-matrix', [RoleController::class, 'matrix'])->name('roles.matrix');
 });
 
+// Instance user management (admin-business)
+Route::middleware('auth')->prefix('instance/{instanceId}')->name('instance.')->whereNumber('instanceId')->group(function () {
+    Route::get('/users', [\App\Http\Controllers\InstanceUserManagementController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [\App\Http\Controllers\InstanceUserManagementController::class, 'create'])->name('users.create');
+    Route::post('/users', [\App\Http\Controllers\InstanceUserManagementController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}', [\App\Http\Controllers\InstanceUserManagementController::class, 'show'])->name('users.show');
+    Route::get('/users/{user}/edit', [\App\Http\Controllers\InstanceUserManagementController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [\App\Http\Controllers\InstanceUserManagementController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [\App\Http\Controllers\InstanceUserManagementController::class, 'destroy'])->name('users.destroy');
+});
+
 // API Documentation
 Route::middleware('auth')->get('/docs/api', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'index'])->name('api.documentation');
 Route::middleware('auth')->get('/docs/api/export', [\App\Http\Controllers\Api\ApiDocumentationController::class, 'export'])->name('api.documentation.export');
@@ -884,15 +887,17 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/instances/{instance}', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesShow'])->name('instances.show');
     Route::get('/instances/{instance}/edit', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesEdit'])->name('instances.edit');
     Route::put('/instances/{instance}', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesUpdate'])->name('instances.update');
-    Route::delete('/instances/{instance}', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesDestroy'])->name('instances.destroy');
+    Route::delete('/instances/{instance}', [\App\Http\Controllers\OwnerInstanceController::class, 'instancesDestroy'])->middleware('owner.dangerous:5,15')->name('instances.destroy');
     Route::get('/instances/{instance}/config', [\App\Http\Controllers\OwnerInstanceConfigController::class, 'instancesConfig'])->name('instances.config');
     Route::put('/instances/{instance}/config', [\App\Http\Controllers\OwnerInstanceConfigController::class, 'instancesConfigUpdate'])->name('instances.config.update');
     Route::post('/instances/{instance}/toggle-block', [\App\Http\Controllers\OwnerInstanceController::class, 'alternarBloqueo'])->name('instances.toggle-block');
     Route::post('/instances/{instance}/clean', [\App\Http\Controllers\OwnerInstanceController::class, 'cleanInstance'])->name('instances.clean');
+    Route::post('/instances/{instance}/approve', [\App\Http\Controllers\OwnerInstanceController::class, 'approveInstance'])->name('instances.approve');
+    Route::post('/instances/{instance}/reject', [\App\Http\Controllers\OwnerInstanceController::class, 'rejectInstance'])->name('instances.reject');
     Route::get('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'paymentHistory'])->name('instances.pagos');
     Route::get('/instances/{instance}/pagos/create', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'registerPayment'])->name('instances.pagos.create');
     Route::post('/instances/{instance}/pagos', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'storePayment'])->name('instances.pagos.store');
-    Route::post('/instances/{instance}/pagos/{pago}/confirmar', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'confirmPayment'])->name('instances.pagos.confirmar');
+    Route::post('/instances/{instance}/pagos/{pago}/confirmar', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'confirmPayment'])->middleware('owner.dangerous:3,15')->name('instances.pagos.confirmar');
     Route::get('/instances/{instance}/pagos/{pago}/edit', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'editPayment'])->name('instances.pagos.edit');
     Route::put('/instances/{instance}/pagos/{pago}', [\App\Http\Controllers\OwnerInstancePaymentController::class, 'updatePayment'])->name('instances.pagos.update');
     // Instance user management
@@ -940,17 +945,24 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::delete('/instances/{instance}/api-keys/{apiKey}', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyDestroy'])->name('instances.api-keys.destroy');
 
     // Cuentas Bancarias (Owner)
-    Route::get('/cuentas-bancarias',[\App\Http\Controllers\OwnerController::class,'cuentasBancarias'])->name('cuentas-bancarias.index');
+    Route::get('/cuentas-bancarias', [\App\Http\Controllers\OwnerController::class, 'cuentasBancarias'])->name('cuentas-bancarias.index');
+    // Solicitudes de Instancias
+    Route::get('/solicitudes', [\App\Http\Controllers\OwnerSolicitudController::class, 'index'])->name('solicitudes.index');
+    Route::get('/solicitudes/{instance}', [\App\Http\Controllers\OwnerSolicitudController::class, 'show'])->name('solicitudes.show');
+    Route::post('/solicitudes/{instance}/aprobar', [\App\Http\Controllers\OwnerSolicitudController::class, 'aprobar'])->name('solicitudes.aprobar');
+    Route::post('/solicitudes/{instance}/rechazar', [\App\Http\Controllers\OwnerSolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
     // SMTP Configuration (Owner Only)
     Route::get('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettings'])->name('smtp-settings');
     Route::post('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsUpdate'])->name('smtp-settings.update');
     Route::post('/smtp-settings/test', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsTest'])->name('smtp-settings.test');
     // Error Alerts Testing (Owner Only)
-    Route::get('/error-test', [\App\Http\Controllers\ErrorTestController::class, 'index'])->name('error-test');
-    Route::post('/error-test/smtp', [\App\Http\Controllers\ErrorTestController::class, 'testSmtp'])->name('error-test.smtp');
-    Route::post('/error-test/simulate', [\App\Http\Controllers\ErrorTestController::class, 'simulateException'])->name('error-test.simulate');
-    Route::post('/error-test/log', [\App\Http\Controllers\ErrorTestController::class, 'testLog'])->name('error-test.log');
-    Route::post('/error-test/db-trigger', [\App\Http\Controllers\ErrorTestController::class, 'triggerErrorFromDb'])->name('error-test.db-trigger');
+    Route::middleware('owner.dangerous:3,60')->group(function () {
+        Route::get('/error-test', [\App\Http\Controllers\ErrorTestController::class, 'index'])->name('error-test');
+        Route::post('/error-test/smtp', [\App\Http\Controllers\ErrorTestController::class, 'testSmtp'])->name('error-test.smtp');
+        Route::post('/error-test/simulate', [\App\Http\Controllers\ErrorTestController::class, 'simulateException'])->name('error-test.simulate');
+        Route::post('/error-test/log', [\App\Http\Controllers\ErrorTestController::class, 'testLog'])->name('error-test.log');
+        Route::post('/error-test/db-trigger', [\App\Http\Controllers\ErrorTestController::class, 'triggerErrorFromDb'])->name('error-test.db-trigger');
+    });
     // API Request Logs
     Route::get('/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'index'])->name('api-requests');
     Route::get('/api/api-requests', [\App\Http\Controllers\OwnerApiController::class, 'apiIndex'])->name('api.api-requests');
@@ -961,7 +973,7 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::post('/owners', [\App\Http\Controllers\OwnerController::class, 'ownersStore'])->name('owners.store');
     Route::get('/owners/{owner}/edit', [\App\Http\Controllers\OwnerController::class, 'ownersEdit'])->name('owners.edit');
     Route::put('/owners/{owner}', [\App\Http\Controllers\OwnerController::class, 'ownersUpdate'])->name('owners.update');
-    Route::delete('/owners/{owner}', [\App\Http\Controllers\OwnerController::class, 'ownersDestroy'])->name('owners.destroy');
+    Route::delete('/owners/{owner}', [\App\Http\Controllers\OwnerController::class, 'ownersDestroy'])->middleware('owner.dangerous:3,15')->name('owners.destroy');
     // (owner role management removed - roles are managed per-instance)
 
     // Owner Backups Management
@@ -969,7 +981,7 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/backups/config', [OwnerBackupController::class, 'config'])->name('backups.config');
     Route::post('/backups', [OwnerBackupController::class, 'store'])->name('backups.store');
     Route::get('/backups/{backup}/download', [OwnerBackupController::class, 'download'])->name('backups.download');
-    Route::post('/backups/{backup}/restore', [OwnerBackupController::class, 'restore'])->name('backups.restore');
+    Route::post('/backups/{backup}/restore', [OwnerBackupController::class, 'restore'])->middleware('owner.dangerous:3,15')->name('backups.restore');
     Route::delete('/backups/{backup}', [OwnerBackupController::class, 'destroy'])->name('backups.destroy');
 });
 
@@ -1093,18 +1105,24 @@ Route::middleware(['auth', 'permission:delivery-tracking.view'])->group(function
     Route::get('/delivery/drivers-queue', [\App\Http\Controllers\DeliveryTrackingController::class, 'driversQueue'])->name('delivery.drivers-queue');
 });
 
+// Delivery Tracking - Mis Entregas (vista del driver)
+Route::middleware(['auth', 'permission:delivery-mis-entregas.view'])->group(function () {
+    Route::get('/delivery-mis-entregas', [\App\Http\Controllers\DeliveryTrackingController::class, 'myDeliveries'])->name('delivery-mis-entregas');
+    Route::patch('/delivery-mis-entregas/{tracking}/status', [\App\Http\Controllers\DeliveryTrackingController::class, 'driverUpdateStatus'])->name('delivery-mis-entregas.updateStatus');
+});
+
 // Delivery Tracking
 Route::middleware(['auth', 'permission:delivery-tracking.view'])->group(function () {
     Route::get('/delivery-tracking', [\App\Http\Controllers\DeliveryTrackingController::class, 'index'])->name('delivery-tracking.index');
     Route::get('/delivery-tracking/{tracking}', [\App\Http\Controllers\DeliveryTrackingController::class, 'show'])->name('delivery-tracking.show');
     Route::post('/delivery-tracking', [\App\Http\Controllers\DeliveryTrackingController::class, 'store'])->name('delivery-tracking.store');
-    Route::patch('/delivery-tracking/{tracking}/status', [\App\Http\Controllers\DeliveryTrackingController::class, 'updateStatus'])->name('delivery-tracking.update-status');
+    Route::patch('/delivery-tracking/{tracking}/status', [\App\Http\Controllers\DeliveryTrackingController::class, 'updateStatus'])->name('delivery-tracking.updateStatus');
     Route::post('/delivery-tracking/{tracking}/ubicacion', [\App\Http\Controllers\DeliveryTrackingController::class, 'registrarUbicacion'])->name('delivery-tracking.registrar-ubicacion');
     Route::post('/delivery-tracking/{tracking}/entrega', [\App\Http\Controllers\DeliveryTrackingController::class, 'confirmarEntrega'])->name('delivery-tracking.confirmar-entrega');
 });
 
 // Driver Assignments (API)
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'permission:delivery-tracking.assign'])->group(function () {
     Route::post('/orden/{orden}/asignar-driver', [\App\Http\Controllers\DeliveryTrackingController::class, 'asignarDriver'])->name('orden.asignar-driver');
     Route::post('/orden/{orden}/liberar-driver', [\App\Http\Controllers\DeliveryTrackingController::class, 'liberarDriver'])->name('orden.liberar-driver');
 });
@@ -1121,6 +1139,7 @@ Route::middleware(['auth', 'permission:delivery-earnings.view'])->group(function
 Route::middleware(['auth', 'role:admin'])->get('/_debug-reservaciones', function () {
     $query = \App\Models\Reservacion::with('mesa', 'user')->deSucursal();
     $results = $query->get();
+
     return [
         'user' => [
             'id' => Auth::id(),
@@ -1228,49 +1247,49 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/restaurante/kds/audio', [KdsController::class, 'audio'])->name('restaurante.kds.audio')->middleware('permission:restaurante.view');
 });
 
-    // Alquileres (Property Rentals)
-    Route::middleware(['auth'])->group(function () {
-        // Lavadero (Car Wash) routes
-        Route::get('/lavadero/vehiculos', [LavaderoController::class, 'buscarVehiculo'])->name('lavadero.vehiculos.index')->middleware('permission:lavadero.vehiculos');
-        Route::get('/lavadero/citas', [LavaderoController::class, 'citas'])->name('lavadero.citas.index')->middleware('permission:lavadero.citas');
-        Route::post('/lavadero/citas', [LavaderoController::class, 'storeCita'])->name('lavadero.citas.store')->middleware('permission:lavadero.citas');
-        Route::put('/lavadero/citas/{cita}', [LavaderoController::class, 'updateCita'])->name('lavadero.citas.update')->middleware('permission:lavadero.citas');
-        Route::delete('/lavadero/citas/{cita}', [LavaderoController::class, 'destroyCita'])->name('lavadero.citas.destroy')->middleware('permission:lavadero.citas');
-        Route::get('/lavadero/lavadores', [LavaderoController::class, 'lavadores'])->name('lavadero.lavadores.index')->middleware('permission:lavadero.lavadores');
-        Route::post('/lavadero/lavadores', [LavaderoController::class, 'storeLavador'])->name('lavadero.lavadores.store')->middleware('permission:lavadero.lavadores');
-        Route::put('/lavadero/lavadores/{lavador}', [LavaderoController::class, 'updateLavador'])->name('lavadero.lavadores.update')->middleware('permission:lavadero.lavadores');
-        Route::delete('/lavadero/lavadores/{lavador}', [LavaderoController::class, 'destroyLavador'])->name('lavadero.lavadores.destroy')->middleware('permission:lavadero.lavadores');
+// Alquileres (Property Rentals)
+Route::middleware(['auth'])->group(function () {
+    // Lavadero (Car Wash) routes
+    Route::get('/lavadero/vehiculos', [LavaderoController::class, 'buscarVehiculo'])->name('lavadero.vehiculos.index')->middleware('permission:lavadero.vehiculos');
+    Route::get('/lavadero/citas', [LavaderoController::class, 'citas'])->name('lavadero.citas.index')->middleware('permission:lavadero.citas');
+    Route::post('/lavadero/citas', [LavaderoController::class, 'storeCita'])->name('lavadero.citas.store')->middleware('permission:lavadero.citas');
+    Route::put('/lavadero/citas/{cita}', [LavaderoController::class, 'updateCita'])->name('lavadero.citas.update')->middleware('permission:lavadero.citas');
+    Route::delete('/lavadero/citas/{cita}', [LavaderoController::class, 'destroyCita'])->name('lavadero.citas.destroy')->middleware('permission:lavadero.citas');
+    Route::get('/lavadero/lavadores', [LavaderoController::class, 'lavadores'])->name('lavadero.lavadores.index')->middleware('permission:lavadero.lavadores');
+    Route::post('/lavadero/lavadores', [LavaderoController::class, 'storeLavador'])->name('lavadero.lavadores.store')->middleware('permission:lavadero.lavadores');
+    Route::put('/lavadero/lavadores/{lavador}', [LavaderoController::class, 'updateLavador'])->name('lavadero.lavadores.update')->middleware('permission:lavadero.lavadores');
+    Route::delete('/lavadero/lavadores/{lavador}', [LavaderoController::class, 'destroyLavador'])->name('lavadero.lavadores.destroy')->middleware('permission:lavadero.lavadores');
 
-        Route::get('/alquileres', [\App\Http\Controllers\AlquilerController::class, 'index'])->name('alquileres.index')->middleware('permission:alquileres.view');
+    Route::get('/alquileres', [\App\Http\Controllers\AlquilerController::class, 'index'])->name('alquileres.index')->middleware('permission:alquileres.view');
 
-        Route::get('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'index'])->name('alquileres.viviendas.index')->middleware('permission:alquileres.viviendas');
-        Route::get('/alquileres/viviendas/crear', [\App\Http\Controllers\AlquilerViviendaController::class, 'create'])->name('alquileres.viviendas.create')->middleware('permission:alquileres.viviendas');
-        Route::post('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'store'])->name('alquileres.viviendas.store')->middleware('permission:alquileres.viviendas');
-        Route::get('/alquileres/viviendas/{vivienda}/editar', [\App\Http\Controllers\AlquilerViviendaController::class, 'edit'])->name('alquileres.viviendas.edit')->middleware('permission:alquileres.viviendas');
-        Route::put('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'update'])->name('alquileres.viviendas.update')->middleware('permission:alquileres.viviendas');
-        Route::delete('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'destroy'])->name('alquileres.viviendas.destroy')->middleware('permission:alquileres.viviendas');
+    Route::get('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'index'])->name('alquileres.viviendas.index')->middleware('permission:alquileres.viviendas');
+    Route::get('/alquileres/viviendas/crear', [\App\Http\Controllers\AlquilerViviendaController::class, 'create'])->name('alquileres.viviendas.create')->middleware('permission:alquileres.viviendas');
+    Route::post('/alquileres/viviendas', [\App\Http\Controllers\AlquilerViviendaController::class, 'store'])->name('alquileres.viviendas.store')->middleware('permission:alquileres.viviendas');
+    Route::get('/alquileres/viviendas/{vivienda}/editar', [\App\Http\Controllers\AlquilerViviendaController::class, 'edit'])->name('alquileres.viviendas.edit')->middleware('permission:alquileres.viviendas');
+    Route::put('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'update'])->name('alquileres.viviendas.update')->middleware('permission:alquileres.viviendas');
+    Route::delete('/alquileres/viviendas/{vivienda}', [\App\Http\Controllers\AlquilerViviendaController::class, 'destroy'])->name('alquileres.viviendas.destroy')->middleware('permission:alquileres.viviendas');
 
-        Route::get('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'index'])->name('alquileres.inquilinos.index')->middleware('permission:alquileres.inquilinos');
-        Route::get('/alquileres/inquilinos/crear', [\App\Http\Controllers\AlquilerInquilinoController::class, 'create'])->name('alquileres.inquilinos.create')->middleware('permission:alquileres.inquilinos');
-        Route::post('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'store'])->name('alquileres.inquilinos.store')->middleware('permission:alquileres.inquilinos');
-        Route::get('/alquileres/inquilinos/{inquilino}/editar', [\App\Http\Controllers\AlquilerInquilinoController::class, 'edit'])->name('alquileres.inquilinos.edit')->middleware('permission:alquileres.inquilinos');
-        Route::put('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'update'])->name('alquileres.inquilinos.update')->middleware('permission:alquileres.inquilinos');
-        Route::delete('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'destroy'])->name('alquileres.inquilinos.destroy')->middleware('permission:alquileres.inquilinos');
+    Route::get('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'index'])->name('alquileres.inquilinos.index')->middleware('permission:alquileres.inquilinos');
+    Route::get('/alquileres/inquilinos/crear', [\App\Http\Controllers\AlquilerInquilinoController::class, 'create'])->name('alquileres.inquilinos.create')->middleware('permission:alquileres.inquilinos');
+    Route::post('/alquileres/inquilinos', [\App\Http\Controllers\AlquilerInquilinoController::class, 'store'])->name('alquileres.inquilinos.store')->middleware('permission:alquileres.inquilinos');
+    Route::get('/alquileres/inquilinos/{inquilino}/editar', [\App\Http\Controllers\AlquilerInquilinoController::class, 'edit'])->name('alquileres.inquilinos.edit')->middleware('permission:alquileres.inquilinos');
+    Route::put('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'update'])->name('alquileres.inquilinos.update')->middleware('permission:alquileres.inquilinos');
+    Route::delete('/alquileres/inquilinos/{inquilino}', [\App\Http\Controllers\AlquilerInquilinoController::class, 'destroy'])->name('alquileres.inquilinos.destroy')->middleware('permission:alquileres.inquilinos');
 
-        Route::get('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'index'])->name('alquileres.contratos.index')->middleware('permission:alquileres.contratos');
-        Route::get('/alquileres/contratos/crear', [\App\Http\Controllers\AlquilerContratoController::class, 'create'])->name('alquileres.contratos.create')->middleware('permission:alquileres.contratos');
-        Route::post('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'store'])->name('alquileres.contratos.store')->middleware('permission:alquileres.contratos');
-        Route::get('/alquileres/contratos/{contrato}/editar', [\App\Http\Controllers\AlquilerContratoController::class, 'edit'])->name('alquileres.contratos.edit')->middleware('permission:alquileres.contratos');
-        Route::put('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'update'])->name('alquileres.contratos.update')->middleware('permission:alquileres.contratos');
-        Route::delete('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'destroy'])->name('alquileres.contratos.destroy')->middleware('permission:alquileres.contratos');
+    Route::get('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'index'])->name('alquileres.contratos.index')->middleware('permission:alquileres.contratos');
+    Route::get('/alquileres/contratos/crear', [\App\Http\Controllers\AlquilerContratoController::class, 'create'])->name('alquileres.contratos.create')->middleware('permission:alquileres.contratos');
+    Route::post('/alquileres/contratos', [\App\Http\Controllers\AlquilerContratoController::class, 'store'])->name('alquileres.contratos.store')->middleware('permission:alquileres.contratos');
+    Route::get('/alquileres/contratos/{contrato}/editar', [\App\Http\Controllers\AlquilerContratoController::class, 'edit'])->name('alquileres.contratos.edit')->middleware('permission:alquileres.contratos');
+    Route::put('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'update'])->name('alquileres.contratos.update')->middleware('permission:alquileres.contratos');
+    Route::delete('/alquileres/contratos/{contrato}', [\App\Http\Controllers\AlquilerContratoController::class, 'destroy'])->name('alquileres.contratos.destroy')->middleware('permission:alquileres.contratos');
 
-        Route::get('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'index'])->name('alquileres.pagos.index')->middleware('permission:alquileres.pagos');
-        Route::get('/alquileres/pagos/crear', [\App\Http\Controllers\AlquilerPagoController::class, 'create'])->name('alquileres.pagos.create')->middleware('permission:alquileres.pagos');
-        Route::post('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'store'])->name('alquileres.pagos.store')->middleware('permission:alquileres.pagos');
-        Route::get('/alquileres/pagos/{pago}/editar', [\App\Http\Controllers\AlquilerPagoController::class, 'edit'])->name('alquileres.pagos.edit')->middleware('permission:alquileres.pagos');
-        Route::put('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'update'])->name('alquileres.pagos.update')->middleware('permission:alquileres.pagos');
-        Route::delete('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'destroy'])->name('alquileres.pagos.destroy')->middleware('permission:alquileres.pagos');
-    });
+    Route::get('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'index'])->name('alquileres.pagos.index')->middleware('permission:alquileres.pagos');
+    Route::get('/alquileres/pagos/crear', [\App\Http\Controllers\AlquilerPagoController::class, 'create'])->name('alquileres.pagos.create')->middleware('permission:alquileres.pagos');
+    Route::post('/alquileres/pagos', [\App\Http\Controllers\AlquilerPagoController::class, 'store'])->name('alquileres.pagos.store')->middleware('permission:alquileres.pagos');
+    Route::get('/alquileres/pagos/{pago}/editar', [\App\Http\Controllers\AlquilerPagoController::class, 'edit'])->name('alquileres.pagos.edit')->middleware('permission:alquileres.pagos');
+    Route::put('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'update'])->name('alquileres.pagos.update')->middleware('permission:alquileres.pagos');
+    Route::delete('/alquileres/pagos/{pago}', [\App\Http\Controllers\AlquilerPagoController::class, 'destroy'])->name('alquileres.pagos.destroy')->middleware('permission:alquileres.pagos');
+});
 
 // POS (Point of Sale)
 // POS (Point of Sale)
@@ -1380,6 +1399,8 @@ Route::middleware(['auth'])->prefix('arte')->name('arte.')->group(function () {
 Route::get('/instancia-bloqueada', function () {
     return view('errors.instancia-bloqueada');
 })->name('instancia-bloqueada');
+
+Route::middleware('auth')->get('/solicitud-pendiente', [SolicitudPendienteController::class, 'index'])->name('solicitud.pendiente');
 
 // Suscripción autoservicio — exenta del bloqueo por impago
 Route::middleware(['auth'])->prefix('suscripcion')->name('suscripcion.')->group(function () {
@@ -1901,7 +1922,7 @@ Route::middleware(['auth'])->prefix('climatizacion')->name('climatizacion.')->gr
 
 // UI System Demo
 Route::middleware(['auth'])->prefix('ui-demo')->name('ui-demo.')->group(function () {
-    Route::get('/', fn() => view('ui-demo.index'))->name('index');
+    Route::get('/', fn () => view('ui-demo.index'))->name('index');
 });
 
 // ============================================
@@ -1918,12 +1939,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/notifications/unread-by-category', [\App\Http\Controllers\NotificationController::class, 'apiUnreadByCategory'])->name('api.notifications.unread-by-category');
     Route::get('/api/notifications/recent/{limit?}', [\App\Http\Controllers\NotificationController::class, 'apiRecent'])->name('api.notifications.recent');
     Route::get('/api/notifications/feed', [\App\Http\Controllers\NotificationController::class, 'apiFeed'])->name('api.notifications.feed');
-    
+
     Route::put('/api/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'apiMarkAsRead'])->name('api.notifications.mark-read');
     Route::post('/api/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'apiMarkAllAsRead'])->name('api.notifications.mark-all-read');
     Route::delete('/api/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'apiDelete'])->name('api.notifications.delete');
     Route::post('/api/notifications/clean-old', [\App\Http\Controllers\NotificationController::class, 'apiCleanOld'])->name('api.notifications.clean-old');
-    
+
     // Preferences
     Route::get('/api/notifications/preferences', [\App\Http\Controllers\NotificationController::class, 'apiPreferences'])->name('api.notifications.preferences');
     Route::put('/api/notifications/preferences', [\App\Http\Controllers\NotificationController::class, 'apiUpdatePreferences'])->name('api.notifications.preferences.update');
@@ -1946,8 +1967,7 @@ Route::middleware(['auth'])->group(function () {
 // =============================================
 // Access: /telescope - authorized by role: admin|owner|root|admin-business
 //
-require __DIR__ . '/auth.php';
-
+require __DIR__.'/auth.php';
 
 // =============================================
 // Two-Factor Authentication (2FA) Routes

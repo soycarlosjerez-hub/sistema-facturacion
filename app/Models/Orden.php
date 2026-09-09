@@ -14,14 +14,14 @@ class Orden extends Model
     protected $table = 'ordenes';
 
     protected $casts = [
-        'subtotal'       => 'decimal:2',
-        'impuestos'      => 'decimal:2',
-        'descuento'      => 'decimal:2',
-        'propina'        => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'impuestos' => 'decimal:2',
+        'descuento' => 'decimal:2',
+        'propina' => 'decimal:2',
         'cargo_servicio' => 'decimal:2',
-        'delivery_fee'   => 'decimal:2',
-        'total'          => 'decimal:2',
-        'hora_retiro'    => 'datetime',
+        'delivery_fee' => 'decimal:2',
+        'total' => 'decimal:2',
+        'hora_retiro' => 'datetime',
         'ncf_vencimiento' => 'datetime',
     ];
 
@@ -30,8 +30,8 @@ class Orden extends Model
         'tipo_comprobante', 'encf',
         'terminal_id', 'user_id', 'caja_id', 'sesion_caja_id',
         'cliente_id', 'sucursal_id',
-        'tipo_orden', 'entrega_empresa_id',
-        'driver_id', 'delivery_company_id', 'tracking_status',
+        'venta_id', 'tipo_orden', 'entrega_empresa_id',
+        'driver_id', 'delivery_company_id', 'delivery_zone_id', 'tracking_status',
         'direccion_entrega', 'telefono_contacto', 'hora_retiro',
         'subtotal', 'impuestos', 'descuento', 'total',
         'descuento_tipo', 'descuento_motivo', 'propina',
@@ -42,6 +42,11 @@ class Orden extends Model
     public function terminal()
     {
         return $this->belongsTo(Terminal::class);
+    }
+
+    public function venta()
+    {
+        return $this->belongsTo(Venta::class);
     }
 
     public function usuario()
@@ -84,6 +89,21 @@ class Orden extends Model
         return $this->belongsTo(DeliveryCompany::class, 'entrega_empresa_id');
     }
 
+    public function deliveryCompany()
+    {
+        return $this->belongsTo(DeliveryCompany::class, 'delivery_company_id');
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(DeliveryDriver::class);
+    }
+
+    public function deliveryZone()
+    {
+        return $this->belongsTo(DeliveryZone::class);
+    }
+
     public function deliveryTracking()
     {
         return $this->hasOne(\App\Models\DeliveryTracking::class, 'orden_id');
@@ -95,6 +115,7 @@ class Orden extends Model
         if ($sucursalId) {
             return $query->where('sucursal_id', $sucursalId);
         }
+
         return $query;
     }
 

@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Mail\NuevaInstanciaRegistrada;
+use App\Mail\NuevaSolicitudInstancia;
 use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\InstanceRole;
-use App\Models\PagoInstancia;
-use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -30,17 +28,15 @@ class RegisteredUserController extends Controller
     public function create(): View
     {
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
-        $plans = Plan::active();
 
-        return view('auth.register', compact('businessTypes', 'plans'));
+        return view('auth.register', compact('businessTypes'));
     }
 
     /**
      * Handle an incoming registration request.
      *
-     * Crea el usuario administrador, su instancia de negocio, el plan, el pago
-     * pendiente de implementación, el rol de instancia 'admin' con los módulos
-     * del tipo de negocio y notifica a todos los owners para su asignación.
+     * Crea el usuario administrador, su instancia de negocio en estado pendiente
+     * de aprobación y notifica a todos los owners para su validación.
      *
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -55,7 +51,6 @@ class RegisteredUserController extends Controller
             'rnc' => ['required', 'string', 'max:20', 'unique:business_instances,rnc'],
             'telefono' => ['required', 'string', 'max:50'],
             'direccion' => ['required', 'string', 'max:500'],
-            'plan_id' => ['required', 'exists:plans,id'],
         ]);
 
         $businessType = BusinessType::where('activo', true)->find($data['business_type_id']);
@@ -63,16 +58,11 @@ class RegisteredUserController extends Controller
             return back()->withInput()->with('error', 'El tipo de negocio seleccionado no está disponible.');
         }
 
-        $plan = Plan::active()->firstWhere('id', $data['plan_id']);
-        if (! $plan) {
-            return back()->withInput()->with('error', 'El plan seleccionado no está disponible.');
-        }
-
         $instance = null;
         $user = null;
 
         try {
-            DB::transaction(function () use ($data, $businessType, $plan, &$instance, &$user) {
+            DB::transaction(function () use ($data, $businessType, &$instance, &$user) {
                 $user = User::create([
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -82,8 +72,6 @@ class RegisteredUserController extends Controller
                 ]);
                 $user->assignRole('admin-business');
 
-                $trialEnds = now()->addDays((int) config('system.suscripcion.trial_days', 15));
-
                 $instance = BusinessInstance::create([
                     'nombre' => $data['negocio_nombre'],
                     'slug' => $this->uniqueSlug($data['negocio_nombre']),
@@ -92,35 +80,17 @@ class RegisteredUserController extends Controller
                     'telefono' => $data['telefono'],
                     'direccion' => $data['direccion'],
                     'business_type_id' => $businessType->id,
-                    'plan_id' => $plan->id,
                     'owner_user_id' => $user->id,
                     'owner_email' => $data['email'],
                     'owner_nombre' => $data['name'],
-                    'costo_mensual' => $plan->precio_mensual,
-                    'fecha_vencimiento' => $trialEnds,
-                    'trial_started_at' => now(),
-                    'trial_ends_at' => $trialEnds,
                     'activo' => true,
                     'setup_completed' => false,
+                    'aprobado' => false,
                     'configuracion' => [],
                 ]);
 
                 $user->update([
                     'business_instance_id' => $instance->id,
-                ]);
-
-                $primerPago = $plan->costoImplementacionEfectivo();
-                PagoInstancia::create([
-                    'business_instance_id' => $instance->id,
-                    'plan_id' => $plan->id,
-                    'monto' => $primerPago,
-                    'mes_pagado' => now()->startOfMonth(),
-                    'fecha_pago' => now(),
-                    'metodo_pago' => 'transferencia',
-                    'referencia_externa' => 'REGISTRO-AUTOSERVICIO',
-                    'estado_pago' => 'pendiente',
-                    'notas' => 'Registro autoservicio — implementación + primer mes pendientes de pago (periodo de prueba activo)',
-                    'registrado_por' => $user->id,
                 ]);
 
                 $adminRole = InstanceRole::create([
@@ -130,21 +100,11 @@ class RegisteredUserController extends Controller
                 ]);
 
                 $modulos = BusinessType::getModulosVisibles($businessType->slug);
-                $planModulos = $plan->modulosPermitidos();
-                if ($planModulos !== []) {
-                    $modulos = array_values(array_intersect($modulos, $planModulos));
-                }
                 $adminRole->syncModules($modulos);
 
                 $user->update([
                     'instance_role_id' => $adminRole->id,
                 ]);
-
-                try {
-                    app(\App\Services\BillingNotificationService::class)->bienvenida($instance);
-                } catch (\Throwable $e) {
-                    Log::warning('No se pudo enviar la bienvenida de suscripción: ' . $e->getMessage());
-                }
             });
         } catch (\Throwable $e) {
             Log::error('Error al registrar instancia por autoservicio', [
@@ -156,13 +116,13 @@ class RegisteredUserController extends Controller
             return back()->withInput()->with('error', 'No se pudo completar el registro. Intente nuevamente.');
         }
 
-        // Notificar a todos los owners para que asignen el owner de la nueva instancia
+        // Notificar a todos los owners/root para que revisen la solicitud
         try {
-            foreach (User::role('owner')->cursor() as $owner) {
-                Mail::to($owner->email)->send(new NuevaInstanciaRegistrada($instance, $user));
+            foreach (User::role(['owner', 'root'])->cursor() as $owner) {
+                Mail::to($owner->email)->send(new NuevaSolicitudInstancia($instance, $user));
             }
         } catch (\Exception $e) {
-            Log::error('Failed to notify owners about new instance', [
+            Log::error('Failed to notify owners about new instance request', [
                 'instance_id' => $instance->id,
                 'error' => $e->getMessage(),
             ]);
@@ -175,7 +135,7 @@ class RegisteredUserController extends Controller
         session(['business_instance_id' => $instance->id]);
         session(['business_type_slug' => $businessType->slug]);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('solicitud.pendiente');
     }
 
     /**

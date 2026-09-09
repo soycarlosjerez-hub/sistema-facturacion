@@ -36,6 +36,9 @@ class BusinessInstance extends Model
         'motivo_bloqueo',
         'bloqueado_en',
         'setup_completed',
+        'aprobado',
+        'aprobado_en',
+        'rechazo_motivo',
         'deleted_at',
         'logo',
     ];
@@ -45,6 +48,7 @@ class BusinessInstance extends Model
         'activo' => 'boolean',
         'bloqueado' => 'boolean',
         'setup_completed' => 'boolean',
+        'aprobado' => 'boolean',
         'fecha_vencimiento' => 'datetime',
         'trial_started_at' => 'datetime',
         'trial_ends_at' => 'datetime',
@@ -343,6 +347,26 @@ class BusinessInstance extends Model
     public function scopeBloqueadas($query)
     {
         return $query->where('bloqueado', true);
+    }
+
+    public function scopeAprobadas($query)
+    {
+        return $query->where('aprobado', true);
+    }
+
+    public function scopePendientes($query)
+    {
+        return $query->where('aprobado', false);
+    }
+
+    public function esAprobada(): bool
+    {
+        return (bool) $this->aprobado;
+    }
+
+    public function esPendiente(): bool
+    {
+        return !$this->aprobado;
     }
 
     protected static function booted(): void

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ObjetivoCalidad;
 use App\Services\GestionRiesgosService;
+use App\Services\ObjetivoCalidadService;
 use Illuminate\Http\Request;
 
 class ObjetivoCalidadController extends Controller

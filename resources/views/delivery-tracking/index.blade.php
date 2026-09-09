@@ -132,7 +132,7 @@
                         <option value="">Todas las órdenes</option>
                         @foreach($orders ?? [] as $order)
                         <option value="{{ $order->id }}" {{ request('order_id') == $order->id ? 'selected' : '' }}>
-                            #{{ $order->id }} — {{ $order->cliente?->nombre ?? 'N/A' }}
+                            #{{ $order->id }}
                         </option>
                         @endforeach
                     </select>
@@ -184,26 +184,32 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($trackings as $tracking)
+                    @forelse($trackings as $t)
                     <tr>
                         <td class="ps-4 fw-semibold">
-                            <a href="{{ route('delivery-tracking.show', $tracking) }}" class="text-decoration-none" style="color:#0ea5e9;">
-                                #{{ $tracking->orden_id }}
+                            @if($t->deliveryTracking)
+                            <a href="{{ route('delivery-tracking.show', $t->deliveryTracking) }}" class="text-decoration-none" style="color:#0ea5e9;">
+                                #{{ $t->orden->id ?? $t->id }}
                             </a>
+                            @else
+                            <a href="{{ route('ventas.show', $t) }}" class="text-decoration-none" style="color:#0ea5e9;">
+                                #{{ $t->orden->id ?? $t->id }}
+                            </a>
+                            @endif
                         </td>
                         <td>
                             <div class="small">
-                                <div class="fw-medium">{{ $tracking->orden?->cliente?->nombre ?? 'N/A' }}</div>
-                                <small class="text-muted">{{ Str::limit($tracking->orden?->direccion_entrega ?? '', 30) }}</small>
+                                <div class="fw-medium">{{ $t->cliente?->nombre ?? 'N/A' }}</div>
+                                <small class="text-muted">{{ Str::limit($t->delivery_address ?? '', 30) }}</small>
                             </div>
                         </td>
                         <td>
-                            @if($tracking->driver)
+                            @if($t->driver)
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="driver-avatar" style="width:32px;height:32px;font-size:.7rem;">
-                                        {{ strtoupper(substr($tracking->driver->nombre, 0, 1) . substr($tracking->driver->apellido, 0, 1)) }}
+                                        {{ strtoupper(substr($t->driver->nombre, 0, 1) . substr($t->driver->apellido, 0, 1)) }}
                                     </div>
-                                    <small>{{ $tracking->driver->nombre }} {{ $tracking->driver->apellido }}</small>
+                                    <small>{{ $t->driver->nombre }} {{ $t->driver->apellido }}</small>
                                 </div>
                             @else
                                 <span class="text-muted small">Sin asignar</span>
@@ -218,33 +224,39 @@
                                     'fallido'      => ['badge' => 'danger',  'icon' => 'bi-x-circle', 'label' => 'Fallido'],
                                     'cancelado'    => ['badge' => 'warning', 'icon' => 'bi-slash-circle', 'label' => 'Cancelado'],
                                 ];
-                                $cfg = $statusConfig[$tracking->status] ?? $statusConfig['creado'];
+                                $cfg = $statusConfig[$t->_virtual_status ?? 'creado'] ?? $statusConfig['creado'];
                             @endphp
                             <span class="ui-badge ui-badge-{{ $cfg['badge'] }}">
                                 <i class="bi {{ $cfg['icon'] }} me-1"></i>{{ $cfg['label'] }}
                             </span>
                         </td>
                         <td>
-                            <small class="text-muted">{{ $tracking->created_at->format('d/m/Y H:i') }}</small>
+                            <small class="text-muted">{{ $t->created_at->format('d/m/Y H:i') }}</small>
                         </td>
                         <td>
-                            @if($tracking->tiempo_estimado_minutos)
-                                <span class="small"><i class="bi bi-clock me-1"></i>{{ $tracking->tiempo_estimado_minutos }} min</span>
+                            @if($t->deliveryZone?->tiempo_estimado_minutos)
+                                <span class="small"><i class="bi bi-clock me-1"></i>{{ $t->deliveryZone->tiempo_estimado_minutos }} min</span>
                             @else
                                 <span class="text-muted small">—</span>
                             @endif
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('delivery-tracking.show', $tracking) }}" class="ui-action ui-action-view" title="Ver seguimiento">
+                            @if($t->deliveryTracking)
+                            <a href="{{ route('delivery-tracking.show', $t->deliveryTracking) }}" class="ui-action ui-action-view" title="Ver seguimiento">
                                 <i class="bi bi-eye"></i>
                             </a>
+                            @else
+                            <a href="{{ route('ventas.show', $t) }}" class="ui-action ui-action-view" title="Ver venta">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
                         <td colspan="7" class="text-center py-5 text-muted">
                             <i class="bi bi-signpost-2 fs-1 d-block mb-2"></i>
-                            No hay seguimientos registrados
+                            No hay entregas registradas
                         </td>
                     </tr>
                     @endforelse

@@ -59,11 +59,11 @@ class TenantCleanupService
 
             // ── Restaurant ──
             'reservaciones',
-            'waitlist_entries',
+            'waitlist entries',
             'mesas',
             'mesa_ubicaciones',
             'mesa_categorias',
-            'categories',
+            'categorias',
 
             // ── Car Wash ──
             'lavadero_citas',

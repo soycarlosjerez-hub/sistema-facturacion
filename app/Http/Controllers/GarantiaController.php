@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Garantia;
 use App\Models\Equipo;
+use App\Models\Garantia;
 use App\Models\OrdenReparacion;
-use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -62,7 +61,7 @@ class GarantiaController extends Controller
                     $q->where('garantias.cobertura', 'like', "%{$search}%")
                         ->orWhereHas('equipo', function ($q2) use ($search) {
                             $q2->where('serial_imei', 'like', "%{$search}%")
-                               ->orWhere('modelo', 'like', "%{$search}%");
+                                ->orWhere('modelo', 'like', "%{$search}%");
                         })
                         ->orWhereHas('ordenReparacion', function ($q2) use ($search) {
                             $q2->where('numero_orden', 'like', "%{$search}%");
@@ -99,7 +98,7 @@ class GarantiaController extends Controller
 
             $rows = $garantias->map(function ($garantia) {
                 $diasRestantes = $garantia->dias_restantes;
-                if (!$garantia->esta_vigente) {
+                if (! $garantia->esta_vigente) {
                     $badgeColor = 'danger';
                 } elseif ($diasRestantes <= 7) {
                     $badgeColor = 'warning';
@@ -146,8 +145,8 @@ class GarantiaController extends Controller
     {
         return Garantia::query()
             ->with(['equipo', 'ordenReparacion.cliente'])
-            ->when($request->filled('tipo'), fn($q) => $q->where('tipo', $request->tipo))
-            ->when($request->filled('estado'), fn($q) => $q->where('estado', $request->estado))
+            ->when($request->filled('tipo'), fn ($q) => $q->where('tipo', $request->tipo))
+            ->when($request->filled('estado'), fn ($q) => $q->where('estado', $request->estado))
             ->when($request->filled('vigencia'), function ($q) use ($request) {
                 match ($request->vigencia) {
                     'vigentes' => $q->vigentes(),
@@ -158,8 +157,8 @@ class GarantiaController extends Controller
             ->when($search = $this->dtSearch($request), function ($q) use ($search) {
                 $q->where(function ($q2) use ($search) {
                     $q2->where('cobertura', 'like', "%{$search}%")
-                        ->orWhereHas('equipo', fn($q3) => $q3->where('serial_imei', 'like', "%{$search}%")->orWhere('modelo', 'like', "%{$search}%"))
-                        ->orWhereHas('ordenReparacion', fn($q4) => $q4->where('numero_orden', 'like', "%{$search}%"));
+                        ->orWhereHas('equipo', fn ($q3) => $q3->where('serial_imei', 'like', "%{$search}%")->orWhere('modelo', 'like', "%{$search}%"))
+                        ->orWhereHas('ordenReparacion', fn ($q4) => $q4->where('numero_orden', 'like', "%{$search}%"));
                 });
             });
     }
@@ -178,7 +177,13 @@ class GarantiaController extends Controller
             ->limit(50)
             ->get();
 
-        return view('garantias.create', compact('equipos', 'ordenes'));
+        $ventas = \App\Models\Venta::where('estado', 'completada')
+            ->with(['detalles.equipo', 'cliente'])
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('garantias.create', compact('equipos', 'ordenes', 'ventas'));
     }
 
     /**
@@ -187,14 +192,25 @@ class GarantiaController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'equipo_id'              => 'nullable|exists:equipos,id',
-            'orden_reparacion_id'    => 'nullable|exists:ordenes_reparacion,id',
-            'tipo'                   => 'required|in:reparacion,pieza,servicio,extendida',
-            'fecha_inicio'           => 'required|date',
-            'fecha_fin'              => 'required|date|after_or_equal:fecha_inicio',
-            'cobertura'              => 'required|numeric|min:0',
-            'terminos_condiciones'   => 'nullable|string|max:2000',
+            'venta_id' => 'nullable|exists:ventas,id',
+            'equipo_id' => 'nullable|exists:equipos,id',
+            'orden_reparacion_id' => 'nullable|exists:ordenes_reparacion,id',
+            'tipo' => 'required|in:reparacion,pieza,servicio,extendida,fabrica',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'cobertura' => 'required|numeric|min:0',
+            'terminos_condiciones' => 'nullable|string|max:2000',
         ]);
+
+        // If venta_id is provided and equipo_id is not, try to get the equipment from the first VentaDetalle
+        if (! empty($data['venta_id']) && empty($data['equipo_id'])) {
+            $firstDetalle = \App\Models\VentaDetalle::where('venta_id', $data['venta_id'])
+                ->whereNotNull('equipo_id')
+                ->first();
+            if ($firstDetalle) {
+                $data['equipo_id'] = $firstDetalle->equipo_id;
+            }
+        }
 
         try {
             $garantia = Garantia::create(array_merge($data, [
@@ -204,7 +220,7 @@ class GarantiaController extends Controller
             return redirect()->route('garantias.show', $garantia)
                 ->with('success', 'Garantía registrada correctamente.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error al registrar la garantía: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error al registrar la garantía: '.$e->getMessage());
         }
     }
 
@@ -213,7 +229,8 @@ class GarantiaController extends Controller
      */
     public function show(Garantia $garantia)
     {
-        $garantia->load(['equipo', 'ordenReparacion.cliente']);
+        $garantia->load(['equipo', 'ordenReparacion.cliente', 'venta']);
+
         return view('garantias.show', compact('garantia'));
     }
 
@@ -224,8 +241,13 @@ class GarantiaController extends Controller
     {
         $equipos = Equipo::orderBy('serial_imei')->get();
         $ordenes = OrdenReparacion::orderByDesc('created_at')->limit(50)->get();
+        $ventas = \App\Models\Venta::where('estado', 'completada')
+            ->with(['detalles.equipo', 'cliente'])
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
 
-        return view('garantias.edit', compact('garantia', 'equipos', 'ordenes'));
+        return view('garantias.edit', compact('garantia', 'equipos', 'ordenes', 'ventas'));
     }
 
     /**
@@ -234,13 +256,14 @@ class GarantiaController extends Controller
     public function update(Request $request, Garantia $garantia)
     {
         $data = $request->validate([
-            'equipo_id'              => 'nullable|exists:equipos,id',
-            'orden_reparacion_id'    => 'nullable|exists:ordenes_reparacion,id',
-            'tipo'                   => 'required|in:reparacion,pieza,servicio,extendida',
-            'fecha_inicio'           => 'required|date',
-            'fecha_fin'              => 'required|date|after_or_equal:fecha_inicio',
-            'cobertura'              => 'required|numeric|min:0',
-            'terminos_condiciones'   => 'nullable|string|max:2000',
+            'venta_id' => 'nullable|exists:ventas,id',
+            'equipo_id' => 'nullable|exists:equipos,id',
+            'orden_reparacion_id' => 'nullable|exists:ordenes_reparacion,id',
+            'tipo' => 'required|in:reparacion,pieza,servicio,extendida',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'cobertura' => 'required|numeric|min:0',
+            'terminos_condiciones' => 'nullable|string|max:2000',
         ]);
 
         try {
@@ -249,7 +272,7 @@ class GarantiaController extends Controller
             return redirect()->route('garantias.show', $garantia)
                 ->with('success', 'Garantía actualizada correctamente.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error al actualizar la garantía: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error al actualizar la garantía: '.$e->getMessage());
         }
     }
 
@@ -260,7 +283,7 @@ class GarantiaController extends Controller
     {
         $data = $request->validate([
             'meses_adicionales' => 'required|integer|min:1|max:60',
-            'motivo'            => 'nullable|string|max:500',
+            'motivo' => 'nullable|string|max:500',
         ]);
 
         try {
@@ -269,13 +292,13 @@ class GarantiaController extends Controller
             $garantia->update([
                 'fecha_fin' => $nuevaFechaFin,
                 'terminos_condiciones' => ($garantia->terminos_condiciones ?? '')
-                    . "\n\nEXTENSIÓN: {$data['meses_adicionales']} meses adicionales. Motivo: " . ($data['motivo'] ?? 'Sin especificar'),
+                    ."\n\nEXTENSIÓN: {$data['meses_adicionales']} meses adicionales. Motivo: ".($data['motivo'] ?? 'Sin especificar'),
             ]);
 
             return redirect()->route('garantias.show', $garantia)
                 ->with('success', "Garantía extendida {$data['meses_adicionales']} meses. Nueva fecha de vencimiento: {$nuevaFechaFin->format('d/m/Y')}");
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error al extender la garantía: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error al extender la garantía: '.$e->getMessage());
         }
     }
 
@@ -286,11 +309,11 @@ class GarantiaController extends Controller
     {
         $data = $request->validate([
             'descripcion_reclamo' => 'required|string|min:10',
-            'accion_tomada'       => 'nullable|string|max:1000',
+            'accion_tomada' => 'nullable|string|max:1000',
         ]);
 
         // Verificar que la garantía esté vigente
-        if (!$garantia->esta_vigente) {
+        if (! $garantia->esta_vigente) {
             return back()->with('error', 'Esta garantía ya no está vigente.');
         }
 
@@ -300,14 +323,14 @@ class GarantiaController extends Controller
             $garantia->update([
                 'estado' => 'reclamada',
                 'terminos_condiciones' => ($garantia->terminos_condiciones ?? '')
-                    . "\n\nRECLAMO: {$data['descripcion_reclamo']}",
+                    ."\n\nRECLAMO: {$data['descripcion_reclamo']}",
             ]);
 
             // Si hay orden de reparación asociada, actualizar nota
             if ($garantia->orden_reparacion_id) {
                 $orden = $garantia->ordenReparacion;
                 if ($orden) {
-                    $orden->notas = ($orden->notas ?? '') . ' [GARANTÍA EN RECLAMO]';
+                    $orden->notas = ($orden->notas ?? '').' [GARANTÍA EN RECLAMO]';
                     $orden->save();
                 }
             }
@@ -318,7 +341,8 @@ class GarantiaController extends Controller
                 ->with('success', 'Reclamo registrado. La garantía pasa a estado "En Reclamo".');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Error al procesar el reclamo: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Error al procesar el reclamo: '.$e->getMessage());
         }
     }
 
@@ -334,10 +358,11 @@ class GarantiaController extends Controller
 
         try {
             $garantia->delete();
+
             return redirect()->route('garantias.index')
                 ->with('success', 'Garantía eliminada.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar la garantía: ' . $e->getMessage());
+            return back()->with('error', 'Error al eliminar la garantía: '.$e->getMessage());
         }
     }
 
@@ -347,6 +372,7 @@ class GarantiaController extends Controller
     public function getVigentes()
     {
         $count = Garantia::vigentes()->count();
+
         return response()->json(['count' => $count]);
     }
 
@@ -382,22 +408,23 @@ class GarantiaController extends Controller
     private function getAccionesHtml(Garantia $garantia): string
     {
         $html = '<div class="btn-group btn-group-sm">';
-        $html .= '<a href="' . route('garantias.show', $garantia) . '" class="btn btn-outline-info" title="Ver"><i class="bi bi-eye"></i></a>';
-        $html .= '<a href="' . route('garantias.edit', $garantia) . '" class="btn btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
+        $html .= '<a href="'.route('garantias.show', $garantia).'" class="btn btn-outline-info" title="Ver"><i class="bi bi-eye"></i></a>';
+        $html .= '<a href="'.route('garantias.edit', $garantia).'" class="btn btn-outline-warning" title="Editar"><i class="bi bi-pencil"></i></a>';
 
         if ($garantia->esta_vigente && $garantia->estado === 'vigente') {
-            $html .= '<a href="' . route('garantias.extender', $garantia) . '" class="btn btn-outline-success" title="Extender"><i class="bi bi-calendar-plus"></i></a>';
-            $html .= '<a href="' . route('garantias.reclamo', $garantia) . '" class="btn btn-outline-danger" title="Procesar Reclamo"><i class="bi bi-exclamation-triangle"></i></a>';
+            $html .= '<a href="'.route('garantias.extender', $garantia).'" class="btn btn-outline-success" title="Extender"><i class="bi bi-calendar-plus"></i></a>';
+            $html .= '<a href="'.route('garantias.reclamo', $garantia).'" class="btn btn-outline-danger" title="Procesar Reclamo"><i class="bi bi-exclamation-triangle"></i></a>';
         }
 
-        if (!in_array($garantia->estado, ['reclamada', 'cancelada'])) {
-            $html .= '<form action="' . route('garantias.destroy', $garantia) . '" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta garantía?\');">';
-            $html .= csrf_field() . method_field('DELETE');
+        if (! in_array($garantia->estado, ['reclamada', 'cancelada'])) {
+            $html .= '<form action="'.route('garantias.destroy', $garantia).'" method="POST" class="d-inline" onsubmit="return confirm(\'¿Eliminar esta garantía?\');">';
+            $html .= csrf_field().method_field('DELETE');
             $html .= '<button type="submit" class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button>';
             $html .= '</form>';
         }
 
         $html .= '</div>';
+
         return $html;
     }
 }

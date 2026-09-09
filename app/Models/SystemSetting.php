@@ -22,8 +22,7 @@ class SystemSetting extends Model
     public function getAttributes()
     {
         $attributes = parent::getAttributes();
-        $attributes['key'] = $attributes['clave'] ?? null;
-        $attributes['value'] = $attributes['valor'] ?? null;
+        unset($attributes['key'], $attributes['value']);
         return $attributes;
     }
 

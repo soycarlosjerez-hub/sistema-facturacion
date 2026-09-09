@@ -112,6 +112,16 @@
                                 <label for="cobertura" class="ui-label">Cobertura</label>
                                 <textarea name="cobertura" id="cobertura" class="ui-textarea @error('cobertura') is-invalid @enderror" rows="3" placeholder="Describe qué cubre la garantía y qué no">{{ old('cobertura') }}</textarea>
                             </div>
+                            <div class="col-12">
+                                <label for="terminos_por_defecto" class="ui-label">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Terminos por Defecto
+                                </label>
+                                <textarea name="terminos_por_defecto" id="terminos_por_defecto" class="ui-textarea @error('terminos_por_defecto') is-invalid @enderror" rows="3" placeholder="Terminos de garantia predeterminados para este tipo de producto">{{ old('terminos_por_defecto') }}</textarea>
+                                <small class="text-muted">Se aplicaran automaticamente cuando un producto de este tipo no tenga terminos propios definidos.</small>
+                                @error('terminos_por_defecto')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 

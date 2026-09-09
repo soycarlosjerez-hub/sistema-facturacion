@@ -17,8 +17,12 @@ class PermissionMiddleware
         $user = Auth::user();
 
         // Bypass for elevated roles (Spatie roles)
-        if ($user->hasRole('admin') || $user->hasRole('owner') || $user->hasRole('admin-business')) {
-            return $next($request);
+        try {
+            if ($user->hasRole('admin') || $user->hasRole('owner') || $user->hasRole('admin-business')) {
+                return $next($request);
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         // Bypass using User 'role' attribute (native field on users table)
@@ -29,8 +33,12 @@ class PermissionMiddleware
 
         // Check Spatie permissions
         foreach ($permissions as $permission) {
-            if ($user->can($permission)) {
-                return $next($request);
+            try {
+                if ($user->can($permission)) {
+                    return $next($request);
+                }
+            } catch (\Throwable $e) {
+                report($e);
             }
         }
 
@@ -97,9 +105,15 @@ class PermissionMiddleware
             ];
 
             foreach ($permissions as $permission) {
-                $moduloKey = $permToModule[$permission] ?? null;
-                if ($moduloKey && $instanceRole->isModuloVisible($moduloKey)) {
-                    return $next($request);
+                $moduloKey = array_key_exists($permission, $permToModule) ? $permToModule[$permission] : null;
+                if ($moduloKey) {
+                    try {
+                        if ($instanceRole->isModuloVisible($moduloKey)) {
+                            return $next($request);
+                        }
+                    } catch (\Throwable $e) {
+                        report($e);
+                    }
                 }
             }
         }

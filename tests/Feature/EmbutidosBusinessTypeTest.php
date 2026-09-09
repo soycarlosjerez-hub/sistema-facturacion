@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Producto;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\EmbutidosCategoriaSeeder;
@@ -82,7 +82,7 @@ class EmbutidosBusinessTypeTest extends TestCase
     {
         $this->seed(EmbutidosCategoriaSeeder::class);
 
-        $categorias = Categoria::whereNull('tenant_id')->whereIn('nombre', [
+        $categorias = Category::whereNull('tenant_id')->whereIn('nombre', [
             'Salami', 'Longaniza', 'Chorizo', 'Jamón',
         ])->pluck('nombre');
 
@@ -110,7 +110,7 @@ class EmbutidosBusinessTypeTest extends TestCase
         $this->seed(EmbutidosProductoSeeder::class);
         $this->seed(EmbutidosProductoSeeder::class);
 
-        $this->assertSame(8, Categoria::whereNull('tenant_id')->whereIn('nombre', [
+        $this->assertSame(8, Category::whereNull('tenant_id')->whereIn('nombre', [
             'Salami', 'Longaniza', 'Chorizo', 'Jamón',
             'Mortadela / Bologna', 'Tocino', 'Quesos', 'Otros Embutidos',
         ])->count());

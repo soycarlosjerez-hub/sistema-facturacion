@@ -16,7 +16,7 @@ class DriverAssignmentService
     {
         $orden = Orden::with('detalles')->findOrFail($ordenId);
 
-        if ($orden->entrega_empresa_id) {
+        if ($orden->driver_id) {
             return ['error' => 'Esta orden ya tiene un driver asignado', 'code' => 422];
         }
 
@@ -28,18 +28,18 @@ class DriverAssignmentService
                 ->first();
         }
 
-        if (!$driver) {
+        if (! $driver) {
             $driver = $this->obtenerDriverMasDisponible($orden->sucursal_id);
         }
 
-        if (!$driver) {
+        if (! $driver) {
             return ['error' => 'No hay drivers disponibles', 'code' => 422];
         }
 
         DB::beginTransaction();
         try {
             $orden->update([
-                'entrega_empresa_id' => $driver->id,
+                'driver_id' => $driver->id,
                 'tracking_status' => 'creado',
             ]);
 
@@ -48,13 +48,13 @@ class DriverAssignmentService
                 'orden_id' => $orden->id,
                 'driver_id' => $driver->id,
                 'status' => 'creado',
-                'notas' => 'Asignado a: ' . $driver->nombreCompleto,
+                'notas' => 'Asignado a: '.$driver->nombreCompleto,
                 'creado_por' => Auth::id(),
             ]);
 
             DB::commit();
 
-            $orden->load('detalles.producto', 'cliente', 'entregaEmpresa');
+            $orden->load('detalles.producto', 'cliente', 'entregaEmpresa', 'driver');
 
             return [
                 'success' => true,
@@ -67,6 +67,7 @@ class DriverAssignmentService
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+
             return ['error' => $e->getMessage(), 'code' => 500];
         }
     }
@@ -75,7 +76,7 @@ class DriverAssignmentService
     {
         $orden = Orden::findOrFail($ordenId);
 
-        if (!$orden->entrega_empresa_id) {
+        if (! $orden->driver_id) {
             return ['error' => 'Esta orden no tiene driver asignado', 'code' => 422];
         }
 
@@ -90,7 +91,7 @@ class DriverAssignmentService
             }
 
             $orden->update([
-                'entrega_empresa_id' => null,
+                'driver_id' => null,
                 'tracking_status' => null,
             ]);
 
@@ -99,6 +100,7 @@ class DriverAssignmentService
             return ['success' => true];
         } catch (\Exception $e) {
             DB::rollBack();
+
             return ['error' => $e->getMessage(), 'code' => 500];
         }
     }
@@ -108,9 +110,9 @@ class DriverAssignmentService
         $query = DeliveryDriver::where('activo', true)
             ->withCount([
                 'ordenes as ordenes_activas' => function ($q) {
-                    $q->whereNotNull('entrega_empresa_id')
-                      ->whereIn('estado', ['pendiente', 'preparando', 'en_camino']);
-                }
+                    $q->where('driver_id', '>', 0)
+                        ->whereIn('estado', ['pendiente', 'preparando', 'en_camino']);
+                },
             ]);
 
         if ($sucursalId) {
@@ -126,7 +128,8 @@ class DriverAssignmentService
 
     public function contarOrdenesActivasDriver($driverId)
     {
-        return Orden::where('entrega_empresa_id', $driverId)
+        return Orden::where('driver_id', $driverId)
+            ->where('tenant_id', Auth::user()->business_instance_id)
             ->whereIn('estado', ['pendiente', 'preparando', 'en_camino'])
             ->count();
     }
@@ -160,11 +163,11 @@ class DriverAssignmentService
                 ->first();
         }
 
-        if (!$driver) {
+        if (! $driver) {
             $driver = $this->obtenerDriverMasDisponibleParaVenta($venta->sucursal_id);
         }
 
-        if (!$driver) {
+        if (! $driver) {
             return ['error' => 'No hay drivers disponibles', 'code' => 422];
         }
 
@@ -198,7 +201,7 @@ class DriverAssignmentService
                 'venta_id' => $venta->id,
                 'driver_id' => $driver->id,
                 'status' => DeliveryTracking::STATUS_CREADO,
-                'notas' => 'Asignado a: ' . $driver->nombreCompleto,
+                'notas' => 'Asignado a: '.$driver->nombreCompleto,
                 'creado_por' => Auth::id(),
             ]);
 
@@ -217,6 +220,7 @@ class DriverAssignmentService
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+
             return ['error' => $e->getMessage(), 'code' => 500];
         }
     }
@@ -225,7 +229,7 @@ class DriverAssignmentService
     {
         $venta = Venta::findOrFail($ventaId);
 
-        if (!$venta->driver_id) {
+        if (! $venta->driver_id) {
             return ['error' => 'Esta venta no tiene driver asignado', 'code' => 422];
         }
 
@@ -251,6 +255,7 @@ class DriverAssignmentService
             return ['success' => true];
         } catch (\Exception $e) {
             DB::rollBack();
+
             return ['error' => $e->getMessage(), 'code' => 500];
         }
     }
@@ -261,8 +266,8 @@ class DriverAssignmentService
             ->withCount([
                 'ventas as entregas_pendientes' => function ($q) {
                     $q->whereNotNull('driver_id')
-                      ->whereIn('estado', ['pendiente', 'preparando', 'en_camino']);
-                }
+                        ->whereIn('estado', ['pendiente', 'preparando', 'en_camino']);
+                },
             ]);
 
         if ($sucursalId) {

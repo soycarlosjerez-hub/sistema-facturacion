@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\Cliente;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
  *
  * Provides a method for controllers to verify that an Eloquent model
  * instance belongs to the current authenticated user's tenant (business_instance).
+ * Supports both User (business_instance_id) and Cliente (tenant_id) authentication.
  */
 trait TenantAccess
 {
@@ -20,11 +22,22 @@ trait TenantAccess
      */
     protected function getCurrentTenantId(): ?int
     {
-        if (!Auth::check()) {
-            return null;
+        // 1. Try Auth::user() (session, Sanctum, API key)
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user instanceof Cliente) {
+                return $user->tenant_id;
+            }
+            return $user->business_instance_id ?? null;
         }
 
-        return Auth::user()->business_instance_id;
+        // 2. Fallback: client token via request resolver
+        $clientToken = request()->attributes->get('client_api_token');
+        if ($clientToken && $clientToken->cliente) {
+            return $clientToken->cliente->tenant_id;
+        }
+
+        return null;
     }
 
     /**

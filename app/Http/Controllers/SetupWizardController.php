@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Almacen;
 use App\Models\Caja;
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Cliente;
 use App\Models\InstanceRole;
 use App\Models\LavaderoServicio;
@@ -399,7 +399,7 @@ class SetupWizardController extends Controller
                 'nombre'    => $data['nombre'],
                 'tenant_id' => $tenantId,
             ]),
-            'categoria-producto' => Categoria::create([
+            'categoria-producto' => Category::create([
                 'nombre'      => $data['nombre'],
                 'descripcion' => $data['descripcion'] ?? null,
                 'color'       => $data['color'] ?? '#3b82f6',
@@ -444,7 +444,7 @@ class SetupWizardController extends Controller
                 'nombre' => $data['nombre'],
                 'tenant_id' => $tenantId,
             ]),
-            'categoria-mesa' => MesaCategoria::create([
+            'categoria-mesa' => MesaCategory::create([
                 'nombre' => $data['nombre'],
                 'tenant_id' => $tenantId,
             ]),

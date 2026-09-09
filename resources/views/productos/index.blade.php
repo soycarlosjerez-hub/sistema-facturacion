@@ -362,7 +362,7 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
                     <label class="ui-label small fw-bold text-muted" for="busqueda-producto">Buscar</label>
                     <div class="ui-input-group">
                         <span class="ui-input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
-                        <input type="text" name="nombre" id="busqueda-producto" class="ui-input" placeholder="Nombre, código o SKU..." value="{{ request('nombre') }}" autocomplete="off">
+                        <input type="text" name="nombre" id="busqueda-producto" class="ui-input" placeholder="Nombre, código, referencia o SKU..." value="{{ request('nombre') }}" autocomplete="off">
                     </div>
                 </div>
                 <div class="col-6 col-sm-3 col-lg-2">
@@ -421,6 +421,7 @@ body.dark-mode #productos-table_wrapper .dataTables_filter label { color: var(--
                         <tr>
                     <th style="width:40px;" data-label="id">#</th>
                     <th style="width:auto;min-width:200px;" data-label="producto">Producto</th>
+                    <th style="width:100px;" data-label="referencia">Referencia</th>
                     <th style="width:80px;" data-label="serial_imei">IMEI / Serial</th>
                     <th style="width:80px;" data-label="categoria">Categoría</th>
                     <th style="width:60px;" class="text-center" data-label="tipo">Tipo</th>
@@ -607,6 +608,17 @@ $(function() {
                 }
             },
             {
+                data: 'codigo_referencia',
+                orderable: true,
+                searchable: true,
+                responsivePriority: 3,
+                width: '100px',
+                render: function(data) {
+                    if (!data) return '<span class="text-muted small">—</span>';
+                    return '<span class="font-monospace small">' + escapeHtml(data) + '</span>';
+                }
+            },
+            {
                 data: 'serial_imei',
                 orderable: true,
                 searchable: true,
@@ -716,7 +728,7 @@ $(function() {
             zeroRecords: '<div class="text-center py-5"><i class="bi bi-box-seam d-block mb-2" style="font-size:2.5rem;color:#cbd5e1;"></i><p class="fw-semibold mb-1" style="color:#475569;">No se encontraron productos</p><p class="text-muted small mb-0">Intenta ajustar los filtros de búsqueda.</p></div>',
             processing: '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>'
         },
-        pageLength: -1,
+        pageLength: 10,
         lengthMenu: [[-1, 10, 25, 50, 100], ['Todos', 10, 25, 50, 100]],
         order: [[1, 'asc']],
         autoWidth: false,
@@ -848,7 +860,7 @@ $(function() {
                 if (data.success) {
                     const $row = $btn.closest('tr');
                     const $cells = $row.find('td');
-                    $cells.eq(6).html(renderEstado(data.activo));
+                    $cells.eq(9).html(renderEstado(data.activo));
                     const $toggle = $row.find('.toggle-activo');
                     if ($toggle.length) actualizarToggleBtn($toggle, data.activo);
                     swalExito('Producto ' + (data.activo ? 'activado' : 'desactivado') + ' correctamente.');

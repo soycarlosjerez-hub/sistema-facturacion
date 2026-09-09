@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\VentasExport;
 use App\Http\Requests\StoreVentaRequest;
-use App\Models\Almacen;
 use App\Models\Caja;
-use App\Models\Cliente;
 use App\Models\EcfDocumento;
 use App\Models\Equipo;
 use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\User;
 use App\Models\Venta;
-use App\Exports\VentasExport;
 use App\Services\SaleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -35,7 +33,7 @@ class VentaController extends Controller
     {
         $query = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal']);
 
-        if (auth()->user()->can('ventas.view.own') && !auth()->user()->can('ventas.view')) {
+        if (auth()->user()->can('ventas.view.own') && ! auth()->user()->can('ventas.view')) {
             $query->where('user_id', auth()->id());
         }
 
@@ -44,7 +42,7 @@ class VentaController extends Controller
         }
 
         if ($request->filled('cliente')) {
-            $query->whereHas('cliente', fn($q) => $q->where('nombre', 'like', '%' . $request->cliente . '%'));
+            $query->whereHas('cliente', fn ($q) => $q->where('nombre', 'like', '%'.$request->cliente.'%'));
         }
 
         if ($request->filled('desde')) {
@@ -75,44 +73,45 @@ class VentaController extends Controller
     public function store(StoreVentaRequest $request)
     {
         $sesionId = $request->input('sesion_caja_id');
-        
+
         $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
             || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
 
         if ($sesionId) {
             $sesion = SesionCaja::where('id', $sesionId)
                 ->where('estado', 'abierta');
-            if (!$isElevated) {
+            if (! $isElevated) {
                 $sesion->where('user_id', Auth::id());
             }
             $sesion = $sesion->first();
         } else {
             $sesion = SesionCaja::where('estado', 'abierta');
-            if (!$isElevated) {
+            if (! $isElevated) {
                 $sesion->where('user_id', Auth::id());
             }
             $sesion = $sesion->latest('fecha_apertura')->first();
         }
 
-        if (!$sesion) {
+        if (! $sesion) {
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Tu caja se cerró. No se puede registrar la venta.'], 400);
             }
+
             return back()->with('error', 'Tu caja se cerró. No se puede registrar la venta.');
         }
 
         try {
             $venta = $this->saleService->createSale($request->validated(), $sesion);
-            $msg = 'Venta registrada en ' . $sesion->caja->nombre;
+            $msg = 'Venta registrada en '.$sesion->caja->nombre;
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'success'           => true,
-                    'venta_id'          => $venta->id,
-                    'total'             => (float) $venta->total,
-                    'cliente'           => $venta->cliente->nombre ?? 'Consumidor Final',
-                    'metodo_pago'       => $request->input('metodo_pago', 'efectivo'),
-                    'tipo_comprobante'  => $request->input('tipo_comprobante', 'sin'),
+                    'success' => true,
+                    'venta_id' => $venta->id,
+                    'total' => (float) $venta->total,
+                    'cliente' => $venta->cliente->nombre ?? 'Consumidor Final',
+                    'metodo_pago' => $request->input('metodo_pago', 'efectivo'),
+                    'tipo_comprobante' => $request->input('tipo_comprobante', 'sin'),
                 ]);
             }
 
@@ -122,18 +121,21 @@ class VentaController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['error' => $e->getMessage()], 422);
             }
-            return back()->withErrors('Error: ' . $e->getMessage())->withInput();
+
+            return back()->withErrors('Error: '.$e->getMessage())->withInput();
         }
     }
 
     public function autorizarAdmin(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|string',
+            'context' => 'sometimes|in:sinitbis,precio',
         ]);
 
         $rolesAdmin = ['admin', 'admin-business', 'root', 'gerente'];
+        $context = $request->input('context', 'sinitbis');
 
         $user = User::where('email', $request->email)->first();
 
@@ -142,10 +144,11 @@ class VentaController extends Controller
             || $user->hasAnyRole($rolesAdmin)
         );
 
-        if (!$user || !$esAdmin || !Hash::check($request->password, $user->password)) {
-            Log::warning('Autorización admin rechazada para quitar ITBIS', [
-                'email'     => $request->email,
-                'user_id'   => Auth::id(),
+        if (! $user || ! $esAdmin || ! Hash::check($request->password, $user->password)) {
+            Log::warning('Autorización admin rechazada', [
+                'email' => $request->email,
+                'context' => $context,
+                'user_id' => Auth::id(),
                 'tenant_id' => Auth::user()->business_instance_id,
             ]);
 
@@ -156,22 +159,31 @@ class VentaController extends Controller
 
         $expira = now()->addMinutes(5);
         $token = Crypt::encryptString(json_encode([
-            'email'     => $user->email,
+            'email' => $user->email,
             'tenant_id' => Auth::user()->business_instance_id,
-            'exp'       => $expira->timestamp,
+            'context' => $context,
+            'exp' => $expira->timestamp,
         ]));
 
-        Log::info('Autorización admin emitida para quitar ITBIS', [
+        $contextLabels = [
+            'sinitbis' => 'quitar ITBIS',
+            'precio' => 'modificar precio',
+        ];
+        $label = $contextLabels[$context] ?? $context;
+
+        Log::info("Autorización admin emitida para {$label}", [
             'autorizado_por' => $user->email,
-            'user_id'        => Auth::id(),
-            'tenant_id'      => Auth::user()->business_instance_id,
+            'context' => $context,
+            'user_id' => Auth::id(),
+            'tenant_id' => Auth::user()->business_instance_id,
         ]);
 
         return response()->json([
             'success' => true,
-            'token'   => $token,
-            'admin'   => $user->name,
-            'expira'  => $expira->toDateTimeString(),
+            'token' => $token,
+            'admin' => $user->name,
+            'expira' => $expira->toDateTimeString(),
+            'context' => $context,
         ]);
     }
 
@@ -179,7 +191,8 @@ class VentaController extends Controller
     {
         $venta = Venta::with([
             'cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal',
-            'detalles.producto', 'detalles.obra', 'detalles.almacen'
+            'detalles.producto', 'detalles.obra', 'detalles.almacen',
+            'garantias',
         ])->findOrFail($id);
 
         return view('ventas.show', compact('venta'));
@@ -188,12 +201,12 @@ class VentaController extends Controller
     public function destroy(Request $request, $id)
     {
         $user = auth()->user();
-        if (!$user->hasAnyRole(['admin', 'admin-business', 'root']) && $user->role !== 'admin') {
+        if (! $user->hasAnyRole(['admin', 'admin-business', 'root']) && $user->role !== 'admin') {
             abort(403, 'Solo los administradores pueden anular ventas.');
         }
 
         $request->validate([
-            'motivo'   => 'required|string|min:5|max:500',
+            'motivo' => 'required|string|min:5|max:500',
             'confirmar' => 'required|accepted',
         ]);
 
@@ -201,9 +214,9 @@ class VentaController extends Controller
             $this->saleService->cancelSale($id, trim($request->motivo));
 
             return redirect()->route('ventas.index')
-                ->with('success', 'Venta #' . str_pad($id, 5, '0', STR_PAD_LEFT) . ' anulada.');
+                ->with('success', 'Venta #'.str_pad($id, 5, '0', STR_PAD_LEFT).' anulada.');
         } catch (\Exception $e) {
-            return back()->withErrors('Error al anular: ' . $e->getMessage());
+            return back()->withErrors('Error al anular: '.$e->getMessage());
         }
     }
 
@@ -216,9 +229,9 @@ class VentaController extends Controller
 
         $productos = Producto::where('tenant_id', Auth::user()->business_instance_id)
             ->where(function ($q) use ($termino) {
-                $q->where('nombre', 'like', '%' . $termino . '%')
-                  ->orWhere('codigo_barras', $termino)
-                  ->orWhere('codigo_barras', 'like', '%' . $termino . '%');
+                $q->where('nombre', 'like', '%'.$termino.'%')
+                    ->orWhere('codigo_barras', $termino)
+                    ->orWhere('codigo_barras', 'like', '%'.$termino.'%');
             })->orderBy('nombre')->limit(20)
             ->get(['id', 'nombre', 'codigo_barras', 'precio', 'precio_compra', 'itbis_porcentaje', 'stock', 'unidad_medida', 'imagen']);
 
@@ -231,9 +244,10 @@ class VentaController extends Controller
             ->where('tenant_id', Auth::user()->business_instance_id)
             ->where('activo', true)
             ->first();
-        if (!$producto) {
+        if (! $producto) {
             return response()->json(['encontrado' => false], 404);
         }
+
         return response()->json(['encontrado' => true, 'producto' => $producto]);
     }
 
@@ -242,7 +256,7 @@ class VentaController extends Controller
         $data = $request->validate(['caja_id' => 'required|exists:cajas,id']);
         $sesion = Caja::findOrFail($data['caja_id'])->sesionActiva();
 
-        if (!$sesion || $sesion->user_id !== Auth::id()) {
+        if (! $sesion || $sesion->user_id !== Auth::id()) {
             return back()->with('error', 'No tienes una sesión abierta en esa caja.');
         }
 
@@ -257,7 +271,7 @@ class VentaController extends Controller
 
         return Pdf::loadView('ventas.pdf', compact('venta'))
             ->setPaper('a4', 'portrait')
-            ->download('venta_' . $venta->id . '.pdf');
+            ->download('venta_'.$venta->id.'.pdf');
     }
 
     public function exportAllPdf(Request $request)
@@ -266,7 +280,7 @@ class VentaController extends Controller
             ->where('tenant_id', Auth::user()->business_instance_id);
 
         if ($request->filled('cliente')) {
-            $query->whereHas('cliente', fn($q) => $q->where('nombre', 'like', '%' . $request->cliente . '%'));
+            $query->whereHas('cliente', fn ($q) => $q->where('nombre', 'like', '%'.$request->cliente.'%'));
         }
         if ($request->filled('desde')) {
             $query->whereDate('created_at', '>=', $request->desde);
@@ -311,7 +325,7 @@ class VentaController extends Controller
 
     public function getStatsDia(Request $request)
     {
-        $fecha  = $request->input('fecha', now()->toDateString());
+        $fecha = $request->input('fecha', now()->toDateString());
         $sesion = $request->input('sesion_id');
 
         $query = Venta::where('tenant_id', Auth::user()->business_instance_id)
@@ -336,14 +350,14 @@ class VentaController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get()
-            ->map(fn($v) => [
-                'id'            => $v->id,
-                'cliente_nombre'=> $v->cliente?->nombre ?? 'Consumidor Final',
-                'total'         => (float) $v->total,
-                'metodo_pago'   => $v->pagos->last()?->metodo_pago ?? 'efectivo',
-                'hora'          => $v->created_at->format('h:i A'),
-                'ncf'           => $v->ncf,
-                'encf'          => $v->encf,
+            ->map(fn ($v) => [
+                'id' => $v->id,
+                'cliente_nombre' => $v->cliente?->nombre ?? 'Consumidor Final',
+                'total' => (float) $v->total,
+                'metodo_pago' => $v->pagos->last()?->metodo_pago ?? 'efectivo',
+                'hora' => $v->created_at->format('h:i A'),
+                'ncf' => $v->ncf,
+                'encf' => $v->encf,
             ]);
 
         return response()->json(['ventas' => $ventas]);
@@ -352,6 +366,7 @@ class VentaController extends Controller
     public function ticket($id)
     {
         $venta = Venta::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal', 'pagos'])->findOrFail($id);
+
         return view('ventas.ticket', ['venta' => $venta]);
     }
 
@@ -378,13 +393,13 @@ class VentaController extends Controller
             $estado = $ecf ? $ecf->estado : 'pendiente';
             $message = $estado === 'aprobado'
                 ? 'e-CF aprobado por DGII.'
-                : 'e-CF procesado (estado: ' . $estado . ').';
+                : 'e-CF procesado (estado: '.$estado.').';
 
             return response()->json([
                 'success' => true,
                 'message' => $message,
-                'encf'    => $ecf ? $ecf->encf : null,
-                'estado'  => $estado,
+                'encf' => $ecf ? $ecf->encf : null,
+                'estado' => $estado,
             ]);
         } catch (\Throwable $e) {
             Log::error('Facturación DGII fallida', [
@@ -392,6 +407,7 @@ class VentaController extends Controller
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json(['error' => 'Error al facturar. Contacte al administrador.'], 500);
         }
     }
@@ -414,28 +430,28 @@ class VentaController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->take(20)
                 ->get(['id', 'serial_imei', 'serial_esn', 'marca', 'modelo', 'color',
-                       'almacenamiento_gb', 'precio_venta', 'tipo_dispositivo']);
+                    'almacenamiento_gb', 'precio_venta', 'tipo_dispositivo']);
         } else {
-            $equipos = Equipo::where(function($q) use ($term) {
+            $equipos = Equipo::where(function ($q) use ($term) {
                 $q->where('serial_imei', 'like', "%{$term}%")
-                  ->orWhere('serial_esn', 'like', "%{$term}%")
-                  ->orWhere('marca', 'like', "%{$term}%")
-                  ->orWhere('modelo', 'like', "%{$term}%")
-                  ->orWhere('color', 'like', "%{$term}%");
+                    ->orWhere('serial_esn', 'like', "%{$term}%")
+                    ->orWhere('marca', 'like', "%{$term}%")
+                    ->orWhere('modelo', 'like', "%{$term}%")
+                    ->orWhere('color', 'like', "%{$term}%");
             })
-            ->where('estado', 'disponible')
-            ->where('tenant_id', $user->business_instance_id)
-            ->take(20)
-            ->get(['id', 'serial_imei', 'serial_esn', 'marca', 'modelo', 'color',
-                   'almacenamiento_gb', 'precio_venta', 'tipo_dispositivo']);
+                ->where('estado', 'disponible')
+                ->where('tenant_id', $user->business_instance_id)
+                ->take(20)
+                ->get(['id', 'serial_imei', 'serial_esn', 'marca', 'modelo', 'color',
+                    'almacenamiento_gb', 'precio_venta', 'tipo_dispositivo']);
         }
 
-        return response()->json($equipos->map(function($e) {
+        return response()->json($equipos->map(function ($e) {
             return [
-                'id' => 'equipo_' . $e->id,
+                'id' => 'equipo_'.$e->id,
                 'equipo_id' => (int) $e->id,
-                'label' => $e->marca . ' ' . $e->modelo . ' (' . $e->serial_imei . ')',
-                'meta' => $e->color . ($e->almacenamiento_gb ? ' · ' . $e->almacenamiento_gb . 'GB' : '') . ' · ' . ucfirst($e->tipo_dispositivo),
+                'label' => $e->marca.' '.$e->modelo.' ('.$e->serial_imei.')',
+                'meta' => $e->color.($e->almacenamiento_gb ? ' · '.$e->almacenamiento_gb.'GB' : '').' · '.ucfirst($e->tipo_dispositivo),
                 'precio' => (float) $e->precio_venta,
                 'serial_imei' => $e->serial_imei,
             ];
@@ -457,26 +473,26 @@ class VentaController extends Controller
         $query = \App\Models\LavaderoServicio::where('tenant_id', $user->business_instance_id)
             ->where('activo', true);
 
-        if (!empty($term)) {
-            $query->where(function($q) use ($term) {
+        if (! empty($term)) {
+            $query->where(function ($q) use ($term) {
                 $q->where('nombre', 'like', "%{$term}%")
-                  ->orWhere('descripcion', 'like', "%{$term}%")
-                  ->orWhere('categoria', 'like', "%{$term}%");
+                    ->orWhere('descripcion', 'like', "%{$term}%")
+                    ->orWhere('categoria', 'like', "%{$term}%");
             });
         }
 
         $servicios = $query->orderBy('nombre')->take(20)->get([
             'id', 'nombre', 'descripcion', 'precio', 'precio_compra',
-            'itbis_porcentaje', 'duracion_minutos', 'categoria', 'imagen'
+            'itbis_porcentaje', 'duracion_minutos', 'categoria', 'imagen',
         ]);
 
-        return response()->json($servicios->map(function($s) {
+        return response()->json($servicios->map(function ($s) {
             return [
-                'id' => 'servicio_' . $s->id,
+                'id' => 'servicio_'.$s->id,
                 'servicio_id' => (int) $s->id,
                 'label' => $s->nombre,
-                'meta' => ($s->categoria ? $s->categoria . ' · ' : '') .
-                          ($s->duracion_minutos ? $s->duracion_minutos . ' min' : ''),
+                'meta' => ($s->categoria ? $s->categoria.' · ' : '').
+                          ($s->duracion_minutos ? $s->duracion_minutos.' min' : ''),
                 'precio' => (float) $s->precio,
                 'itbis_p' => (float) ($s->itbis_porcentaje ?? 18),
                 'duracion' => $s->duracion_minutos,

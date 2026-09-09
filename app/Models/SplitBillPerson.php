@@ -11,6 +11,8 @@ class SplitBillPerson extends Model
     use Auditable;
     use TenantScope;
 
+    protected $table = 'split_bill_persons';
+
     protected $fillable = [
         'venta_id', 'persona_num', 'persona_nombre', 'items', 'subtotal', 'tenant_id',
     ];

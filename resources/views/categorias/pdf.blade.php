@@ -41,7 +41,7 @@
             <tr>
                 <td><strong>{{ $categoria->nombre }}</strong></td>
                 <td>{{ $categoria->descripcion ?? '—' }}</td>
-                <td class="text-center">{{ $categoria->productos_count ?? $categoria->productos->count() }}</td>
+                <td class="text-center">{{ $categoria->products_count ?? $categoria->products->count() }}</td>
                 <td class="text-center">{{ $categoria->activa ? 'Activa' : 'Inactiva' }}</td>
             </tr>
             @empty

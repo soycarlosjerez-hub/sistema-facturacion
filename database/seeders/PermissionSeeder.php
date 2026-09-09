@@ -343,6 +343,9 @@ class PermissionSeeder extends Seeder
                 'delivery-tracking.edit',
                 'delivery-tracking.assign',
             ],
+            'delivery-mis-entregas' => [
+                'delivery-mis-entregas.view',
+            ],
             'delivery-earnings' => [
                 'delivery-earnings.view',
                 'delivery-earnings.export',
@@ -461,20 +464,20 @@ class PermissionSeeder extends Seeder
                 'owner.business-types.delete',
                 'owner.users.view',
                 'owner.users.manage',
-                
+
                 // System configuration (to change company name, etc.)
                 'configuracion.view',
                 'configuracion.edit',
-                
+
                 // System monitoring
                 'auditoria.view',
                 'backups.view',
                 'backups.create',
-                
+
                 // Reports (for system oversight)
                 'reportes.view',
                 'reportes.export',
-                
+
                 // Business modules (to see sidebar sections)
                 'productos.view',
                 'listas-precio.view',
@@ -701,6 +704,11 @@ class PermissionSeeder extends Seeder
                 'productos.export',
                 'productos.toggle',
 
+                'categorias.view',
+                'categorias.create',
+                'categorias.edit',
+                'categorias.delete',
+
                 'compras.view',
                 'compras.create',
                 'compras.edit',
@@ -796,6 +804,7 @@ class PermissionSeeder extends Seeder
                 'delivery-tracking.create',
                 'delivery-tracking.edit',
                 'delivery-tracking.assign',
+                'delivery-mis-entregas.view',
                 'delivery-earnings.view',
                 'delivery-earnings.export',
             ],
@@ -1199,6 +1208,7 @@ class PermissionSeeder extends Seeder
                 'delivery-dashboard.view',
                 'delivery-tracking.view',
                 'delivery-tracking.assign',
+                'delivery-mis-entregas.view',
                 'delivery-earnings.view',
                 'delivery-zones.view',
                 'delivery-companies.view',
@@ -1255,7 +1265,7 @@ class PermissionSeeder extends Seeder
         // syncPermissions(), que re-consulta cada permiso por nombre y es muy lento.
         foreach ($rolePermissions as $roleName => $perms) {
             $roleId = $roleIdByName[$roleName] ?? null;
-            if (!$roleId) {
+            if (! $roleId) {
                 continue;
             }
 

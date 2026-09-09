@@ -1,5 +1,5 @@
 ---
-description: "Especialista en frontend Blade/CSS/JavaScript/Vue. Maneja vistas blade, partials, DataTables, UI premium glassmorphism, Bootstrap 5.3, JavaScript ES6+, Vue 3, responsive design, dark mode, animaciones. Trigger keywords: vista, blade, frontend, UI, CSS, Bootstrap, DataTables, premium, responsive, dark mode, formulario, sticky bar, header, card, avatar, badge, javascript, Vue."
+description: "Especialista en frontend Blade/CSS/JavaScript/Vue. Maneja vistas blade, partials, DataTables, UI premium glassmorphism, Bootstrap 5.3, JavaScript ES6+, Vue 3, responsive design, dark mode, animaciones. Trigger keywords: vista, blade, frontend, UI, CSS, Bootstrap, DataTables, premium, responsive, dark mode, formulario, sticky bar, header, card, avatar, badge, javascript, Vue, tenancy."
 mode: subagent
 ---
 
@@ -121,3 +121,4 @@ body.dark-mode .premium-card { background: rgba(15,23,42,.8); border-color: rgba
 - [ ] Responsive design probado
 - [ ] Animaciones stagger con `animation-delay`
 - [ ] Botones de acción usan `premium-btn-edit` / `premium-btn-delete`
+- [ ] Para reglas de negocio de la UI: ver spec de `business-analyst`

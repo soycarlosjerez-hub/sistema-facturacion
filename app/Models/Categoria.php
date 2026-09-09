@@ -2,27 +2,46 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
 use App\Traits\TenantScope;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Categoria extends Model
 {
-    use HasFactory;
-    use Auditable, TenantScope;
+    use Auditable, HasFactory, TenantScope;
 
-    protected $fillable = ['nombre', 'descripcion', 'activa', 'tenant_id'];
+    protected $table = 'categorias';
 
-    protected $casts = ['activa' => 'boolean'];
+    protected $fillable = [
+        'nombre',
+        'descripcion',
+        'activa',
+        'color',
+        'icono',
+        'orden',
+        'configuracion',
+        'tenant_id',
+    ];
 
-    public function productos()
+    protected $casts = [
+        'activa' => 'boolean',
+        'orden' => 'integer',
+        'configuracion' => 'json',
+    ];
+
+    protected static function booted(): void
     {
-        return $this->hasMany(Producto::class);
+        static::creating(function ($categoria) {
+            if (auth()->check() && ! $categoria->tenant_id) {
+                $categoria->tenant_id = auth()->user()->business_instance_id;
+            }
+        });
     }
 
-    public function scopeActivas($query)
+    public function productos(): HasMany
     {
-        return $query->where('activa', true);
+        return $this->hasMany(Producto::class, 'categoria_id', 'id');
     }
 }

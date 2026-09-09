@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DeliveryDriver;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,7 +11,14 @@ class DeliveryDriverController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DeliveryDriver::query();
+        $query = DeliveryDriver::query()
+            ->with('user')
+            ->withCount([
+                'ordenes as ordenes_activas' => function ($q) {
+                    $q->whereIn('estado', ['pendiente', 'preparando', 'en_camino']);
+                },
+            ])
+            ->withCount('ventas as ventas_total');
 
         if ($search = $this->dtSearch($request)) {
             $query->where(function ($q) use ($search) {
@@ -34,15 +42,16 @@ class DeliveryDriverController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nombre'           => 'required|string|max:60',
-            'apellido'         => 'required|string|max:60',
-            'cedula'           => 'nullable|string|max:20',
-            'telefono'         => 'nullable|string|max:30',
-            'whatsapp'         => 'nullable|string|max:30',
-            'licencia_conducir'=> 'nullable|string|max:50',
-            'activo'           => 'boolean',
-            'notas'            => 'nullable|string',
-            'avatar_url'       => 'nullable|string|max:500',
+            'nombre' => 'required|string|max:60',
+            'apellido' => 'required|string|max:60',
+            'cedula' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:30',
+            'whatsapp' => 'nullable|string|max:30',
+            'licencia_conducir' => 'nullable|string|max:50',
+            'activo' => 'boolean',
+            'notas' => 'nullable|string',
+            'avatar_url' => 'nullable|string|max:500',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         $data['activo'] = $request->boolean('activo', true);
@@ -56,21 +65,29 @@ class DeliveryDriverController extends Controller
 
     public function edit(DeliveryDriver $deliveryDriver)
     {
-        return view('delivery-drivers.edit', ['driver' => $deliveryDriver]);
+        $allUsers = User::where('business_instance_id', $deliveryDriver->tenant_id)
+            ->orderBy('name')
+            ->get();
+
+        return view('delivery-drivers.edit', [
+            'driver' => $deliveryDriver,
+            'allUsers' => $allUsers,
+        ]);
     }
 
     public function update(Request $request, DeliveryDriver $deliveryDriver)
     {
         $data = $request->validate([
-            'nombre'           => 'required|string|max:60',
-            'apellido'         => 'required|string|max:60',
-            'cedula'           => 'nullable|string|max:20',
-            'telefono'         => 'nullable|string|max:30',
-            'whatsapp'         => 'nullable|string|max:30',
-            'licencia_conducir'=> 'nullable|string|max:50',
-            'activo'           => 'boolean',
-            'notas'            => 'nullable|string',
-            'avatar_url'       => 'nullable|string|max:500',
+            'nombre' => 'required|string|max:60',
+            'apellido' => 'required|string|max:60',
+            'cedula' => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:30',
+            'whatsapp' => 'nullable|string|max:30',
+            'licencia_conducir' => 'nullable|string|max:50',
+            'activo' => 'boolean',
+            'notas' => 'nullable|string',
+            'avatar_url' => 'nullable|string|max:500',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         $data['activo'] = $request->boolean('activo', true);

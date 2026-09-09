@@ -1,0 +1,140 @@
+<?php $__env->startSection('title', 'Crear Especialidad Técnica'); ?>
+
+<?php $__env->startPush('styles'); ?>
+<?php echo $__env->make('partials.premium-ui', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="ui-page" style="--accent:#f59e0b;--accent-rgb:245,158,11;--accent-hover:#d97706;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-tools"></i>
+                </div>
+                <div>
+                    <div class="ui-header-title">Nueva Especialidad Técnica</div>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Registra una nueva especialidad para técnicos
+                    </div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <a href="<?php echo e(route('tecnica-especialidades.index')); ?>" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <?php if($errors->any()): ?>
+    <div class="alert alert-danger rounded-4 shadow-sm border-0 mb-4" style="border-left: 4px solid #dc3545 !important;">
+        <ul class="mb-0">
+            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <li><?php echo e($error); ?></li>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </ul>
+    </div>
+    <?php endif; ?>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <form id="especialidadForm" action="<?php echo e(route('tecnica-especialidades.store')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
+
+                    <div class="ui-card-body pb-4 mb-4 border-bottom">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="nombre" class="ui-label">Nombre de la Especialidad <span class="text-danger">*</span></label>
+                                <input type="text" name="nombre" id="nombre" class="ui-input <?php $__errorArgs = ['nombre'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('nombre')); ?>" required>
+                                <small class="text-muted">Ej: Redes, Impresoras, Servidores, CCTV, etc.</small>
+                                <?php $__errorArgs = ['nombre'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="descripcion" class="ui-label">Descripción</label>
+                                <textarea name="descripcion" id="descripcion" class="ui-textarea <?php $__errorArgs = ['descripcion'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" rows="3" placeholder="Describe las competencias necesarias para esta especialidad"><?php echo e(old('descripcion')); ?></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="orden" class="ui-label">Orden de Visualización</label>
+                                <input type="number" name="orden" id="orden" class="ui-input <?php $__errorArgs = ['orden'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" value="<?php echo e(old('orden', 0)); ?>" min="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="activo" class="ui-label">Estado</label>
+                                <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:rgba(245,158,11,.05);">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" name="activo" id="activo" <?php echo e(old('activo', true) ? 'checked' : ''); ?> role="switch" style="width:3em;height:1.5em;">
+                                        <label class="form-check-label fw-semibold ms-2" for="activo">Activa</label>
+                                    </div>
+                                    <small class="text-muted">Si está inactiva no aparecerá en las listas.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div style="height: 80px;"></div>
+</div>
+
+<div class="ui-sticky-bar">
+    <div class="ui-sticky-bar-inner">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle" style="color:#f59e0b;"></i>
+            <span class="fw-semibold d-none d-sm-inline">Creando nueva especialidad técnica</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="<?php echo e(route('tecnica-especialidades.index')); ?>" class="ui-btn ui-btn-ghost rounded-pill">Cancelar</a>
+            <button type="submit" form="especialidadForm" class="ui-btn ui-btn-solid rounded-pill">
+                <i class="bi bi-check-lg me-1"></i>Guardar Especialidad
+            </button>
+        </div>
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/sistema-facturacion/resources/views/tecnica-especialidades/create.blade.php ENDPATH**/ ?>

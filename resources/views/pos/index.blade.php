@@ -405,9 +405,10 @@ const app = (() => {
         },
         addProducto(id, nombre, precio, stock, tipo) {
             if (stock <= 0) return alert('Sin stock');
+            const notas = prompt('Nota para este producto:', '');
             const existing = carrito.find(i => i.id === id);
             if (existing) { if (existing.cantidad >= stock) return alert('Stock insuficiente'); existing.cantidad++; }
-            else { carrito.push({ id, nombre, precio, cantidad: 1, tipo, itbis: ITBIS_PRODUCTOS }); }
+            else { carrito.push({ id, nombre, precio, cantidad: 1, tipo, itbis: ITBIS_PRODUCTOS, notas: notas || null }); }
             renderCarrito();
         },
         cambiarCant(id, delta) {
@@ -465,15 +466,23 @@ const app = (() => {
                 this.cargarZonasPorEmpresa();
             }
         },
+        calcularTotalDeliveryFee() {
+            const zonaSelect = document.getElementById('delivery-zona');
+            const opt = zonaSelect.selectedOptions[0];
+            if (!opt || !opt.value) return;
+            const tarifa = parseFloat(opt.getAttribute('data-tarifa')) || 0;
+            const propina = parseFloat(document.getElementById('delivery-propina').value) || 0;
+            document.getElementById('delivery-fee').value = (tarifa + propina).toFixed(2);
+        },
         async cargarZonasPorEmpresa() {
             const empresaId = document.getElementById('delivery-empresa').value;
             const zonaSelect = document.getElementById('delivery-zona');
             zonaSelect.innerHTML = '<option value="">Cargando...</option>';
             try {
-                const resp = await fetch('/pos/delivery/zones');
+                const resp = await fetch('{{ route("pos.delivery.zones") }}');
                 const data = await resp.json();
                 zonaSelect.innerHTML = '<option value="">Seleccionar zona...</option>' +
-                    (data.zones || []).map(z => `<option value="${z.id}">${z.nombre} - ${z.tiempo_estimado_minutos || 20} min</option>`).join('');
+                    (data.zones || []).map(z => `<option value="${z.id}" data-tarifa="${z.tarifa_base || 0}">${z.nombre} - RD$ ${parseFloat(z.tarifa_base || 0).toFixed(2)} - ${z.tiempo_estimado_minutos || 20} min</option>`).join('');
                 zonaSelect.onchange = () => app.calcularTotalDeliveryFee();
             } catch (e) {
                 zonaSelect.innerHTML = '<option value="">Error al cargar zonas</option>';
@@ -539,9 +548,11 @@ const app = (() => {
             totalServicios += item.tipo === 'servicio' ? subtotal : subtotal * (1 - item.itbis);
             totalProductos += item.tipo === 'servicio' ? 0 : subtotal;
             totalITBIS += subtotal * item.itbis;
+            const notasHtml = item.notas ? `<div class="small text-warning">${item.notas}</div>` : '';
             return `<div class="pos-carrito-item d-flex align-items-center justify-content-between">
                 <div class="flex-grow-1">
                     <div class="fw-bold small text-dark" style="font-size:0.82rem;">${item.nombre}</div>
+                    ${notasHtml}
                     <div class="small text-muted">RD$ ${item.precio.toFixed(2)} × ${item.cantidad}</div>
                 </div>
                 <div class="d-flex align-items-center gap-2">

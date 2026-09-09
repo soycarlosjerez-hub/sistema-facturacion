@@ -1,0 +1,2 @@
+<?php echo $__env->make('owner.planes.form', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php /**PATH /var/www/html/sistema-facturacion/resources/views/owner/planes/create.blade.php ENDPATH**/ ?>

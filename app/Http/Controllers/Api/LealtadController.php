@@ -16,7 +16,23 @@ class LealtadController extends Controller
 {
     private function tenant(): int
     {
-        return Auth::user()->business_instance_id;
+        $user = $this->resolveAuthUser();
+        if ($user instanceof Cliente) {
+            return $user->tenant_id;
+        }
+        return $user->business_instance_id;
+    }
+
+    private function resolveAuthUser()
+    {
+        if (Auth::check()) {
+            return Auth::user();
+        }
+        $clientToken = request()->attributes->get('client_api_token');
+        if ($clientToken && $clientToken->cliente) {
+            return $clientToken->cliente;
+        }
+        return null;
     }
 
     public function get(Request $request): JsonResponse

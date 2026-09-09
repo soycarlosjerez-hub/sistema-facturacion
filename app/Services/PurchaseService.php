@@ -476,6 +476,17 @@ class PurchaseService
         foreach ($compra->detalles as $detalle) {
             if ($detalle->producto) {
                 $detalle->producto->decrement('stock', $detalle->cantidad);
+                
+                AlmacenMovimiento::create([
+                    'tenant_id'   => Auth::user()->business_instance_id,
+                    'producto_id' => $detalle->producto_id,
+                    'almacen_id'  => $compra->almacen_id,
+                    'detalle_compra_id' => $detalle->id,
+                    'tipo'        => 'salida',
+                    'cantidad'    => $detalle->cantidad,
+                    'nota'        => 'Salida por anulación de compra #' . $compra->id,
+                    'user_id'     => Auth::id(),
+                ]);
             }
         }
     }

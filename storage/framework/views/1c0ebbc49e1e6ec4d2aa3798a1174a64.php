@@ -1,0 +1,544 @@
+<?php $__env->startSection('title', $instance->nombre); ?>
+
+<?php $__env->startPush('styles'); ?>
+<?php echo $__env->make('partials.premium-ui', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
+<div class="container-fluid px-4 py-3">
+
+    <?php if(session('new_token')): ?>
+    <div class="alert alert-warning alert-dismissible fade show rounded-4 border-0 mb-4 shadow" role="alert">
+        <div class="d-flex align-items-start gap-3">
+            <div class="rounded-circle bg-warning bg-opacity-20 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;">
+                <i class="bi bi-key-fill text-dark fs-5"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong class="d-block mb-1">Token creado exitosamente</strong>
+                <p class="mb-2 small">Este token solo se muestra <strong>una vez</strong>. Cópialo ahora y guárdalo en un lugar seguro.</p>
+                <div class="input-group input-group-sm mb-1">
+                    <input type="text" class="ui-input font-monospace bg-white" value="<?php echo e(session('new_token')); ?>" readonly id="newTokenInput">
+                    <button class="ui-btn ui-btn-solid btn-sm" type="button" onclick="copyNewToken()" style="background:#1e293b;border-color:#1e293b">Copiar</button>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <script>
+    function copyNewToken() {
+        var input = document.getElementById('newTokenInput');
+        input.select(); input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value);
+        var btn = input.nextElementSibling; btn.textContent = 'Copiado!';
+        setTimeout(function(){ btn.textContent = 'Copiar'; }, 2000);
+    }
+    </script>
+    <?php endif; ?>
+
+    <div class="ui-header mb-4" style="--delay:.1s">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <?php if($instance->logo): ?>
+                <div class="ui-avatar-circle" style="overflow: hidden; width: 56px; height: 56px; border-radius: 14px;">
+                    <img src="<?php echo e(asset('storage/' . $instance->logo)); ?>" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; padding: 6px;">
+                </div>
+                <?php else: ?>
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-building"></i>
+                </div>
+                <?php endif; ?>
+                <div>
+                    <h4 class="ui-header-title">
+                        <?php echo e($instance->nombre); ?>
+
+                        <?php $subEstado = $instance->estadoSuscripcion(); ?>
+                        <?php if(!$instance->activo): ?>
+                            <span class="ui-badge ui-badge-neutral" style="font-size:.65rem;margin-left:.5rem;">Inactiva</span>
+                        <?php elseif($subEstado === 'suspendida'): ?>
+                            <span class="ui-badge ui-badge-danger" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-lock-fill me-1"></i>Suspendida</span>
+                        <?php elseif($subEstado === 'prueba'): ?>
+                            <span class="ui-badge ui-badge-primary" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-rocket-takeoff me-1"></i>Prueba — termina <?php echo e(optional($instance->trial_ends_at)->format('d/m/Y')); ?></span>
+                        <?php elseif($subEstado === 'activa'): ?>
+                            <span class="ui-badge ui-badge-success" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-check-circle me-1"></i>Al d&iacute;a</span>
+                        <?php else: ?>
+                            <span class="ui-badge ui-badge-warning" style="font-size:.65rem;margin-left:.5rem;"><i class="bi bi-exclamation-triangle me-1"></i><?php echo e($instance->mesesAtrasados()); ?> mes(es) atrasado</span>
+                        <?php endif; ?>
+                    </h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-tag me-1"></i><?php echo e($instance->businessType?->nombre ?? 'Sin tipo'); ?>
+
+                        <span class="divider">&middot;</span>
+                        <i class="bi bi-hash me-1"></i><?php echo e($instance->slug); ?>
+
+                    </div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <a href="<?php echo e(route('owner.instances.edit', $instance)); ?>" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                </a>
+                <a href="<?php echo e(route('owner.instances.config', $instance)); ?>" class="ui-btn ui-btn-primary">
+                    <i class="bi bi-gear me-1"></i>Configuraci&oacute;n
+                </a>
+                <a href="<?php echo e(route('owner.instances.api-keys', $instance)); ?>" class="ui-btn ui-btn-solid" style="background:#f59e0b;border-color:#f59e0b;color:#000">
+                    <i class="bi bi-key me-1"></i>API Keys
+                </a>
+                <a href="<?php echo e(route('owner.instances.index')); ?>" class="ui-btn ui-btn-ghost">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="ui-stat" style="--delay:.1s">
+                <div class="ui-card-accent"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-people" style="font-size:1.5rem;color:var(--accent);"></i>
+                    <div class="ui-stat-label mt-2">Usuarios</div>
+                    <div class="ui-stat-value"><?php echo e($instance->users->count()); ?></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="ui-stat" style="--delay:.15s">
+                <div class="ui-card-accent" style="background:<?php echo e($instance->businessType?->color ?? '#64748b'); ?>"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-tag" style="font-size:1.5rem;color:<?php echo e($instance->businessType?->color ?? '#64748b'); ?>;"></i>
+                    <div class="ui-stat-label mt-2">Tipo</div>
+                    <div class="ui-stat-value" style="font-size:1rem;"><?php echo e($instance->businessType?->nombre ?? '—'); ?></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="ui-stat" style="--delay:.2s">
+                <div class="ui-card-accent" style="background:#22c55e"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-currency-dollar" style="font-size:1.5rem;color:#22c55e;"></i>
+                    <div class="ui-stat-label mt-2">Costo Mensual</div>
+                    <div class="ui-stat-value" style="font-size:1rem;"><?php echo e($systemMoneda ?? 'RD$'); ?> <?php echo e(number_format($instance->costo_mensual ?? 0, 2)); ?></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="ui-stat" style="--delay:.25s">
+                <div class="ui-card-accent" style="background:#f59e0b"></div>
+                <div class="ui-stat-body text-center">
+                    <i class="bi bi-calendar" style="font-size:1.5rem;color:#f59e0b;"></i>
+                    <div class="ui-stat-label mt-2">Vencimiento</div>
+                    <div class="ui-stat-value" style="font-size:.9rem;"><?php echo e($instance->fecha_vencimiento?->format('d/m/Y') ?? 'Sin fecha'); ?></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="ui-card h-100" style="--delay:.3s">
+                <div class="ui-card-accent" style="background:#3b82f6"></div>
+                <div class="card-header bg-transparent border-0 p-4">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Informaci&oacute;n General</h5>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted small fw-bold">Nombre</dt>
+                        <dd class="col-sm-8"><?php echo e($instance->nombre); ?></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Slug</dt>
+                        <dd class="col-sm-8"><code><?php echo e($instance->slug); ?></code></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">RNC</dt>
+                        <dd class="col-sm-8"><?php echo e($instance->rnc ?? '—'); ?></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Email</dt>
+                        <dd class="col-sm-8"><?php echo e($instance->email ?? '—'); ?></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Tel&eacute;fono</dt>
+                        <dd class="col-sm-8"><?php echo e($instance->telefono ?? '—'); ?></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Direcci&oacute;n</dt>
+                        <dd class="col-sm-8"><?php echo e($instance->direccion ?? '—'); ?></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Tipo</dt>
+                        <dd class="col-sm-8"><span class="badge bg-<?php echo e($instance->businessType?->color ?? 'secondary'); ?> bg-opacity-10 text-<?php echo e($instance->businessType?->color ?? 'secondary'); ?> rounded-pill"><?php echo e($instance->businessType?->nombre ?? '—'); ?></span></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Plan</dt>
+                        <dd class="col-sm-8">
+                            <?php if($instance->plan): ?>
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Plan <?php echo e($instance->plan->nombre); ?></span>
+                                <?php if($instance->plan->max_usuarios): ?>
+                                    <span class="text-muted small ms-1">(<?php echo e($instance->users->count()); ?>/<?php echo e($instance->plan->max_usuarios); ?> usuarios)</span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-muted">Personalizado</span>
+                            <?php endif; ?>
+                        </dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Due&ntilde;o</dt>
+                        <dd class="col-sm-8"><?php echo e($instance->owner?->name ?? '—'); ?></dd>
+                        <dt class="col-sm-4 text-muted small fw-bold">Creado</dt>
+                        <dd class="col-sm-8"><?php echo e($instance->created_at->format('d/m/Y h:i A')); ?></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="ui-card h-100" style="--delay:.35s">
+                <div class="ui-card-accent" style="background:#ef4444"></div>
+                <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-shield-lock text-danger me-2"></i>Bloqueo de Instancia</h5>
+                    <?php if($instance->bloqueado): ?>
+                        <span class="badge bg-danger rounded-pill">Bloqueada</span>
+                    <?php else: ?>
+                        <span class="badge bg-success rounded-pill">Normal</span>
+                    <?php endif; ?>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <?php if($instance->bloqueado): ?>
+                        <div class="alert alert-danger rounded-4 border-0">
+                            <i class="bi bi-lock-fill me-2"></i>
+                            <strong>Motivo:</strong> <?php echo e($instance->motivo_bloqueo ?? 'Sin especificar'); ?>
+
+                            <br><small>Bloqueado el <?php echo e($instance->bloqueado_en?->format('d/m/Y h:i A') ?? '—'); ?></small>
+                        </div>
+                    <?php endif; ?>
+                    <form method="POST" action="<?php echo e(route('owner.instances.toggle-block', $instance)); ?>" onsubmit="return confirm('<?php echo e($instance->bloqueado ? 'Desbloquear' : 'Bloquear'); ?> esta instancia?')">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="bloqueado" value="<?php echo e($instance->bloqueado ? '0' : '1'); ?>">
+                        <?php if(!$instance->bloqueado): ?>
+                        <div class="mb-3">
+                            <label class="ui-label fw-bold small">Motivo del Bloqueo <span class="text-danger">*</span></label>
+                            <textarea name="motivo_bloqueo" class="ui-input rounded-4" rows="2" placeholder="Ej: Mora en pago de mensualidad..." required></textarea>
+                        </div>
+                        <?php endif; ?>
+                        <button type="submit" class="ui-btn ui-btn-<?php echo e($instance->bloqueado ? 'solid' : 'danger'); ?> rounded-pill w-100 fw-bold">
+                            <i class="bi bi-<?php echo e($instance->bloqueado ? 'unlock' : 'lock-fill'); ?> me-2"></i>
+                            <?php echo e($instance->bloqueado ? 'Desbloquear Instancia' : 'Bloquear Instancia'); ?>
+
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui-card mb-4" style="--delay:.4s">
+        <div class="ui-card-accent" style="background:#10b981"></div>
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-cash-coin text-success me-2"></i>Historial de Pagos</h5>
+            <div class="d-flex gap-2">
+                <a href="<?php echo e(route('owner.instances.pagos', $instance)); ?>" class="ui-btn ui-btn-view btn-sm">Ver historial completo</a>
+                <a href="<?php echo e(route('owner.instances.pagos.create', $instance)); ?>" class="ui-btn ui-btn-solid btn-sm" style="background:#10b981;border-color:#10b981">
+                    <i class="bi bi-plus-lg me-1"></i>Registrar Pago
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-4 pt-0">
+            <?php
+                $ultimoPago = $instance->ultimoPago()->first();
+            ?>
+            <?php if($ultimoPago): ?>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <div class="p-3 bg-success bg-opacity-10 rounded-4 text-center">
+                        <small class="text-success d-block fw-bold text-uppercase" style="font-size:.6rem;">Último Pago</small>
+                        <span class="fw-bold"><?php echo e($ultimoPago->mes_pagado->isoFormat('MMM YYYY')); ?></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-info bg-opacity-10 rounded-4 text-center">
+                        <small class="text-info d-block fw-bold text-uppercase" style="font-size:.6rem;">Monto</small>
+                        <span class="fw-bold"><?php echo e($systemMoneda ?? 'RD$'); ?> <?php echo e(number_format($ultimoPago->monto, 2)); ?></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-<?php echo e($instance->estaAlDia() ? 'success' : 'warning'); ?> bg-opacity-10 rounded-4 text-center">
+                        <small class="text-<?php echo e($instance->estaAlDia() ? 'success' : 'warning'); ?> d-block fw-bold text-uppercase" style="font-size:.6rem;">Estado</small>
+                        <span class="fw-bold"><?php echo e($instance->estaAlDia() ? 'Al d&iacute;a' : $instance->mesesAtrasados() . ' mes(es) atrasado'); ?></span>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if($pagosRecientes->isNotEmpty()): ?>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mes Pagado</th>
+                            <th>Monto</th>
+                            <th>M&eacute;todo</th>
+                            <th>Fecha de Pago</th>
+                            <th>Registrado por</th>
+                            <th>Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__currentLoopData = $pagosRecientes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pago): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <tr>
+                            <td class="fw-bold"><?php echo e($pago->mes_pagado->isoFormat('MMMM YYYY')); ?></td>
+                            <td><?php echo e($systemMoneda ?? 'RD$'); ?> <?php echo e(number_format($pago->monto, 2)); ?></td>
+                            <td><?php echo e($pago->metodo_pago ?? '—'); ?></td>
+                            <td><?php echo e($pago->fecha_pago->format('d/m/Y h:i A')); ?></td>
+                            <td><?php echo e($pago->registradoPor?->name ?? '—'); ?></td>
+                            <td><small class="text-muted"><?php echo e($pago->notas ?? '—'); ?></small></td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php else: ?>
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2 mb-0">No hay pagos registrados para esta instancia.</p>
+                <a href="<?php echo e(route('owner.instances.pagos.create', $instance)); ?>" class="ui-btn ui-btn-solid mt-2 btn-sm" style="background:#10b981;border-color:#10b981">
+                    <i class="bi bi-plus-lg me-1"></i>Registrar Primer Pago
+                </a>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="ui-card mb-4" style="--delay:.45s">
+        <div class="ui-card-accent" style="background:#ef4444"></div>
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-exclamation-triangle text-danger me-2"></i>Errores Recientes
+                <?php if($errorCount > 0): ?>
+                    <span class="badge bg-danger rounded-pill ms-2" style="font-size:.65rem;"><?php echo e($errorCount); ?> en 7 d&iacute;as</span>
+                <?php endif; ?>
+            </h5>
+            <a href="<?php echo e(route('owner.instances.errors', $instance)); ?>" class="ui-btn ui-btn-danger btn-sm">
+                <i class="bi bi-arrow-right me-1"></i>Ver Todos
+            </a>
+        </div>
+        <div class="card-body p-4 pt-0">
+            <?php if($recentErrors->isNotEmpty()): ?>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Nivel</th>
+                            <th>Fuente</th>
+                            <th>Mensaje</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__currentLoopData = $recentErrors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <tr>
+                            <td class="text-nowrap"><small><?php echo e($error->created_at->format('d/m/Y H:i')); ?></small></td>
+                            <td><span class="badge bg-<?php echo e($error->level_color); ?> bg-opacity-10 text-<?php echo e($error->level_color); ?> rounded-pill text-uppercase" style="font-size:.65rem;"><?php echo e($error->level); ?></span></td>
+                            <td><i class="bi <?php echo e($error->source_icon); ?> me-1 text-muted"></i><?php echo e(ucfirst($error->source)); ?></td>
+                            <td class="text-truncate" style="max-width:300px;" title="<?php echo e($error->title); ?>"><?php echo e($error->title); ?></td>
+                            <td><?php echo e($error->user?->name ?? '—'); ?></td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php else: ?>
+            <div class="text-center py-4 text-muted">
+                <div class="bg-success bg-opacity-10 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:56px;height:56px;">
+                    <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                </div>
+                <p class="fw-bold mb-0">Sin errores recientes</p>
+                <small>Esta instancia no tiene errores en los &uacute;ltimos 7 d&iacute;as.</small>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="ui-card mb-4" style="--delay:.5s">
+        <div class="ui-card-accent" style="background:#8b5cf6"></div>
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-person-badge text-info me-2"></i>Roles de Instancia</h5>
+            <a href="<?php echo e(route('owner.instances.roles', $instance)); ?>" class="ui-btn ui-btn-solid btn-sm" style="background:#06b6d4;border-color:#06b6d4">
+                <i class="bi bi-gear me-1"></i>Gestionar Roles
+            </a>
+        </div>
+        <div class="card-body p-4 pt-0">
+            <?php
+                $instanceRoles = \App\Models\InstanceRole::where('business_instance_id', $instance->id)->withCount('users')->orderBy('name')->get();
+            ?>
+            <?php $__empty_0 = true; $__currentLoopData = $instanceRoles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+            <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                        <span class="fw-bold text-info" style="font-size:.85rem;"><?php echo e(substr($role->name, 0, 1)); ?></span>
+                    </div>
+                    <div>
+                        <span class="fw-bold"><?php echo e($role->name); ?></span>
+                        <small class="text-muted d-block"><?php echo e($role->users_count); ?> usuario(s) &middot; <?php echo e($role->visibleModules()->count()); ?> módulo(s)</small>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('owner.instances.roles.edit', [$instance, $role])); ?>" class="ui-action ui-action-edit" title="Editar módulos">
+                    <i class="bi bi-pencil"></i>
+                </a>
+            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+            <div class="text-center py-3 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2 mb-0">No hay roles definidos para esta instancia.</p>
+                <a href="<?php echo e(route('owner.instances.roles.create', $instance)); ?>" class="ui-btn ui-btn-solid mt-2 btn-sm" style="background:#06b6d4;border-color:#06b6d4">
+                    <i class="bi bi-plus-lg me-1"></i>Crear Primer Rol
+                </a>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="ui-card" style="--delay:.55s">
+        <div class="ui-card-accent" style="background:#3b82f6"></div>
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i>Usuarios Asignados</h5>
+            <div class="d-flex gap-2 align-items-center">
+                <small class="text-muted"><?php echo e($instance->users->count()); ?> usuario(s)</small>
+                <a href="<?php echo e(route('owner.instances.online', $instance)); ?>" class="ui-btn ui-btn-view btn-sm">
+                    <i class="bi bi-wifi me-1"></i>Online
+                </a>
+                <a href="<?php echo e(route('owner.instances.users.create', $instance)); ?>" class="ui-btn ui-btn-solid btn-sm" style="background:#10b981;border-color:#10b981">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo Usuario
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-4 pt-0">
+            <?php $__empty_0 = true; $__currentLoopData = $instance->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+            <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                        <span class="fw-bold text-primary" style="font-size:.85rem;"><?php echo e(substr($user->name, 0, 1)); ?></span>
+                    </div>
+                    <div>
+                        <span class="fw-bold"><?php echo e($user->name); ?></span>
+                        <small class="text-muted d-block"><?php echo e($user->email); ?></small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <?php $__currentLoopData = $user->roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill me-1"><?php echo e($role->name); ?></span>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <a href="<?php echo e(route('owner.instances.users.edit', [$instance, $user])); ?>" class="ui-action ui-action-edit ms-2" title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="POST" action="<?php echo e(route('owner.instances.users.destroy', [$instance, $user])); ?>" onsubmit="return confirm('&iquest;Eliminar a <?php echo e($user->name); ?> de <?php echo e($instance->nombre); ?>? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
+                        <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
+                        <button type="submit" class="ui-action ui-action-delete" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2 mb-0">No hay usuarios asignados a esta instancia.</p>
+                <a href="<?php echo e(route('owner.instances.users.create', $instance)); ?>" class="ui-btn ui-btn-solid mt-2 btn-sm" style="background:#10b981;border-color:#10b981">
+                    <i class="bi bi-plus-lg me-1"></i>Crear Primer Usuario
+                </a>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="ui-card mb-4" style="--delay:.6s">
+        <div class="ui-card-accent" style="background:#f59e0b"></div>
+        <div class="card-header bg-transparent border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-key text-warning me-2"></i>Tokens de API</h5>
+            <button type="button" class="ui-btn ui-btn-solid btn-sm" data-bs-toggle="modal" data-bs-target="#createTokenModal" style="background:#f59e0b;border-color:#f59e0b;color:#000">
+                <i class="bi bi-plus-lg me-1"></i>Nuevo Token
+            </button>
+        </div>
+        <div class="card-body p-4 pt-0">
+            <?php
+                $allTokens = $instance->users->flatMap(fn($u) => $u->tokens->map(fn($t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'abilities' => $t->abilities,
+                    'last_used_at' => $t->last_used_at,
+                    'created_at' => $t->created_at,
+                    'user_name' => $u->name,
+                    'user_id' => $u->id,
+                ]))->sortByDesc('created_at');
+            ?>
+            <?php if($allTokens->isNotEmpty()): ?>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre</th>
+                            <th>&Uacute;ltimo uso</th>
+                            <th>Creado</th>
+                            <th class="text-end">Acci&oacute;n</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__currentLoopData = $allTokens; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <tr>
+                            <td><span class="fw-bold"><?php echo e($t['user_name']); ?></span></td>
+                            <td><code><?php echo e($t['name']); ?></code></td>
+                            <td><small class="text-muted"><?php echo e($t['last_used_at']?->diffForHumans() ?? 'Nunca'); ?></small></td>
+                            <td><small class="text-muted"><?php echo e($t['created_at']->format('d/m/Y')); ?></small></td>
+                            <td class="text-end">
+                                <form method="POST" action="<?php echo e(route('owner.instances.tokens.destroy', [$instance, $t['id']])); ?>" onsubmit="return confirm('&iquest;Revocar el token &quot;<?php echo e($t['name']); ?>&quot; de <?php echo e($t['user_name']); ?>? Esta acci&oacute;n no se puede deshacer.')" class="d-inline">
+                                    <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Revocar">
+                                        <i class="bi bi-x-lg me-1"></i>Revocar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php else: ?>
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-inbox fs-1"></i>
+                <p class="mt-2 mb-0">No hay tokens de API para esta instancia.</p>
+                <button type="button" class="btn btn-warning rounded-pill mt-2 btn-sm fw-bold text-dark" data-bs-toggle="modal" data-bs-target="#createTokenModal">
+                    <i class="bi bi-plus-lg me-1"></i>Crear Primer Token
+                </button>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="modal fade" id="createTokenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form method="POST" action="<?php echo e(route('owner.instances.tokens.store', $instance)); ?>">
+                <?php echo csrf_field(); ?>
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="fw-bold"><i class="bi bi-key text-warning me-2"></i>Nuevo Token de API</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Usuario <span class="text-danger">*</span></label>
+                        <select name="user_id" class="form-select rounded-4" required>
+                            <option value="">Seleccionar usuario...</option>
+                            <?php $__currentLoopData = $instance->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($user->id); ?>"><?php echo e($user->name); ?> (<?php echo e($user->email); ?>)</option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Nombre del Token <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control rounded-4" placeholder="Ej: app-movil, pos-terminal" required maxlength="255">
+                        <div class="form-text">Un nombre descriptivo para identificar el uso del token.</div>
+                    </div>
+                    <input type="hidden" name="abilities" value="*">
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning rounded-pill fw-bold text-dark">
+                        <i class="bi bi-key me-1"></i>Crear Token
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/sistema-facturacion/resources/views/owner/instances/show.blade.php ENDPATH**/ ?>

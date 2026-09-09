@@ -4,11 +4,8 @@ namespace App\Services;
 
 use App\Models\DeliveryTracking;
 use App\Models\DeliveryZone;
-use App\Models\Order;
 use App\Models\Orden;
-use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 
 class DeliveryService
 {
@@ -17,8 +14,9 @@ class DeliveryService
         $hora = $hora ?? now();
         $esNocturno = $hora->hour >= 22 || $hora->hour < 6;
 
-        if (!$zonaId) {
+        if (! $zonaId) {
             $tarifa = 50;
+
             return [
                 'tarifa' => round($tarifa, 2),
                 'distancia' => round($distanciaKm, 2),
@@ -28,10 +26,12 @@ class DeliveryService
 
         $zona = DeliveryZone::where('id', $zonaId)
             ->where('activo', true)
+            ->where('tenant_id', Auth::user()->business_instance_id)
             ->first();
 
-        if (!$zona) {
+        if (! $zona) {
             $tarifa = 50;
+
             return [
                 'tarifa' => round($tarifa, 2),
                 'distancia' => round($distanciaKm, 2),
@@ -58,9 +58,11 @@ class DeliveryService
 
     public function verificarZonaCobertura($lat, $lng, $zonaId)
     {
-        $zona = DeliveryZone::where('id', $zonaId)->first();
+        $zona = DeliveryZone::where('id', $zonaId)
+            ->where('tenant_id', Auth::user()->business_instance_id)
+            ->first();
 
-        if (!$zona) {
+        if (! $zona) {
             return ['dentro_zona' => false, 'distancia_km' => 0];
         }
 
@@ -70,11 +72,12 @@ class DeliveryService
 
         $radioKm = $zona->radio_km ?? 10;
 
+        $centro = $this->calcularCentroPoligono($zona->zona_poligono);
         $distancia = $this->calcularDistanciaHaversine(
             $lat,
             $lng,
-            $zona->poligono_centro_lat ?? 18.4861,
-            $zona->poligono_centro_lng ?? -69.9312
+            $centro['lat'],
+            $centro['lng']
         );
 
         return [
@@ -97,7 +100,7 @@ class DeliveryService
             if ((($yi > $lat) !== ($yj > $lat))
                 && ($lng < ($xj - $xi) * ($lat - $yi) / ($yj - $yi) + $xi)
             ) {
-                $rayCast = !$rayCast;
+                $rayCast = ! $rayCast;
             }
         }
 
@@ -123,9 +126,11 @@ class DeliveryService
 
     public function estimarTiempoEntrega($zonaId, $distanciaKm)
     {
-        $zona = DeliveryZone::where('id', $zonaId)->first();
+        $zona = DeliveryZone::where('id', $zonaId)
+            ->where('tenant_id', Auth::user()->business_instance_id)
+            ->first();
 
-        if (!$zona) {
+        if (! $zona) {
             return ['minutos_estimados' => 30];
         }
 
@@ -154,7 +159,10 @@ class DeliveryService
 
     public function crearSeguimiento($ordenId, $datos)
     {
-        $orden = Orden::with('deliveryCompany')->findOrFail($ordenId);
+        $orden = Orden::where('id', $ordenId)
+            ->where('tenant_id', Auth::user()->business_instance_id)
+            ->with('deliveryCompany')
+            ->firstOrFail();
 
         $tracking = DeliveryTracking::create([
             'tenant_id' => Auth::user()->business_instance_id,
@@ -172,5 +180,26 @@ class DeliveryService
         ]);
 
         return $tracking;
+    }
+
+    private function calcularCentroPoligono($poligono): array
+    {
+        if (empty($poligono) || ! is_array($poligono)) {
+            return ['lat' => 18.4861, 'lng' => -69.9312];
+        }
+
+        $sumLat = 0;
+        $sumLng = 0;
+        $count = count($poligono);
+
+        foreach ($poligono as $punto) {
+            $sumLat += $punto[0] ?? 0;
+            $sumLng += $punto[1] ?? 0;
+        }
+
+        return [
+            'lat' => $sumLat / $count,
+            'lng' => $sumLng / $count,
+        ];
     }
 }

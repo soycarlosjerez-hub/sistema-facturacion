@@ -138,6 +138,9 @@ body.dark-mode .pagos-table tbody td {
                             <div class="small pe-3" style="flex: 1;">
                                 <div class="fw-bold">{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Obra de Arte' }}</div>
                                 <small class="text-muted">{{ $d->cantidad }} x RD${{ number_format($d->precio_unitario, 2) }}</small>
+                                @if($d->notas)
+                                <div class="small mt-1" style="color: var(--bs-warning); font-style: italic;"><i class="bi bi-journal-text me-1"></i>{{ $d->notas }}</div>
+                                @endif
                             </div>
                             <div class="fw-bold text-end small">RD${{ number_format($d->subtotal, 2) }}</div>
                         </div>
@@ -293,16 +296,106 @@ body.dark-mode .pagos-table tbody td {
                 </div>
             </div>
 
-            @if($venta->splitBillPerson->count())
+            @if($venta->equipos->count() || $venta->garantias->count())
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"></div>
+                <div class="ui-card-title">
+                    <i class="bi bi-shield-check me-2"></i>
+                    Garantías del Equipo
+                </div>
+                <div class="ui-card-subtitle">
+                    @if($venta->garantias->count())
+                        {{ $venta->garantias->count() }} garantía(s) registrada(s)
+                    @else
+                        Sin garantía activa
+                    @endif
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm pagos-table">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Equipo</th>
+                                    <th>Tipo</th>
+                                    <th>Inicio</th>
+                                    <th>Vencimiento</th>
+                                    <th>Días Rest.</th>
+                                    <th class="text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($venta->garantias as $g)
+                                <tr>
+                                    <td class="ps-4">
+                                        @if($g->equipo)
+                                        <div class="fw-bold">{{ $g->equipo->serial_imei }}</div>
+                                        <small class="text-muted">{{ $g->equipo->marca }} {{ $g->equipo->modelo }}</small>
+                                        @else
+                                        <small class="text-muted">No vinculado</small>
+                                        @endif
+                                    </td>
+                                    <td><span class="ui-badge-neutral">{{ $g->tipo_label ?? 'N/A' }}</span></td>
+                                    <td>{{ $g->fecha_inicio->format('d/m/Y') }}</td>
+                                    <td>{{ $g->fecha_fin->format('d/m/Y') }}</td>
+                                    <td class="text-center">
+                                        @if($g->dias_restantes > 30)
+                                            <span class="ui-badge-success">{{ $g->dias_restantes }} días</span>
+                                        @elseif($g->dias_restantes >= 7)
+                                            <span class="ui-badge-warning">{{ $g->dias_restantes }} días</span>
+                                        @elseif($g->dias_restantes > 0)
+                                            <span class="ui-badge-danger">{{ $g->dias_restantes }} días</span>
+                                        @else
+                                            <span class="ui-badge-secondary">Expirada</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @php
+                                            $estadoClass = match($g->estado) {
+                                                'vigente' => 'success',
+                                                'expirada' => 'secondary',
+                                                'reclamada', 'en_reclamo' => 'warning',
+                                                'rechazada' => 'danger',
+                                                'cancelada' => 'secondary',
+                                                default => 'neutral',
+                                            };
+                                        @endphp
+                                        <span class="ui-badge-{{ $estadoClass }}">{{ $g->estado_label ?? $g->estado }}</span>
+                                    </td>
+                                </tr>
+                                @empty
+                                @foreach($venta->equipos as $eq)
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold">{{ $eq->equipo->serial_imei ?? 'N/A' }}</div>
+                                        <small class="text-muted">{{ $eq->equipo->marca ?? '' }} {{ $eq->equipo->modelo ?? '' }}</small>
+                                    </td>
+                                    <td colspan="5" class="text-center text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>Sin garantía registrada
+                                        @if(auth()->user()->can('garantias.create'))
+                                        &middot;
+                                        <a href="{{ route('garantias.create', ['venta_id' => $venta->id]) }}" class="text-success fw-bold">Crear garantía</a>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($venta->splitBillPersons->count())
             <div class="ui-card" style="--delay:.2s">
                 <div class="ui-card-accent"></div>
                 <div class="ui-card-title">
                     <i class="bi bi-people me-2"></i>
-                    División de Cuenta ({{ $venta->splitBillPerson->count() }} personas)
+                    División de Cuenta ({{ $venta->splitBillPersons->count() }} personas)
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        @foreach($venta->splitBillPerson as $person)
+                        @foreach($venta->splitBillPersons as $person)
                         <div class="col-md-6 col-lg-4">
                             <div class="card border-0 shadow-sm rounded-4 h-100">
                                 <div class="card-body">

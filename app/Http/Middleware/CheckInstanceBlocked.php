@@ -12,8 +12,12 @@ class CheckInstanceBlocked
     {
         $user = Auth::user();
 
-        if (!$user || $user->hasRole('owner') || $user->hasRole('root')) {
-            return $next($request);
+        try {
+            if (!$user || $user->hasRole('owner') || $user->hasRole('root')) {
+                return $next($request);
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         // Las rutas de suscripción y la pantalla de bloqueo siempre deben ser accesibles.

@@ -1,67 +1,91 @@
-# Subagentes del Proyecto
+# Erpipos ERP — Agent Instructions
 
-Este proyecto utiliza subagentes especializados para desarrollo eficiente.
+Laravel 12 / PHP 8.2+ multi-tenant SaaS for Dominican Republic e-CF (DGII) electronic invoicing.
 
-## Agentes Disponibles
+## ⚠️ CRITICAL — READ FIRST
 
-| Agente | Descripción | Trigger |
-|--------|-------------|---------|
-| `@backend` | Especialista Laravel/PHP — controladores, servicios, modelos, APIs, middleware, políticas | "backend", "controlador", "servicio", "modelo", "API", "middleware", "policy", "permiso", "rol" |
-| `@frontend` | Especialista Blade/CSS/JS — vistas, UI premium, DataTables, Bootstrap, Vue, responsive | "vista", "blade", "frontend", "UI", "CSS", "DataTables", "premium", "responsive", "dark mode" |
-| `database-expert` | Especialista Senior BD — MySQL, diseño modelos ERP, normalización, índices, optimización SQL, migraciones, rendimiento | "migration", "schema", "tabla", "relación", "seeder", "factory", "índice", "optimización", "query", "performance", "BD", "MySQL", "modelo de datos", "normalización" |
-| `testing` | Especialista testing/debug — PHPUnit, debugging, logging, profiling | "test", "debug", "error", "bug", "log", "problema", "no funciona" |
-| `orchestrator` | Coordina subagentes para tareas complejas — flujos completos de desarrollo | "crear módulo completo", "CRUD completo", "implementar desde cero", "orquestar" |
-| `contable-rd` | Especialista contable RD — DGII, NCF, ITBIS, retenciones, cuentas, normativas fiscales dominicanas | "contable", "DGII", "NCF", "ITBIS", "comprobante", "tributario", "impuesto", "contabilidad", "retención" |
-| `software-architect` | Arquitecto de Software Senior — diseño, patrones, escalabilidad, modelado de datos, trade-offs técnicos | "arquitectura", "diseño", "patron", "escala", "refactor", "estructura", "modelo de datos", "relaciones", "decision tecnica", "trade-off", "DDD", "CQRS" |
-| `qa-engineer` | Ingeniero QA — pruebas funcionales, integración, validaciones ERP, detección de errores, control de calidad | "test", "QA", "prueba", "validación", "bug", "regresión", "caso de prueba", "coverage" |
-| `erp-analyst` | Analista funcional ERP — procesos empresariales, levantamiento de requerimientos, flujos de facturación, inventario, contabilidad | "requerimiento", "proceso", "flujo", "negocio", "user story", "análisis funcional", "levantamiento" |
-| `analista-negocio` | Senior Business Analyst — descubre procesos, actores, reglas, excepciones, documentos, permisos, KPIs, integraciones, automatización | "analista negocio", "analista-negocio", "proceso", "regla negocio", "permisos", "flujos", "KPI", "automatización", "documentos", "actores", "requisitos funcionales", "matriz permisos" |
-| `security-expert` | Especialista en seguridad web — Laravel Security, autenticación, autorización, OWASP, protección de APIs, auditoría | "seguridad", "auth", "permiso", "OWASP", "vulnerabilidad", "auditoría", "encriptación", "protección" |
-| `iso` | Consultor de calidad ISO 9000/9001/9004/19011 — sistemas de gestión de calidad, auditoría, trazabilidad, indicadores, documentación QMS, procesos, riesgos, mejora continua | "ISO", "iso 9000", "iso 9001", "iso 9004", "iso 19011", "calidad", "SGC", "gestión calidad", "auditoría calidad", "no conformidad", "acción correctiva", "indicador calidad", "KPI calidad", "política de calidad", "mejora continua", "risk", "oportunidad calidad" |
+- **NEVER use `php artisan migrate:refresh`** — ever. It destroys ALL data including seeded tenants, users, roles, permissions, and configuration.
+- **NEVER use `php artisan migrate:fresh`** without `--seed` unless the user explicitly asks for a full reset.
+- If migrations fail and you need to reset: use `php artisan migrate:fresh --seed` only on explicit user request.
+- `tenant_id` never accepted from user input — always assign from `auth()->user()->business_instance_id`.
+- Use `hasAnyRole()` for permission checks, NEVER `in_array()`. Roles/permissions are per-instance (Spatie laravel-permission).
 
-## Ubicación
+## Project Stats
 
-Los agentes están en `.opencode/agent/`:
-```
-.opencode/agent/
-├── backend.md
-├── contable-rd.md
-├── database-expert.md
-├── erp-analyst.md
-├── analista-negocio.md
-├── frontend.md
-├── orchestrator.md
-├── qa-engineer.md
-├── security-expert.md
-├── software-architect.md
-├── testing.md
-└── iso.md
+| Layer | Location | Count |
+|-------|----------|-------|
+| Models | `app/Models/` | 171 (many use `TenantScope`, `Auditable`) |
+| Migrations | `database/migrations/` | 377 |
+| Seeders | `database/seeders/` | 48 (+ 65 in `Full/`) |
+| Controllers | `app/Http/Controllers/` | 131 (+ Api/) |
+| Services | `app/Services/` (Ecf/, Ai/) | 78 |
+| Blade views | `resources/views/` | 532 Blade files in ~79 dirs |
+| Routes | `routes/web.php` | ~1,200 |
+| Routes | `routes/api.php` | ~143 |
+
+## Setup
+
+```bash
+composer install && npm install && cp .env.example .env && php artisan key:generate
+php artisan migrate
+php artisan db:seed
+php artisan storage:link
+npm run build        # production assets
+npm run dev          # dev server (vite + queue + serve via composer dev)
 ```
 
-## Cómo Usar
+Dev: `composer run dev` (concurrently: `php artisan serve`, `php artisan queue:listen --tries=1`, `npm run dev`).
 
-### Auto-detección
-Los agentes se invocan automáticamente según la descripción. Por ejemplo, si pides "crear un controlador", se invocará `@backend`.
+## Multi-Tenancy (Critical)
 
-### Invocación Manual
-Usa `@nombre-agente` para invocar uno específico:
-```
-@backend crea un servicio para productos
-@frontend aplica UI premium a la vista de gastos
-@database-expert agrega una columna a la tabla de facturas
-@testing depura el error en ventas
-@contable-rd explica el proceso de retencion ITBIS
-@software-architect diseña la arquitectura del módulo de reportes
-@qa-engineer crea pruebas para el flujo de facturación
-@erp-analyst levanta requerimientos del módulo de nómina
-@analista-negocio analiza el flujo completo de facturación
-@security-expert audita la protección de APIs
-@iso implementa un SGC basado en ISO 9001
+- Custom `TenantScope` trait at `app/Traits/TenantScope.php` — auto-scopes queries by `tenant_id` on 80+ models.
+- Check for `use TenantScope` on a model before writing queries; models without the trait are **not** scoped.
+- When creating models that appear in views: **always set `tenant_id`** (assign from `auth()->user()->business_instance_id`).
+- `MULTITENANCY_ENABLED=true` in `.env` (default). Set `HOSTNAME_TENANCY=false` unless using subdomain routing.
+
+## Testing
+
+```bash
+composer run test       # clears config then runs php artisan test
+php artisan test         # PHPUnit (SQLite :memory: — BCRYPT_ROUNDS=4 in phpunit.xml)
+php artisan test --filter=Venta   # single test
+npx playwright test      # E2E (boots artisan serve on :8000, 3 browsers)
+npx playwright test tests/e2e/01-auth.spec.ts  # single file
+npx playwright test --ui             # interactive mode
 ```
 
-### Flujo Completo
-Para crear un módulo completo, simplemente describe lo que necesitas:
+- PHPUnit: SQLite in-memory, isolated per run. Queue = `sync`, mail = `array`.
+- Playwright E2E: 5 test files in `tests/e2e/`. CI: 2 retries, 1 worker.
+- CI uses MySQL 8.0 service container (not SQLite).
+
+## DGII / e-CF (Domain-Specific)
+
+- `.env` var `DGII_AMBIENTE` (sandbox | qa | prod). Locally simulated by default (`DGII_SIMULAR=true`).
+- Production: real `.crt`/`.key` certs, HTTPS, real API key.
+- ECF services: `app/Services/Ecf/`. State machine trait: `app/Concerns/HasEcfStateMachine`.
+- Certificates/XML: `storage/dgii/`.
+- Currency: `RD$` default. ITBIS default: 18%.
+
+## Frontend
+
+- Blade templates + Alpine.js 3 (not Inertia).
+- SCSS: `resources/scss/dashboard.scss` + `resources/scss/app.scss` → compiled by Vite.
+- JS: `resources/js/dashboard.js` (Chart.js 4) + `resources/js/app.js`.
+- Premium UI: glassmorphism, dark mode, DataTables, animated gradients.
+
+## Docker
+
+```bash
+docker compose up -d                          # dev (php-fpm, nginx, mysql, redis, phpmyadmin, queue)
+docker compose -f docker-compose.yml \
+  -f docker-compose.production.yml up -d      # production with Let's Encrypt SSL
 ```
-Crear módulo de categorías con CRUD completo
-```
-El `orchestrator` coordinará database → backend → frontend → testing automáticamente.
+
+- Deploy: `sudo bash scripts/deploy.sh staging` / `sudo bash scripts/deploy-production.sh`.
+
+## Constraints
+
+- PSR-12 coding style. Lint: `composer run pint` (Laravel Pint).
+- FormRequest validators for all write operations.
+- Routes via route files only (`routes/web.php`, `routes/api.php`). Flash messages in Spanish.
+- Permissions format: `{modulo}.{accion}` (view, create, edit, delete).

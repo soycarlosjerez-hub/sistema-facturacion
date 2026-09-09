@@ -5,37 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
 use App\Models\Modulo;
+use App\Traits\LogsOwnerAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model;
 
 class OwnerBusinessTypeController extends Controller
 {
+    use LogsOwnerAction;
+
     public function __construct()
     {
         $this->middleware(['auth', 'role:owner']);
-    }
-
-    private function logOwnerAction(string $action, string $description, ?array $oldValues = null, ?array $newValues = null, ?Model $model = null): void
-    {
-        try {
-            DB::table('audit_logs')->insert([
-                'user_id' => auth()->id(),
-                'action' => $action,
-                'model_type' => $model ? get_class($model) : null,
-                'model_id' => $model?->id,
-                'description' => $description,
-                'old_values' => $oldValues ? json_encode($oldValues) : null,
-                'new_values' => $newValues ? json_encode($newValues) : null,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'tenant_id' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to log owner action: ' . $e->getMessage());
-        }
     }
 
     /**
@@ -111,8 +91,6 @@ class OwnerBusinessTypeController extends Controller
                 'orden' => $modulo->orden ?? 0,
             ]);
         }
-
-        BusinessType::flush();
 
         $this->logOwnerAction('BUSINESS_TYPE_CREATE', "Tipo de negocio \"{$businessType->nombre}\" creado", null, ['id' => $businessType->id, 'slug' => $businessType->slug], $businessType);
 

@@ -132,7 +132,7 @@ body.dark-mode .ventas-table tbody td {
                         </tr>
                     </thead>
                     <tbody id="ventas-tbody">
-                        <?php $__empty_1 = true; $__currentLoopData = $ventas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $v): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php $__empty_0 = true; $__currentLoopData = $ventas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $v): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
                             <?php
                                 $esFiado = in_array($v->tipoVenta?->nombre, ['Fiado', 'Crédito']);
                             ?>
@@ -224,7 +224,7 @@ body.dark-mode .ventas-table tbody td {
                                     </div>
                                 </td>
                             </tr>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
                             <tr>
                                 <td colspan="7" class="text-center py-5 text-muted">
                                     <i class="bi bi-receipt fs-1" style="color:#cbd5e1;"></i>

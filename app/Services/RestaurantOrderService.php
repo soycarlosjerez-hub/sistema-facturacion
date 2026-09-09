@@ -253,6 +253,7 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
             }
     
             $producto->decrement('stock', $cantidad);
+            $producto->increment('ventas_count', $cantidad);
 
             if ($producto->stock <= ($producto->stock_minimo ?? 5)) {
                 Event::dispatch(new \App\Events\StockCritical($producto, $producto->stock));
@@ -628,6 +629,10 @@ $detalleExistente->subtotal = $producto->precio * $nuevaCantidad;
             foreach ($orden->detalles as $detalle) {
                 if ($detalle->producto) {
                     $detalle->producto->increment('stock', $detalle->cantidad);
+                    $detalle->producto->decrement('ventas_count', $detalle->cantidad);
+                    if ($detalle->producto->ventas_count < 0) {
+                        $detalle->producto->update(['ventas_count' => 0]);
+                    }
                     $productosDevueltos[] = [
                         'nombre'        => $detalle->producto->nombre,
                         'cantidad'      => $detalle->cantidad,

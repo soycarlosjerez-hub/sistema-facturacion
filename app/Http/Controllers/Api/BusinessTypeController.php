@@ -25,7 +25,6 @@ class BusinessTypeController extends Controller
         $this->authorize('manage', BusinessType::class);
         
         $validated = $request->validate([
-            'key' => 'required|string|max:50|unique:business_types,key',
             'slug' => 'required|string|max:50|unique:business_types,slug',
             'nombre' => 'required|string|max:100',
             'descripcion' => 'nullable|string|max:500',
@@ -55,7 +54,6 @@ class BusinessTypeController extends Controller
         $this->authorize('manage', BusinessType::class);
 
         $validated = $request->validate([
-            'key' => 'sometimes|string|max:50|unique:business_types,key,' . $businessType->id,
             'slug' => 'sometimes|string|max:50|unique:business_types,slug,' . $businessType->id,
             'nombre' => 'sometimes|string|max:100',
             'descripcion' => 'nullable|string|max:500',

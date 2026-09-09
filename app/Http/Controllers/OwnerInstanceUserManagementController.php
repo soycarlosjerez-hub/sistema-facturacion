@@ -8,39 +8,21 @@ use App\Models\InstanceRole;
 use App\Models\Modulo;
 use App\Models\User;
 use App\Services\PlanLimitService;
+use App\Traits\LogsOwnerAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
 
 class OwnerInstanceUserManagementController extends Controller
 {
+    use LogsOwnerAction;
+
     public function __construct()
     {
         $this->middleware(['auth', 'role:owner']);
-    }
-
-    private function logOwnerAction(string $action, string $description, ?array $oldValues = null, ?array $newValues = null, ?Model $model = null): void
-    {
-        try {
-            \App\Models\AuditLog::create([
-                'user_id' => auth()->id(),
-                'action' => $action,
-                'model_type' => $model ? get_class($model) : null,
-                'model_id' => $model?->id,
-                'description' => $description,
-                'old_values' => $oldValues ? json_encode($oldValues) : null,
-                'new_values' => $newValues ? json_encode($newValues) : null,
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'tenant_id' => null,
-            ]);
-        } catch (\Throwable $e) {
-            Log::error('Failed to log owner action: ' . $e->getMessage());
-        }
     }
 
     // ─── Usuarios de Instancia ──────────────────────────────────────

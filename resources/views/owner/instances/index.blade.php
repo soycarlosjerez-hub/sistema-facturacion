@@ -9,6 +9,7 @@
 <div class="ui-page" style="--accent:#8b5cf6;--accent-rgb:139,92,246;--accent-hover:#7c3aed">
 <div class="container-fluid px-4 py-3">
 
+    {{-- ========== HEADER ========== --}}
     <div class="ui-header mb-4" style="--delay:.1s">
         <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
         <div class="ui-header-body">
@@ -29,17 +30,106 @@
         </div>
     </div>
 
+    {{-- ========== KPI SUMMARY ========== --}}
+    <div class="row g-3 mb-4">
+        <div class="col-xl col-md-6 col-6">
+            <div class="ui-card" style="--delay:.1s">
+                <div class="ui-card-accent" style="background:#3b82f6"></div>
+                <div class="ui-card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="ui-stat-label text-muted mb-1">Total</div>
+                            <div class="fw-bold" style="font-size:1.75rem;color:#3b82f6">{{ $totalInstances }}</div>
+                            <small class="text-muted">Registros</small>
+                        </div>
+                        <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.1);">
+                            <i class="bi bi-building" style="font-size:1.5rem;color:#3b82f6;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl col-md-6 col-6">
+            <div class="ui-card" style="--delay:.15s">
+                <div class="ui-card-accent" style="background:#10b981"></div>
+                <div class="ui-card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="ui-stat-label text-muted mb-1">Activas</div>
+                            <div class="fw-bold" style="font-size:1.75rem;color:#10b981">{{ $totalActivas }}</div>
+                            <small class="text-muted">En operación</small>
+                        </div>
+                        <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.1);">
+                            <i class="bi bi-check-circle" style="font-size:1.5rem;color:#10b981;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl col-md-6 col-6">
+            <div class="ui-card" style="--delay:.2s">
+                <div class="ui-card-accent" style="background:#ef4444"></div>
+                <div class="ui-card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="ui-stat-label text-muted mb-1">Bloqueadas</div>
+                            <div class="fw-bold" style="font-size:1.75rem;color:#ef4444">{{ $totalBloqueadas }}</div>
+                            <small class="text-muted">Restringidas</small>
+                        </div>
+                        <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(239,68,68,.1);">
+                            <i class="bi bi-lock-fill" style="font-size:1.5rem;color:#ef4444;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl col-md-6 col-6">
+            <div class="ui-card" style="--delay:.25s">
+                <div class="ui-card-accent" style="background:#f59e0b"></div>
+                <div class="ui-card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="ui-stat-label text-muted mb-1">Pendientes</div>
+                            <div class="fw-bold" style="font-size:1.75rem;color:#f59e0b">{{ $totalPendientes }}</div>
+                            <small class="text-muted">En revisión</small>
+                        </div>
+                        <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(245,158,11,.1);">
+                            <i class="bi bi-hourglass-split" style="font-size:1.5rem;color:#f59e0b;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl col-md-6 col-6">
+            <div class="ui-card" style="--delay:.3s">
+                <div class="ui-card-accent" style="background:#f59e0b"></div>
+                <div class="ui-card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="ui-stat-label text-muted mb-1">Atrasadas</div>
+                            <div class="fw-bold" style="font-size:1.75rem;color:#f59e0b">{{ $totalAtrasadas }}</div>
+                            <small class="text-muted">Pago pendiente</small>
+                        </div>
+                        <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(245,158,11,.1);">
+                            <i class="bi bi-exclamation-triangle" style="font-size:1.5rem;color:#f59e0b;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ========== FILTER BAR ========== --}}
     <div class="ui-card mb-4" style="--delay:.15s">
-        <div class="ui-card-accent" style="background:#3b82f6"></div>
-        <div class="card-body p-3">
+        <div class="ui-card-body p-3">
             <form method="GET" action="{{ route('owner.instances.index') }}" class="row g-2 align-items-center">
-                <div class="col-lg-4">
+                <div class="col-lg-4 col-md-6">
                     <div class="input-group input-group-merge">
                         <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
                         <input type="text" name="search" class="ui-input border-0 bg-white" placeholder="Buscar por nombre, slug, RNC..." value="{{ request('search') }}" autocomplete="off">
                     </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-3 col-md-6">
                     <select name="business_type" class="ui-select border-0 bg-white">
                         <option value="">Todos los tipos</option>
                         @foreach($businessTypes as $type)
@@ -47,128 +137,226 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-3 col-md-6">
                     <select name="status" class="ui-select border-0 bg-white">
                         <option value="">Todos los estados</option>
                         <option value="al-dia" {{ request('status') === 'al-dia' ? 'selected' : '' }}>Al día</option>
                         <option value="atrasado" {{ request('status') === 'atrasado' ? 'selected' : '' }}>Atrasado</option>
                         <option value="bloqueado" {{ request('status') === 'bloqueado' ? 'selected' : '' }}>Bloqueado</option>
+                        <option value="pendiente" {{ request('status') === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
                         <option value="vencido" {{ request('status') === 'vencido' ? 'selected' : '' }}>Vencido</option>
                         <option value="inactivo" {{ request('status') === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
                     </select>
                 </div>
-                <div class="col-lg-2">
-                    <div class="form-check">
+                <div class="col-lg-2 col-md-2 d-flex align-items-center">
+                    <div class="form-check form-switch mb-0">
                         <input class="form-check-input" type="checkbox" name="show_trashed" id="show_trashed" value="1" {{ request('show_trashed') == '1' ? 'checked' : '' }}>
-                        <label class="form-check-label small" for="show_trashed">Mostrar borradas</label>
+                        <label class="form-check-label small" for="show_trashed">Borradas</label>
                     </div>
                 </div>
-                <div class="col-lg-2 d-flex gap-2">
+                <div class="col-lg-auto col-md-auto d-flex gap-2">
                     <button type="submit" class="ui-btn ui-btn-solid flex-grow-1"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                    <a href="{{ route('owner.instances.index') }}" class="ui-btn ui-btn-primary"><i class="bi bi-x-lg"></i></a>
+                    <a href="{{ route('owner.instances.index') }}" class="ui-btn ui-btn-primary" title="Limpiar"><i class="bi bi-x-lg"></i></a>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="ui-card" style="--delay:.2s">
-        <div class="ui-card-accent" style="background:#3b82f6"></div>
+    {{-- ========== DATA TABLE (Desktop) ========== --}}
+    <div class="ui-card d-none d-md-block" style="--delay:.2s">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="ui-table mb-0">
+                <thead>
                     <tr>
-                        <th class="ps-4">Nombre</th>
-                        <th>Plan</th>
+                        <th class="ps-4">Instancia</th>
                         <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Aprobación</th>
                         <th>Propietario</th>
-                        <th class="text-center">Estado Pago</th>
-                        <th class="text-center">Bloqueo</th>
-                        <th>Costo Mensual</th>
-                        <th>Vencimiento</th>
+                        <th>Último Pago</th>
                         <th class="text-end pe-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($instances as $instance)
+                    @php $subEstado = $instance->estadoSuscripcion(); @endphp
                     <tr>
-                        <td class="ps-4 fw-bold">
-                            <a href="{{ route('owner.instances.show', $instance) }}" class="text-decoration-none">{{ $instance->nombre }}</a>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                @if($instance->logo)
+                                    <img src="{{ Storage::url($instance->logo) }}" alt="{{ $instance->nombre }}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">
+                                @else
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;background:rgba(139,92,246,.1);color:#8b5cf6;font-size:13px;font-weight:600;">
+                                        {{ strtoupper(substr($instance->nombre, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div style="min-width:0;">
+                                    <a href="{{ route('owner.instances.show', $instance) }}" class="fw-bold text-truncate text-reset text-decoration-none">{{ $instance->nombre }}</a>
+                                    <br>
+                                    <small class="text-muted">{{ $instance->slug }} · {{ $instance->plan?->nombre ?? 'Plan personalizado' }}</small>
+                                </div>
+                            </div>
                         </td>
                         <td>
-                            @if($instance->plan)
-                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2" title="Plan {{ $instance->plan->nombre }}">Plan {{ $instance->plan->nombre }}</span>
+                            <span class="ui-badge ui-badge-info rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span>
+                        </td>
+                        <td>
+                            @if(!$instance->activo)
+                                <span class="ui-badge ui-badge-neutral rounded-pill"><i class="bi bi-x-circle me-1"></i>Inactiva</span>
+                            @elseif($instance->bloqueado)
+                                <span class="ui-badge ui-badge-danger rounded-pill"><i class="bi bi-lock-fill me-1"></i>Bloqueada</span>
+                            @elseif($subEstado === 'suspendida')
+                                <span class="ui-badge ui-badge-danger rounded-pill"><i class="bi bi-x-circle me-1"></i>Suspendida</span>
+                            @elseif($subEstado === 'prueba')
+                                <span class="ui-badge ui-badge-info rounded-pill" title="Prueba gratuita — termina el {{ optional($instance->trial_ends_at)->format('d/m/Y') }}">
+                                    <i class="bi bi-rocket-takeoff me-1"></i>Prueba ({{ $instance->diasPruebaRestantes() }}d)
+                                </span>
+                            @elseif($subEstado === 'activa')
+                                <span class="ui-badge ui-badge-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Al día</span>
                             @else
-                                <span class="badge bg-light text-muted rounded-pill px-2">Personalizado</span>
+                                <span class="ui-badge ui-badge-warning rounded-pill"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es)</span>
                             @endif
                         </td>
-                        <td><span class="badge bg-{{ $instance->businessType?->color ?? 'secondary' }} bg-opacity-10 text-{{ $instance->businessType?->color ?? 'secondary' }} rounded-pill">{{ $instance->businessType?->nombre ?? '—' }}</span></td>                        <td>
+                        <td>
+                            @if($instance->aprobado)
+                                <span class="ui-badge ui-badge-success rounded-pill"><i class="bi bi-check-circle me-1"></i>Aprobada</span>
+                            @else
+                                <span class="ui-badge ui-badge-warning rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Pendiente</span>
+                                <div class="d-flex gap-1 mt-1" style="font-size:11px;">
+                                    <form action="{{ route('owner.instances.approve', $instance) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="ui-btn ui-btn-sm ui-btn-success" style="padding:2px 8px;font-size:11px;" onclick="return confirm('¿Aprobar la solicitud de {{ $instance->nombre }}?')">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <button type="button" class="ui-btn ui-btn-sm ui-btn-danger" style="padding:2px 8px;font-size:11px;" data-bs-toggle="modal" data-bs-target="#rejectModal-{{ $instance->id }}">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                    <div class="modal fade" id="rejectModal-{{ $instance->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                                            <div class="modal-content border-0 shadow">
+                                                <div class="modal-header border-0">
+                                                    <h6 class="modal-title fw-bold">Rechazar Solicitud</h6>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ route('owner.instances.reject', $instance) }}" method="POST">
+                                                    @csrf
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="text-muted small fw-semibold d-block">Motivo del Rechazo</label>
+                                                            <textarea name="motivo" class="ui-input bg-white form-control" rows="3" required placeholder="Indica el motivo..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-0">
+                                                        <button type="button" class="ui-btn ui-btn-ghost btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="submit" class="ui-btn ui-btn-danger btn-sm" onclick="return confirm('¿Rechazar esta solicitud?')">
+                                                            <i class="bi bi-x-lg me-1"></i>Rechazar
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </td>
+                        <td>
                             @if($instance->owner_nombre)
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:32px;height:32px;background:rgba(139,92,246,.15);color:#8b5cf6;font-size:13px;font-weight:600;">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px;height:28px;background:rgba(139,92,246,.1);color:#8b5cf6;font-size:11px;font-weight:600;">
                                         {{ strtoupper(substr($instance->owner_nombre, 0, 1)) }}
                                     </div>
                                     <div>
                                         <div class="small fw-semibold">{{ $instance->owner_nombre }}</div>
-                                        <div class="text-muted" style="font-size:11px;">{{ $instance->owner_email }}</div>
+                                        <small class="text-muted" style="font-size:10px;">{{ $instance->owner_email }}</small>
                                     </div>
                                 </div>
                             @else
-                                <span class="text-muted">—</span>
+                                <span class="text-muted small">—</span>
                             @endif
                         </td>
-                        <td class="text-center">
-                            @php $subEstado = $instance->estadoSuscripcion(); @endphp
-                            @if(!$instance->activo)
-                                <span class="badge bg-secondary rounded-pill px-2">Inactiva</span>
-                            @elseif($subEstado === 'suspendida')
-                                <span class="badge bg-danger rounded-pill px-2">Suspendida</span>
-                            @elseif($subEstado === 'prueba')
-                                <span class="badge bg-primary rounded-pill px-2" title="Prueba gratuita — termina el {{ optional($instance->trial_ends_at)->format('d/m/Y') }}">
-                                    <i class="bi bi-rocket-takeoff me-1"></i>Prueba ({{ $instance->diasPruebaRestantes() }}d)
-                                </span>
-                            @elseif($subEstado === 'activa')
-                                <span class="badge bg-success rounded-pill px-2"><i class="bi bi-check-circle me-1"></i>Al día</span>
-                            @else
-                                <span class="badge bg-warning text-dark rounded-pill px-2"><i class="bi bi-exclamation-triangle me-1"></i>{{ $instance->mesesAtrasados() }} mes(es)</span>
-                            @endif
-                        </td>
-                        <td class="text-center">
-                            @if($instance->bloqueado)
-                                <span class="badge bg-danger rounded-pill px-2"><i class="bi bi-lock-fill me-1"></i>Bloqueado</span>
-                            @else
-                                <span class="badge bg-success rounded-pill px-2"><i class="bi bi-unlock me-1"></i>Normal</span>
-                            @endif
-                        </td>
-                        <td>{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</td>
                         <td>
-                            @if($instance->fecha_vencimiento)
-                                {{ $instance->fecha_vencimiento->format('d/m/Y') }}
-                                @if($instance->activo && $instance->fecha_vencimiento < now())
-                                    <span class="text-danger fw-bold small">(vencida)</span>
-                                @elseif($instance->activo && $instance->fecha_vencimiento->diffInDays(now()) <= 30)
-                                    <span class="text-warning fw-bold small">({{ $instance->fecha_vencimiento->diffForHumans() }})</span>
-                                @endif
+                            @php $ultimo = $instance->ultimoPago()->first(); @endphp
+                            @if($ultimo)
+                                <div class="text-muted small">{{ $ultimo->mes_pagado->isoFormat('MMM YYYY') }}</div>
+                                <small class="text-muted" style="font-size:10px;">{{ $ultimo->monto > 0 ? $instance->costo_mensual ? number_format($ultimo->monto, 0) . ' ' . $systemMoneda : '' : '' }}</small>
+                            @elseif($instance->costo_mensual > 0)
+                                <div class="text-muted small">{{ $systemMoneda }} {{ number_format($instance->costo_mensual, 0) }}</div>
                             @else
-                                <span class="text-muted">—</span>
+                                <span class="text-muted small">Sin datos</span>
                             @endif
                         </td>
                         <td class="text-end pe-4">
-                            <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-view rounded-pill me-1" title="Ver detalles"><i class="bi bi-eye"></i></a>
-                            <a href="{{ route('owner.instances.edit', $instance) }}" class="ui-btn ui-btn-edit rounded-pill me-1" title="Editar"><i class="bi bi-pencil"></i></a>
-                            <a href="{{ route('owner.instances.config', $instance) }}" class="ui-btn ui-btn-solid rounded-pill me-1" style="background:#f59e0b;border-color:#f59e0b;color:#000;" title="Configuración"><i class="bi bi-gear"></i></a>
-                            <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="ui-btn ui-btn-solid rounded-pill me-1" style="background:#10b981;border-color:#10b981;color:#fff;" title="Registrar Pago"><i class="bi bi-cash-coin"></i></a>
-                            @if($instance->activo)
-                            <form action="{{ route('owner.instances.destroy', $instance) }}" method="POST" class="d-inline" onsubmit="return confirm('Desactivar la instancia {{ $instance->nombre }}?')">
-                                @csrf @method('DELETE')
-                                <button class="ui-action ui-action-delete" title="Desactivar"><i class="bi bi-power"></i></button>
-                            </form>
-                            @endif
+                            <div class="dropdown">
+                                <button class="ui-btn ui-btn-ghost btn-sm rounded-pill" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm rounded-3 border-0 py-2">
+                                    <li>
+                                        <a class="dropdown-item small" href="{{ route('owner.instances.show', $instance) }}">
+                                            <i class="bi bi-eye me-2"></i>Ver detalles
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item small" href="{{ route('owner.instances.edit', $instance) }}">
+                                            <i class="bi bi-pencil me-2"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item small" href="{{ route('owner.instances.config', $instance) }}">
+                                            <i class="bi bi-gear me-2"></i>Configuración
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item small" href="{{ route('owner.instances.pagos.create', $instance) }}">
+                                            <i class="bi bi-cash-coin me-2"></i>Registrar Pago
+                                        </a>
+                                    </li>
+                                    @if($instance->bloqueado)
+                                    <li>
+                                        <a class="dropdown-item small text-success" href="#" onclick="document.getElementById('unblock-{{ $instance->id }}').submit()">
+                                            <i class="bi bi-unlock me-2"></i>Desbloquear
+                                        </a>
+                                        <form id="unblock-{{ $instance->id }}" action="{{ route('owner.instances.toggle-block', $instance) }}" method="POST" style="display:none;">
+                                            @csrf
+                                            <input type="hidden" name="bloqueado" value="0">
+                                        </form>
+                                    </li>
+                                    @else
+                                    <li>
+                                        <a class="dropdown-item small text-warning" href="#" onclick="document.getElementById('block-{{ $instance->id }}').submit()">
+                                            <i class="bi bi-lock me-2"></i>Bloquear
+                                        </a>
+                                        <form id="block-{{ $instance->id }}" action="{{ route('owner.instances.toggle-block', $instance) }}" method="POST" style="display:none;">
+                                            @csrf
+                                            <input type="hidden" name="bloqueado" value="1">
+                                            <input type="hidden" name="motivo_bloqueo" value="Bloqueo desde lista">
+                                        </form>
+                                    </li>
+                                    @endif
+                                    @if($instance->activo)
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item small text-danger" href="#" onclick="UI.confirm.delete('{{ route('owner.instances.destroy', $instance) }}', '{{ $instance->nombre }}')">
+                                            <i class="bi bi-trash me-2"></i>Desactivar
+                                        </a>
+                                    </li>
+                                    @endif
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No hay instancias registradas.</td>
-                    </tr>
+                    <tr><td colspan="7" class="text-center text-muted py-5">
+                        <div class="ui-empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p>No hay instancias registradas</p>
+                            <small>Crea la primera instancia de negocio para comenzar</small>
+                            <a href="{{ route('owner.instances.create') }}" class="ui-btn ui-btn-solid btn-sm mt-3">
+                                <i class="bi bi-plus-lg me-1"></i>Crear Instancia
+                            </a>
+                        </div>
+                    </td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -179,6 +367,119 @@
         </div>
         @endif
     </div>
+
+    {{-- ========== CARDS GRID (Mobile) ========== --}}
+    <div class="d-md-none">
+        @forelse($instances as $instance)
+        @php $subEstado = $instance->estadoSuscripcion(); @endphp
+        <div class="ui-card mb-3" style="--delay:.{{ $loop->index + 1 }}s">
+            <div class="ui-card-body p-3">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    @if($instance->logo)
+                        <img src="{{ Storage::url($instance->logo) }}" alt="{{ $instance->nombre }}" style="width:48px;height:48px;border-radius:12px;object-fit:cover;flex-shrink:0;">
+                    @else
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;background:rgba(139,92,246,.1);color:#8b5cf6;font-size:18px;font-weight:600;">
+                            {{ strtoupper(substr($instance->nombre, 0, 1)) }}
+                        </div>
+                    @endif
+                    <div class="flex-grow-1" style="min-width:0;">
+                        <div class="fw-bold text-truncate">{{ $instance->nombre }}</div>
+                        <small class="text-muted">{{ $instance->slug }}</small>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="ui-badge ui-badge-info rounded-pill">{{ $instance->businessType?->nombre ?? 'Sin tipo' }}</span>
+                    @if(!$instance->activo)
+                        <span class="ui-badge ui-badge-neutral rounded-pill">Inactiva</span>
+                    @elseif($instance->bloqueado)
+                        <span class="ui-badge ui-badge-danger rounded-pill">Bloqueada</span>
+                    @elseif($subEstado === 'suspendida')
+                        <span class="ui-badge ui-badge-danger rounded-pill">Suspendida</span>
+                    @elseif($subEstado === 'prueba')
+                        <span class="ui-badge ui-badge-info rounded-pill">Prueba ({{ $instance->diasPruebaRestantes() }}d)</span>
+                    @elseif($subEstado === 'activa')
+                        <span class="ui-badge ui-badge-success rounded-pill">Al día</span>
+                    @else
+                        <span class="ui-badge ui-badge-warning rounded-pill">{{ $instance->mesesAtrasados() }} mes(es)</span>
+                    @endif
+                    @if(!$instance->aprobado)
+                        <span class="ui-badge ui-badge-warning rounded-pill">Pendiente</span>
+                    @endif
+                </div>
+                @if(!$instance->aprobado)
+                <div class="alert alert-warning border-0 rounded-3 mb-3" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2) !important;">
+                    <div class="d-flex gap-2 align-items-center mb-2">
+                        <i class="bi bi-hourglass-split"></i>
+                        <small class="fw-semibold">Solicitud pendiente de aprobación</small>
+                    </div>
+                    <form action="{{ route('owner.instances.approve', $instance) }}" method="POST" class="d-grid gap-2">
+                        @csrf
+                        <button type="submit" class="ui-btn ui-btn-success btn-sm" onclick="return confirm('¿Aprobar la solicitud de {{ $instance->nombre }}?')">
+                            <i class="bi bi-check-lg me-1"></i>Aprobar
+                        </button>
+                        <button type="button" class="ui-btn ui-btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal-{{ $instance->id }}">
+                            <i class="bi bi-x-lg me-1"></i>Rechazar
+                        </button>
+                    </form>
+                    <div class="modal fade" id="rejectModal-{{ $instance->id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow">
+                                <div class="modal-header border-0">
+                                    <h6 class="modal-title fw-bold">Rechazar Solicitud</h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="{{ route('owner.instances.reject', $instance) }}" method="POST">
+                                    @csrf
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="text-muted small fw-semibold d-block">Motivo del Rechazo</label>
+                                            <textarea name="motivo" class="ui-input bg-white form-control" rows="3" required placeholder="Indica el motivo..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="ui-btn ui-btn-ghost btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="ui-btn ui-btn-danger btn-sm" onclick="return confirm('¿Rechazar esta solicitud?')">
+                                            <i class="bi bi-x-lg me-1"></i>Rechazar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                <div class="d-grid gap-2">
+                    <a href="{{ route('owner.instances.show', $instance) }}" class="ui-btn ui-btn-solid btn-sm">
+                        <i class="bi bi-eye me-1"></i>Ver detalles
+                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('owner.instances.edit', $instance) }}" class="ui-btn ui-btn-ghost btn-sm flex-grow-1">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                        <a href="{{ route('owner.instances.config', $instance) }}" class="ui-btn ui-btn-ghost btn-sm flex-grow-1">
+                            <i class="bi bi-gear me-1"></i>Config
+                        </a>
+                        <a href="{{ route('owner.instances.pagos.create', $instance) }}" class="ui-btn ui-btn-ghost btn-sm flex-grow-1">
+                            <i class="bi bi-cash-coin me-1"></i>Pago
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @empty
+        <div class="text-center text-muted py-5">
+            <div class="ui-empty-state">
+                <i class="bi bi-inbox"></i>
+                <p>No hay instancias registradas</p>
+                <small>Crea la primera instancia de negocio para comenzar</small>
+                <a href="{{ route('owner.instances.create') }}" class="ui-btn ui-btn-solid btn-sm mt-3">
+                    <i class="bi bi-plus-lg me-1"></i>Crear Instancia
+                </a>
+            </div>
+        </div>
+        @endforelse
+    </div>
+
 </div>
 </div>
 @endsection

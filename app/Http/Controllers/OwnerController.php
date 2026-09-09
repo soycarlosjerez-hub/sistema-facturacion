@@ -16,6 +16,7 @@ use App\Models\PagoInstancia;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\UserActivityLog;
+use App\Services\OwnerService;
 use App\Services\PlanLimitService;
 use App\Services\TenantCleanupService;
 use App\Services\UserBusinessService;
@@ -61,66 +62,260 @@ class OwnerController extends Controller
 
     public function index()
     {
+        $dashboardData = Cache::remember("owner_dashboard:{$this->currentUserId()}", 300, function () {
+            return $this->buildDashboardData();
+        });
+
+        return view('owner.dashboard', $dashboardData);
+    }
+
+    private function currentUserId(): int
+    {
+        return auth()->id();
+    }
+
+    /**
+     * Invalidar el cache del dashboard para un usuario específico.
+     */
+    public static function invalidateDashboardCache(int $userId): void
+    {
+        Cache::forget("owner_dashboard:{$userId}");
+    }
+
+    /**
+     * Invalidar TODos los caches de dashboard (usar con precaución).
+     */
+    public static function invalidateAllDashboardCaches(): void
+    {
+        $pattern = 'owner_dashboard:*';
+        foreach (Cache::store()->keys($pattern) as $key) {
+            Cache::store()->forget($key);
+        }
+    }
+
+    private function buildDashboardData(): array
+    {
+        $now = now();
+        $firstDayCurrentMonth = $now->copy()->startOfMonth();
+        $firstDayLastMonth = $now->copy()->subMonth()->startOfMonth();
+        $firstDayPrevMonth = $now->copy()->subMonths(2)->startOfMonth();
+
+        // ── Basic counts ──────────────────────────────────────────
         $totalInstancias = BusinessInstance::withTrashed()->count();
         $archivadas = BusinessInstance::onlyTrashed()->count();
         $activas = BusinessInstance::where('activo', true)->count();
         $bloqueadas = BusinessInstance::where('bloqueado', true)->count();
         $vencidas = BusinessInstance::where('activo', true)
-            ->where('fecha_vencimiento', '<', now())
-            ->count();
+            ->where('fecha_vencimiento', '<', $now)->count();
         $porVencer = BusinessInstance::where('activo', true)
             ->whereNotNull('fecha_vencimiento')
-            ->where('fecha_vencimiento', '>=', now())
-            ->where('fecha_vencimiento', '<=', now()->addDays(30))
-            ->count();
+            ->where('fecha_vencimiento', '>=', $now)
+            ->where('fecha_vencimiento', '<=', $now->copy()->addDays(30))->count();
 
-        // Use DB aggregation for instance count by type instead of loading all instances
         $instanciasPorTipo = BusinessInstance::selectRaw('business_type_id, count(*) as cnt')
             ->with('businessType')
             ->groupBy('business_type_id')
             ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->businessType?->nombre ?? 'Sin tipo' => $item->cnt];
-            })
+            ->mapWithKeys(fn($item) => [$item->businessType?->nombre ?? 'Sin tipo' => $item->cnt])
             ->sortDesc();
 
-        // Compute MRR with DB aggregation for active instances with plans
+        // ── MRR / Financial ───────────────────────────────────────
         $mrrPlanos = BusinessInstance::where('business_instances.activo', true)
             ->whereNotNull('plan_id')
             ->join('plans', 'business_instances.plan_id', '=', 'plans.id')
+            ->where('plans.activo', true)
             ->sum('plans.precio_mensual');
 
-        // Add MRR for active instances without plans (use costo_mensual as fallback)
-        $mrrSinPlan = BusinessInstance::where('business_instances.activo', true)
+        $mrrSinPlan = BusinessInstance::where('activo', true)
             ->whereNull('plan_id')
             ->whereNotNull('costo_mensual')
             ->sum('costo_mensual');
 
         $mrr = ($mrrPlanos ?: 0) + ($mrrSinPlan ?: 0);
+        $arr = $mrr * 12;
+        $arpu = $activas > 0 ? $mrr / $activas : 0;
 
-        // Instance con atraso: need model instances to call estaAlDia() — but limit to prevent overloading
-        // Use a simpler DB check: active, not blocked, and grace period expired
+        // Actual collected payments
+        $currentMonthCollected = PagoInstancia::where('estado_pago', 'completado')
+            ->whereMonth('fecha_pago', $firstDayCurrentMonth->month)
+            ->whereYear('fecha_pago', $firstDayCurrentMonth->year)
+            ->sum('monto');
+
+        $lastMonthCollected = PagoInstancia::where('estado_pago', 'completado')
+            ->whereMonth('fecha_pago', $firstDayLastMonth->month)
+            ->whereYear('fecha_pago', $firstDayLastMonth->year)
+            ->sum('monto');
+
+        $prevMonthCollected = PagoInstancia::where('estado_pago', 'completado')
+            ->whereMonth('fecha_pago', $firstDayPrevMonth->month)
+            ->whereYear('fecha_pago', $firstDayPrevMonth->year)
+            ->sum('monto');
+
+        $mrrGrowthRate = $lastMonthCollected > 0
+            ? round((($currentMonthCollected - $lastMonthCollected) / $lastMonthCollected) * 100, 1)
+            : ($currentMonthCollected > 0 ? 100 : 0);
+
+        $collectionRate = $mrr > 0
+            ? round(($currentMonthCollected / $mrr) * 100, 1)
+            : 100;
+
+        $ingresosEsperados = BusinessInstance::where('activo', true)->sum('costo_mensual');
+
+        // Overdue total (optimizado: sumar SQL directo en vez de N+1)
+        $deudaTotal = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->whereNotNull('costo_mensual')
+            ->sum('costo_mensual');
+
+        // 12-month MRR history for chart
+        $mrrHistory = PagoInstancia::selectRaw(
+            'DATE_FORMAT(fecha_pago, "%Y-%m") as month, SUM(monto) as total'
+        )
+            ->where('estado_pago', 'completado')
+            ->where('fecha_pago', '>=', $now->copy()->subMonths(12))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month');
+
+        $mrrChartLabels = [];
+        $mrrChartData = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $m = $now->copy()->subMonths($i);
+            $mrrChartLabels[] = $m->format('M y');
+            $mrrChartData[] = (float) ($mrrHistory->get($m->format('Y-m'), 0) ?? 0);
+        }
+
+        // 6-month revenue trend
+        $revenueTrend = PagoInstancia::selectRaw(
+            'DATE_FORMAT(fecha_pago, "%Y-%m") as month, SUM(monto) as total'
+        )
+            ->where('estado_pago', 'completado')
+            ->where('fecha_pago', '>=', $now->copy()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month');
+
+        $revenueChartLabels = [];
+        $revenueChartData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $m = $now->copy()->subMonths($i);
+            $revenueChartLabels[] = $m->format('M y');
+            $revenueChartData[] = (float) ($revenueTrend->get($m->format('Y-m'), 0) ?? 0);
+        }
+
+        // Plan distribution
+        $planDistribution = \App\Models\Plan::where('activo', true)
+            ->withCount(['businessInstances as active_instances' => fn($q) => $q->where('activo', true)])
+            ->orderBy('orden')
+            ->get()
+            ->mapWithKeys(fn($p) => [$p->nombre => $p->active_instances])
+            ->toArray();
+
+        // ── Business Health ───────────────────────────────────────
+        $enPrueba = BusinessInstance::where('activo', true)
+            ->whereNotNull('trial_started_at')
+            ->where('trial_ends_at', '>', $now)
+            ->whereNotIn('id', function ($q) {
+                $q->select('business_instance_id')
+                    ->from('pagos_instancia')
+                    ->whereNotNull('estado_pago')
+                    ->whereNotIn('estado_pago', ['cancelado', 'rechazado']);
+            })->count();
+
+        $pruebaPerdida = BusinessInstance::where('activo', true)
+            ->whereNotNull('trial_ends_at')
+            ->where('trial_ends_at', '<', $now)
+            ->whereNotIn('id', function ($q) {
+                $q->select('business_instance_id')
+                    ->from('pagos_instancia')
+                    ->whereNotNull('estado_pago')
+                    ->whereNotIn('estado_pago', ['cancelado', 'rechazado']);
+            })->count();
+
+        $churnRiskCount = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('fecha_vencimiento')
+                  ->orWhere('fecha_vencimiento', '<', $now);
+            })->count();
+
+        // ── Growth ────────────────────────────────────────────────
+        $nuevasEsteMes = BusinessInstance::whereMonth('created_at', $firstDayCurrentMonth->month)
+            ->whereYear('created_at', $firstDayCurrentMonth->year)->count();
+
+        $nuevasMesAnt = BusinessInstance::whereMonth('created_at', $firstDayLastMonth->month)
+            ->whereYear('created_at', $firstDayLastMonth->year)->count();
+
+        $growthRate = $nuevasMesAnt > 0
+            ? round((($nuevasEsteMes - $nuevasMesAnt) / $nuevasMesAnt) * 100, 1)
+            : ($nuevasEsteMes > 0 ? 100 : 0);
+
+        // ── Operational ───────────────────────────────────────────
+        $erroresNoResueltos7d = InstanceErrorLog::where('resolved', false)
+            ->where('created_at', '>=', $now->copy()->subDays(7))->count();
+
+        $erroresCriticos24h = InstanceErrorLog::whereIn('level', ['critical', 'error'])
+            ->where('created_at', '>=', $now->copy()->subDay())->count();
+
+        $totalSinResolver = InstanceErrorLog::where('resolved', false)->count();
+
+        $usuariosActivos24h = UserActivityLog::where('action', 'login')
+            ->where('created_at', '>=', $now->copy()->subDay())
+            ->distinct('user_id')->count('user_id');
+
+        $auditoriasHoy = \App\Models\AuditLog::whereDate('created_at', $now->copy()->startOfDay())
+            ->whereNull('tenant_id')->count();
+
+        // Error distribution (last 30d)
+        $errorDist = InstanceErrorLog::selectRaw("level, COUNT(*) as cnt")
+            ->where('created_at', '>=', $now->copy()->subDays(30))
+            ->groupBy('level')
+            ->pluck('cnt', 'level');
+
+        $errorLabels = ['critical', 'error', 'warning', 'info'];
+        $errorChartData = [];
+        foreach ($errorLabels as $l) {
+            $errorChartData[] = (int) ($errorDist->get($l, 0) ?? 0);
+        }
+
+        // ── Action items ─────────────────────────────────────────
+        $pendingApprovals = BusinessInstance::where('aprobado', false)->count();
+
+        $ownerActivity = \App\Models\AuditLog::whereNull('tenant_id')
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->limit(15)
+            ->get();
+
+        // Proximos vencimientos
         $proximosVencimientos = BusinessInstance::where('activo', true)
             ->where('bloqueado', false)
             ->whereNotNull('fecha_vencimiento')
-            ->where('fecha_vencimiento', '>=', now())
-            ->where('fecha_vencimiento', '<=', now()->addDays(30))
+            ->where('fecha_vencimiento', '>=', $now)
+            ->where('fecha_vencimiento', '<=', $now->copy()->addDays(30))
             ->with(['businessType', 'owner', 'ultimoPago'])
             ->orderBy('fecha_vencimiento')
-            ->limit(5)
+            ->limit(10)
             ->get();
 
-        // Instancias con atraso: DB-level filter for active, not blocked, past due
+        // Instancias con atraso
         $instanciasConAtrasoCount = BusinessInstance::where('activo', true)
             ->where('bloqueado', false)
-            ->where(function ($q) {
+            ->where(function ($q) use ($now) {
                 $q->whereNull('fecha_vencimiento')
-                  ->orWhere('fecha_vencimiento', '<', now());
-            })
-            ->count();
+                  ->orWhere('fecha_vencimiento', '<', $now);
+            })->count();
 
-        // Instancias para la tabla: limited load to prevent memory issues
-        // Load only required fields to reduce memory footprint
+        $instanciasConAtraso = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->whereNotNull('fecha_vencimiento')
+            ->orderBy('fecha_vencimiento')
+            ->limit(10)
+            ->with(['businessType', 'owner', 'ultimoPago'])
+            ->get()
+            ->filter(fn($i) => !$i->estaAlDia());
+
+        // Instancias para tabla (limited load)
         $instanciasIds = BusinessInstance::select('id')
             ->orderByRaw('bloqueado DESC, activo DESC')
             ->limit(50)
@@ -133,35 +328,50 @@ class OwnerController extends Controller
                 ->get()
             : collect();
 
-        // Instancias con atraso (loaded subset only, with DB pre-filter)
-        $instanciasConAtraso = BusinessInstance::where('activo', true)
-            ->where('bloqueado', false)
-            ->whereNotNull('fecha_vencimiento')
-            ->orderBy('fecha_vencimiento')
-            ->limit(50)
-            ->with(['businessType', 'owner', 'ultimoPago'])
-            ->get()
-            ->filter(fn($i) => !$i->estaAlDia());
-
-        $ingresosEsperados = BusinessInstance::where('activo', true)->sum('costo_mensual');
-        $ingresosRealesMes = PagoInstancia::whereMonth('fecha_pago', now()->month)
-            ->whereYear('fecha_pago', now()->year)
-            ->sum('monto');
+        $totalUsuarios = User::count();
+        $totalTipos = BusinessType::count();
+        $pendingCount = $pendingApprovals;
+        $ingresosRealesMes = $currentMonthCollected;
+        $systemMoneda = SystemSetting::get('moneda_simbolo', 'RD$');
 
         $planes = \App\Models\Plan::where('activo', true)
             ->orderBy('orden')
             ->withCount('businessInstances')
             ->get();
 
-        $totalTipos = BusinessType::count();
-        $totalUsuarios = User::count();
-
-        return view('owner.dashboard', compact(
+        return compact(
+            // Basic
             'totalInstancias', 'activas', 'bloqueadas', 'vencidas', 'porVencer', 'archivadas',
             'instancias', 'instanciasPorTipo', 'instanciasConAtraso', 'instanciasConAtrasoCount',
-            'proximosVencimientos', 'ingresosEsperados', 'ingresosRealesMes',
-            'totalTipos', 'totalUsuarios', 'mrr', 'planes'
-        ));
+            'proximosVencimientos', 'totalTipos', 'totalUsuarios',
+
+            // Financial
+            'mrr', 'arr', 'arpu',
+            'currentMonthCollected', 'lastMonthCollected', 'prevMonthCollected',
+            'mrrGrowthRate', 'collectionRate',
+            'ingresosEsperados', 'ingresosRealesMes', 'deudaTotal',
+            'mrrChartLabels', 'mrrChartData',
+            'revenueChartLabels', 'revenueChartData',
+            'planDistribution',
+            'systemMoneda',
+
+            // Health
+            'enPrueba', 'pruebaPerdida', 'churnRiskCount',
+
+            // Growth
+            'nuevasEsteMes', 'nuevasMesAnt', 'growthRate',
+
+            // Operational
+            'erroresNoResueltos7d', 'erroresCriticos24h', 'totalSinResolver',
+            'usuariosActivos24h', 'auditoriasHoy',
+            'errorLabels', 'errorChartData',
+
+            // Action items
+            'pendingApprovals',
+            'ownerActivity',
+            'planes',
+            'pendingCount',
+        );
     }
 
     public function businessTypes()
@@ -532,7 +742,7 @@ class OwnerController extends Controller
     public function instancesCreate()
     {
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
-        $owners = User::role('owner')->orderBy('name')->get();
+        $owners = OwnerService::getOwnerUsers();
         $plans = \App\Models\Plan::active();
         return view('owner.instances.create', compact('businessTypes', 'owners', 'plans'));
     }
@@ -633,9 +843,16 @@ class OwnerController extends Controller
 
         $this->logOwnerAction('INSTANCE_CREATE', "Instancia '{$instance->nombre}' creada", null, ['id' => $instance->id, 'slug' => $instance->slug], $instance);
 
+        // Invalidar cache del dashboard tras crear instancia
+        self::invalidateDashboardCache(auth()->id());
+
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Instancia creada correctamente.');
     }
+
+    // ──────────────────────────────────────────────
+    // INSTANCIAS — Edición / Detalle / Actualización
+    // ──────────────────────────────────────────────
 
     public function instancesShow($id)
     {
@@ -661,7 +878,7 @@ class OwnerController extends Controller
     {
         $instance = BusinessInstance::withTrashed()->findOrFail($id);
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
-        $owners = User::role('owner')->orderBy('name')->get();
+        $owners = OwnerService::getOwnerUsers();
         $plans = \App\Models\Plan::active();
         return view('owner.instances.edit', compact('instance', 'businessTypes', 'owners', 'plans'));
     }
@@ -703,6 +920,9 @@ class OwnerController extends Controller
 
         $this->logOwnerAction('INSTANCE_UPDATE', "Instancia '{$instance->nombre}' actualizada", $oldData, $instance->getAttributes(), $instance);
 
+        // Invalidar cache del dashboard tras actualizar instancia
+        self::invalidateDashboardCache(auth()->id());
+
         return redirect()->route('owner.instances.show', $instance)
             ->with('success', 'Instancia actualizada correctamente.');
     }
@@ -718,6 +938,9 @@ class OwnerController extends Controller
             $instance->delete();
             $msg = 'Instancia archivada correctamente.';
         }
+
+        // Invalidar cache del dashboard tras eliminar instancia
+        self::invalidateDashboardCache(auth()->id());
 
         return redirect()->route('owner.instances.index')
             ->with('success', $msg);
@@ -935,6 +1158,9 @@ class OwnerController extends Controller
             'notas' => $data['notas'],
             'registrado_por' => auth()->id(),
         ]);
+
+        // Invalidar cache del dashboard tras registrar pago
+        self::invalidateDashboardCache(auth()->id());
 
         // Desbloqueo automático cuando el pago cubre el período vigente
         if ($instance->bloqueado && $instance->estaAlDia()) {
@@ -1369,7 +1595,7 @@ class OwnerController extends Controller
 
         $errorLogs = $query->latest()->paginate(30)->withQueryString();
 
-        $instances = BusinessInstance::orderBy('nombre')->get();
+        $instances = BusinessInstance::orderBy('nombre')->pluck('nombre', 'id');
 
         $stats = [
             'total' => InstanceErrorLog::count(),
@@ -2003,10 +2229,6 @@ class OwnerController extends Controller
 
         // Remove the owner reference from linked instances to prevent orphaned references
         if ($linkedInstances > 0) {
-            BusinessInstance::where('owner_user_id', $owner->id)
-                ->whereNull('owner_user_id')
-                ->update(['owner_user_id' => null]);
-            // Also handle the case where owner_user_id is not null — just set it back to null if owner is deleted
             BusinessInstance::where('owner_user_id', $owner->id)->update(['owner_user_id' => null]);
         }
 

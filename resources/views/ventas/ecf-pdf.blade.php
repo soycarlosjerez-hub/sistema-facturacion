@@ -34,6 +34,17 @@
     </style>
 </head>
 <body>
+    <?php
+        $garantiaTerminos = [];
+        foreach($ecf->venta->detalles->where('tipo_linea', '!=', 'delivery') as $d) {
+            if(!empty($d->producto->garantia_terminos)) {
+                $_key = $d->producto->id . '_' . md5($d->producto->garantia_terminos);
+                if(!isset($garantiaTerminos[$_key])) {
+                    $garantiaTerminos[$_key] = ['producto' => $d->producto->nombre, 'terminos' => $d->producto->garantia_terminos];
+                }
+            }
+        }
+    ?>
     <div class="header">
         <table style="margin: 0;">
             <tr>
@@ -45,7 +56,9 @@
                     </div>
                     @endif
                     <div class="empresa-nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
-                    <div class="rnc">RNC: {{ $empresa['empresa_rnc'] ?? '000000000' }}</div>
+                    @if(!empty($empresa['empresa_rnc']))
+                    <div class="rnc">RNC: {{ $empresa['empresa_rnc'] }}</div>
+                    @endif
                     <div class="rnc">{{ $empresa['empresa_direccion'] ?? 'Santo Domingo, R.D.' }}</div>
                     <div class="rnc">Tel: {{ $empresa['empresa_telefono'] ?? '809-000-0000' }}</div>
                 </td>
@@ -80,7 +93,9 @@
             <td style="width: 50%; padding: 5px; background: #fafafa; vertical-align: top;">
                 <strong style="font-size: 9px;">EMITIDO POR:</strong><br>
                 <strong>{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</strong><br>
-                RNC: {{ $empresa['empresa_rnc'] ?? '000000000' }}
+                @if(!empty($empresa['empresa_rnc']))
+                RNC: {{ $empresa['empresa_rnc'] }}
+                @endif
             </td>
             <td style="width: 50%; padding: 5px; background: #fafafa; vertical-align: top;">
                 <strong style="font-size: 9px;">FECHA DE EMISIÓN:</strong> {{ $ecf->fecha_emision->format('d/m/Y') }}<br>
@@ -117,20 +132,29 @@
                 <th style="width: 50%;">Descripción</th>
                 <th style="width: 10%; text-align: right;">Cant.</th>
                 <th style="width: 15%; text-align: right;">Precio</th>
+                @if($ecf->itbis_total > 0)
                 <th style="width: 10%; text-align: right;">ITBIS</th>
+                @endif
                 <th style="width: 15%; text-align: right;">Subtotal</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($ecf->venta->detalles as $i => $d)
+            @foreach($ecf->venta->detalles->where('tipo_linea', '!=', 'delivery') as $i => $d)
             <tr>
                 <td>{{ $i + 1 }}</td>
-                <td>{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Obra de Arte' }}</td>
+                <td>{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Producto' }}</td>
                 <td class="text-end">{{ $d->cantidad }}</td>
                 <td class="text-end">${{ number_format($d->precio_unitario, 2) }}</td>
+                @if($ecf->itbis_total > 0)
                 <td class="text-end">${{ number_format($d->sin_itbis ? 0 : $d->subtotal * (($d->producto->itbis_porcentaje ?? $d->itbis_porcentaje ?? 0) / 100), 2) }}</td>
+                @endif
                 <td class="text-end">${{ number_format($d->subtotal, 2) }}</td>
             </tr>
+            @if(!empty($d->producto->garantia_dias) && $d->producto->garantia_dias > 0)
+            <tr>
+                <td colspan="{{ $ecf->itbis_total > 0 ? '6' : '5' }}" style="font-size: 8px; color: #0d6efd; padding-left: 20px;">Garantia: {{ $d->producto->garantia_meses }} meses</td>
+            </tr>
+            @endif
             @endforeach
         </tbody>
     </table>
@@ -144,10 +168,12 @@
             <td>Monto Exento</td>
             <td class="text-end">${{ number_format($ecf->monto_exento_total, 2) }}</td>
         </tr>
+        @if($ecf->itbis_total > 0)
         <tr>
             <td>ITBIS (18%)</td>
             <td class="text-end">${{ number_format($ecf->itbis_total, 2) }}</td>
         </tr>
+        @endif
         <tr class="total-final">
             <td>TOTAL</td>
             <td class="text-end">${{ number_format($ecf->monto_total, 2) }}</td>
@@ -161,6 +187,12 @@
             <div class="small" style="margin-top: 5px;">Código: <strong>{{ $ecf->codigo_seguridad }}</strong></div>
         </div>
         <div class="info-section">
+            @php $slogan = \App\Models\SystemSetting::get('sistema_slogan'); @endphp
+            @if($slogan)
+            <p class="small" style="font-style:italic; color:#555; text-align:center; margin-bottom:5px;">
+                {{ $slogan }}
+            </p>
+            @endif
             <p class="small">
                 <strong>Representación Impresa del Comprobante Fiscal Electrónico (e-CF)</strong><br>
                 Este documento es una representación impresa de un e-CF emitido conforme a las normas
@@ -181,5 +213,18 @@
             @endif
         </div>
     </div>
+
+    @if(count($garantiaTerminos) > 0)
+    <div style="clear:both; margin-top:15px; padding-top:10px; border-top:1px solid #ccc;">
+        <strong style="font-size:10px; display:block; margin-bottom:6px; color:#003876;">Términos de Garantía:</strong>
+        @foreach($garantiaTerminos as $t)
+        <div style="margin-bottom:8px;">
+            <strong style="font-size:10px; color:#333;">{{ $t['producto'] }}:</strong>
+            <p style="margin:2px 0 0 8px; font-size:9px; color:#333; line-height:1.4;">{{ $t['terminos'] }}</p>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
 </body>
 </html>

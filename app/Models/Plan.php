@@ -180,4 +180,15 @@ class Plan extends Model
     {
         Cache::forget(self::CACHE_KEY);
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            self::flush();
+        });
+
+        static::deleted(function () {
+            self::flush();
+        });
+    }
 }

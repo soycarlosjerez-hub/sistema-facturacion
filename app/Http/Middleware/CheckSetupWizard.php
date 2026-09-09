@@ -16,8 +16,12 @@ class CheckSetupWizard
             return $next($request);
         }
 
-        if ($user->hasRole('owner') || $user->hasRole('root')) {
-            return $next($request);
+        try {
+            if ($user->hasRole('owner') || $user->hasRole('root')) {
+                return $next($request);
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         if ($request->routeIs('setup.*') || $request->routeIs('logout')) {

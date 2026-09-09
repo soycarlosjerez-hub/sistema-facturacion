@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Categoria;
 use App\Models\Almacen;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

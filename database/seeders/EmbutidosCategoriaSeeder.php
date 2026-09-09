@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Categoria;
+use App\Models\Category;
 use Illuminate\Database\Seeder;
 
 class EmbutidosCategoriaSeeder extends Seeder
@@ -22,13 +22,13 @@ class EmbutidosCategoriaSeeder extends Seeder
 
         $creadas = 0;
         foreach ($categorias as $catData) {
-            $existente = Categoria::where('nombre', $catData['nombre'])->whereNull('tenant_id')->first();
+            $existente = Category::where('nombre', $catData['nombre'])->whereNull('tenant_id')->first();
             if ($existente) {
                 $this->command->info("Categoria ya existe: {$catData['nombre']} (ID {$existente->id})");
                 continue;
             }
 
-            Categoria::create(array_merge($catData, ['tenant_id' => null]));
+            Category::create(array_merge($catData, ['tenant_id' => null]));
             $creadas++;
             $this->command->info("Categoria creada: {$catData['nombre']}");
         }

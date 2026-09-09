@@ -16,6 +16,7 @@ class DeliveryDriver extends Model
 
     protected $fillable = [
         'tenant_id',
+        'user_id',
         'nombre',
         'apellido',
         'cedula',
@@ -36,14 +37,19 @@ class DeliveryDriver extends Model
         return $this->belongsTo(BusinessInstance::class, 'tenant_id');
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function ventas(): HasMany
     {
-        return $this->hasMany(Venta::class);
+        return $this->hasMany(Venta::class, 'driver_id');
     }
 
     public function ordenes(): HasMany
     {
-        return $this->hasMany(Orden::class);
+        return $this->hasMany(Orden::class, 'driver_id');
     }
 
     public function earnings(): HasMany

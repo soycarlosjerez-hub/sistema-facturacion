@@ -90,6 +90,13 @@
                     @else
                     <p class="text-muted">Sin descripción de cobertura</p>
                     @endif
+
+                    <h6 class="fw-bold mb-3 mt-4">Terminos por Defecto</h6>
+                    @if($garantiasConfig->terminos_por_defecto)
+                    <p class="text-muted" style="white-space:pre-line;">{{ $garantiasConfig->terminos_por_defecto }}</p>
+                    @else
+                    <p class="text-muted">Sin terminos por defecto</p>
+                    @endif
                 </div>
             </div>
 

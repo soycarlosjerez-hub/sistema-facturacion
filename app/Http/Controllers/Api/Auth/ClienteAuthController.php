@@ -91,21 +91,21 @@ class ClienteAuthController extends Controller
             return response()->json(['message' => 'Acceso API no habilitado para esta cuenta.'], 403);
         }
 
-        if (is_null($cliente->email_verified_at)) {
-            return response()->json([
-                'message' => 'Email no verificado. Revisa tu bandeja de entrada.',
-                'email'   => $cliente->email,
-            ], 403);
-        }
-
         $token = $cliente->createToken($request->header('User-Agent', 'api'));
 
-        return response()->json([
+        $response = [
             'message'      => 'Inicio de sesión exitoso.',
             'cliente'      => $this->resource($cliente),
             'access_token'  => $token->plain_text,
             'token_type'    => 'Bearer',
-        ]);
+        ];
+
+        if (is_null($cliente->email_verified_at)) {
+            $response['email_pending_verification'] = true;
+            $response['email'] = $cliente->email;
+        }
+
+        return response()->json($response);
     }
 
     public function logout(Request $request): JsonResponse
@@ -283,7 +283,7 @@ class ClienteAuthController extends Controller
             'limite_credito'     => $cliente->limite_credito,
             'balance_pendiente'  => $cliente->balance_pendiente,
             'created_at'         => $cliente->created_at,
-            'tenant_id'          => $cliente->business_instance_id,
+            'tenant_id'          => $cliente->tenant_id,
         ];
     }
 }

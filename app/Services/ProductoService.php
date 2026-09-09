@@ -5,112 +5,82 @@ namespace App\Services;
 use App\Models\Producto;
 use App\Models\SystemSetting;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Collection;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Intervention\Image\Laravel\Facades\Image;
 
 class ProductoService
 {
     public function list(array $filters = []): LengthAwarePaginator
     {
-        $query = Producto::with('categoria')
-            ->withCount(['ventaDetalles', 'detallesCompras', 'movimientosAlmacen', 'ingredientes']);
-
-        if ($termino = $filters['nombre'] ?? null) {
-            $query->where(function ($q) use ($termino) {
-                $q->where('nombre', 'like', "%{$termino}%")
-                  ->orWhere('codigo_barras', 'like', "%{$termino}%");
-            });
-        }
-
-        if ($min = $filters['precio_min'] ?? null) {
-            $query->where('precio', '>=', (float) $min);
-        }
-
-        if ($max = $filters['precio_max'] ?? null) {
-            $query->where('precio', '<=', (float) $max);
-        }
-
-        if ($stockStatus = $filters['stock_status'] ?? null) {
-            match ($stockStatus) {
-                'critical' => $query->where('stock', '<=', 5),
-                'low'      => $query->whereBetween('stock', [6, 15]),
-                'ok'       => $query->where('stock', '>', 15),
-                default    => null,
-            };
-        }
-
-        $activo = $filters['activo'] ?? null;
-        if ($activo !== null && $activo !== '') {
-            $query->where('activo', $activo);
-        }
-
-        // Apply tenant filter for multi‑tenant isolation
-        if (auth()->check() && auth()->user()->business_instance_id !== null) {
-            $query->where('tenant_id', auth()->user()->business_instance_id);
-        }
-        // Paginate and return results
-        return $query->latest()->paginate(10)->appends($filters);
+        return $this->buildQuery($filters)->latest()->paginate(10)->appends($filters);
     }
 
     public function listAll(array $filters = []): Collection
     {
-        $query = Producto::with('categoria')
-            ->withCount(['ventaDetalles', 'detallesCompras', 'movimientosAlmacen', 'ingredientes']);
-
-        if ($termino = $filters['nombre'] ?? null) {
-            $query->where(function ($q) use ($termino) {
-                $q->where('nombre', 'like', "%{$termino}%")
-                  ->orWhere('codigo_barras', 'like', "%{$termino}%");
-            });
-        }
-
-        if ($min = $filters['precio_min'] ?? null) {
-            $query->where('precio', '>=', (float) $min);
-        }
-
-        if ($max = $filters['precio_max'] ?? null) {
-            $query->where('precio', '<=', (float) $max);
-        }
-
-        if ($stockStatus = $filters['stock_status'] ?? null) {
-            match ($stockStatus) {
-                'critical' => $query->where('stock', '<=', 5),
-                'low'      => $query->whereBetween('stock', [6, 15]),
-                'ok'       => $query->where('stock', '>', 15),
-                default    => null,
-            };
-        }
-
-        $activo = $filters['activo'] ?? null;
-        if ($activo !== null && $activo !== '') {
-            $query->where('activo', $activo);
-        }
-
-        if (auth()->check() && auth()->user()->business_instance_id !== null) {
-            $query->where('tenant_id', auth()->user()->business_instance_id);
-        }
-
-        return $query->latest()->get();
+        return $this->buildQuery($filters)->latest()->get();
     }
 
     public function create(array $data, ?UploadedFile $imagen = null): Producto
     {
-        // Ensure product is scoped to the current tenant (business_instance_id)
         $data['tenant_id'] = auth()->user()->business_instance_id;
-    if ($imagen) {
-        $data['imagen'] = $this->saveImage($imagen);
-    }
+        if ($imagen) {
+            $data['imagen'] = $this->saveImage($imagen);
+        }
 
         $data['itbis_porcentaje'] = $data['itbis_porcentaje'] ?? SystemSetting::itbisDefault();
 
         return Producto::create($data);
     }
 
+    private function buildQuery(array $filters)
+    {
+        $query = Producto::with('categoria')
+            ->withCount(['ventaDetalles', 'detallesCompras', 'movimientosAlmacen', 'ingredientes']);
+
+        if ($termino = $filters['nombre'] ?? null) {
+            $query->where(function ($q) use ($termino) {
+                $q->where('nombre', 'like', "%{$termino}%")
+                    ->orWhere('codigo_barras', 'like', "%{$termino}%")
+                    ->orWhere('codigo_referencia', 'like', "%{$termino}%");
+            });
+        }
+
+        if ($min = $filters['precio_min'] ?? null) {
+            $query->where('precio', '>=', (float) $min);
+        }
+
+        if ($max = $filters['precio_max'] ?? null) {
+            $query->where('precio', '<=', (float) $max);
+        }
+
+        if ($stockStatus = $filters['stock_status'] ?? null) {
+            match ($stockStatus) {
+                'critical' => $query->where('stock', '<=', 5),
+                'low' => $query->whereBetween('stock', [6, 15]),
+                'ok' => $query->where('stock', '>', 15),
+                default => null,
+            };
+        }
+
+        $activo = $filters['activo'] ?? null;
+        if ($activo !== null && $activo !== '') {
+            $query->where('activo', $activo);
+        }
+
+        if (auth()->check() && auth()->user()->business_instance_id !== null) {
+            $query->where('tenant_id', auth()->user()->business_instance_id);
+        }
+
+        return $query;
+    }
+
     public function update(Producto $producto, array $data, ?UploadedFile $imagen = null): Producto
     {
+        $data['tenant_id'] = auth()->user()->business_instance_id;
+
         if ($imagen) {
             if ($producto->imagen) {
                 Storage::disk('public')->delete($producto->imagen);
@@ -126,7 +96,7 @@ class ProductoService
 
     public function delete(Producto $producto): array
     {
-        if (!$producto->can_delete) {
+        if (! $producto->can_delete) {
             return [
                 'success' => false,
                 'message' => "No se puede eliminar '{$producto->nombre}' porque tiene registros asociados (ventas, compras, movimientos de almacén o ingredientes). Puedes desactivarlo en su lugar.",
@@ -144,7 +114,8 @@ class ProductoService
 
     public function toggleActivo(Producto $producto): Producto
     {
-        $producto->update(['activo' => !$producto->activo]);
+        $producto->update(['activo' => ! $producto->activo]);
+
         return $producto->fresh();
     }
 
@@ -160,20 +131,21 @@ class ProductoService
     {
         return Producto::where(function ($q) use ($term) {
             $q->where('nombre', 'like', "%{$term}%")
-              ->orWhere('codigo_barras', 'like', "%{$term}%");
+                ->orWhere('codigo_barras', 'like', "%{$term}%")
+                ->orWhere('codigo_referencia', 'like', "%{$term}%");
         })->orderBy('nombre')->limit($limit)->get();
     }
 
     public function saveImage(UploadedFile $file): string
     {
         $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-        $filename = $name . '-' . uniqid() . '.webp';
+        $filename = $name.'-'.uniqid().'.webp';
 
         $image = Image::read($file);
         $image->resize(width: 800);
         $image->toWebp(quality: 70)
-              ->save(storage_path('app/public/productos/' . $filename));
+            ->save(storage_path('app/public/productos/'.$filename));
 
-        return 'productos/' . $filename;
+        return 'productos/'.$filename;
     }
 }

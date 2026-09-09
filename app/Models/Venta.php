@@ -11,20 +11,20 @@ use Illuminate\Support\Facades\Auth;
 
 class Venta extends Model
 {
-    use HasFactory, Auditable, TenantScope, SoftDeletes;
+    use Auditable, HasFactory, SoftDeletes, TenantScope;
 
     protected $casts = [
-        'subtotal'       => 'decimal:2',
-        'impuestos'      => 'decimal:2',
-        'descuento'       => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'impuestos' => 'decimal:2',
+        'descuento' => 'decimal:2',
         'general_descuento' => 'decimal:2',
-        'propina'         => 'decimal:2',
+        'propina' => 'decimal:2',
         'cargo_servicio' => 'decimal:2',
-        'total'          => 'decimal:2',
-        'delivery_fee'   => 'decimal:2',
-        'fecha'          => 'datetime',
+        'total' => 'decimal:2',
+        'delivery_fee' => 'decimal:2',
+        'fecha' => 'datetime',
         'ncf_vencimiento' => 'date',
-        'retenciones'    => 'array',
+        'retenciones' => 'array',
     ];
 
     protected $fillable = [
@@ -95,6 +95,7 @@ class Venta extends Model
         if ($sucursalId) {
             return $query->where('sucursal_id', $sucursalId);
         }
+
         return $query;
     }
 
@@ -106,6 +107,11 @@ class Venta extends Model
     public function deliveryCompany()
     {
         return $this->belongsTo(DeliveryCompany::class);
+    }
+
+    public function deliveryZone()
+    {
+        return $this->belongsTo(DeliveryZone::class);
     }
 
     public function splitBillPersons()
@@ -127,7 +133,12 @@ class Venta extends Model
 
     public function deliveryTracking()
     {
-        return $this->hasOne(\App\Models\DeliveryTracking::class, 'orden_id');
+        return $this->hasOne(\App\Models\DeliveryTracking::class, 'venta_id');
+    }
+
+    public function orden()
+    {
+        return $this->hasOne(\App\Models\Orden::class);
     }
 
     public function driver()
@@ -137,7 +148,7 @@ class Venta extends Model
 
     public function usaEcf(): bool
     {
-        return $this->tipo_comprobante === 'ecf' || !empty($this->encf);
+        return $this->tipo_comprobante === 'ecf' || ! empty($this->encf);
     }
 
     public function montoPagado()
@@ -153,5 +164,10 @@ class Venta extends Model
     public function equipos()
     {
         return $this->hasMany(EquipoVenta::class);
+    }
+
+    public function garantias()
+    {
+        return $this->hasMany(Garantia::class);
     }
 }

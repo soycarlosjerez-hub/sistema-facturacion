@@ -437,6 +437,16 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
         Route::get('lealtad', [LealtadController::class, 'get']);
         Route::post('lealtad/canjear', [LealtadController::class, 'canjear']);
         Route::get('lealtad/historial', [LealtadController::class, 'historial']);
+
+        // Cliente Authenticated (protegido)
+        Route::middleware('auth.cliente')->group(function () {
+            Route::post('logout', [ClienteAuthController::class, 'logout'])->name('ecomm.logout');
+            Route::get('me', [ClienteAuthController::class, 'me'])->name('ecomm.me');
+            Route::put('profile', [ClienteAuthController::class, 'updateProfile'])->name('ecomm.profile.update');
+            Route::post('change-password', [ClienteAuthController::class, 'changePassword'])->name('ecomm.change-password');
+            Route::get('pedidos', [ClientePedidoController::class, 'index'])->name('ecomm.pedidos.index');
+            Route::get('pedidos/{id}', [ClientePedidoController::class, 'show'])->name('ecomm.pedidos.show');
+        });
     });
 
     // ──────────────────────────────────────────────────────────────
@@ -469,4 +479,16 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger'])->group(function 
         Route::get('rewards', [EcommController::class, 'rewards']);
         Route::post('rewards/redeem', [EcommController::class, 'rewardRedeem']);
     });
+});
+
+// ──────────────────────────────────────────────────────────────
+// Ecomm Auth — Rutas públicas (sin api-auth middleware)
+// ──────────────────────────────────────────────────────────────
+Route::prefix('ecomm')->group(function () {
+    Route::post('register', [ClienteAuthController::class, 'register'])->name('ecomm.register');
+    Route::post('login', [ClienteAuthController::class, 'login'])->name('ecomm.login');
+    Route::post('forgot-password', [ClienteAuthController::class, 'forgotPassword'])->name('ecomm.forgot-password');
+    Route::post('reset-password', [ClienteAuthController::class, 'resetPassword'])->name('ecomm.reset-password');
+    Route::post('resend-verification', [ClienteAuthController::class, 'resendVerification'])->name('ecomm.resend-verification');
+    Route::get('verify-email/{id}/{hash}', [ClienteAuthController::class, 'verifyEmail'])->name('ecomm.verify-email');
 });

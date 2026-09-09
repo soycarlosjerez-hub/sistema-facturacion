@@ -2,23 +2,27 @@
 
 namespace App\Imports;
 
-use App\Models\Categoria;
+use App\Models\Category;
 use App\Models\Producto;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Validators\Failure;
-use Illuminate\Support\Facades\Auth;
 
-class DynamicProductosImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure, WithChunkReading, WithCustomCsvSettings
+class DynamicProductosImport implements SkipsOnFailure, ToModel, WithChunkReading, WithCustomCsvSettings, WithHeadingRow, WithValidation
 {
     private array $mapping;
+
     private array $defaults;
+
     private string $delimiter;
+
     public array $failures = [];
+
     public int $imported = 0;
 
     public function __construct(array $mapping, array $defaults = [], string $delimiter = ',')
@@ -44,10 +48,18 @@ class DynamicProductosImport implements ToModel, WithHeadingRow, WithValidation,
             return null;
         }
 
-        if (isset($data['precio'])) $data['precio'] = (float) str_replace([',', ' '], ['.', ''], $data['precio']);
-        if (isset($data['precio_compra'])) $data['precio_compra'] = (float) str_replace([',', ' '], ['.', ''], $data['precio_compra']);
-        if (isset($data['stock'])) $data['stock'] = (int) $data['stock'];
-        if (isset($data['itbis_porcentaje'])) $data['itbis_porcentaje'] = (float) $data['itbis_porcentaje'];
+        if (isset($data['precio'])) {
+            $data['precio'] = (float) str_replace([',', ' '], ['.', ''], $data['precio']);
+        }
+        if (isset($data['precio_compra'])) {
+            $data['precio_compra'] = (float) str_replace([',', ' '], ['.', ''], $data['precio_compra']);
+        }
+        if (isset($data['stock'])) {
+            $data['stock'] = (int) $data['stock'];
+        }
+        if (isset($data['itbis_porcentaje'])) {
+            $data['itbis_porcentaje'] = (float) $data['itbis_porcentaje'];
+        }
         if (isset($data['categoria']) || isset($data['categoria_id'])) {
             $catValue = $data['categoria'] ?? $data['categoria_id'] ?? null;
             $data['categoria_id'] = $this->resolveCategoryId($catValue);
@@ -57,17 +69,23 @@ class DynamicProductosImport implements ToModel, WithHeadingRow, WithValidation,
         $data['tenant_id'] = Auth::user()->business_instance_id;
 
         $this->imported++;
+
         return new Producto($data);
     }
 
     private function resolveCategoryId($value): ?int
     {
-        if (!$value) return null;
+        if (! $value) {
+            return null;
+        }
+        $tenantId = Auth::user()->business_instance_id;
         if (is_numeric($value)) {
-            $cat = Categoria::find((int) $value);
+            $cat = Category::where('tenant_id', $tenantId)->find((int) $value);
+
             return $cat?->id;
         }
-        $cat = Categoria::where('nombre', $value)->first();
+        $cat = Category::where('tenant_id', $tenantId)->where('nombre', $value)->first();
+
         return $cat?->id;
     }
 

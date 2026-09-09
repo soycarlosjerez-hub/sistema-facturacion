@@ -1,0 +1,148 @@
+<?php $__env->startSection('title', 'Categorías de Mesas'); ?>
+<?php $__env->startPush('styles'); ?>
+<?php echo $__env->make('partials.premium-ui', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php $__env->stopPush(); ?>
+<?php $__env->startSection('content'); ?>
+<div class="ui-page" style="--accent:#10b981;--accent-rgb:16,185,129;--accent-hover:#059669;">
+    <div class="ui-header mb-4" style="--delay:0s">
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="ui-header-body">
+            <div class="ui-header-left">
+                <div class="ui-avatar-circle">
+                    <i class="bi bi-cup-straw"></i>
+                </div>
+                <div>
+                    <h4 class="ui-header-title">Categorías de Mesas</h4>
+                    <div class="ui-header-meta">
+                        <i class="bi bi-diagram-3 me-1"></i>Organiza las mesas por categorías
+                        <span class="divider">·</span>
+                        <i class="bi bi-list-ul me-1"></i>
+                        <span><?php echo e($categorias->count()); ?> categoría(s)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-header-actions">
+                <button type="button" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#categoriaModal">
+                    <i class="bi bi-plus-lg me-1"></i> Nueva Categoría
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui-card">
+        <div class="ui-card-accent"></div>
+        <div class="ui-card-body p-0">
+            <div class="table-responsive">
+                <table class="ui-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Color</th>
+                            <th>Nombre</th>
+                            <th>Icono</th>
+                            <th>Orden</th>
+                            <th>Mesas</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__currentLoopData = $categorias; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <tr>
+                            <td><span class="d-inline-block rounded-circle" style="width:24px;height:24px;background:<?php echo e($cat->color); ?>;"></span></td>
+                            <td class="fw-semibold"><?php echo e($cat->nombre); ?></td>
+                            <td><?php if($cat->icono): ?><i class="bi <?php echo e($cat->icono); ?>"></i><?php else: ?> — <?php endif; ?></td>
+                            <td><?php echo e($cat->orden); ?></td>
+                            <td><?php echo e($cat->mesas->count()); ?></td>
+                            <td class="text-end">
+                                <button type="button" class="ui-action ui-action-edit" onclick="editarCategoria(<?php echo e($cat->id); ?>)" title="Editar"><i class="bi bi-pencil"></i></button>
+                                <form action="<?php echo e(route('restaurante.categorias.destroy', $cat)); ?>" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar esta categoría? Las mesas quedarán sin categoría.')">
+                                    <?php echo csrf_field(); ?> <?php echo method_field('DELETE'); ?>
+                                    <button type="submit" class="ui-action ui-action-delete" title="Eliminar"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php if($categorias->isEmpty()): ?>
+                        <tr>
+                            <td colspan="6">
+                                <div class="ui-empty-state">
+                                    <i class="bi bi-diagram-3"></i>
+                                    <p>No hay categorías creadas</p>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="categoriaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" class="modal-content rounded-4 border-0 shadow" id="categoriaForm">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="_method" value="POST" id="cat-method">
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#10b981,#059669);border-radius:1rem 1rem 0 0;">
+                <h5 class="fw-bold text-white" id="catModalTitle">Nueva Categoría</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="ui-label">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" name="nombre" class="ui-input" required maxlength="100">
+                </div>
+                <div class="mb-3">
+                    <label class="ui-label">Color</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="color" name="color" class="form-control form-control-color" value="#6b7280" style="width:60px;height:40px;padding:3px;">
+                        <input type="text" class="ui-input" id="color-hex" value="#6b7280" maxlength="7" oninput="this.previousElementSibling.value=this.value">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="ui-label">Icono (clase Bootstrap Icon)</label>
+                    <input type="text" name="icono" class="ui-input" placeholder="ej: bi-tree" maxlength="50">
+                    <div class="form-text">Ej: <code>bi-tree</code>, <code>bi-sun</code>, <code>bi-star</code></div>
+                </div>
+                <div class="mb-3">
+                    <label class="ui-label">Orden</label>
+                    <input type="number" name="orden" class="ui-input" value="0" min="0">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="ui-btn ui-btn-ghost rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="ui-btn ui-btn-solid rounded-pill">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editarCategoria(id) {
+    fetch('/restaurante/categorias/' + id)
+        .then(r => r.json())
+        .then(cat => {
+            document.getElementById('catModalTitle').textContent = 'Editar Categoría';
+            document.getElementById('cat-method').value = 'PUT';
+            document.getElementById('categoriaForm').action = '/restaurante/categorias/' + id;
+            document.getElementById('categoriaForm').querySelector('[name=nombre]').value = cat.nombre;
+            document.getElementById('categoriaForm').querySelector('[name=color]').value = cat.color;
+            document.getElementById('color-hex').value = cat.color;
+            document.getElementById('categoriaForm').querySelector('[name=icono]').value = cat.icono || '';
+            document.getElementById('categoriaForm').querySelector('[name=orden]').value = cat.orden;
+            new bootstrap.Modal(document.getElementById('categoriaModal')).show();
+        });
+}
+
+document.getElementById('categoriaModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('catModalTitle').textContent = 'Nueva Categoría';
+    document.getElementById('cat-method').value = 'POST';
+    document.getElementById('categoriaForm').action = '<?php echo e(route("restaurante.categorias.store")); ?>';
+    document.getElementById('categoriaForm').reset();
+});
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/sistema-facturacion/resources/views/restaurante/categorias.blade.php ENDPATH**/ ?>

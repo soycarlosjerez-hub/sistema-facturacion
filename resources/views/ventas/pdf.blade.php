@@ -187,6 +187,15 @@
     @php
         $empresa = \App\Models\SystemSetting::allCached();
         $esAnulada = $venta->trashed() || $venta->estado === 'anulada';
+        $garantiaTerminos = [];
+        foreach($venta->detalles->where('tipo_linea', '!=', 'delivery') as $d) {
+            if(!empty($d->producto->garantia_terminos)) {
+                $_key = $d->producto->id . '_' . md5($d->producto->garantia_terminos);
+                if(!isset($garantiaTerminos[$_key])) {
+                    $garantiaTerminos[$_key] = ['producto' => $d->producto->nombre, 'terminos' => $d->producto->garantia_terminos];
+                }
+            }
+        }
     @endphp
 
     <!-- HEADER EMPRESA -->
@@ -198,7 +207,9 @@
                 @endif
                 <div class="empresa-nombre">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</div>
                 <div class="empresa-info">
-                    RNC/Cédula: {{ $empresa['empresa_rnc'] ?? 'N/A' }}<br>
+                    @if(!empty($empresa['empresa_rnc']))
+                    RNC/Cédula: {{ $empresa['empresa_rnc'] }}<br>
+                    @endif
                     Dirección: {{ $empresa['empresa_direccion'] ?? 'N/A' }}<br>
                     Tel: {{ $empresa['empresa_telefono'] ?? 'N/A' }} | Email: {{ $empresa['empresa_email'] ?? 'N/A' }}
                 </div>
@@ -253,10 +264,15 @@
                 <div class="info-label">Cliente</div>
                 <div class="info-value">{{ $venta->cliente->nombre ?? 'Consumidor Final' }}</div>
             </td>
+            @php $rncCliente = $venta->cliente->rnc_cedula ?? $venta->cliente->documento ?? ''; @endphp
+            @if(!empty($rncCliente))
             <td style="border:none; width:50%;" class="info-box">
                 <div class="info-label">RNC/Cédula</div>
-                <div class="info-value">{{ $venta->cliente->rnc_cedula ?? $venta->cliente->documento ?? '00000000000' }}</div>
+                <div class="info-value">{{ $rncCliente }}</div>
             </td>
+            @else
+            <td style="border:none; width:50%;"></td>
+            @endif
         </tr>
     </table>
 
@@ -270,19 +286,33 @@
                 <th style="width:10%" class="text-center">Cant.</th>
                 <th style="width:15%" class="text-right">P. Unit.</th>
                 <th style="width:15%" class="text-right">Subtotal</th>
+                @if($venta->impuestos > 0)
                 <th style="width:5%" class="text-center">%ITBIS</th>
+                @endif
             </tr>
         </thead>
         <tbody>
-            @foreach($venta->detalles as $index => $d)
+            @foreach($venta->detalles->where('tipo_linea', '!=', 'delivery') as $index => $d)
             <tr>
                 <td class="text-center">{{ $loop->iteration }}</td>
-                <td>{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Obra de Arte' }}</td>
+                <td>{{ $d->producto->nombre ?? $d->obra->titulo ?? 'Producto' }}</td>
                 <td class="text-center">{{ number_format($d->cantidad, 2) }}</td>
                 <td class="text-right">${{ number_format($d->precio_unitario, 2) }}</td>
                 <td class="text-right">${{ number_format($d->subtotal, 2) }}</td>
+                @if($venta->impuestos > 0)
                 <td class="text-center">{{ $d->sin_itbis ? '0' : ($d->producto->itbis_porcentaje ?? $d->itbis_porcentaje ?? $systemItbis ?? 18) }}%{{ $d->sin_itbis ? ' <span style="font-size:7px;color:#dc3545;">(Sin ITBIS)</span>' : '' }}</td>
+                @endif
             </tr>
+            @if(!empty($d->producto->garantia_dias) && $d->producto->garantia_dias > 0)
+            <tr>
+                <td colspan="{{ $venta->impuestos > 0 ? '6' : '5' }}" style="font-size: 8px; color: #0d6efd; padding-left: 20px;">Garantia: {{ $d->producto->garantia_meses }} meses</td>
+            </tr>
+            @endif
+            @if($d->notas)
+            <tr>
+                <td colspan="{{ $venta->impuestos > 0 ? '6' : '5' }}" style="font-size: 8px; font-style: italic; color: #666;">{{ $d->notas }}</td>
+            </tr>
+            @endif
             @endforeach
         </tbody>
     </table>
@@ -296,10 +326,12 @@
             <td class="totals-label">Subtotal Gravado:</td>
             <td class="totals-value">${{ number_format($venta->subtotal, 2) }}</td>
         </tr>
+        @if($venta->impuestos > 0)
         <tr>
             <td class="totals-label">ITBIS ({{ $venta->impuestos > 0 ? round(($venta->impuestos / max($venta->subtotal, 1)) * 100) : 0 }}%):</td>
             <td class="totals-value">${{ number_format($venta->impuestos, 2) }}</td>
         </tr>
+        @endif
         @if($venta->descuento > 0)
         <tr>
             <td class="totals-label">Descuento:</td>
@@ -381,10 +413,34 @@
         @endif
     </table>
 
+    @php $slogan = \App\Models\SystemSetting::get('sistema_slogan'); @endphp
+
+    @if($slogan)
+    <div style="margin-top:15px; padding-top:10px; border-top:1px dashed #ddd; text-align:center; font-style:italic; color:#555; font-size:10px;">
+        {{ $slogan }}
+    </div>
+    @endif
+
+    @if(count($garantiaTerminos) > 0)
+    <table style="width:100%; margin-top:10px; margin-bottom:10px; border-top:1px solid #ccc; padding-top:8px;">
+        <tr>
+            <td style="font-size:10px; color:#333; line-height:1.5;">
+                <strong style="font-size:11px; display:block; margin-bottom:6px;">Términos de Garantía:</strong>
+                @foreach($garantiaTerminos as $t)
+                <div style="margin-bottom:8px;">
+                    <strong style="font-size:10px;">{{ $t['producto'] }}:</strong>
+                    <p style="margin:2px 0 0 8px; font-size:9px;">{{ $t['terminos'] }}</p>
+                </div>
+                @endforeach
+            </td>
+        </tr>
+    </table>
+    @endif
+
     <!-- FOOTER -->
     <div class="footer">
         Este documento es una representación impresa de un NCF electrónico.<br>
-        {{ \App\Models\SystemSetting::nombreEmpresaActual() }} | RNC: {{ $empresa['empresa_rnc'] ?? 'N/A' }}<br>
+        {{ \App\Models\SystemSetting::nombreEmpresaActual() }}@if(!empty($empresa['empresa_rnc'])) | RNC: {{ $empresa['empresa_rnc'] }}@endif<br>
         @if($venta->ncf)
         NCF: {{ $venta->ncf }} | Factura No. {{ str_pad($venta->id, 5, '0', STR_PAD_LEFT) }}
         @endif

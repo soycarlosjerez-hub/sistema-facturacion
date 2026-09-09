@@ -89,13 +89,13 @@ class TiendaApiController extends Controller
         $businessTypeSlug = SystemSetting::get('business_type_slug', 'lavadero');
 
         $categories = Category::whereHas('businessTypes', function ($q) use ($businessTypeSlug) {
-            $q->where('business_types.key', $businessTypeSlug);
+            $q->where('business_types.slug', $businessTypeSlug);
         })
             ->active()
             ->ordered()
             ->with([
                 'businessTypes' => function ($q) use ($businessTypeSlug) {
-                    $q->select('business_types.id', 'business_types.key', 'business_types.nombre', 'business_types.color', 'business_types.icon');
+                    $q->select('business_types.id', 'business_types.slug', 'business_types.nombre', 'business_types.color', 'business_types.icon');
                 },
             ])
             ->get();
@@ -104,7 +104,7 @@ class TiendaApiController extends Controller
             // Obtener subcategorías para este business type
             $subcategorias = CategorySubcategory::where('category_id', $category->id)
                 ->where('business_type_id', function ($q) use ($businessTypeSlug) {
-                    $q->select('id')->from('business_types')->where('key', $businessTypeSlug);
+                    $q->select('id')->from('business_types')->where('slug', $businessTypeSlug);
                 })
                 ->activas()
                 ->orderBy('orden')
