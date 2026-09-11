@@ -11,8 +11,8 @@ use App\Models\Producto;
 use App\Models\SesionCaja;
 use App\Models\User;
 use App\Models\Venta;
+use App\Services\PlantillaPdfGenerator;
 use App\Services\SaleService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -265,13 +265,13 @@ class VentaController extends Controller
 
     public function exportPdf($id)
     {
-        $venta = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal', 'detalles.producto', 'detalles.obra', 'detalles.almacen'])
+        $venta = Venta::with(['cliente', 'usuario', 'tipoVenta', 'caja', 'sucursal', 'detalles.producto', 'detalles.obra', 'detalles.almacen', 'pagos'])
             ->where('tenant_id', Auth::user()->business_instance_id)
             ->findOrFail($id);
 
-        return Pdf::loadView('ventas.pdf', compact('venta'))
-            ->setPaper('a4', 'portrait')
-            ->download('venta_'.$venta->id.'.pdf');
+        $pdf = app(PlantillaPdfGenerator::class)->generarVenta($venta);
+
+        return $pdf->download('venta_'.$venta->id.'.pdf');
     }
 
     public function exportAllPdf(Request $request)
@@ -290,7 +290,14 @@ class VentaController extends Controller
         }
 
         $ventas = $query->orderBy('created_at', 'desc')->take(1000)->get();
-        $pdf = Pdf::loadView('ventas.all-pdf', compact('ventas'))->setPaper('a4', 'landscape');
+
+        $filtros = [
+            'cliente' => $request->input('cliente', ''),
+            'desde' => $request->input('desde', ''),
+            'hasta' => $request->input('hasta', ''),
+        ];
+
+        $pdf = app(PlantillaPdfGenerator::class)->generarHistorial($ventas, $filtros);
 
         return $pdf->download('ventas_reporte.pdf');
     }
@@ -367,7 +374,28 @@ class VentaController extends Controller
     {
         $venta = Venta::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal', 'pagos'])->findOrFail($id);
 
-        return view('ventas.ticket', ['venta' => $venta]);
+        $impresora = null;
+        if ($venta->sucursal_id) {
+            $impresora = \App\Models\Impresora::where('activo', true)
+                ->where('sucursal_id', $venta->sucursal_id)
+                ->where('auto_imprimir_ventas', true)
+                ->orderBy('orden')
+                ->first();
+        }
+
+        if (! $impresora && auth()->check()) {
+            $impresora = \App\Models\Impresora::where('activo', true)
+                ->where('tenant_id', auth()->user()->business_instance_id)
+                ->where('auto_imprimir_ventas', true)
+                ->whereNull('sucursal_id')
+                ->orderBy('orden')
+                ->first();
+        }
+
+        return view('ventas.ticket', [
+            'venta' => $venta,
+            'impresora' => $impresora,
+        ]);
     }
 
     public function facturar(Request $request, $id)

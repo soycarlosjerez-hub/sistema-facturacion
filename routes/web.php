@@ -21,6 +21,7 @@ use App\Http\Controllers\EcfController;
 use App\Http\Controllers\Formulario1414Controller;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ImpresoraController;
 use App\Http\Controllers\KardexController;
 use App\Http\Controllers\KdsController;
 use App\Http\Controllers\LavaderoController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\OwnerBackupController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\PaymentProcessorController;
 use App\Http\Controllers\PlantaGastoController;
+use App\Http\Controllers\PlantillaImpresionController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProfileController;
@@ -87,6 +89,7 @@ Route::pattern('sucursal', '[0-9]+');
 Route::pattern('cuentas_bancarium', '[0-9]+');
 Route::pattern('orden', '[0-9]+');
 Route::pattern('detalle', '[0-9]+');
+Route::pattern('plantilla', '[0-9]+');
 
 // Dashboard
 Route::middleware(['auth', 'instance.aprobada'])->group(function () {
@@ -541,6 +544,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/compras/exportar', [CompraController::class, 'exportExcel'])->name('compras.exportar');
         Route::get('/compras/pdf', [CompraController::class, 'pdf'])->name('compras.pdf');
         Route::get('/compras/{compra}', [CompraController::class, 'show'])->name('compras.show');
+        Route::get('/compras/{compra}/pdf', [CompraController::class, 'pdfIndividual'])->name('compras.pdf-individual');
     });
     Route::middleware('permission:compras.create')->group(function () {
         Route::get('/compras/create', [CompraController::class, 'create'])->name('compras.create');
@@ -763,6 +767,43 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reportes/delivery-comisiones', [ReporteController::class, 'comisionesDelivery'])->name('reportes.delivery-comisiones');
     });
 
+    // Impresoras y Plantillas
+    // Create/Store MUST come before {impresora} to avoid Laravel matching /impresoras/create to /impresoras/{impresora}
+    Route::middleware('permission:impresoras.create')->group(function () {
+        Route::get('/impresoras/create', [ImpresoraController::class, 'create'])->name('impresoras.create');
+        Route::post('/impresoras', [ImpresoraController::class, 'store'])->name('impresoras.store');
+    });
+
+    // Edit/Update/Toggle
+    Route::middleware('permission:impresoras.edit')->group(function () {
+        Route::get('/impresoras/{impresora}/edit', [ImpresoraController::class, 'edit'])->name('impresoras.edit');
+        Route::put('/impresoras/{impresora}', [ImpresoraController::class, 'update'])->name('impresoras.update');
+        Route::put('/impresoras/{impresora}/toggle', [ImpresoraController::class, 'toggleActiva'])->name('impresoras.toggle');
+    });
+
+    // Delete
+    Route::middleware('permission:impresoras.delete')->group(function () {
+        Route::delete('/impresoras/{impresora}', [ImpresoraController::class, 'destroy'])->name('impresoras.destroy');
+    });
+
+    // View routes
+    Route::middleware('permission:impresoras.view')->group(function () {
+        Route::get('/impresoras', [ImpresoraController::class, 'index'])->name('impresoras.index');
+        Route::get('/impresoras/ajax', [ImpresoraController::class, 'indexAjax'])->name('impresoras.ajax');
+        Route::get('/impresoras/manual', [ImpresoraController::class, 'manual'])->name('impresoras.manual');
+        Route::get('/impresoras/{impresora}', [ImpresoraController::class, 'show'])->name('impresoras.show');
+        Route::get('/impresoras/{impresora}/imprimir-ticket', [ImpresoraController::class, 'imprimirTicket'])->name('impresoras.imprimir-ticket');
+    });
+
+    // Plantillas de Impresion
+    Route::middleware('permission:impresoras.view')->group(function () {
+        Route::get('/plantilla-impresiones', [PlantillaImpresionController::class, 'index'])->name('plantilla-impresiones.index');
+    });
+    Route::middleware('permission:impresoras.edit')->group(function () {
+        Route::put('/plantilla-impresiones/{plantillaImpresion}/toggle', [PlantillaImpresionController::class, 'toggleActiva'])->name('plantilla-impresiones.toggle');
+        Route::put('/plantilla-impresiones/{plantillaImpresion}', [PlantillaImpresionController::class, 'update'])->name('plantilla-impresiones.update');
+    });
+
     // Configuración
     Route::middleware('permission:configuracion.view')->group(function () {
         Route::get('/configuracion', [ConfigurationController::class, 'index'])->name('configuracion.index');
@@ -793,6 +834,31 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/modulos/{modulo}', [ModuloController::class, 'update'])->name('modulos.update');
         Route::delete('/modulos/{modulo}', [ModuloController::class, 'destroy'])->name('modulos.destroy');
         Route::post('/modulos/{modulo}/toggle', [ModuloController::class, 'toggle'])->name('modulos.toggle');
+    });
+
+    // Plantillas de Factura / Impresión
+    Route::middleware('permission:plantillas.create')->group(function () {
+        Route::get('/plantillas/create', [PlantillaImpresionController::class, 'create'])->name('plantillas.create');
+        Route::post('/plantillas', [PlantillaImpresionController::class, 'store'])->name('plantillas.store');
+        Route::post('/plantillas/{plantilla}/duplicate', [PlantillaImpresionController::class, 'duplicate'])->name('plantillas.duplicate');
+        Route::post('/plantillas/{plantilla}/toggle', [PlantillaImpresionController::class, 'toggleActiva'])->name('plantillas.toggle');
+        Route::post('/plantillas/{plantilla}/set-default', [PlantillaImpresionController::class, 'setDefault'])->name('plantillas.set-default');
+        Route::delete('/plantillas/{plantilla}', [PlantillaImpresionController::class, 'destroy'])->name('plantillas.destroy');
+    });
+
+    Route::middleware('permission:plantillas.edit')->group(function () {
+        Route::get('/plantillas/{plantilla}/edit', [PlantillaImpresionController::class, 'edit'])->name('plantillas.edit');
+        Route::put('/plantillas/{plantilla}', [PlantillaImpresionController::class, 'update'])->name('plantillas.update');
+    });
+
+    Route::middleware('permission:plantillas.view')->group(function () {
+        Route::get('/plantillas', [PlantillaImpresionController::class, 'index'])->name('plantillas.index');
+        Route::get('/plantillas/ajax', [PlantillaImpresionController::class, 'indexAjax'])->name('plantillas.ajax');
+        Route::get('/plantillas/{plantilla}', [PlantillaImpresionController::class, 'show'])->name('plantillas.show');
+        Route::get('/plantillas/{plantilla}/preview', [PlantillaImpresionController::class, 'preview'])->name('plantillas.preview');
+        Route::get('/plantillas/{plantilla}/pdf-preview', [PlantillaImpresionController::class, 'previewPdf'])->name('plantillas.pdf-preview');
+        Route::get('/plantillas/{plantilla}/pdf-preview-compra', [PlantillaImpresionController::class, 'previewCompra'])->name('plantillas.pdf-preview-compra');
+        Route::get('/plantillas/{plantilla}/pdf-preview-historial', [PlantillaImpresionController::class, 'previewHistorial'])->name('plantillas.pdf-preview-historial');
     });
 
     // e-CF (Comprobante Fiscal Electrónico - DGII)
