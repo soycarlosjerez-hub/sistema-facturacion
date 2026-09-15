@@ -282,9 +282,6 @@ DGII_API_KEY_PROD=your-api-key
 # Storage
 FILESYSTEM_DISK=local          # local | s3
 
-# Two-Factor Authentication
-# Se habilita por usuario desde /two-factor
-
 # Backups
 BACKUP_PATH=storage/backups    # Directorio para backups (chmod 755)
 ```

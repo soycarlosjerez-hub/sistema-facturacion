@@ -4,11 +4,8 @@ namespace App\Services;
 
 use App\Models\Backup;
 use App\Models\BusinessInstance;
-use App\Models\PagoInstancia;
 use App\Models\InstanceApiKey;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class OwnerService
@@ -47,16 +44,14 @@ class OwnerService
 
     /**
      * Sanitizar la contraseña de la base de datos.
-     * Reemplaza caracteres peligrosos por su equivalente Unicode escape.
+     * Usa escapado seguro para evitar pérdida de caracteres.
      */
     private static function sanitizePassword(string $pass): string
     {
-        // Escapar caracteres problemáticos para shell
-        $dangerous = ['$', '`', '\\', "'", '"', '(', ')', '{', '}', '[', ']', ';', '|', '&', '>', '<', '!', '?', '*', '~', ' '];
-        foreach ($dangerous as $char) {
-            $pass = str_replace($char, '', $pass);
-        }
-        return $pass;
+        // Escapar para usar como valor en archivo .cnf de MySQL
+        // MySQL no necesita que se escapen caracteres especiales si se usa formato sin comillas
+        // pero el archivo .cnf no debe tener saltos de línea ni nulos
+        return str_replace(["\0"], '', $pass);
     }
 
     /**
@@ -80,6 +75,7 @@ class OwnerService
         $filename = str_replace(['..', '/', '\\', ';', '`', '$', "'", '"'], '', $filename);
         // Solo permitir alfanuméricos, guiones, guión bajo, puntos y coma
         $filename = preg_replace('/[^a-zA-Z0-9._\-]/', '_', $filename);
+
         // Limitar longitud
         return substr($filename, 0, 100);
     }
@@ -89,12 +85,13 @@ class OwnerService
      */
     public static function createApiKey(BusinessInstance $instance, string $name, int $userId): InstanceApiKey
     {
-        $rawKey = 'iak_' . Str::random(40);
+        $rawKey = 'iak_'.Str::random(40);
 
         return InstanceApiKey::create([
             'business_instance_id' => $instance->id,
             'name' => $name,
             'key' => hash('sha256', $rawKey),
+            'key_raw' => $rawKey,
             'is_active' => true,
             'created_by' => $userId,
         ]);
@@ -105,9 +102,51 @@ class OwnerService
      */
     public static function regenerateApiKey(InstanceApiKey $apiKey): string
     {
-        $rawKey = 'iak_' . Str::random(40);
-        $apiKey->update(['key' => hash('sha256', $rawKey)]);
+        $rawKey = 'iak_'.Str::random(40);
+        $apiKey->update([
+            'key' => hash('sha256', $rawKey),
+            'key_raw' => $rawKey,
+        ]);
+
         return $rawKey;
+    }
+
+    /**
+     * Toggle (activar/desactivar) una API key.
+     */
+    public static function toggleApiKey(InstanceApiKey $apiKey): bool
+    {
+        return $apiKey->update(['is_active' => ! $apiKey->is_active]);
+    }
+
+    /**
+     * Eliminar (soft delete) una API key.
+     */
+    public static function deleteApiKey(InstanceApiKey $apiKey): bool
+    {
+        return (bool) $apiKey->delete();
+    }
+
+    /**
+     * Restaurar una API key eliminada (restore soft delete).
+     */
+    public static function restoreApiKey(InstanceApiKey $apiKey): bool
+    {
+        if (! $apiKey->trashed()) {
+            return false;
+        }
+
+        return (bool) $apiKey->restore();
+    }
+
+    /**
+     * Eliminar permanentemente una API key (hard delete).
+     */
+    public static function forceDeleteApiKey(InstanceApiKey $apiKey): bool
+    {
+        $apiKey->forceDelete();
+
+        return true;
     }
 
     /**

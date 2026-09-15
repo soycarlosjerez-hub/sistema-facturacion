@@ -26,11 +26,12 @@ RUN pecl install redis \
 RUN pecl install swoole \
     && docker-php-ext-enable swoole
 
-# Instalar XDebug para debugging
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && echo "xdebug.mode=develop,debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+# Instalar XDebug solo para desarrollo (no en producción)
+# Descomentar solo para entornos de desarrollo o testing
+# RUN pecl install xdebug \
+#     && docker-php-ext-enable xdebug \
+#     && echo "xdebug.mode=develop,debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+#     && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Instalar Node.js y npm para compilación de assets
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \

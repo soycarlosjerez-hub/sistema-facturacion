@@ -2,20 +2,21 @@
 
 namespace Tests\Feature;
 
-use App\Models\Venta;
-use App\Models\DeliveryTracking;
-use App\Models\User;
-use App\Models\BusinessInstance;
-use App\Models\Sucursal;
-use App\Models\Caja;
-use App\Models\SesionCaja;
-use App\Models\Cliente;
-use App\Models\Producto;
-use App\Models\TipoVenta;
-use App\Models\NcfSequence;
 use App\Models\Almacen;
 use App\Models\AlmacenMovimiento;
+use App\Models\BusinessInstance;
 use App\Models\BusinessType;
+use App\Models\Caja;
+use App\Models\Cliente;
+use App\Models\DeliveryDriver;
+use App\Models\DeliveryTracking;
+use App\Models\Producto;
+use App\Models\SesionCaja;
+use App\Models\Sucursal;
+use App\Models\TipoVenta;
+use App\Models\User;
+use App\Models\Venta;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -23,6 +24,8 @@ use Tests\TestCase;
 
 class DeliveryMisEntregasTest extends TestCase
 {
+    use RefreshDatabase;
+
     /** @var array */
     protected $session = [];
 
@@ -30,18 +33,19 @@ class DeliveryMisEntregasTest extends TestCase
     {
         parent::setUp();
 
-        // Crear BusinessType primero
-        $businessType = BusinessType::create(['nombre' => 'Restaurante', 'activo' => true]);
+        // Datos base mínimos
+        $businessType = BusinessType::factory()->create();
 
-        // Crear datos base mínimos
         $businessInstance = BusinessInstance::create([
             'business_type_id' => $businessType->id,
+            'slug' => 'test-business',
             'nombre' => 'Test Business',
             'estado' => 'activo',
         ]);
 
         $sucursal = Sucursal::create([
             'tenant_id' => $businessInstance->id,
+            'codigo' => 'S001',
             'nombre' => 'Test Sucursal',
             'business_instance_id' => $businessInstance->id,
         ]);
@@ -50,14 +54,32 @@ class DeliveryMisEntregasTest extends TestCase
             'tenant_id' => $businessInstance->id,
             'sucursal_id' => $sucursal->id,
             'codigo' => '001',
+            'nombre' => 'Caja Principal',
             'business_instance_id' => $businessInstance->id,
+        ]);
+
+        $driverUser = User::create([
+            'business_instance_id' => $businessInstance->id,
+            'name' => 'Driver',
+            'email' => 'driver@test.com',
+            'password' => bcrypt('password'),
+            'email_verified_at' => now(),
+            'role' => 'driver',
+        ]);
+
+        DeliveryDriver::create([
+            'tenant_id' => $businessInstance->id,
+            'nombre' => 'Driver',
+            'apellido' => 'Test',
+            'activo' => true,
         ]);
 
         $sesion = SesionCaja::create([
             'tenant_id' => $businessInstance->id,
             'caja_id' => $caja->id,
-            'user_id' => null,
+            'user_id' => $driverUser->id,
             'estado' => 'abierta',
+            'fecha_apertura' => now(),
             'business_instance_id' => $businessInstance->id,
         ]);
 
@@ -72,12 +94,14 @@ class DeliveryMisEntregasTest extends TestCase
         $producto = Producto::create([
             'tenant_id' => $businessInstance->id,
             'nombre' => 'Producto Test',
+            'precio' => 150,
             'precio_compra' => 100,
             'precio_venta' => 150,
             'costo_promedio' => 100,
             'iva' => true,
             'codigo_barras' => '123456',
             'sku' => 'SKU001',
+            'stock' => 100,
             'business_instance_id' => $businessInstance->id,
         ]);
 
@@ -95,7 +119,7 @@ class DeliveryMisEntregasTest extends TestCase
             'tipo' => 'entrada',
             'cantidad' => 100,
             'nota' => 'Stock inicial',
-            'user_id' => null,
+            'user_id' => $driverUser->id,
             'business_instance_id' => $businessInstance->id,
         ]);
 
@@ -140,10 +164,12 @@ class DeliveryMisEntregasTest extends TestCase
 
     private function createDeliveryUser(): User
     {
+        static $counter = 0;
+        $counter++;
         $user = User::create([
             'business_instance_id' => $this->session['businessInstance']->id,
             'name' => 'Driver Test',
-            'email' => 'driver@test.com',
+            'email' => "driver${counter}@test.com",
             'password' => bcrypt('password'),
             'role' => 'delivery',
         ]);
@@ -154,6 +180,7 @@ class DeliveryMisEntregasTest extends TestCase
             'caja_id' => $this->session['caja']->id,
             'user_id' => $user->id,
             'estado' => 'abierta',
+            'fecha_apertura' => now(),
             'business_instance_id' => $this->session['businessInstance']->id,
         ]);
 
@@ -162,11 +189,18 @@ class DeliveryMisEntregasTest extends TestCase
 
     private function createDeliveryVenta(User $driver): Venta
     {
+        $deliveryDriver = DeliveryDriver::create([
+            'tenant_id' => $this->session['businessInstance']->id,
+            'nombre' => $driver->name,
+            'apellido' => 'Test',
+            'activo' => true,
+        ]);
+
         $venta = Venta::create([
             'tenant_id' => $this->session['businessInstance']->id,
             'business_instance_id' => $this->session['businessInstance']->id,
             'user_id' => $driver->id,
-            'driver_id' => $driver->id,
+            'driver_id' => $deliveryDriver->id,
             'tipo_orden' => 'delivery',
             'estado' => 'pendiente',
             'cliente_id' => $this->session['consumidorFinal']->id,
@@ -219,7 +253,7 @@ class DeliveryMisEntregasTest extends TestCase
             ->get(route('delivery-mis-entregas'));
 
         $response->assertOk();
-        $response->assertViewHas('ventas', function ($ventas) use ($venta1, $venta2) {
+        $response->assertViewHas('ventas', function ($ventas) {
             return $ventas->count() === 2;
         });
         $response->assertSee($venta1->total);
@@ -233,7 +267,7 @@ class DeliveryMisEntregasTest extends TestCase
 
         $tracking = DeliveryTracking::create([
             'venta_id' => $venta->id,
-            'driver_id' => $driver->id,
+            'driver_id' => (DeliveryDriver::where('nombre', '=', $driver->name)->first())->id,
             'status' => 'creado',
             'tenant_id' => $venta->tenant_id,
             'business_instance_id' => $venta->business_instance_id,
@@ -261,7 +295,7 @@ class DeliveryMisEntregasTest extends TestCase
 
         $tracking = DeliveryTracking::create([
             'venta_id' => $venta->id,
-            'driver_id' => $driver->id,
+            'driver_id' => (DeliveryDriver::where('nombre', '=', $driver->name)->first())->id,
             'status' => 'en_camino',
             'tenant_id' => $venta->tenant_id,
             'business_instance_id' => $venta->business_instance_id,
@@ -291,7 +325,7 @@ class DeliveryMisEntregasTest extends TestCase
 
         $tracking = DeliveryTracking::create([
             'venta_id' => $venta->id,
-            'driver_id' => $driver->id,
+            'driver_id' => (DeliveryDriver::where('nombre', '=', $driver->name)->first())->id,
             'status' => 'en_camino',
             'tenant_id' => $venta->tenant_id,
             'business_instance_id' => $venta->business_instance_id,
@@ -320,7 +354,7 @@ class DeliveryMisEntregasTest extends TestCase
 
         $tracking = DeliveryTracking::create([
             'venta_id' => $venta->id,
-            'driver_id' => $driver2->id,
+            'driver_id' => (DeliveryDriver::where('nombre', '=', $driver2->name)->first())->id,
             'status' => 'creado',
             'tenant_id' => $venta->tenant_id,
             'business_instance_id' => $venta->business_instance_id,
@@ -349,9 +383,9 @@ class DeliveryMisEntregasTest extends TestCase
             ->get(route('delivery-mis-entregas'));
 
         $response->assertOk();
-        $response->assertViewHas('ventas', function ($ventas) use ($driver1, $driver2) {
+        $response->assertViewHas('ventas', function ($ventas) use ($driver1) {
             // Solo debe ver las ventas asignadas a driver1
-            return $ventas->filter(fn($v) => $v->driver_id == $driver1->id)->count() === $ventas->count();
+            return $ventas->filter(fn ($v) => DeliveryDriver::where('nombre', '=', $driver1->name)->first()->id == $v->driver_id)->count() === $ventas->count();
         });
     }
 
@@ -378,7 +412,7 @@ class DeliveryMisEntregasTest extends TestCase
 
         $tracking = DeliveryTracking::create([
             'venta_id' => $venta->id,
-            'driver_id' => $driver->id,
+            'driver_id' => (DeliveryDriver::where('nombre', '=', $driver->name)->first())->id,
             'status' => 'creado',
             'tenant_id' => $venta->tenant_id,
             'business_instance_id' => $venta->business_instance_id,
@@ -398,7 +432,7 @@ class DeliveryMisEntregasTest extends TestCase
 
         $tracking = DeliveryTracking::create([
             'venta_id' => $venta->id,
-            'driver_id' => $driver->id,
+            'driver_id' => (DeliveryDriver::where('nombre', '=', $driver->name)->first())->id,
             'status' => 'creado',
             'tenant_id' => $venta->tenant_id,
             'business_instance_id' => $venta->business_instance_id,

@@ -1,0 +1,25 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.62.1",
+        "@types/node": "^26.4.0",
+        "alpinejs": "^3.4.2",
+        "axios": "^1.8.2",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^1.2.0",
+        "playwright": "^1.62.1",
+        "vite": "^6.2.4"
+    },
+    "dependencies": {
+        "@popperjs/core": "^2.11.8",
+        "bootstrap": "^5.3.8",
+        "chart.js": "^4.5.1",
+        "sass": "^1.99.0"
+    }
+}

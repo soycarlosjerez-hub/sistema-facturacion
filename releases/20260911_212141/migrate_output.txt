@@ -1,0 +1,50 @@
+﻿
+  Dropping all tables .................................................................................. 309.92ms DONE
+
+   INFO  Preparing database.  
+
+  Creating migration table .............................................................................. 24.88ms DONE
+
+   INFO  Running migrations.  
+
+  0001_01_01_000000_create_users_table ................................................................. 110.24ms DONE
+  0001_01_01_000001_create_cache_table .................................................................. 37.34ms DONE
+  0001_01_01_000002_create_jobs_table .................................................................. 104.83ms DONE
+  2025_01_01_000001_create_ai_conversations_table ....................................................... 69.53ms DONE
+  2025_01_01_000002_create_ai_messages_table ............................................................ 50.93ms DONE
+  2025_05_30_190929_add_role_to_users_table ............................................................. 15.42ms DONE
+  2025_06_02_161245_create_permission_tables ........................................................... 420.32ms DONE
+  2025_06_02_185246_create_productos_table .............................................................. 19.42ms DONE
+  2025_06_02_194321_create_clientes_table ............................................................... 19.86ms DONE
+  2025_06_02_224323_create_proveedores_table ............................................................ 42.60ms DONE
+  2025_06_05_172722_create_tipos_ventas_table ........................................................... 37.28ms DONE
+  2025_06_05_191043_create_tipos_compras_table .......................................................... 38.18ms DONE
+  2025_06_06_000000_create_compras_table ............................................................... 420.46ms DONE
+  2025_06_06_000000_create_ventas_table ................................................................ 297.81ms DONE
+  2025_06_06_000001_create_compra_detalles_table ....................................................... 157.59ms DONE
+  2025_06_06_000003_create_pagos_table .................................................................. 96.05ms DONE
+  2025_07_01_000001_add_itbis_to_productos_table ........................................................ 21.61ms DONE
+  2025_07_22_000001_alter_products_add_technology_fields ............................................... 167.05ms DONE
+  2025_07_22_000002_create_tecnicos_table ............................................................... 56.50ms FAIL
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[HY000]: General error: 1824 Failed to open the referenced table 'business_instances' (Connection: mysql, SQL: alter table `tecnicos` add constraint `tecnicos_tenant_id_foreign` foreign key (`tenant_id`) references `business_instances` (`id`) on delete set null)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:822
+    818Γûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    819Γûò                 );
+    820Γûò             }
+    821Γûò 
+  Γ₧£ 822Γûò             throw new QueryException(
+    823Γûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    824Γûò             );
+    825Γûò         }
+    826Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:568
+      PDOException::("SQLSTATE[HY000]: General error: 1824 Failed to open the referenced table 'business_instances'")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:568
+      PDOStatement::execute()
+

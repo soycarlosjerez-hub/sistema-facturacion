@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Storage;
 
 class EcfArchiveService
 {
-    public const RETENCION_ANIOS = 5;
+    /**
+     * Conservación fiscal DGII: 10 años. NUNCA reducir sin base legal.
+     */
+    public const RETENCION_ANIOS = 10;
 
     public const ARCHIVO_COMPRESION = 'zip';
 
@@ -86,22 +89,22 @@ class EcfArchiveService
             return null;
         }
 
-        $tempDir = sys_get_temp_dir() . '/ecf-archive-' . uniqid();
+        $tempDir = sys_get_temp_dir().'/ecf-archive-'.uniqid();
         @mkdir($tempDir, 0755, true);
 
         foreach ($documentos as $doc) {
-            $filename = $doc->encf . '_' . $doc->fecha_emision->format('YmdHis') . '.xml';
-            $filepath = $tempDir . DIRECTORY_SEPARATOR . $filename;
+            $filename = $doc->encf.'_'.$doc->fecha_emision->format('YmdHis').'.xml';
+            $filepath = $tempDir.DIRECTORY_SEPARATOR.$filename;
             file_put_contents($filepath, $doc->xml_content);
         }
 
-        $zipPath = $tempDir . DIRECTORY_SEPARATOR . "ecf_{$anio}_{$mes}.zip";
-        $zip = new \ZipArchive();
+        $zipPath = $tempDir.DIRECTORY_SEPARATOR."ecf_{$anio}_{$mes}.zip";
+        $zip = new \ZipArchive;
 
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
             foreach ($documentos as $doc) {
-                $filename = $doc->encf . '_' . $doc->fecha_emision->format('YmdHis') . '.xml';
-                $filepath = $tempDir . DIRECTORY_SEPARATOR . $filename;
+                $filename = $doc->encf.'_'.$doc->fecha_emision->format('YmdHis').'.xml';
+                $filepath = $tempDir.DIRECTORY_SEPARATOR.$filename;
                 $zip->addFile($filepath, $filename);
             }
             $zip->close();
@@ -114,6 +117,22 @@ class EcfArchiveService
 
     public function limpiarArchivosAnterioresA(\DateTimeInterface $fechaLimite): array
     {
+        // Salvaguarda fiscal: prohibido eliminar evidencia dentro del período
+        // de conservación de 10 años (DGII). Solo se permite limpiar lo anterior.
+        $minimoPermitido = now()->subYears(self::RETENCION_ANIOS);
+        if ($fechaLimite > $minimoPermitido) {
+            Log::warning('e-CF: limpieza bloqueada dentro del período de conservación fiscal', [
+                'fecha_limite' => $fechaLimite->format('Y-m-d'),
+                'minimo_permitido' => $minimoPermitido->format('Y-m-d'),
+            ]);
+
+            return [
+                'success' => false,
+                'mensaje' => 'Bloqueado: la DGII exige conservar los XML por '.self::RETENCION_ANIOS.' años. Límite mínimo permitido: '.$minimoPermitido->format('Y-m-d'),
+                'eliminados' => 0,
+            ];
+        }
+
         $documentos = EcfDocumento::where('fecha_emision', '<', $fechaLimite)
             ->where('xml_archivado', true)
             ->get();
@@ -160,13 +179,13 @@ class EcfArchiveService
             'tamano_estimado_bytes' => (int) $tamanoEstimado,
             'tamano_estimado_mb' => round((int) $tamanoEstimado / 1024 / 1024, 2),
             'por_anio' => $porAnio,
-            'proximo_archivado_sugerido' => now()->modify('-' . (self::RETENCION_ANIOS - 1) . ' years')->format('Y-m-d'),
+            'proximo_archivado_sugerido' => now()->modify('-'.(self::RETENCION_ANIOS - 1).' years')->format('Y-m-d'),
         ];
     }
 
     private function archivarIndividual(EcfDocumento $doc): void
     {
-        if (!$doc->xml_content) {
+        if (! $doc->xml_content) {
             return;
         }
 
@@ -174,12 +193,12 @@ class EcfArchiveService
         $mes = $doc->fecha_emision->format('m');
         $carpeta = "archive/{$anio}/{$mes}";
 
-        if (!Storage::disk('public')->exists($carpeta)) {
+        if (! Storage::disk('public')->exists($carpeta)) {
             Storage::disk('public')->makeDirectory($carpeta, 0755, true);
         }
 
-        $filename = $doc->encf . '_' . $doc->fecha_emision->format('YmdHis') . '.xml';
-        $path = $carpeta . DIRECTORY_SEPARATOR . $filename;
+        $filename = $doc->encf.'_'.$doc->fecha_emision->format('YmdHis').'.xml';
+        $path = $carpeta.DIRECTORY_SEPARATOR.$filename;
 
         Storage::disk('public')->put($path, $doc->xml_content);
 
@@ -192,13 +211,13 @@ class EcfArchiveService
 
     private function limpiarDirectorioTemporal(string $dir): void
     {
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             return;
         }
 
         $files = array_diff(scandir($dir), ['.', '..']);
         foreach ($files as $file) {
-            $filepath = $dir . DIRECTORY_SEPARATOR . $file;
+            $filepath = $dir.DIRECTORY_SEPARATOR.$file;
             if (is_file($filepath)) {
                 @unlink($filepath);
             }

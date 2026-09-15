@@ -4,58 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket Venta {{ str_pad($venta->id, 6, '0', STR_PAD_LEFT) }}</title>
+    <?php
+        $printConfig = [
+            'paperWidth' => 80,
+            'paperSize' => '80mm',
+            'fontSize' => 11,
+            'bodyFontSize' => 12,
+            'headerFontSize' => 13,
+            'lineFontSize' => 10,
+            'totalsFontSize' => 10,
+            'grandFontSize' => 14,
+            'footerFontSize' => 9,
+            'ticketPadding' => 2,
+            'autoPrint' => false,
+            'impresion' => 'normal',
+            'densidad' => 'normal',
+            'copies' => 1,
+        ];
+
+        if ($impresora && $impresora->papel_tamano) {
+            switch ($impresora->papel_tamano) {
+                case '58mm':
+                    $printConfig['paperWidth'] = 58;
+                    $printConfig['paperSize'] = '58mm';
+                    $printConfig['fontSize'] = 9;
+                    $printConfig['bodyFontSize'] = 10;
+                    $printConfig['headerFontSize'] = 11;
+                    $printConfig['lineFontSize'] = 9;
+                    $printConfig['totalsFontSize'] = 9;
+                    $printConfig['grandFontSize'] = 12;
+                    $printConfig['footerFontSize'] = 8;
+                    break;
+                case '80mm':
+                    $printConfig['paperWidth'] = 80;
+                    $printConfig['paperSize'] = '80mm';
+                    $printConfig['fontSize'] = 11;
+                    $printConfig['bodyFontSize'] = 12;
+                    $printConfig['headerFontSize'] = 13;
+                    $printConfig['lineFontSize'] = 10;
+                    $printConfig['totalsFontSize'] = 10;
+                    $printConfig['grandFontSize'] = 14;
+                    $printConfig['footerFontSize'] = 9;
+                    break;
+                case 'A4':
+                    $printConfig['paperWidth'] = 210;
+                    $printConfig['paperSize'] = 'A4';
+                    $printConfig['fontSize'] = 12;
+                    $printConfig['bodyFontSize'] = 12;
+                    $printConfig['headerFontSize'] = 16;
+                    $printConfig['lineFontSize'] = 11;
+                    $printConfig['totalsFontSize'] = 11;
+                    $printConfig['grandFontSize'] = 15;
+                    $printConfig['footerFontSize'] = 9;
+                    break;
+            }
+        }
+
+        if ($impresora && $impresora->auto_imprimir_ventas) {
+            $printConfig['autoPrint'] = true;
+        }
+
+        if ($impresora && $impresora->configuracion) {
+            $_cfg = (array) $impresora->configuracion;
+            if (!empty($_cfg['font_size'])) {
+                $printConfig['fontSize'] = (int) $_cfg['font_size'];
+                $printConfig['bodyFontSize'] = (int) $_cfg['font_size'];
+                $printConfig['headerFontSize'] = (int) $_cfg['font_size'] + 2;
+                $printConfig['lineFontSize'] = (int) $_cfg['font_size'] - 1;
+                $printConfig['totalsFontSize'] = (int) $_cfg['font_size'];
+                $printConfig['grandFontSize'] = (int) $_cfg['font_size'] + 2;
+                $printConfig['footerFontSize'] = (int) $_cfg['font_size'] - 2;
+            }
+            if (!empty($_cfg['copias']) && $_cfg['copias'] > 1) {
+                $printConfig['copies'] = (int) $_cfg['copias'];
+            }
+            if (!empty($_cfg['impresion'])) {
+                $printConfig['impresion'] = $_cfg['impresion'];
+            }
+            if (!empty($_cfg['margenes'])) {
+                if (isset($_cfg['margenes']['top'])) {
+                    $printConfig['ticketPadding'] = (int) $_cfg['margenes']['top'];
+                }
+                if (isset($_cfg['margenes']['right'])) {
+                    $printConfig['ticketPaddingRight'] = (int) $_cfg['margenes']['right'];
+                }
+                if (isset($_cfg['margenes']['bottom'])) {
+                    $printConfig['ticketPaddingBottom'] = (int) $_cfg['margenes']['bottom'];
+                }
+                if (isset($_cfg['margenes']['left'])) {
+                    $printConfig['ticketPaddingLeft'] = (int) $_cfg['margenes']['left'];
+                }
+            }
+        }
+
+        $autoPrintName = $impresora ? $impresora->nombre : '';
+    ?>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: {{ $printConfig['bodyFontSize'] }}px;
+            line-height: {{ $printConfig['impresion'] === 'compacto' ? 1.1 : ($printConfig['impresion'] === 'espaciado' ? 1.6 : 1.4) }};
             color: #000;
             background: #fff;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         .ticket {
-            width: 80mm;
+            width: {{ $printConfig['paperWidth'] }}mm;
             margin: 0 auto;
-            padding: 2mm;
-            font-size: 11px;
+            padding-top: {{ $printConfig['ticketPadding'] ?? 3 }}mm;
+            padding-right: {{ $printConfig['ticketPaddingRight'] ?? 2 }}mm;
+            padding-bottom: {{ $printConfig['ticketPaddingBottom'] ?? 3 }}mm;
+            padding-left: {{ $printConfig['ticketPaddingLeft'] ?? 2 }}mm;
+            font-size: {{ $printConfig['fontSize'] }}px;
         }
         .center { text-align: center; }
         .bold { font-weight: bold; }
         .separator { border-top: 1px dashed #000; margin: 4px 0; }
         .separator-double { border-top: 2px solid #000; margin: 4px 0; }
         
-        .header h1 { font-size: 16px; margin-bottom: 2px; }
-        .header p { font-size: 10px; }
+        .header h1 { font-size: {{ $printConfig['headerFontSize'] }}px; margin-bottom: 2px; }
+        .header p { font-size: {{ $printConfig['lineFontSize'] }}px; }
         
         .section { margin: 6px 0; }
-        .row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 11px; }
+        .row { display: flex; justify-content: space-between; margin: 2px 0; font-size: {{ $printConfig['lineFontSize'] }}px; }
         .row .label { font-weight: bold; }
         
         .items-table { width: 100%; border-spacing: 0; margin: 6px 0; }
-        .items-table tr { border-bottom: 1px dotted #ccc; }
+        .items-table tr { border-bottom: 1px solid #000; }
         .items-table td { padding: 3px 0; vertical-align: top; }
         .items-table .name { width: 55%; }
         .items-table .qty { width: 20%; text-align: center; }
         .items-table .total { width: 25%; text-align: right; }
         
         .totals { margin: 8px 0; }
-        .totals .row { font-size: 11px; margin: 2px 0; }
-        .totals .grand { font-size: 15px; font-weight: bold; border-top: 2px solid #000; padding-top: 4px; margin-top: 4px; }
+        .totals .row { font-size: {{ $printConfig['totalsFontSize'] }}px; margin: 2px 0; }
+        .totals .grand { font-size: {{ $printConfig['grandFontSize'] }}px; font-weight: bold; border-top: 2px solid #000; padding-top: 4px; margin-top: 4px; }
         
-        .footer { text-align: center; margin-top: 12px; padding-top: 8px; border-top: 1px dashed #000; font-size: 10px; }
+        .footer { text-align: center; margin-top: 12px; padding-top: 8px; border-top: 1px dashed #000; font-size: {{ $printConfig['footerFontSize'] }}px; }
         .footer p { margin: 2px 0; }
         
         .ncf, .encf { text-align: center; margin: 4px 0; font-family: monospace; }
         .ncf span, .encf span { display: block; font-weight: bold; letter-spacing: 1px; }
         
         @media print {
-            body { margin: 0; padding: 0; background: #fff; }
+            body { margin: 0; padding: 0; background: #fff !important; color: #000 !important; }
             .ticket { padding: 0; width: 100%; }
-            @page { margin: 0; size: 80mm auto; }
+            * { color: #000 !important; background-color: transparent !important; }
+            .separator, .separator-double { border-color: #000 !important; }
+            .items-table tr { border-bottom-color: #000 !important; }
+            @page { margin: 0; size: {{ $printConfig['paperSize'] }} auto; }
         }
         
         @media (max-width: 600px) {
-            body { font-size: 10px; }
+            body { font-size: {{ $printConfig['lineFontSize'] }}px; }
             .ticket { padding: 1mm; }
         }
     </style>
@@ -142,12 +245,12 @@
                 </tr>
                 @if(!empty($d->producto->garantia_dias) && $d->producto->garantia_dias > 0)
                 <tr>
-                    <td colspan="3" style="font-size: 0.65rem; color: #0d6efd; padding-left: 24px;">Garantia: {{ $d->producto->garantia_meses }} meses</td>
+                    <td colspan="3" style="font-size: 0.65rem; font-weight: bold; padding-left: 24px;">Garantia: {{ $d->producto->garantia_meses }} meses</td>
                 </tr>
                 @endif
                 @if($d->notas)
                 <tr>
-                    <td colspan="3" style="font-size: 0.65rem; font-style: italic; color: #666; padding-left: 24px;">{{ $d->notas }}</td>
+                    <td colspan="3" style="font-size: 0.65rem; padding-left: 24px;">{{ $d->notas }}</td>
                 </tr>
                 @endif
             @endforeach
@@ -174,7 +277,7 @@
             </div>
             @endif
             @if($venta->detalles->where('tipo_linea', '!=', 'delivery')->contains(fn($d) => $d->sin_itbis))
-            <div class="row" style="color:#dc3545;font-weight:700;">
+            <div class="row" style="font-weight:700;">
                 <span>Incluye líneas sin ITBIS</span>
                 <span></span>
             </div>
@@ -225,15 +328,15 @@
         @php $slogan = \App\Models\SystemSetting::get('sistema_slogan'); @endphp
         @if($slogan)
         <div class="separator"></div>
-        <p style="font-style:italic; color:#666; text-align:center; font-size:9px; margin:6px 0;">
+        <p style="font-style:italic; text-align:center; font-size:9px; margin:6px 0;">
             {{ $slogan }}
         </p>
         @endif
 
         @if($venta->ncf)
         <div class="separator"></div>
-        <div class="ncf" style="background: #f0f0f0; padding: 4px; margin: 6px 0;">
-            <span style="font-size: 9px; color: #666;">NCF</span>
+        <div class="ncf" style="padding: 4px; margin: 6px 0; border: 1px solid #000;">
+            <span style="font-size: 9px;">NCF</span>
             <span>{{ $venta->ncf }}</span>
         </div>
         @endif
@@ -243,15 +346,15 @@
         @endphp
         @if($ecfActual)
         <div class="separator"></div>
-        <div class="encf" style="background: {{ $ecfActual->estado == 'aprobado' ? '#e8f5e9' : '#fff3e0' }}; padding: 4px; margin: 6px 0; border: 1px solid {{ $ecfActual->estado == 'aprobado' ? '#4caf50' : '#ff9800' }}">
-            <span style="font-size: 9px; color: #666;">e-CF {{ strtoupper($ecfActual->estado) }}</span>
+        <div class="encf" style="padding: 4px; margin: 6px 0; border: 2px solid #000;">
+            <span style="font-size: 9px;">e-CF {{ strtoupper($ecfActual->estado) }}</span>
             <span>{{ $ecfActual->encf }}</span>
         </div>
         @endif
 
         @if(count($garantiaTerminos) > 0)
         <div class="separator"></div>
-        <div style="font-size: 0.6rem; color: #333; line-height: 1.4; padding: 4px 0;">
+        <div style="font-size: 0.6rem; line-height: 1.4; padding: 4px 0;">
             <strong style="font-size: 0.65rem; display: block; margin-bottom: 4px;">Términos de Garantía:</strong>
             @foreach($garantiaTerminos as $t)
                 <strong style="font-size: 0.6rem; display: block; margin-top: 6px;">{{ $t['producto'] }}:</strong>
@@ -263,13 +366,38 @@
         <div class="footer">
             <p><strong>¡Gracias por su compra!</strong></p>
             <p>Conserva este ticket como comprobante</p>
-            <p style="margin-top: 8px; font-size: 9px; color: #666;">{{ now()->format('d/m/Y H:i:s') }}</p>
+            <p style="margin-top: 8px; font-size: 9px;">{{ now()->format('d/m/Y H:i:s') }}</p>
         </div>
     </div>
 
     <script>
         window.addEventListener('load', function() {
-            setTimeout(function() { window.print(); }, 300);
+            var autoPrint = {{ json_encode($printConfig['autoPrint']) }};
+            var impresoraNombre = '{{ $autoPrintName }}';
+            var copies = {{ $printConfig['copies'] ?? 1 }};
+            var densidad = '{{ $printConfig['densidad'] ?? 'normal' }}';
+
+            if (densidad === 'alta') {
+                document.querySelectorAll('.ticket').forEach(function(el) {
+                    el.style.filter = 'brightness(1.15) contrast(1.1)';
+                });
+            } else if (densidad === 'baja') {
+                document.querySelectorAll('.ticket').forEach(function(el) {
+                    el.style.filter = 'brightness(0.85) contrast(0.9)';
+                });
+            }
+
+            if (autoPrint && impresoraNombre) {
+                function doPrint() {
+                    window.print();
+                }
+                if (copies > 1) {
+                    for (var i = 1; i < copies; i++) {
+                        setTimeout(function() { window.print(); }, i * 2000);
+                    }
+                }
+                setTimeout(doPrint, 300);
+            }
         });
     </script>
 </body>

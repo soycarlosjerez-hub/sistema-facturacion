@@ -22,17 +22,17 @@ return new class extends Migration
         $mysqli = new \mysqli($host, $username, $password, $database, (int) $port);
 
         if ($mysqli->connect_error) {
-            throw new \RuntimeException('MySQLi connection failed: ' . $mysqli->connect_error);
+            throw new \RuntimeException('MySQLi connection failed: '.$mysqli->connect_error);
         }
 
         $mysqli->set_charset('utf8mb4');
 
         // Drop existing triggers first (idempotent)
-        $mysqli->query("DROP TRIGGER IF EXISTS sesion_cajas_before_insert");
-        $mysqli->query("DROP TRIGGER IF EXISTS sesion_cajas_before_update");
+        $mysqli->query('DROP TRIGGER IF EXISTS sesion_cajas_before_insert');
+        $mysqli->query('DROP TRIGGER IF EXISTS sesion_cajas_before_update');
 
         // Trigger BEFORE INSERT: reject if another open session exists for this caja
-        $insertSql = <<<SQL
+        $insertSql = <<<'SQL'
             CREATE TRIGGER sesion_cajas_before_insert
             BEFORE INSERT ON sesion_cajas
             FOR EACH ROW
@@ -50,12 +50,12 @@ return new class extends Migration
             END
         SQL;
 
-        if (!$mysqli->query($insertSql)) {
-            throw new \RuntimeException('Failed to create insert trigger: ' . $mysqli->error);
+        if (! $mysqli->query($insertSql)) {
+            throw new \RuntimeException('Failed to create insert trigger: '.$mysqli->error);
         }
 
         // Trigger BEFORE UPDATE: reject reopening if another open session exists
-        $updateSql = <<<SQL
+        $updateSql = <<<'SQL'
             CREATE TRIGGER sesion_cajas_before_update
             BEFORE UPDATE ON sesion_cajas
             FOR EACH ROW
@@ -73,8 +73,8 @@ return new class extends Migration
             END
         SQL;
 
-        if (!$mysqli->query($updateSql)) {
-            throw new \RuntimeException('Failed to create update trigger: ' . $mysqli->error);
+        if (! $mysqli->query($updateSql)) {
+            throw new \RuntimeException('Failed to create update trigger: '.$mysqli->error);
         }
 
         $mysqli->close();
@@ -97,7 +97,7 @@ return new class extends Migration
                 ->orderByDesc('fecha_apertura')
                 ->value('id');
 
-            if (!$sesionReciente) {
+            if (! $sesionReciente) {
                 continue;
             }
 
@@ -106,9 +106,11 @@ return new class extends Migration
                 ->where('estado', 'abierta')
                 ->where('id', '!=', $sesionReciente)
                 ->update([
-                    'estado'       => 'cerrada',
+                    'estado' => 'cerrada',
                     'fecha_cierre' => now(),
-                    'notas'        => DB::raw("CONCAT(COALESCE(NULLIF(notas, ''), ''), '[auto] Cerrada por duplicado. Conservada sesión #{$sesionReciente}.')"),
+                    'notas' => DB::getDriverName() === 'mysql'
+                        ? DB::raw("CONCAT(COALESCE(NULLIF(notas, ''), ''), '[auto] Cerrada por duplicado. Conservada sesión #{$sesionReciente}.')")
+                        : DB::raw("COALESCE(notas, '') || '[auto] Cerrada por duplicado. Conservada sesión #{$sesionReciente}.'"),
                 ]);
         }
 
@@ -124,7 +126,7 @@ return new class extends Migration
             return;
         }
 
-        DB::statement("DROP TRIGGER IF EXISTS sesion_cajas_before_insert");
-        DB::statement("DROP TRIGGER IF EXISTS sesion_cajas_before_update");
+        DB::statement('DROP TRIGGER IF EXISTS sesion_cajas_before_insert');
+        DB::statement('DROP TRIGGER IF EXISTS sesion_cajas_before_update');
     }
 };

@@ -13,15 +13,15 @@ class CheckInstanceBlocked
         $user = Auth::user();
 
         try {
-            if (!$user || $user->hasRole('owner') || $user->hasRole('root')) {
+            if (! $user || $user->hasRole('owner') || $user->hasRole('root')) {
                 return $next($request);
             }
         } catch (\Throwable $e) {
             report($e);
         }
 
-        // Las rutas de suscripción y la pantalla de bloqueo siempre deben ser accesibles.
-        if ($request->routeIs('suscripcion.*') || $request->routeIs('instancia-bloqueada')) {
+        // Las rutas de suscripción, la pantalla de bloqueo y el logout siempre deben ser accesibles.
+        if ($request->routeIs('suscripcion.*') || $request->routeIs('instancia-bloqueada') || $request->routeIs('guest.logout') || $request->is('logout')) {
             return $next($request);
         }
 
@@ -29,7 +29,7 @@ class CheckInstanceBlocked
             $instance = $user->businessInstance;
             if ($instance && $instance->bloqueado) {
                 return redirect()->route('instancia-bloqueada')
-                    ->with('error', 'Esta instancia ha sido bloqueada por falta de pago. Motivo: ' . ($instance->motivo_bloqueo ?? 'Suscripción vencida'));
+                    ->with('error', 'Esta instancia ha sido bloqueada por falta de pago. Motivo: '.($instance->motivo_bloqueo ?? 'Suscripción vencida'));
             }
         }
 

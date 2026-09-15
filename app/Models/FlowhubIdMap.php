@@ -21,11 +21,16 @@ class FlowhubIdMap extends Model
         return $this->belongsTo(BusinessInstance::class, 'tenant_id');
     }
 
-    public static function resolve(string $flowId, string $model): ?int
+    public static function resolve(string $flowId, string $model, ?int $tenantId = null): ?int
     {
-        return static::where('flow_id', $flowId)
-            ->where('model', $model)
-            ->value('real_id');
+        $query = static::where('flow_id', $flowId)
+            ->where('model', $model);
+        
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+        
+        return $query->value('real_id');
     }
 
     public static function store(string $flowId, string $model, int $realId, int $tenantId): void

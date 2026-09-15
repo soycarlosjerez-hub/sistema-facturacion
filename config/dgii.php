@@ -56,6 +56,11 @@ return [
             'client_key_path' => env('DGII_CERT_CLIENT_KEY_SANDBOX'),
             'client_key_pass' => env('DGII_CERT_CLIENT_KEY_PASS_SANDBOX', ''),
         ],
+        'qa' => [
+            'client_cert_path' => env('DGII_CERT_CLIENT_CERT_QA'),
+            'client_key_path' => env('DGII_CERT_CLIENT_KEY_QA'),
+            'client_key_pass' => env('DGII_CERT_CLIENT_KEY_PASS_QA', ''),
+        ],
         'produccion' => [
             'client_cert_path' => env('DGII_CERT_CLIENT_CERT_PROD'),
             'client_key_path' => env('DGII_CERT_CLIENT_KEY_PROD'),
@@ -66,6 +71,7 @@ return [
     'api_key' => [
         'default' => env('DGII_API_KEY', ''),
         'sandbox' => env('DGII_API_KEY_SANDBOX', ''),
+        'qa' => env('DGII_API_KEY_QA', ''),
         'produccion' => env('DGII_API_KEY_PROD', ''),
     ],
 ];

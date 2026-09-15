@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Duplicada: si la tabla ya existe (migración anterior), no recrear.
+        if (Schema::hasTable('visitas_programadas')) {
+            return;
+        }
+
         Schema::create('visitas_programadas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('contrato_mantenimiento_id')->nullable()->constrained('contratos_mantenimiento')->nullOnDelete();

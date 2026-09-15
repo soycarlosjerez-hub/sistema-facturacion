@@ -777,7 +777,7 @@ body.dark-mode .endpoint-card:hover {
             <p>FlowHub-compatible API para e-commerce. Usa tu <code>Instance API Key</code> (<code>iak_*</code>) para acceder a los datos de tu instancia. Cada key trae datos de una sola tienda — productos, carritos, clientes, ventas y más.</p>
         </div>
 
-        <?php $__empty_0 = true; $__currentLoopData = $modules; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $module): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+        <?php $__empty_1 = true; $__currentLoopData = $modules; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $module): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
         <?php
             $moduleId = preg_replace('/[^a-z0-9]+/', '-', strtolower($module['name']));
         ?>
@@ -999,7 +999,7 @@ body.dark-mode .endpoint-card:hover {
             </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </section>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
         <div class="api-empty">
             <i class="bi bi-file-earmark-code"></i>
             <h3>No hay documentación disponible</h3>

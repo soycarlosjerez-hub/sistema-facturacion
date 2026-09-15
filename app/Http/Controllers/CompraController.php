@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ComprasExport;
 use App\Http\Requests\StoreCompraRequest;
 use App\Http\Requests\UpdateCompraRequest;
-use App\Exports\ComprasExport;
 use App\Models\Almacen;
 use App\Models\BusinessInstance;
 use App\Models\Compra;
@@ -13,6 +13,7 @@ use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\TipoCompra;
 use App\Services\Ecf\EcfService;
+use App\Services\PlantillaPdfGenerator;
 use App\Services\PurchaseService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -38,12 +39,13 @@ class CompraController extends Controller
         $user = Auth::user();
         $businessInstance = BusinessInstance::find($user->business_instance_id);
 
-        if (!$businessInstance) {
+        if (! $businessInstance) {
             return 'productos';
         }
 
         // Prioridad: configuración del negocio sobre el tipo de negocio base
         $config = $businessInstance->getDefaultConfig();
+
         return $config['facturacion_modo'] ?? 'productos';
     }
 
@@ -63,9 +65,9 @@ class CompraController extends Controller
         if ($request->filled('proveedor')) {
             $termino = trim($request->proveedor);
             $query->whereHas('proveedor', function ($q) use ($termino) {
-                $q->where('nombre', 'like', '%' . $termino . '%')
-                  ->orWhere('rnc_cedula', 'like', '%' . $termino . '%')
-                  ->orWhere('rnc', 'like', '%' . $termino . '%');
+                $q->where('nombre', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc_cedula', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc', 'like', '%'.$termino.'%');
             });
         }
 
@@ -99,7 +101,19 @@ class CompraController extends Controller
     public function show(Compra $compra)
     {
         $compra->load(['detalles.producto', 'detalles.equipo', 'proveedor', 'almacen', 'tipoCompra', 'user']);
+
         return view('compras.show', compact('compra'));
+    }
+
+    public function pdfIndividual($id)
+    {
+        $compra = Compra::with(['proveedor', 'detalles.producto', 'almacen', 'tipoCompra', 'user'])
+            ->where('tenant_id', Auth::user()->business_instance_id)
+            ->findOrFail($id);
+
+        $pdf = app(PlantillaPdfGenerator::class)->generarCompra($compra);
+
+        return $pdf->download('compra_'.$compra->id.'.pdf');
     }
 
     public function exportExcel(Request $request)
@@ -119,6 +133,7 @@ class CompraController extends Controller
     {
         $compras = $this->buildFilteredQuery($request)->get();
         $pdf = Pdf::loadView('compras.all-pdf', compact('compras'))->setPaper('a4', 'landscape');
+
         return $pdf->download('compras_reporte.pdf');
     }
 
@@ -136,7 +151,7 @@ class CompraController extends Controller
 
             return redirect()->route('compras.show', $compra)->with('success', $message);
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error al registrar la compra: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error al registrar la compra: '.$e->getMessage());
         }
     }
 
@@ -172,7 +187,7 @@ class CompraController extends Controller
 
             return redirect()->route('compras.show', $compra)->with('success', $message);
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error al actualizar la compra: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error al actualizar la compra: '.$e->getMessage());
         }
     }
 
@@ -188,13 +203,14 @@ class CompraController extends Controller
 
             if (! $compra->detalles()->exists()) {
                 $compra->delete();
+
                 return redirect()->route('compras.index')
                     ->with('success', 'Detalle eliminado. La compra se eliminó por no tener más productos.');
             }
 
             return redirect()->route('compras.edit', $compra)->with('success', 'Producto eliminado de la compra.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar el detalle: ' . $e->getMessage());
+            return back()->with('error', 'Error al eliminar el detalle: '.$e->getMessage());
         }
     }
 
@@ -203,9 +219,10 @@ class CompraController extends Controller
         try {
             $facturacion_modo = $this->getFacturacionModo();
             $this->purchaseService->deletePurchase($compra, $facturacion_modo);
+
             return redirect()->route('compras.index')->with('success', 'Compra eliminada y stock revertido.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar la compra: ' . $e->getMessage());
+            return back()->with('error', 'Error al eliminar la compra: '.$e->getMessage());
         }
     }
 
@@ -214,17 +231,23 @@ class CompraController extends Controller
         if ($compra->ecf_documento_id) {
             return back()->with('error', 'Esta compra ya tiene un e-CF E41 asociado.');
         }
-        if (!$compra->puede_generar_ecf) {
+        if (! $compra->puede_generar_ecf) {
             return back()->with('error', 'El proveedor debe tener un RNC registrado para generar e-CF E41.');
         }
 
         try {
             $ecfService = app(EcfService::class);
             $ecf = $ecfService->generarE41($compra);
+
+            if ($ecf->estado !== 'aprobado') {
+                return redirect()->route('ecf.show', $ecf)
+                    ->with('warning', 'e-CF E41 generado pero quedó en estado "'.$ecf->estado.'" — reintente el envío desde el módulo ECF.');
+            }
+
             return redirect()->route('ecf.show', $ecf)
                 ->with('success', 'e-CF E41 generado exitosamente para la compra.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al generar e-CF: ' . $e->getMessage());
+            return back()->with('error', 'Error al generar e-CF: '.$e->getMessage());
         }
     }
 
@@ -234,6 +257,7 @@ class CompraController extends Controller
         if ($sucursalId = session('sucursal_id')) {
             $query->where('sucursal_id', $sucursalId);
         }
+
         return $query->get();
     }
 
@@ -253,9 +277,9 @@ class CompraController extends Controller
         if ($request->filled('proveedor')) {
             $termino = trim($request->proveedor);
             $query->whereHas('proveedor', function ($q) use ($termino) {
-                $q->where('nombre', 'like', '%' . $termino . '%')
-                  ->orWhere('rnc_cedula', 'like', '%' . $termino . '%')
-                  ->orWhere('rnc', 'like', '%' . $termino . '%');
+                $q->where('nombre', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc_cedula', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc', 'like', '%'.$termino.'%');
             });
         }
 

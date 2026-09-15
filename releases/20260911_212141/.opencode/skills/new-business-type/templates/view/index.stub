@@ -1,0 +1,112 @@
+@extends('layouts.app')
+
+@section('title', '{{ENTITY_LABEL_PLURAL}}')
+
+@section('content')
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1"><i class="bi {{ICON}} me-2"></i>{{ENTITY_LABEL_PLURAL}}</h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">{{ENTITY_LABEL_PLURAL}}</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{{ route('{{ROUTE_PREFIX}}.create') }}" class="btn btn-primary rounded-pill">
+            <i class="bi bi-plus-lg me-1"></i> Nuevo {{ENTITY_LABEL}}
+        </a>
+    </div>
+
+    {{-- Filters --}}
+    <form method="GET" class="mb-3">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="search" class="form-control" placeholder="Buscar..." value="{{ request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Filtrar</button>
+            @if(request('search'))
+                <a href="{{ route('{{ROUTE_PREFIX}}.index') }}" class="btn btn-outline-danger">Limpiar</a>
+            @endif
+        </div>
+    </form>
+
+    {{-- Messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    {{-- Table --}}
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0" id="{{TABLE_TABLE_ID}}">
+                <thead class="table-light">
+                    <tr>
+{{INDEX_COLUMNS}}
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($items as $item)
+                        <tr>
+{{INDEX_ROW_CONTENT}}
+                            <td class="text-end">
+                                <a href="{{ route('{{ROUTE_PREFIX}}.show', $item) }}" class="btn btn-sm btn-outline-info rounded-pill" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ route('{{ROUTE_PREFIX}}.edit', $item) }}" class="btn btn-sm btn-outline-warning rounded-pill" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="{{ route('{{ROUTE_PREFIX}}.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar {{ENTITY_LABEL}}?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="{{COLUMN_COUNT}}" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                No se encontraron {{ENTITY_LABEL_PLURAL.toLowerCase()}}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- Pagination --}}
+    <div class="mt-3">
+        {{ $items->links() }}
+    </div>
+</div>
+@endsection
+
+@push('styles')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+@endpush
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#{{TABLE_TABLE_ID}}').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+        },
+        responsive: true,
+        pageLength: 15,
+        order: [[0, 'desc']]
+    });
+});
+</script>
+@endpush

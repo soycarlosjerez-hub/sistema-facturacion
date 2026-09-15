@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+.env
+.env.*
+.env.example
+storage/*
+vendor
+node_modules
+nyc_output
+coverage
+tests
+.dockerignore
+.git
+README.md
+docker-compose.override.yml

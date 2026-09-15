@@ -71,7 +71,7 @@
                     <h5 class="fw-bold mb-0"><i class="bi bi-trophy me-2" style="color:var(--accent);"></i>Top productos</h5>
                     <span class="ui-badge ui-badge-info"><?php echo e(now()->translatedFormat('F')); ?></span>
                 </div>
-                <?php $__empty_0 = true; $__currentLoopData = $topProductos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $prod): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+                <?php $__empty_1 = true; $__currentLoopData = $topProductos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $prod): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <?php
                         $maxVendidos = $topProductos->max('cantidad_vendida') ?: 1;
                         $pct = ($prod->cantidad_vendida / $maxVendidos) * 100;
@@ -92,7 +92,7 @@
                             <small class="text-muted"><?php echo e($moneda); ?> <?php echo e(number_format($prod->ingreso_total, 0)); ?> · Util: <?php echo e($moneda); ?> <?php echo e(number_format($prod->utilidad, 0)); ?></small>
                         </div>
                     </div>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <div class="ui-empty-state">
                         <i class="bi bi-emoji-frown"></i>
                         <p>No hay ventas este mes</p>
@@ -111,7 +111,7 @@
                     <h5 class="fw-bold mb-0"><i class="bi bi-people me-2" style="color:var(--accent);"></i>Mayores deudores</h5>
                     <a href="<?php echo e(route('clientes.cuentas')); ?>" class="small fw-bold text-decoration-none">Ver todos</a>
                 </div>
-                <?php $__empty_0 = true; $__currentLoopData = $topDeudores; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $deudor): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+                <?php $__empty_1 = true; $__currentLoopData = $topDeudores; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $deudor): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center gap-3 overflow-hidden">
                             <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:42px;height:42px;background:rgba(239,68,68,.1);color:#ef4444;">
@@ -128,7 +128,7 @@
                             <a href="<?php echo e(route('clientes.cuentas')); ?>" class="small fw-bold text-decoration-none">Cobrar</a>
                         </div>
                     </div>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <div class="ui-empty-state">
                         <i class="bi bi-check-circle" style="color:#10b981;"></i>
                         <p>¡Sin deudas pendientes!</p>

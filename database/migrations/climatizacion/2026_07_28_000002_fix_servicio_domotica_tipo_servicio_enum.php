@@ -1,22 +1,18 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Expand tipo_servicio ENUM from ['camara_seguridad','alarma','cerradura_smart','iluminacion','termostato','paquete_completo','otro']
-     * to ['camaras_seguridad','alarmas','control_acceso','redes','automatizacion','sonido','iluminacion','otro']
-     * and map existing values accordingly.
-     */
     public function up(): void
     {
-        if (!Schema::hasTable('servicios_domotica')) {
+        if (! Schema::hasTable('servicios_domotica')) {
+            return;
+        }
+
+        if (DB::getDriverName() === 'sqlite') {
             return;
         }
 
@@ -24,9 +20,9 @@ return new class extends Migration
         $data = DB::table('servicios_domotica')->get(['id', 'tipo_servicio'])->toArray();
 
         // Create temp table with new ENUM structure
-        DB::statement("
+        DB::statement('
             CREATE TABLE servicios_domotica_temp LIKE servicios_domotica
-        ");
+        ');
 
         // Alter temp table to have new ENUM
         DB::statement("
@@ -80,16 +76,17 @@ return new class extends Migration
         ]);
 
         // Swap tables
-        DB::statement("DROP TABLE servicios_domotica");
-        DB::statement("RENAME TABLE servicios_domotica_temp TO servicios_domotica");
+        DB::statement('DROP TABLE servicios_domotica');
+        DB::statement('RENAME TABLE servicios_domotica_temp TO servicios_domotica');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        if (!Schema::hasTable('servicios_domotica')) {
+        if (! Schema::hasTable('servicios_domotica')) {
+            return;
+        }
+
+        if (DB::getDriverName() === 'sqlite') {
             return;
         }
 

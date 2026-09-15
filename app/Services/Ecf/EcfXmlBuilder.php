@@ -13,7 +13,7 @@ class EcfXmlBuilder
 {
     public function build(EcfDocumento $ecf): string
     {
-        $venta = Venta::with(['cliente', 'detalles.producto', 'detalles.obra', 'usuario'])->findOrFail($ecf->venta_id);
+        $venta = Venta::with(['cliente', 'detalles.producto', 'detalles.obra', 'usuario', 'pagos'])->findOrFail($ecf->venta_id);
         $empresa = SystemSetting::allCached();
 
         $xml = new DOMDocument('1.0', 'UTF-8');
@@ -40,7 +40,7 @@ class EcfXmlBuilder
 
         $this->appendEncabezado($xml, $root, $ecf, $venta, $empresa);
         $this->appendDetalles($xml, $root, $venta);
-        if ($ecf->tipo_ecf === 'E34' && $ecf->documento_original_id) {
+        if (in_array($ecf->tipo_ecf, ['E33', 'E34'], true) && $ecf->documento_original_id) {
             $this->appendReferenciaE34($xml, $root, $ecf);
         }
         $this->appendFechaHoraFirma($xml, $root, $ecf);
@@ -71,9 +71,9 @@ class EcfXmlBuilder
         $encabezado->appendChild($emisor);
 
         $cliente = $venta->cliente;
-        if (!$cliente) {
+        if (! $cliente) {
             if ($ecf->tipo_ecf === 'E32') {
-                $cliente = (object)[
+                $cliente = (object) [
                     'tipo_documento' => null,
                     'rnc_cedula' => '',
                     'nombre' => 'Consumidor Final',
@@ -93,18 +93,26 @@ class EcfXmlBuilder
         $comprador->appendChild($xml->createElement('TipoDocumentoIdentificacionComprador', $tipoDoc));
         $comprador->appendChild($xml->createElement('RNCComprador', RncValidator::formato($rncComprador, $cliente->tipo_documento ?? 'rnc')));
         $comprador->appendChild($xml->createElement('RazonSocialComprador', $cliente->nombre ?? 'Consumidor Final'));
-        if ($cliente && !empty($cliente->email)) {
+        if ($cliente && ! empty($cliente->email)) {
             $comprador->appendChild($xml->createElement('EmailComprador', $cliente->email));
         }
         $encabezado->appendChild($comprador);
 
         $totales = $xml->createElement('Totales');
-        $totales->appendChild($xml->createElement('MontoGravadoTotal', $this->fmt((float)$ecf->monto_gravado_total)));
-        $totales->appendChild($xml->createElement('MontoExentoTotal', $this->fmt((float)$ecf->monto_exento_total)));
-        $totales->appendChild($xml->createElement('ITBIS1', $this->fmt((float)$ecf->itbis_total)));
-        $totales->appendChild($xml->createElement('TotalITBIS', $this->fmt((float)$ecf->itbis_total)));
-        $totales->appendChild($xml->createElement('MontoTotal', $this->fmt((float)$ecf->monto_total)));
+        $totales->appendChild($xml->createElement('MontoGravadoTotal', $this->fmt((float) $ecf->monto_gravado_total)));
+        $totales->appendChild($xml->createElement('MontoExentoTotal', $this->fmt((float) $ecf->monto_exento_total)));
+        $totales->appendChild($xml->createElement('ITBIS1', $this->fmt((float) $ecf->itbis_total)));
+        $totales->appendChild($xml->createElement('TotalITBIS', $this->fmt((float) $ecf->itbis_total)));
+        $retenciones = $this->parseRetenciones($venta);
+        $totales->appendChild($xml->createElement('TotalITBISRetenido', $this->fmt($retenciones['itbis_retenido'])));
+        $totales->appendChild($xml->createElement('TotalISRRetencion', $this->fmt($retenciones['isr_retenido'])));
+        $totales->appendChild($xml->createElement('MontoTotal', $this->fmt((float) $ecf->monto_total)));
+        if ((float) ($venta->propina ?? 0) > 0) {
+            $totales->appendChild($xml->createElement('Propina', $this->fmt((float) $venta->propina)));
+        }
         $encabezado->appendChild($totales);
+
+        $this->appendFormaDePago($xml, $encabezado, $venta);
     }
 
     private function appendDetalles(DOMDocument $xml, DOMElement $root, Venta $venta): void
@@ -119,17 +127,19 @@ class EcfXmlBuilder
             $precioUnitario = (float) $detalle->precio_unitario;
             $itbisPorcentaje = (float) ($detalle->itbis_porcentaje ?? $producto->itbis_porcentaje ?? SystemSetting::itbisDefault());
             $subtotalBruto = $cantidad * $precioUnitario;
-            $itbisItem = $subtotalBruto * ($itbisPorcentaje / 100);
+            $descuentoLinea = $this->calcularDescuentoLinea($detalle, $subtotalBruto);
+            $baseImponible = max(0, $subtotalBruto - $descuentoLinea);
+            $itbisItem = $baseImponible * ($itbisPorcentaje / 100);
 
             $item = $xml->createElement('Item');
             $item->appendChild($xml->createElement('NumeroLinea', (string) $lineNum++));
-            $item->appendChild($xml->createElement('CodigoItem', $obra ? 'OBRA-' . $obra->id : ($producto->codigo_barras ?? (string) $producto->id)));
+            $item->appendChild($xml->createElement('CodigoItem', $obra ? 'OBRA-'.$obra->id : ($producto->codigo_barras ?? $producto->codigo_referencia ?? (string) $producto->id)));
             $item->appendChild($xml->createElement('DescripcionItem', $obra?->titulo ?? $producto->nombre));
             $item->appendChild($xml->createElement('CantidadItem', $this->fmt($cantidad)));
-            $item->appendChild($xml->createElement('UnidadMedida', '43'));
+            $item->appendChild($xml->createElement('UnidadMedida', $producto->unidad_medida ?? '43'));
             $item->appendChild($xml->createElement('PrecioUnitarioItem', $this->fmt($precioUnitario)));
-            $item->appendChild($xml->createElement('MontoItem', $this->fmt($subtotalBruto)));
-            $item->appendChild($xml->createElement('MontoDescuento', '0.00'));
+            $item->appendChild($xml->createElement('MontoItem', $this->fmt($baseImponible)));
+            $item->appendChild($xml->createElement('MontoDescuento', $this->fmt($descuentoLinea)));
             $item->appendChild($xml->createElement('IndicadorFacturacion', $itbisPorcentaje > 0 ? '1' : '2'));
             $item->appendChild($xml->createElement('TasaITBIS', $this->fmt($itbisPorcentaje)));
             $item->appendChild($xml->createElement('MontoITBIS', $this->fmt($itbisItem)));
@@ -143,12 +153,15 @@ class EcfXmlBuilder
     private function appendReferenciaE34(DOMDocument $xml, DOMElement $root, EcfDocumento $ecf): void
     {
         $original = $ecf->documentoOriginal;
-        if (!$original) return;
+        if (! $original) {
+            return;
+        }
 
         $ref = $xml->createElement('Referencia');
+        $ref->appendChild($xml->createElement('NCFModificado', $original->encf));
         $ref->appendChild($xml->createElement('NCF', $original->encf));
         $ref->appendChild($xml->createElement('Fecha', $original->fecha_emision->format('Y-m-d')));
-        $ref->appendChild($xml->createElement('MontoTotal', $this->fmt((float)$original->monto_total)));
+        $ref->appendChild($xml->createElement('MontoTotal', $this->fmt((float) $original->monto_total)));
         $ref->appendChild($xml->createElement('MotivoAnulacion', $ecf->motivo_anulacion ?? 'Sin motivo'));
         $root->appendChild($ref);
     }
@@ -157,8 +170,7 @@ class EcfXmlBuilder
     {
         $empresa = SystemSetting::allCached();
         $proveedor = $compra->proveedor;
-        $rncVal = new RncValidator();
-        $tipoDocProveedor = $proveedor?->rnc ? $rncVal->inferirTipo($proveedor->rnc) : 'RNC';
+        $tipoDocProveedor = $proveedor?->rnc ? RncValidator::inferirTipo($proveedor->rnc) : 'rnc';
 
         $xml = new DOMDocument('1.0', 'UTF-8');
         $xml->formatOutput = true;
@@ -212,18 +224,18 @@ class EcfXmlBuilder
         $comprador->appendChild($xml->createElement('TipoDocumentoIdentificacionComprador', $tipoDoc));
         $comprador->appendChild($xml->createElement('RNCComprador', RncValidator::formato($rncProveedor, $tipoDocProveedor)));
         $comprador->appendChild($xml->createElement('RazonSocialComprador', $proveedor?->nombre ?? 'Proveedor'));
-        if ($proveedor && !empty($proveedor->email)) {
+        if ($proveedor && ! empty($proveedor->email)) {
             $comprador->appendChild($xml->createElement('EmailComprador', $proveedor->email));
         }
         $encabezado->appendChild($comprador);
 
         // Totales
         $totales = $xml->createElement('Totales');
-        $totales->appendChild($xml->createElement('MontoGravadoTotal', $this->fmt((float)($compra->subtotal ?? 0))));
+        $totales->appendChild($xml->createElement('MontoGravadoTotal', $this->fmt((float) ($compra->subtotal ?? 0))));
         $totales->appendChild($xml->createElement('MontoExentoTotal', $this->fmt(0)));
-        $totales->appendChild($xml->createElement('ITBIS1', $this->fmt((float)($compra->itbis_total ?? 0))));
-        $totales->appendChild($xml->createElement('TotalITBIS', $this->fmt((float)($compra->itbis_total ?? 0))));
-        $totales->appendChild($xml->createElement('MontoTotal', $this->fmt((float)$compra->total)));
+        $totales->appendChild($xml->createElement('ITBIS1', $this->fmt((float) ($compra->itbis_total ?? 0))));
+        $totales->appendChild($xml->createElement('TotalITBIS', $this->fmt((float) ($compra->itbis_total ?? 0))));
+        $totales->appendChild($xml->createElement('MontoTotal', $this->fmt((float) $compra->total)));
         $encabezado->appendChild($totales);
 
         // Detalles (mismo formato que ventas)
@@ -255,6 +267,69 @@ class EcfXmlBuilder
     {
         $fecha = $ecf->fecha_firma ?? $ecf->fecha_emision;
         $root->appendChild($xml->createElement('FechaHoraFirma', $fecha->format('Y-m-d\TH:i:s')));
+    }
+
+    /**
+     * Descuento de línea: soporta monto fijo o porcentaje (detalle.descuento_tipo).
+     */
+    private function calcularDescuentoLinea($detalle, float $subtotalBruto): float
+    {
+        $descuento = (float) ($detalle->descuento ?? 0);
+        if ($descuento <= 0) {
+            return 0.0;
+        }
+
+        if (($detalle->descuento_tipo ?? 'monto') === 'porcentaje') {
+            return round($subtotalBruto * ($descuento / 100), 2);
+        }
+
+        return min($descuento, $subtotalBruto);
+    }
+
+    /**
+     * Retenciones de la venta (columna JSON `retenciones`):
+     * ['itbis_retenido' => x, 'isr_retenido' => y]. Defaults 0.
+     */
+    private function parseRetenciones(Venta $venta): array
+    {
+        $raw = $venta->retenciones;
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            $raw = is_array($decoded) ? $decoded : [];
+        }
+
+        return [
+            'itbis_retenido' => (float) ($raw['itbis_retenido'] ?? $raw['itbis'] ?? 0),
+            'isr_retenido' => (float) ($raw['isr_retenido'] ?? $raw['isr'] ?? 0),
+        ];
+    }
+
+    /**
+     * Forma de pago según pagos registrados. Tabla DGII:
+     * 1=efectivo, 2=cheque/transferencia, 3=tarjeta, 4=compra a crédito,
+     * 5=permuta, 6=nota de crédito, 7=mixto.
+     */
+    private function appendFormaDePago(DOMDocument $xml, DOMElement $encabezado, Venta $venta): void
+    {
+        $map = [
+            'efectivo' => '1',
+            'transferencia' => '2',
+            'tarjeta' => '3',
+            'fiado' => '4',
+            'cuenta_abierta' => '4',
+            'mixto' => '7',
+        ];
+
+        $metodos = $venta->pagos->pluck('metodo_pago')->filter()->unique()->values();
+        if ($metodos->isEmpty()) {
+            return;
+        }
+
+        $codigo = $metodos->count() > 1
+            ? '7'
+            : ($map[strtolower((string) $metodos->first())] ?? '1');
+
+        $encabezado->appendChild($xml->createElement('FormaDePago', $codigo));
     }
 
     private function cleanRnc(?string $rnc): string

@@ -46,7 +46,7 @@ class ReporteFiscalController extends Controller
 
         $callback = function () use ($data, $tipo) {
             $output = fopen('php://output', 'w');
-            fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
 
             if ($tipo === '607') {
                 fputcsv($output, ['RNC Cliente', 'Nombre Cliente', 'NCF/e-CF', 'Tipo Comprobante', 'Fecha', 'Monto Facturado', 'ITBIS', 'Total', 'Tipo ID', 'NCF Modificado', 'Retención ISR', 'Retención ITBIS']);
@@ -141,7 +141,7 @@ class ReporteFiscalController extends Controller
             }
         }
 
-        $content = implode("\r\n", $lines) . "\r\n";
+        $content = implode("\r\n", $lines)."\r\n";
         $content = mb_convert_encoding($content, 'ISO-8859-1', 'UTF-8');
 
         return response($content, 200, $headers);
@@ -173,18 +173,22 @@ class ReporteFiscalController extends Controller
     {
         $periodo = Carbon::create($anio, $mes, 1);
 
-        // Ventas con NCF
+        // Ventas con NCF tradicional (las e-CF van en el bloque e-CF de abajo).
         $ventas = Venta::whereMonth('created_at', $mes)
             ->whereYear('created_at', $anio)
             ->where('total', '>', 0)
+            ->where('tipo_comprobante', '!=', 'ecf')
             ->with('cliente:id,nombre,rnc_cedula,tipo_documento')
             ->orderBy('created_at')
             ->get();
 
-        // e-CF emitidos
+        // e-CF emitidos: solo aprobados con track DGII (borrador/enviado/
+        // rechazado no son ingresos fiscales válidos).
         $ecfs = EcfDocumento::whereMonth('fecha_emision', $mes)
             ->whereYear('fecha_emision', $anio)
             ->whereIn('tipo_ecf', ['E31', 'E32', 'E33', 'E34', 'E41', 'E44', 'E45'])
+            ->where('estado', 'aprobado')
+            ->whereNotNull('track_id_dgii')
             ->with('venta.cliente')
             ->orderBy('fecha_emision')
             ->get();
@@ -194,7 +198,9 @@ class ReporteFiscalController extends Controller
         foreach ($ventas as $v) {
             $rnc = $v->cliente?->rnc_cedula ?? '000000000';
             $rnc = preg_replace('/[^0-9]/', '', $rnc);
-            if (strlen($rnc) < 9) $rnc = str_pad($rnc, 9, '0');
+            if (strlen($rnc) < 9) {
+                $rnc = str_pad($rnc, 9, '0');
+            }
 
             $tipoNcf = $this->tipoComprobanteLabel($v->ncf_tipo ?? ($v->tipo_comprobante ?? 'ncf'));
             $tipoId = $this->tipoIdentificacion($rnc);
@@ -220,7 +226,9 @@ class ReporteFiscalController extends Controller
         foreach ($ecfs as $ecf) {
             $rnc = $ecf->venta?->cliente?->rnc_cedula ?? '000000000';
             $rnc = preg_replace('/[^0-9]/', '', $rnc);
-            if (strlen($rnc) < 9) $rnc = str_pad($rnc, 9, '0');
+            if (strlen($rnc) < 9) {
+                $rnc = str_pad($rnc, 9, '0');
+            }
 
             $cliente = $ecf->venta?->cliente;
             $tipoId = $this->tipoIdentificacion($rnc);
@@ -233,8 +241,8 @@ class ReporteFiscalController extends Controller
             }
 
             // Evitar duplicados con ventas
-            $exists = $registros->first(fn($r) => $r['ncf'] === $ecf->encf);
-            if (!$exists) {
+            $exists = $registros->first(fn ($r) => $r['ncf'] === $ecf->encf);
+            if (! $exists) {
                 $registros->push([
                     'rnc' => $rnc,
                     'cliente' => Str::limit($cliente?->nombre ?? 'Consumidor Final', 40),
@@ -275,24 +283,42 @@ class ReporteFiscalController extends Controller
         $compras = Compra::whereMonth('fecha', $mes)
             ->whereYear('fecha', $anio)
             ->where('total', '>', 0)
-            ->with('proveedor:id,nombre,rnc,rnc_cedula,tipo_persona')
+            ->with(['proveedor:id,nombre,rnc,rnc_cedula,tipo_persona', 'ecfDocumento:id,encf,tipo_ecf,estado'])
             ->orderBy('fecha')
             ->get();
 
-        $registros = $compras->map(function ($c) use ($periodo) {
+        // E41/E43 de compras aprobados: el eNCF sustituye el 'S/N'.
+        $e41PorCompra = EcfDocumento::whereMonth('fecha_emision', $mes)
+            ->whereYear('fecha_emision', $anio)
+            ->whereIn('tipo_ecf', ['E41', 'E43', 'E44'])
+            ->where('estado', 'aprobado')
+            ->whereNotNull('track_id_dgii')
+            ->whereNotNull('compra_id')
+            ->get()
+            ->keyBy('compra_id');
+
+        $registros = $compras->map(function ($c) use ($e41PorCompra) {
             $rnc = $c->proveedor?->rnc ?? $c->proveedor?->rnc_cedula ?? '000000000';
             $rnc = preg_replace('/[^0-9]/', '', $rnc);
-            if (strlen($rnc) < 9) $rnc = str_pad($rnc, 9, '0');
+            if (strlen($rnc) < 9) {
+                $rnc = str_pad($rnc, 9, '0');
+            }
 
             $tipoNcf = 'Compras';
             $tipoId = $this->tipoIdentificacion($rnc);
 
+            $e41 = $e41PorCompra->get($c->id) ?? $c->ecfDocumento;
+            $ncf = ($e41 && $e41->estado === 'aprobado') ? $e41->encf : 'S/N';
+            if ($ncf !== 'S/N') {
+                $tipoNcf = $e41->tipo_nombre ?? 'e-CF Compras';
+            }
+
             return [
                 'rnc' => $rnc,
                 'proveedor' => Str::limit($c->proveedor?->nombre ?? 'Proveedor', 40),
-                'ncf' => 'S/N',
+                'ncf' => $ncf,
                 'tipo_ncf' => $tipoNcf,
-                'tipo_comprobante_codigo' => '02',
+                'tipo_comprobante_codigo' => $ncf !== 'S/N' ? ($e41->tipo_ecf ?? 'E41') : '02',
                 'fecha' => Carbon::parse($c->fecha)->format('d/m/Y'),
                 'monto_facturado' => $c->subtotal ?? 0,
                 'itbis' => $c->itbis_total ?? 0,
@@ -344,9 +370,16 @@ class ReporteFiscalController extends Controller
 
     private function tipoIdentificacion(string $rnc): string
     {
-        if (strlen($rnc) === 11 && in_array($rnc[0] ?? '', ['1', '4', '5'])) return '1'; // RNC
-        if (strlen($rnc) === 9) return '1'; // RNC sin formato
-        if (strlen($rnc) === 11) return '2'; // Cédula
+        if (strlen($rnc) === 11 && in_array($rnc[0] ?? '', ['1', '4', '5'])) {
+            return '1';
+        } // RNC
+        if (strlen($rnc) === 9) {
+            return '1';
+        } // RNC sin formato
+        if (strlen($rnc) === 11) {
+            return '2';
+        } // Cédula
+
         return '3'; // Pasaporte / Otro
     }
 

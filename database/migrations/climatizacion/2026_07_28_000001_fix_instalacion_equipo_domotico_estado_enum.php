@@ -1,22 +1,18 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Expand estado ENUM from ['programado','instalado','funcionando']
-     * to ['pendiente','programado','instalado','fallido','cancelado']
-     * and map existing values accordingly.
-     */
     public function up(): void
     {
-        if (!Schema::hasTable('instalacion_equipo_domotico')) {
+        if (! Schema::hasTable('instalacion_equipo_domotico')) {
+            return;
+        }
+
+        if (DB::getDriverName() === 'sqlite') {
             return;
         }
 
@@ -24,9 +20,9 @@ return new class extends Migration
         $data = DB::table('instalacion_equipo_domotico')->get(['id', 'estado'])->toArray();
 
         // Create temp table with new ENUM structure
-        DB::statement("
+        DB::statement('
             CREATE TABLE instalacion_equipo_domotico_temp LIKE instalacion_equipo_domotico
-        ");
+        ');
 
         // Alter temp table to have new ENUM
         DB::statement("
@@ -56,16 +52,17 @@ return new class extends Migration
         ]);
 
         // Swap tables
-        DB::statement("DROP TABLE instalacion_equipo_domotico");
-        DB::statement("RENAME TABLE instalacion_equipo_domotico_temp TO instalacion_equipo_domotico");
+        DB::statement('DROP TABLE instalacion_equipo_domotico');
+        DB::statement('RENAME TABLE instalacion_equipo_domotico_temp TO instalacion_equipo_domotico');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        if (!Schema::hasTable('instalacion_equipo_domotico')) {
+        if (! Schema::hasTable('instalacion_equipo_domotico')) {
+            return;
+        }
+
+        if (DB::getDriverName() === 'sqlite') {
             return;
         }
 

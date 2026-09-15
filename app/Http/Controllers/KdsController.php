@@ -21,7 +21,7 @@ class KdsController extends Controller
         // Órdenes de mesa (terminal de mesas) — solo las enviadas a cocina
         $sucursalId = session('sucursal_id') ?? Auth::user()?->sucursal_id;
         $mesas = Venta::whereIn('estado', ['abierta', 'completada'])
-            ->when($sucursalId, fn($q) => $q->where(function ($w) use ($sucursalId) {
+            ->when($sucursalId, fn ($q) => $q->where(function ($w) use ($sucursalId) {
                 $w->where('sucursal_id', $sucursalId)->orWhereNull('sucursal_id');
             }))
             ->whereHas('detalles', function ($q) {
@@ -32,34 +32,35 @@ class KdsController extends Controller
             })
             ->with([
                 'mesa:id,numero,nombre',
-                'detalles' => fn($q) => $q
+                'detalles' => fn ($q) => $q
                     ->whereNotIn('estado_cocina', ['servido', 'no_enviado'])
                     ->whereHas('producto', function ($pq) {
                         $pq->where('incluir_kds', true)->orWhereNull('incluir_kds');
                     })
-                    ->with('producto:id,nombre')
+                    ->with('producto:id,nombre'),
             ])
             ->orderBy('created_at')
             ->get()
             ->map(function ($v) {
                 $cursos = $v->detalles->groupBy('curso');
+
                 return [
-                    'origen'  => 'mesa',
-                    'id'      => $v->id,
-                    'mesa'    => $v->mesa?->nombre ?? 'Mesa ' . ($v->mesa?->numero ?? '—'),
+                    'origen' => 'mesa',
+                    'id' => $v->id,
+                    'mesa' => $v->mesa?->nombre ?? 'Mesa '.($v->mesa?->numero ?? '—'),
                     'mesa_id' => $v->mesa_id,
-                    'estado'  => $v->estado,
-                    'time'    => $v->created_at->diffForHumans(),
-                    'cursos'  => $cursos->toArray(),
+                    'estado' => $v->estado,
+                    'time' => $v->created_at->diffForHumans(),
+                    'cursos' => $cursos->toArray(),
                 ];
             });
 
         // Órdenes API (modelo Orden) — llegan directo al KDS
         $ordenes = Orden::deSucursal()
             ->whereIn('estado', ['pendiente', 'confirmada', 'en_proceso'])
-            ->whereHas('detalles', fn($q) => $q->where('estado_cocina', '!=', 'entregado'))
+            ->whereHas('detalles', fn ($q) => $q->where('estado_cocina', '!=', 'entregado'))
             ->with([
-                'detalles' => fn($q) => $q->where('estado_cocina', '!=', 'entregado')->with('producto:id,nombre')
+                'detalles' => fn ($q) => $q->where('estado_cocina', '!=', 'entregado')->with('producto:id,nombre'),
             ])
             ->orderBy('created_at')
             ->get()
@@ -67,32 +68,32 @@ class KdsController extends Controller
                 $cursos = [];
                 foreach ($o->detalles as $detalle) {
                     $nombreCurso = $detalle->curso ?: 'General';
-                    if (!isset($cursos[$nombreCurso])) {
+                    if (! isset($cursos[$nombreCurso])) {
                         $cursos[$nombreCurso] = [];
                     }
                     $cursos[$nombreCurso][] = [
-                        'id'             => $detalle->id,
-                        'producto'       => $detalle->producto ? ['id' => $detalle->producto->id, 'nombre' => $detalle->producto->nombre] : null,
-                        'cantidad'       => $detalle->cantidad,
-                        'notas'          => $detalle->notas,
-                        'estado_cocina'  => $detalle->estado_cocina,
-                        'created_at'     => $detalle->created_at?->toISOString(),
+                        'id' => $detalle->id,
+                        'producto' => $detalle->producto ? ['id' => $detalle->producto->id, 'nombre' => $detalle->producto->nombre] : null,
+                        'cantidad' => $detalle->cantidad,
+                        'notas' => $detalle->notas,
+                        'estado_cocina' => $detalle->estado_cocina,
+                        'created_at' => $detalle->created_at?->toISOString(),
                     ];
                 }
 
                 return [
-                    'origen'         => 'orden',
-                    'id'             => $o->id,
-                    'tipo_orden'     => $o->tipo_orden,
-                    'estado'         => $o->estado,
+                    'origen' => 'orden',
+                    'id' => $o->id,
+                    'tipo_orden' => $o->tipo_orden,
+                    'estado' => $o->estado,
                     'cliente_nombre' => $o->cliente?->nombre ?? '—',
-                    'telefono'       => $o->telefono_contacto,
-                    'direccion'      => $o->direccion_entrega,
-                    'empresa'        => $o->entregaEmpresa?->nombre,
-                    'hora_retiro'    => $o->hora_retiro?->format('h:i A'),
-                    'time'           => $o->created_at->diffForHumans(),
-                    'time_iso'       => $o->created_at->toIso8601String(),
-                    'cursos'         => $cursos,
+                    'telefono' => $o->telefono_contacto,
+                    'direccion' => $o->direccion_entrega,
+                    'empresa' => $o->entregaEmpresa?->nombre,
+                    'hora_retiro' => $o->hora_retiro?->format('h:i A'),
+                    'time' => $o->created_at->diffForHumans(),
+                    'time_iso' => $o->created_at->toIso8601String(),
+                    'cursos' => $cursos,
                 ];
             });
 
@@ -112,25 +113,26 @@ class KdsController extends Controller
         }
 
         $detalle->update([
-            'estado_cocina'     => $request->estado,
+            'estado_cocina' => $request->estado,
             'cocina_updated_at' => now(),
         ]);
+
         return response()->json(['success' => true]);
     }
 
     public function limpiar()
     {
         $afectadosMesa = VentaDetalle::whereIn('estado_cocina', ['pendiente', 'preparando', 'listo'])
-            ->whereHas('venta', fn($q) => $q->whereIn('estado', ['abierta', 'completada']))
+            ->whereHas('venta', fn ($q) => $q->whereIn('estado', ['abierta', 'completada']))
             ->update([
-                'estado_cocina'     => 'servido',
+                'estado_cocina' => 'servido',
                 'cocina_updated_at' => now(),
             ]);
 
         $afectadosOrden = OrdenDetalle::whereIn('estado_cocina', ['pendiente', 'en_preparacion', 'listo'])
-            ->whereHas('orden', fn($q) => $q->deSucursal()->whereIn('estado', ['pendiente', 'confirmada', 'en_proceso']))
+            ->whereHas('orden', fn ($q) => $q->deSucursal()->whereIn('estado', ['pendiente', 'confirmada', 'en_proceso']))
             ->update([
-                'estado_cocina'     => 'entregado',
+                'estado_cocina' => 'entregado',
                 'cocina_updated_at' => now(),
             ]);
 
@@ -141,13 +143,13 @@ class KdsController extends Controller
     {
         $nuevosMesa = VentaDetalle::where('estado_cocina', 'pendiente')
             ->where('cocina_updated_at', '>=', now()->subMinutes(5))
-            ->whereDoesntHave('venta', fn($q) => $q->whereIn('estado', ['anulada']))
-            ->whereHas('producto', fn($q) => $q->where('incluir_kds', true))
+            ->whereDoesntHave('venta', fn ($q) => $q->whereIn('estado', ['anulada']))
+            ->whereHas('producto', fn ($q) => $q->where('incluir_kds', true))
             ->count();
 
         $nuevosOrden = OrdenDetalle::where('estado_cocina', 'pendiente')
             ->where('cocina_updated_at', '>=', now()->subMinutes(5))
-            ->whereHas('orden', fn($q) => $q->deSucursal()->whereIn('estado', ['pendiente', 'confirmada', 'en_proceso']))
+            ->whereHas('orden', fn ($q) => $q->deSucursal()->whereIn('estado', ['pendiente', 'confirmada', 'en_proceso']))
             ->count();
 
         return response()->json(['nuevos' => $nuevosMesa + $nuevosOrden]);
@@ -159,14 +161,14 @@ class KdsController extends Controller
     public function historial()
     {
         $sucursalId = session('sucursal_id') ?? Auth::user()?->sucursal_id;
-        $corte     = now()->subMinutes(30);
+        $corte = now()->subMinutes(30);
 
         // ── Mesas: detalles con estado_cocina = 'servido' ─────────────
         $mesas = Venta::where(function ($q) use ($sucursalId) {
-                $q->where('sucursal_id', $sucursalId)->orWhereNull('sucursal_id');
-            })
+            $q->where('sucursal_id', $sucursalId)->orWhereNull('sucursal_id');
+        })
             ->where('estado', 'completada')
-            ->whereHas('detalles', fn($q) => $q
+            ->whereHas('detalles', fn ($q) => $q
                 ->where('estado_cocina', 'servido')
                 ->where('cocina_updated_at', '>=', $corte)
                 ->whereHas('producto', function ($pq) {
@@ -175,42 +177,42 @@ class KdsController extends Controller
             )
             ->with([
                 'mesa:id,numero,nombre',
-                'detalles' => fn($q) => $q
+                'detalles' => fn ($q) => $q
                     ->where('estado_cocina', 'servido')
                     ->whereHas('producto', function ($pq) {
                         $pq->where('incluir_kds', true)->orWhereNull('incluir_kds');
                     })
-                    ->with('producto:id,nombre')
+                    ->with('producto:id,nombre'),
             ])
             ->orderByDesc(function ($q) {
                 $q->select('cocina_updated_at')
-                  ->from('venta_detalles')
-                  ->whereColumn('venta_detalles.venta_id', 'ventas.id')
-                  ->where('estado_cocina', 'servido')
-                  ->orderByDesc('cocina_updated_at')
-                  ->limit(1);
+                    ->from('venta_detalles')
+                    ->whereColumn('venta_detalles.venta_id', 'ventas.id')
+                    ->where('estado_cocina', 'servido')
+                    ->orderByDesc('cocina_updated_at')
+                    ->limit(1);
             })
             ->limit(100)
             ->get()
             ->map(function ($v) {
-                $productos = $v->detalles->map(fn($d) => [
-                    'nombre'   => $d->producto?->nombre ?? '—',
+                $productos = $v->detalles->map(fn ($d) => [
+                    'nombre' => $d->producto?->nombre ?? '—',
                     'cantidad' => $d->cantidad,
-                    'notas'    => $d->notas,
+                    'notas' => $d->notas,
                 ]);
 
                 $servidoEn = $v->detalles->whereNotNull('cocina_updated_at')
                     ->max('cocina_updated_at');
 
                 return [
-                    'origen'      => 'mesa',
-                    'id'          => $v->id,
-                    'mesa'        => $v->mesa?->nombre ?? 'Mesa ' . ($v->mesa?->numero ?? '—'),
-                    'total'       => (float) $v->total,
+                    'origen' => 'mesa',
+                    'id' => $v->id,
+                    'mesa' => $v->mesa?->nombre ?? 'Mesa '.($v->mesa?->numero ?? '—'),
+                    'total' => (float) $v->total,
                     'items_count' => $productos->sum('cantidad'),
-                    'servido_at'  => $servidoEn?->format('d/m/Y h:i A'),
-                    'tiempo'      => $servidoEn?->diffForHumans(null, true),
-                    'productos'   => $productos->toArray(),
+                    'servido_at' => $servidoEn?->format('d/m/Y h:i A'),
+                    'tiempo' => $servidoEn?->diffForHumans(null, true),
+                    'productos' => $productos->toArray(),
                 ];
             });
 
@@ -218,40 +220,40 @@ class KdsController extends Controller
         $ordenes = Orden::deSucursal()
             ->where(function ($q) {
                 $q->where('estado', 'entregada')
-                  ->orWhere('estado', 'completada');
+                    ->orWhere('estado', 'completada');
             })
-            ->whereHas('detalles', fn($q) => $q->where('estado_cocina', 'entregado'))
+            ->whereHas('detalles', fn ($q) => $q->where('estado_cocina', 'entregado'))
             ->where(function ($q) use ($corte) {
-                $q->whereHas('detalles', fn($d) => $d->where('cocina_updated_at', '>=', $corte))
-                  ->orWhere('updated_at', '>=', $corte);
+                $q->whereHas('detalles', fn ($d) => $d->where('cocina_updated_at', '>=', $corte))
+                    ->orWhere('updated_at', '>=', $corte);
             })
             ->with([
-                'detalles' => fn($q) => $q->where('estado_cocina', 'entregado')
-                    ->with('producto:id,nombre')
+                'detalles' => fn ($q) => $q->where('estado_cocina', 'entregado')
+                    ->with('producto:id,nombre'),
             ])
             ->orderByDesc('updated_at')
             ->limit(100)
             ->get()
             ->map(function ($o) {
-                $productos = $o->detalles->map(fn($d) => [
-                    'nombre'   => $d->producto?->nombre ?? '—',
+                $productos = $o->detalles->map(fn ($d) => [
+                    'nombre' => $d->producto?->nombre ?? '—',
                     'cantidad' => $d->cantidad,
-                    'notas'    => $d->notas,
+                    'notas' => $d->notas,
                 ]);
 
                 $entregadoEn = $o->detalles->whereNotNull('cocina_updated_at')
                     ->max('cocina_updated_at');
 
                 return [
-                    'origen'      => 'orden',
-                    'id'          => $o->id,
-                    'tipo_orden'  => $o->tipo_orden,
-                    'cliente'     => $o->cliente?->nombre ?? '—',
-                    'total'       => (float) $o->total,
+                    'origen' => 'orden',
+                    'id' => $o->id,
+                    'tipo_orden' => $o->tipo_orden,
+                    'cliente' => $o->cliente?->nombre ?? '—',
+                    'total' => (float) $o->total,
                     'items_count' => $productos->sum('cantidad'),
-                    'servido_at'  => $entregadoEn?->format('d/m/Y h:i A'),
-                    'tiempo'      => $entregadoEn?->diffForHumans(null, true),
-                    'productos'   => $productos->toArray(),
+                    'servido_at' => $entregadoEn?->format('d/m/Y h:i A'),
+                    'tiempo' => $entregadoEn?->diffForHumans(null, true),
+                    'productos' => $productos->toArray(),
                 ];
             });
 
@@ -261,9 +263,9 @@ class KdsController extends Controller
 
         return response()->json([
             'ordenes' => $todo->toArray(),
-            'total'   => $todo->count(),
+            'total' => $todo->count(),
             'total_$' => round($todo->sum('total'), 2),
-            'corte'   => 'Últimos 30 minutos',
+            'corte' => 'Últimos 30 minutos',
         ]);
     }
 }

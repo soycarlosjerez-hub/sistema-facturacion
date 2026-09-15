@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 class VentaController extends Controller
 {
     use TenantAccess;
+
     public function index(Request $request)
     {
         $query = Venta::with(['usuario', 'cliente', 'sucursal', 'caja', 'detalles.producto', 'pagos', 'tipoVenta', 'mesa'])
@@ -26,7 +27,7 @@ class VentaController extends Controller
             ->when($request->estado, fn ($q) => $q->where('estado', $request->estado))
             ->when($request->fecha_desde, fn ($q) => $q->whereDate('fecha', '>=', $request->fecha_desde))
             ->when($request->fecha_hasta, fn ($q) => $q->whereDate('fecha', '<=', $request->fecha_hasta))
-            ->when($request->search_ncf, fn ($q) => $q->where('ncf', 'like', '%' . $request->search_ncf . '%'))
+            ->when($request->search_ncf, fn ($q) => $q->where('ncf', 'like', '%'.$request->search_ncf.'%'))
             ->when($request->min_total, fn ($q) => $q->where('total', '>=', $request->min_total))
             ->when($request->max_total, fn ($q) => $q->where('total', '<=', $request->max_total));
 
@@ -53,7 +54,7 @@ class VentaController extends Controller
         }
 
         $rncCedula = $request->input('cliente_rnc_cedula');
-        if (!empty($rncCedula)) {
+        if (! empty($rncCedula)) {
             $cliente = Cliente::where('rnc_cedula', $rncCedula)
                 ->where('tenant_id', $tenantId)
                 ->first();
@@ -62,22 +63,24 @@ class VentaController extends Controller
                 Log::info('[Venta API] Cliente resuelto por RNC/Cédula', [
                     'cliente_id' => $cliente->id, 'nombre' => $cliente->nombre,
                 ]);
+
                 return ['cliente_id' => $cliente->id];
             }
         }
 
         $nombre = $request->input('cliente_nombre');
-        if (!empty($nombre)) {
+        if (! empty($nombre)) {
             $cliente = Cliente::firstOrCreate(
                 ['nombre' => $nombre, 'tenant_id' => $tenantId],
                 [
-                    'telefono'   => $request->input('cliente_telefono'),
-                    'email'      => $request->input('cliente_email'),
+                    'telefono' => $request->input('cliente_telefono'),
+                    'email' => $request->input('cliente_email'),
                     'rnc_cedula' => $request->input('cliente_rnc_cedula'),
                     'tipo_cliente' => $request->input('tipo_cliente', 'consumo'),
                 ]
             );
             Log::info('[Venta API] Cliente resuelto por nombre', ['cliente_id' => $cliente->id, 'nombre' => $cliente->nombre]);
+
             return ['cliente_id' => $cliente->id];
         }
 
@@ -136,8 +139,7 @@ class VentaController extends Controller
 
         // --- Cálculo autoritativo server-side (F2.5) ---
         $rolesAutorizados = ['admin', 'admin-business', 'root', 'gerente'];
-        $puedeSobreescribirPrecio = $user->hasRole($rolesAutorizados)
-            || in_array($user->role ?? '', $rolesAutorizados);
+        $puedeSobreescribirPrecio = $user->hasAnyRole($rolesAutorizados);
 
         $config = $user->businessInstance->configuracion ?? [];
         $validaStock = ($config['restaurante_valida_stock'] ?? '1') === '1';
@@ -148,7 +150,7 @@ class VentaController extends Controller
 
         foreach ($validated['detalles'] as $i => $detalle) {
             $producto = Producto::where('tenant_id', $tenantId)->find($detalle['producto_id']);
-            if (!$producto) {
+            if (! $producto) {
                 return response()->json([
                     'message' => "El producto #{$detalle['producto_id']} no existe o no pertenece a tu instancia.",
                 ], 422);
@@ -158,7 +160,7 @@ class VentaController extends Controller
             $precioBD = (float) $producto->precio;
             $precioCli = (float) ($detalle['precio_unitario'] ?? $precioBD);
 
-            if (abs($precioCli - $precioBD) > 0.02 && !$puedeSobreescribirPrecio) {
+            if (abs($precioCli - $precioBD) > 0.02 && ! $puedeSobreescribirPrecio) {
                 return response()->json([
                     'message' => "No autorizado para modificar el precio de \"{$producto->nombre}\".",
                 ], 422);
@@ -169,7 +171,7 @@ class VentaController extends Controller
                 : $precioBD;
 
             $almacenId = (int) ($detalle['almacen_id'] ?? 0);
-            if (!$almacenId) {
+            if (! $almacenId) {
                 $almacen = Almacen::where('tenant_id', $tenantId)->first();
                 $almacenId = $almacen?->id;
             }
@@ -204,14 +206,14 @@ class VentaController extends Controller
             $descuentosLinea += $descuentoAplicado;
 
             $lineas[] = [
-                'producto_id'      => $producto->id,
-                'cantidad'         => $cantidad,
-                'precio_unitario'  => $precioBase,
-                'subtotal'         => $subtotalLinea,
-                'descuento'        => $descuento,
-                'descuento_tipo'   => $descuentoTipo,
+                'producto_id' => $producto->id,
+                'cantidad' => $cantidad,
+                'precio_unitario' => $precioBase,
+                'subtotal' => $subtotalLinea,
+                'descuento' => $descuento,
+                'descuento_tipo' => $descuentoTipo,
                 'itbis_porcentaje' => (float) ($producto->itbis_porcentaje ?? 0),
-                'almacen_id'       => $almacenId,
+                'almacen_id' => $almacenId,
             ];
         }
 
@@ -220,7 +222,7 @@ class VentaController extends Controller
 
         if ($subtotalTotal > 0) {
             $pctDescuento = ($descuentoTotal / $subtotalTotal) * 100;
-            if ($pctDescuento > 50 && !$puedeSobreescribirPrecio) {
+            if ($pctDescuento > 50 && ! $puedeSobreescribirPrecio) {
                 return response()->json([
                     'message' => 'Descuentos superiores al 50% requieren autorización de administrador.',
                 ], 422);
@@ -241,11 +243,11 @@ class VentaController extends Controller
         }
         $itbisTotal = round($itbisTotal, 2);
 
-        $validated['subtotal']  = round($subtotalTotal, 2);
+        $validated['subtotal'] = round($subtotalTotal, 2);
         $validated['impuestos'] = $itbisTotal;
         $validated['descuento'] = round($descuentoTotal, 2);
-        $validated['total']     = round($subtotalTotal - $descuentoTotal + $itbisTotal, 2);
-        $validated['detalles']  = $lineas;
+        $validated['total'] = round($subtotalTotal - $descuentoTotal + $itbisTotal, 2);
+        $validated['detalles'] = $lineas;
 
         $venta = DB::transaction(function () use ($validated, $tenantId, $user, $validaStock) {
             $venta = Venta::create($validated);
@@ -255,13 +257,13 @@ class VentaController extends Controller
 
                 if ($validaStock) {
                     AlmacenMovimiento::create([
-                        'tenant_id'   => $tenantId,
+                        'tenant_id' => $tenantId,
                         'producto_id' => $detalle['producto_id'],
-                        'almacen_id'  => $detalle['almacen_id'],
-                        'tipo'        => 'salida',
-                        'cantidad'    => $detalle['cantidad'],
-                        'nota'        => 'Venta #' . $venta->id . ' (API)',
-                        'user_id'     => $user->id,
+                        'almacen_id' => $detalle['almacen_id'],
+                        'tipo' => 'salida',
+                        'cantidad' => $detalle['cantidad'],
+                        'nota' => 'Venta #'.$venta->id.' (API)',
+                        'user_id' => $user->id,
                     ]);
 
                     Producto::where('id', $detalle['producto_id'])->decrement('stock', $detalle['cantidad']);
@@ -299,6 +301,7 @@ class VentaController extends Controller
     public function destroy(Venta $venta)
     {
         $venta->delete();
+
         return response()->json(['message' => 'Venta eliminada.']);
     }
 

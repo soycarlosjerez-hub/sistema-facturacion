@@ -314,7 +314,22 @@ class OrdenController extends Controller
         $empresa = (object) config('app.empresa', []);
         $paper = (int) $request->get('paper', 80);
 
-        return view('restaurante.ticket', compact('venta', 'mesa', 'empresa', 'paper'));
+        // Buscar impresora configurada
+        $impresora = null;
+        if (auth()->check()) {
+            $impresora = \App\Models\Impresora::where('activo', true)
+                ->where('tenant_id', auth()->user()->business_instance_id)
+                ->where('auto_imprimir_ventas', true)
+                ->orderBy('orden')
+                ->first();
+        }
+
+        if ($paper === 80 && $impresora && $impresora->papel_tamano) {
+            $paper = (int) preg_replace('/[^0-9]/', '', $impresora->papel_tamano);
+            $paper = in_array($paper, [58, 80, 210]) ? $paper : 80;
+        }
+
+        return view('restaurante.ticket', compact('venta', 'mesa', 'empresa', 'paper', 'impresora'));
     }
 
     public function imprimirTicket(Request $request, Mesa $mesa)

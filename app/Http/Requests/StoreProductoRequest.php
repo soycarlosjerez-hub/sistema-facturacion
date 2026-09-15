@@ -59,7 +59,15 @@ class StoreProductoRequest extends FormRequest
             'linea_negocio' => 'nullable|string|max:50',
             'product_type' => 'nullable|string|max:50',
             'is_art_piece' => 'boolean',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'imagen' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240', function ($attribute, $value, $fail) {
+                if ($value && $value->isValid()) {
+                    $mimeType = $value->getMimeType();
+                    $allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+                    if (!in_array($mimeType, $allowed)) {
+                        $fail("Tipo MIME no válido: {$mimeType}. Solo se permiten JPEG, PNG, JPG, GIF y WebP.");
+                    }
+                }
+            }],
         ];
     }
 

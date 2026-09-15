@@ -10,9 +10,16 @@ class StoreVentaRequest extends FormRequest
 {
     protected function prepareForValidation()
     {
+        // Nunca aceptar tenant_id desde input (asignación server-side vía TenantScope).
+        if ($this->attributes->has('tenant_id')) {
+            $this->request->remove('tenant_id');
+        }
+        if ($this->query->has('tenant_id')) {
+            $this->query->remove('tenant_id');
+        }
         $almacenId = $this->input('almacen_id');
-        if ($almacenId !== null && !is_array($almacenId)) {
-            $this->merge(['almacen_id' => array_filter([$almacenId], fn($v) => $v !== '' && $v !== null)]);
+        if ($almacenId !== null && ! is_array($almacenId)) {
+            $this->merge(['almacen_id' => array_filter([$almacenId], fn ($v) => $v !== '' && $v !== null)]);
         }
     }
 
@@ -20,11 +27,11 @@ class StoreVentaRequest extends FormRequest
     {
         $user = auth()->user();
 
-        if ($user->hasRole(['admin', 'owner', 'admin-business'])) {
-            return true;
+        if (! $user) {
+            return false;
         }
 
-        if (in_array($user->role, ['admin', 'owner', 'admin-business', 'root'])) {
+        if ($user->hasAnyRole(['admin', 'owner', 'admin-business', 'root'])) {
             return true;
         }
 
@@ -35,57 +42,59 @@ class StoreVentaRequest extends FormRequest
     {
         $tieneObras = $this->has('obra_id') && is_array($this->input('obra_id')) && count(array_filter($this->input('obra_id'))) > 0;
         $tieneEquipos = $this->has('equipo_id') && is_array($this->input('equipo_id')) && count(array_filter($this->input('equipo_id'))) > 0;
+        $tenantId = auth()->user()->business_instance_id ?? null;
 
         $reglas = [
-            'cliente_id'    => [
+            'cliente_id' => [
                 Rule::requiredIf(fn () => in_array($this->metodo_pago, ['fiado', 'cuenta_abierta']) || ($this->input('order_type') === 'delivery' && $this->input('es_final_client') != 1)),
-                'exists:clientes,id',
+                $tenantId ? Rule::exists('clientes', 'id')->where('tenant_id', $tenantId) : 'exists:clientes,id',
             ],
             'es_final_client' => 'nullable|boolean',
             'tipo_venta_id' => 'required|exists:tipos_ventas,id',
-            'producto_id'   => [$tieneObras || $tieneEquipos ? 'nullable' : 'required', 'array', 'min:1'],
-            'producto_id.*' => 'exists:productos,id',
-            'obra_id'       => 'nullable|array',
-            'obra_id.*'     => 'exists:arte_obras,id',
-            'equipo_id'     => 'nullable|array',
-            'equipo_id.*'   => 'exists:equipos,id',
-            'almacen_id'    => 'nullable|array',
-            'almacen_id.*'  => 'nullable|exists:almacenes,id',
-            'cantidad'      => 'required|array|min:1',
-            'cantidad.*'    => 'integer|min:1',
-            'precio'        => 'required|array|min:1',
-            'precio.*'      => 'numeric|min:0',
-            'subtotal'      => 'required|array|min:1',
-            'subtotal.*'    => 'numeric|min:0',
-            'descuento'     => 'nullable|array',
-            'descuento.*'   => 'numeric|min:0',
+            'producto_id' => [$tieneObras || $tieneEquipos ? 'nullable' : 'required', 'array', 'min:1'],
+            'producto_id.*' => [$tenantId ? Rule::exists('productos', 'id')->where('tenant_id', $tenantId) : 'exists:productos,id'],
+            'obra_id' => 'nullable|array',
+            'obra_id.*' => [$tenantId ? Rule::exists('arte_obras', 'id')->where('tenant_id', $tenantId) : 'exists:arte_obras,id'],
+            'equipo_id' => 'nullable|array',
+            'equipo_id.*' => [$tenantId ? Rule::exists('equipos', 'id')->where('tenant_id', $tenantId) : 'exists:equipos,id'],
+            'almacen_id' => 'nullable|array',
+            'almacen_id.*' => ['nullable', $tenantId ? Rule::exists('almacenes', 'id')->where('tenant_id', $tenantId) : 'exists:almacenes,id'],
+            'cantidad' => 'required|array|min:1',
+            'cantidad.*' => 'integer|min:1',
+            'precio' => 'required|array|min:1',
+            'precio.*' => 'numeric|min:0',
+            'subtotal' => 'required|array|min:1',
+            'subtotal.*' => 'numeric|min:0',
+            'descuento' => 'nullable|array',
+            'descuento.*' => 'numeric|min:0',
             'descuento_tipo' => 'nullable|array',
             'descuento_tipo.*' => 'in:monto,porcentaje',
             'itbis_porcentaje' => 'nullable|array',
             'itbis_porcentaje.*' => 'numeric|min:0|max:100',
             'sin_itbis' => 'nullable|array',
             'sin_itbis.*' => 'boolean',
-            'notas'     => 'nullable|array',
-            'notas.*'   => 'nullable|string|max:200',
+            'notas' => 'nullable|array',
+            'notas.*' => 'nullable|string|max:200',
             'admin_token' => 'nullable|string',
-            'total'         => 'required|numeric|min:0',
-            'impuestos'     => 'nullable|numeric|min:0',
+            'total' => 'required|numeric|min:0',
+            'impuestos' => 'nullable|numeric|min:0',
             'subtotal_final' => 'nullable|numeric|min:0',
-            'propina'       => 'nullable|numeric|min:0',
-            'delivery_fee'  => 'nullable|numeric|min:0',
-            'delivery_company_id' => 'nullable|integer|exists:delivery_companies,id',
-            'order_type'    => 'nullable|in:mostrador,delivery,pickup',
-            'driver_id'     => 'nullable|integer|exists:delivery_drivers,id',
+            'propina' => 'nullable|numeric|min:0',
+            'delivery_fee' => 'nullable|numeric|min:0',
+            'delivery_company_id' => ['nullable', 'integer', $tenantId ? Rule::exists('delivery_companies', 'id')->where('tenant_id', $tenantId) : 'exists:delivery_companies,id'],
+            'order_type' => 'nullable|in:mostrador,delivery,pickup',
+            'driver_id' => ['nullable', 'integer', $tenantId ? Rule::exists('delivery_drivers', 'id')->where('tenant_id', $tenantId) : 'exists:delivery_drivers,id'],
             'delivery_address' => 'nullable|string|max:1000',
-            'cargo_servicio'=> 'nullable|numeric|min:0',
+            'cargo_servicio' => 'nullable|numeric|min:0',
             'general_descuento' => 'nullable|numeric|min:0',
-            'metodo_pago'   => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',
+            'metodo_pago' => 'nullable|string|in:efectivo,tarjeta,transferencia,fiado,cuenta_abierta,mixto',
             'mixto_efectivo' => 'nullable|numeric|min:0',
-            'mixto_tarjeta'  => 'nullable|numeric|min:0',
+            'mixto_tarjeta' => 'nullable|numeric|min:0',
             'mixto_transferencia' => 'nullable|numeric|min:0',
-            'ncf_tipo'      => ['nullable', 'string', 'exists:ncf_sequences,prefijo', Rule::requiredIf(fn() => $this->tipo_comprobante === 'ncf')],
+            'ncf_tipo' => ['nullable', 'string', $tenantId ? Rule::exists('ncf_sequences', 'prefijo')->where('tenant_id', $tenantId) : 'exists:ncf_sequences,prefijo', Rule::requiredIf(fn () => $this->tipo_comprobante === 'ncf')],
             'tipo_comprobante' => 'nullable|in:sin,ncf,ecf',
-            'sesion_caja_id'  => 'nullable|exists:sesion_cajas,id',
+            'sesion_caja_id' => ['nullable', $tenantId ? Rule::exists('sesion_cajas', 'id')->where('tenant_id', $tenantId) : 'exists:sesion_cajas,id'],
+            'template_id' => 'nullable|exists:plantilla_impresiones,id',
         ];
 
         return $reglas;
@@ -113,10 +122,10 @@ class StoreVentaRequest extends FormRequest
             if (is_array($precios) && is_array($cantidades)) {
                 $maxItems = min(count($precios), count($cantidades));
                 for ($i = 0; $i < $maxItems; $i++) {
-                    $calc = (float)($precios[$i] ?? 0) * (float)($cantidades[$i] ?? 0);
-                    $expectedSub = is_array($subtotals) ? (float)($subtotals[$i] ?? 0) : 0;
+                    $calc = (float) ($precios[$i] ?? 0) * (float) ($cantidades[$i] ?? 0);
+                    $expectedSub = is_array($subtotals) ? (float) ($subtotals[$i] ?? 0) : 0;
                     if (abs($calc - $expectedSub) > 0.02) {
-                        $validator->errors()->add("subtotal.{$i}", "El subtotal no coincide con precio × cantidad.");
+                        $validator->errors()->add("subtotal.{$i}", 'El subtotal no coincide con precio × cantidad.');
                     }
                 }
             }
@@ -128,27 +137,28 @@ class StoreVentaRequest extends FormRequest
             if ($tipoComprobante && $sesionCajaId) {
                 $sesion = SesionCaja::with('caja')->find($sesionCajaId);
 
-                if (!$sesion || $sesion->estado !== 'abierta') {
+                if (! $sesion || $sesion->estado !== 'abierta') {
                     $validator->errors()->add('sesion_caja_id', 'La sesión de caja seleccionada ya está cerrada.');
+
                     return;
                 }
 
                 if ($sesion && $sesion->caja) {
                     $tiposPermitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
-                    if (!in_array($tipoComprobante, $tiposPermitidos, true)) {
+                    if (! in_array($tipoComprobante, $tiposPermitidos, true)) {
                         $validator->errors()->add('tipo_comprobante', "El tipo de comprobante '{$tipoComprobante}' no está permitido en este terminal.");
                     }
 
                     $instanceConfig = \App\Models\BusinessInstance::find(auth()->user()->business_instance_id)?->configuracion ?? [];
-                    if (!empty($instanceConfig['allowed_comprobante_types'])) {
-                        if (!in_array($tipoComprobante, $instanceConfig['allowed_comprobante_types'], true)) {
+                    if (! empty($instanceConfig['allowed_comprobante_types'])) {
+                        if (! in_array($tipoComprobante, $instanceConfig['allowed_comprobante_types'], true)) {
                             $validator->errors()->add('tipo_comprobante', "El tipo de comprobante '{$tipoComprobante}' no está habilitado para esta instancia.");
                         }
                     }
                 }
             } elseif ($sesionCajaId) {
                 $sesion = SesionCaja::find($sesionCajaId);
-                if (!$sesion || $sesion->estado !== 'abierta') {
+                if (! $sesion || $sesion->estado !== 'abierta') {
                     $validator->errors()->add('sesion_caja_id', 'La sesión de caja seleccionada ya está cerrada.');
                 }
             }

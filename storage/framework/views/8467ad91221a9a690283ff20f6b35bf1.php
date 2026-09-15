@@ -2389,6 +2389,14 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             </select>
             <?php endif; ?>
 
+            <select id="template-select" class="form-select form-select-sm d-inline-block w-auto" style="background:var(--pos-card);border-color:var(--pos-border);color:var(--pos-text);font-size:0.78rem;padding:4px 10px;border-radius:8px;max-width:180px;" title="Plantilla de factura" onchange="POS.onTemplateChange(this.value)">
+                <option value="">Plantilla predeterminada</option>
+                <?php $__currentLoopData = $plantillas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pt): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($pt->id); ?>" <?php if($pt->es_default): ?> selected <?php endif; ?>><?php echo e($pt->nombre); ?></option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+            <input type="hidden" name="template_id" id="template-id-field" value="">
+
             <div class="pos-stat">
                 <span class="label">Vendido Hoy</span>
                 <span class="value success" id="day-total-display">RD$0.00</span>
@@ -3051,7 +3059,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
 
                 <div class="d-grid gap-2 mt-3">
                     <button type="button" id="btn-ticket" class="btn btn-success btn-lg rounded-pill">
-                        <i class="bi bi-printer me-1"></i> Imprimir Ticket
+                        <i class="bi bi-printer me-1"></i> Imprimir
                     </button>
                 </div>
             </div>
@@ -3589,6 +3597,10 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
             }
         },
 
+        onTemplateChange(templateId) {
+            $('template-id-field').value = templateId || '';
+        },
+
         cargarZonasDelivery() {
             const zoneSelect = $('delivery-zone-select');
             if (!zoneSelect) return;
@@ -3961,8 +3973,7 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         $('post-metodo').textContent = metodoMap[data.metodo_pago] || data.metodo_pago;
         loadDayStats();
         loadTurnoHistory();
-        const ticketUrl = `/ventas/${data.venta_id}/ticket`;
-        $('btn-ticket').onclick = () => window.open(ticketUrl, '_blank');
+        $('btn-ticket').onclick = () => window.open(`/ventas/${data.venta_id}/ticket`, '_blank');
         new bootstrap.Modal($('postPagoModal')).show();
     }
 
@@ -5337,6 +5348,12 @@ body.dark-mode .pos-topbar .btn-outline-danger:hover {
         loadDayStats();
         loadTurnoHistory();
         startTurnoTimer();
+
+        // Sync hidden template_id field from dropdown's pre-selected value
+        const templateSelect = document.getElementById('template-select');
+        if (templateSelect) {
+            POS.onTemplateChange(templateSelect.value);
+        }
 
         // Autorización admin para quitar ITBIS
         $('btn-auth-admin-submit').addEventListener('click', enviarAutorizacionAdmin);

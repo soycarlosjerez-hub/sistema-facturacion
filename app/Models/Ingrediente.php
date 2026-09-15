@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Ingrediente extends Model
 {
-    use Auditable;
+    use Auditable, TenantScope;
 
     protected $fillable = [
         'nombre',

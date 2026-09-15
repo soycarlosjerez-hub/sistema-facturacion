@@ -4,13 +4,11 @@ namespace App\Services;
 
 use App\Models\Backup;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Servicio para manejar backups de la base de datos.
- * 
+ *
  * Responsabilidades:
  * - Crear backups manuales y automáticos
  * - Restaurar backups
@@ -20,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 class BackupService
 {
     protected Backup $backupModel;
+
     protected string $backupDir;
 
     public function __construct(Backup $backupModel)
@@ -30,11 +29,10 @@ class BackupService
 
     /**
      * Crear un backup de la base de datos.
-     * 
-     * @param string $type 'manual' o 'automatico'
-     * @param string|null $customName Nombre personalizado del archivo
-     * @param bool $compress Comprimir con gzip
-     * @return Backup
+     *
+     * @param  string  $type  'manual' o 'automatico'
+     * @param  string|null  $customName  Nombre personalizado del archivo
+     * @param  bool  $compress  Comprimir con gzip
      */
     public function createBackup(string $type = 'manual', ?string $customName = null, bool $compress = true): Backup
     {
@@ -42,24 +40,24 @@ class BackupService
             $dbName = config('database.connections.mysql.database');
             $dbUser = config('database.connections.mysql.username');
             $dbPass = config('database.connections.mysql.password');
-            $dbHost = config('database.connections.mysql.host', '127.0.0.1');
-            
-            $timestamp = now()->format('Ymd_His');
-            $filename = $customName 
-                ? ($customName . ($compress ? '.sql.gz' : '.sql'))
-                : "backup_{$dbName}_{$timestamp}" . ($compress ? '.sql.gz' : '.sql');
+            $dbHost = '127.0.0.1';
 
-            $relativePath = 'backups/' . $filename;
+            $timestamp = now()->format('Ymd_His');
+            $filename = $customName
+                ? ($customName.($compress ? '.sql.gz' : '.sql'))
+                : "backup_{$dbName}_{$timestamp}".($compress ? '.sql.gz' : '.sql');
+
+            $relativePath = 'app/backups/'.$filename;
             $fullPath = storage_path($relativePath);
 
             // Asegurar directorio existe
-            if (!is_dir(dirname($fullPath))) {
+            if (! is_dir(dirname($fullPath))) {
                 mkdir(dirname($fullPath), 0755, true);
             }
 
             // Crear archivo de configuración temporal para mysqldump
             $tmpCnf = tempnam(sys_get_temp_dir(), 'mycnf_');
-            file_put_contents($tmpCnf, "[client]\nhost=\"{$dbHost}\"\nuser=\"{$dbUser}\"\npassword=\"{$dbPass}\"\n");
+            file_put_contents($tmpCnf, "[client]\nhost=\"{$dbHost}\"\nprotocol=TCP\nuser=\"{$dbUser}\"\npassword=\"{$dbPass}\"\n");
 
             // Comando de backup
             if ($compress) {
@@ -82,13 +80,33 @@ class BackupService
             $output = [];
             $returnVar = 0;
             exec($cmd, $output, $returnVar);
-            
+
             @unlink($tmpCnf);
 
-            if ($returnVar !== 0 || !file_exists($fullPath) || filesize($fullPath) === 0) {
-                $errorMsg = implode("\n", $output);
-                Log::error('BackupService: Backup falló', ['error' => $errorMsg, 'cmd' => $cmd]);
-                
+            if ($returnVar !== 0 || ! file_exists($fullPath) || filesize($fullPath) < 100) {
+                $errorMsg = file_exists($fullPath) ? file_get_contents($fullPath) : 'Archivo no creado';
+                Log::error('BackupService: Backup falló (returnVar: '.$returnVar.')', ['error' => $errorMsg, 'cmd' => $cmd]);
+
+                return $this->createBackupRecord([
+                    'filename' => $filename,
+                    'filepath' => $relativePath,
+                    'size_bytes' => 0,
+                    'type' => $type,
+                    'status' => 'fallido',
+                    'notes' => $errorMsg,
+                    'user_id' => Auth::id(),
+                ]);
+            }
+
+            // Validar contenido SQL del backup
+            $handle = fopen($fullPath, 'r');
+            $header = fread($handle, 2048);
+            fclose($handle);
+
+            if (! preg_match('/(CREATE |LOCK TABLES |UNLOCK TABLES |INSERT INTO |DROP DATABASE|-- MySQL)/i', $header)) {
+                $errorMsg = 'Archivo no contiene SQL válido: '.trim($header);
+                Log::error('BackupService: Backup no válido (sin keywords SQL)', ['file' => $filename, 'header' => $header]);
+
                 return $this->createBackupRecord([
                     'filename' => $filename,
                     'filepath' => $relativePath,
@@ -103,8 +121,21 @@ class BackupService
             // Registrar backup exitoso
             $size = filesize($fullPath);
 
+            // Opcional: encriptar backup si BACKUP_ENCRYPT=true
+            $finalPath = $fullPath;
+            if (env('BACKUP_ENCRYPT', false)) {
+                $encryption = new BackupEncryptionService();
+                $encryptedPath = $encryption->encrypt($fullPath);
+                if ($encryptedPath) {
+                    @unlink($fullPath);
+                    $finalPath = $encryptedPath;
+                    $size = filesize($encryptedPath);
+                    $relativePath = 'backups/' . basename($encryptedPath);
+                }
+            }
+
             return $this->createBackupRecord([
-                'filename' => $filename,
+                'filename' => basename($finalPath),
                 'filepath' => $relativePath,
                 'size_bytes' => $size,
                 'type' => $type,
@@ -114,7 +145,7 @@ class BackupService
 
         } catch (\Exception $e) {
             Log::error('BackupService: Excepción al crear backup', ['exception' => $e->getMessage()]);
-            
+
             return $this->createBackupRecord([
                 'filename' => '',
                 'filepath' => '',
@@ -129,16 +160,16 @@ class BackupService
 
     /**
      * Restaurar un backup desde un archivo SQL.
-     * 
-     * @param string $filepath Ruta del archivo de backup
-     * @return bool
+     *
+     * @param  string  $filepath  Ruta del archivo de backup
      */
     public function restoreBackup(string $filepath): bool
     {
         $fullPath = storage_path($filepath);
 
-        if (!file_exists($fullPath)) {
+        if (! file_exists($fullPath)) {
             Log::error('BackupService: Archivo de backup no encontrado', ['filepath' => $filepath]);
+
             return false;
         }
 
@@ -146,7 +177,7 @@ class BackupService
             $dbName = config('database.connections.mysql.database');
             $dbUser = config('database.connections.mysql.username');
             $dbPass = config('database.connections.mysql.password');
-            $dbHost = config('database.connections.mysql.host', '127.0.0.1');
+            $dbHost = '127.0.0.1';
 
             // Determinar si está comprimido
             if (str_ends_with($filepath, '.gz')) {
@@ -171,6 +202,7 @@ class BackupService
 
             if ($returnVar !== 0) {
                 Log::error('BackupService: Restauración falló', ['output' => $output]);
+
                 return false;
             }
 
@@ -178,21 +210,19 @@ class BackupService
 
         } catch (\Exception $e) {
             Log::error('BackupService: Excepción al restaurar', ['exception' => $e->getMessage()]);
+
             return false;
         }
     }
 
     /**
      * Eliminar un backup.
-     * 
-     * @param Backup $backup
-     * @return bool
      */
     public function deleteBackup(Backup $backup): bool
     {
         try {
             $filepath = storage_path($backup->filepath);
-            
+
             if (file_exists($filepath)) {
                 @unlink($filepath);
             }
@@ -200,21 +230,22 @@ class BackupService
             return $backup->delete();
         } catch (\Exception $e) {
             Log::error('BackupService: Error al eliminar backup', ['exception' => $e->getMessage()]);
+
             return false;
         }
     }
 
     /**
      * Limpiar backups antiguos.
-     * 
-     * @param int $days Días a mantener
+     *
+     * @param  int  $days  Días a mantener
      * @return int Número de backups eliminados
      */
     public function cleanOldBackups(int $days = 30): int
     {
         $cutoff = now()->subDays($days);
         $oldBackups = $this->backupModel->where('created_at', '<', $cutoff)->get();
-        
+
         $count = 0;
         foreach ($oldBackups as $backup) {
             if ($this->deleteBackup($backup)) {
@@ -227,15 +258,12 @@ class BackupService
 
     /**
      * Verificar integridad de un archivo de backup.
-     * 
-     * @param string $filepath
-     * @return array
      */
     public function verifyBackup(string $filepath): array
     {
         $fullPath = storage_path($filepath);
 
-        if (!file_exists($fullPath)) {
+        if (! file_exists($fullPath)) {
             return ['valid' => false, 'error' => 'Archivo no encontrado'];
         }
 
@@ -266,8 +294,6 @@ class BackupService
 
     /**
      * Obtener estadísticas de backups.
-     * 
-     * @return array
      */
     public function getStats(): array
     {
@@ -297,7 +323,8 @@ class BackupService
     protected function createTmpConfig(string $host, string $user, string $pass): string
     {
         $tmpCnf = tempnam(sys_get_temp_dir(), 'mycnf_');
-        file_put_contents($tmpCnf, "[client]\nhost=\"{$host}\"\nuser=\"{$user}\"\npassword=\"{$pass}\"\n");
+        file_put_contents($tmpCnf, "[client]\nhost=\"{$host}\"\nprotocol=TCP\nuser=\"{$user}\"\npassword=\"{$pass}\"\n");
+
         return $tmpCnf;
     }
 
@@ -311,6 +338,7 @@ class BackupService
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
         $bytes /= pow(1024, $pow);
-        return round($bytes, $precision) . ' ' . $units[$pow];
+
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

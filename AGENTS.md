@@ -1,27 +1,26 @@
 # Erpipos ERP — Agent Instructions
 
-Laravel 12 / PHP 8.2+ multi-tenant SaaS for Dominican Republic e-CF (DGII) electronic invoicing.
+Laravel 12 / PHP 8.2+ multi-tenant SaaS para Republica Dominicana e-CF (DGII) facturacion electronica.
 
-## ⚠️ CRITICAL — READ FIRST
+## ⚠️ CRITICO — OBLIGATORIO
 
-- **NEVER use `php artisan migrate:refresh`** — ever. It destroys ALL data including seeded tenants, users, roles, permissions, and configuration.
-- **NEVER use `php artisan migrate:fresh`** without `--seed` unless the user explicitly asks for a full reset.
-- If migrations fail and you need to reset: use `php artisan migrate:fresh --seed` only on explicit user request.
-- `tenant_id` never accepted from user input — always assign from `auth()->user()->business_instance_id`.
-- Use `hasAnyRole()` for permission checks, NEVER `in_array()`. Roles/permissions are per-instance (Spatie laravel-permission).
+- **NUNCA `php artisan migrate:refresh`** — destruye TODOS los datos (tenants, usuarios, roles, permisos).
+- **NUNCA `php artisan migrate:fresh`** sin `--seed` a menos que el usuario pida reset completo.
+- `tenant_id` nunca se acepta del usuario — siempre `auth()->user()->business_instance_id`.
+- Usa `hasAnyRole()` para permisos, NUNCA `in_array()`. Roles/permisos son por instancia (Spatie laravel-permission).
 
-## Project Stats
+## Proyecto
 
-| Layer | Location | Count |
-|-------|----------|-------|
-| Models | `app/Models/` | 171 (many use `TenantScope`, `Auditable`) |
-| Migrations | `database/migrations/` | 377 |
-| Seeders | `database/seeders/` | 48 (+ 65 in `Full/`) |
-| Controllers | `app/Http/Controllers/` | 131 (+ Api/) |
-| Services | `app/Services/` (Ecf/, Ai/) | 78 |
-| Blade views | `resources/views/` | 532 Blade files in ~79 dirs |
-| Routes | `routes/web.php` | ~1,200 |
-| Routes | `routes/api.php` | ~143 |
+| Capa | Ubicacion | Cantidad |
+|------|-----------|----------|
+| Modelos | `app/Models/` | 171 (many `TenantScope`, `Auditable`) |
+| Migraciones | `database/migrations/` | 377 |
+| Seeders | `database/seeders/` | 48 (+ 65 `Full/`) |
+| Controladores | `app/Http/Controllers/` | 131 (+ Api/) |
+| Servicios | `app/Services/` | 78 |
+| Vistas Blade | `resources/views/` | 532 en ~79 dirs |
+| Rutas web | `routes/web.php` | ~1,200 |
+| Rutas API | `routes/api.php` | ~143 |
 
 ## Setup
 
@@ -30,62 +29,55 @@ composer install && npm install && cp .env.example .env && php artisan key:gener
 php artisan migrate
 php artisan db:seed
 php artisan storage:link
-npm run build        # production assets
-npm run dev          # dev server (vite + queue + serve via composer dev)
+npm run build        # prod
+npm run dev          # dev (vite + queue + serve)
 ```
 
-Dev: `composer run dev` (concurrently: `php artisan serve`, `php artisan queue:listen --tries=1`, `npm run dev`).
+Dev: `composer run dev` (php artisan serve, queue:listen, npm run dev).
 
-## Multi-Tenancy (Critical)
+## Multi-Tenancy
 
-- Custom `TenantScope` trait at `app/Traits/TenantScope.php` — auto-scopes queries by `tenant_id` on 80+ models.
-- Check for `use TenantScope` on a model before writing queries; models without the trait are **not** scoped.
-- When creating models that appear in views: **always set `tenant_id`** (assign from `auth()->user()->business_instance_id`).
-- `MULTITENANCY_ENABLED=true` in `.env` (default). Set `HOSTNAME_TENANCY=false` unless using subdomain routing.
+- `TenantScope` en `app/Traits/TenantScope.php` — auto-filtra por `tenant_id` en 80+ modelos.
+- Si un modelo NO tiene `use TenantScope` no esta scoped.
+- Al crear modelos en vistas: siempre `tenant_id` desde `auth()->user()->business_instance_id`.
+- `MULTITENANCY_ENABLED=true` en `.env` (default). `HOSTNAME_TENANCY=false` si no usas subdominios.
 
 ## Testing
 
 ```bash
-composer run test       # clears config then runs php artisan test
-php artisan test         # PHPUnit (SQLite :memory: — BCRYPT_ROUNDS=4 in phpunit.xml)
-php artisan test --filter=Venta   # single test
-npx playwright test      # E2E (boots artisan serve on :8000, 3 browsers)
-npx playwright test tests/e2e/01-auth.spec.ts  # single file
-npx playwright test --ui             # interactive mode
+composer run test       # php artisan test
+php artisan test --filter=Venta   # test unico
+npx playwright test      # E2E (serve :8000, 3 browsers)
+npx playwright test tests/e2e/01-auth.spec.ts  # unico archivo
 ```
 
-- PHPUnit: SQLite in-memory, isolated per run. Queue = `sync`, mail = `array`.
-- Playwright E2E: 5 test files in `tests/e2e/`. CI: 2 retries, 1 worker.
-- CI uses MySQL 8.0 service container (not SQLite).
+PHPUnit: SQLite :memory:, queue=sync, mail=array. Playwright: 5 archivos en `tests/e2e/`.
 
-## DGII / e-CF (Domain-Specific)
+## DGII / e-CF
 
-- `.env` var `DGII_AMBIENTE` (sandbox | qa | prod). Locally simulated by default (`DGII_SIMULAR=true`).
-- Production: real `.crt`/`.key` certs, HTTPS, real API key.
-- ECF services: `app/Services/Ecf/`. State machine trait: `app/Concerns/HasEcfStateMachine`.
-- Certificates/XML: `storage/dgii/`.
-- Currency: `RD$` default. ITBIS default: 18%.
+- `DGII_AMBIENTE` (sandbox|qa|prod), `DGII_SIMULAR=true` local.
+- e-CF: `app/Services/Ecf/` + `SaleEcfService`, state machine: `app/Concerns/HasEcfStateMachine`.
+- Certs/XML: `storage/dgii/`. Moneda: `RD$`, ITBIS: 18%.
 
 ## Frontend
 
-- Blade templates + Alpine.js 3 (not Inertia).
-- SCSS: `resources/scss/dashboard.scss` + `resources/scss/app.scss` → compiled by Vite.
-- JS: `resources/js/dashboard.js` (Chart.js 4) + `resources/js/app.js`.
-- Premium UI: glassmorphism, dark mode, DataTables, animated gradients.
+- Blade + Alpine.js 3 + Bootstrap 5.3. SCSS: `resources/scss/dashboard.scss` → Vite.
+- JS: `resources/js/dashboard.js` (Chart.js 4) + `app.js`.
+- UI Premium: glassmorphism, dark mode, DataTables, gradientes animados.
 
 ## Docker
 
 ```bash
-docker compose up -d                          # dev (php-fpm, nginx, mysql, redis, phpmyadmin, queue)
-docker compose -f docker-compose.yml \
-  -f docker-compose.production.yml up -d      # production with Let's Encrypt SSL
+docker compose up -d                          # dev
+docker compose -f docker-compose.yml -f docker-compose.production.yml up -d  # prod SSL
 ```
 
-- Deploy: `sudo bash scripts/deploy.sh staging` / `sudo bash scripts/deploy-production.sh`.
+Deploy: `sudo bash scripts/deploy.sh staging` / `sudo bash scripts/deploy-production.sh`.
 
-## Constraints
+## Restricciones
 
-- PSR-12 coding style. Lint: `composer run pint` (Laravel Pint).
-- FormRequest validators for all write operations.
-- Routes via route files only (`routes/web.php`, `routes/api.php`). Flash messages in Spanish.
-- Permissions format: `{modulo}.{accion}` (view, create, edit, delete).
+- PSR-12. Lint: `composer run pint` (Laravel Pint).
+- FormRequest para toda write operation.
+- Rutas solo en archivos (web.php, api.php). Flash en espanol.
+- Permisos: `{modulo}.{accion}` (view, create, edit, delete).
+- Reglas de negocio: consultar `business-analyst` / `dgii-fiscal`.

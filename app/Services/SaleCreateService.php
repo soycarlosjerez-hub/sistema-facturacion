@@ -743,6 +743,9 @@ class SaleCreateService
                 'categoriasJs' => collect(),
                 'clientesJs' => collect(),
                 'ncfSequences' => collect(),
+                'plantillas' => collect(),
+                'permitidos' => ['sin', 'ncf', 'ecf'],
+                'productos' => collect(),
             ];
         }
 
@@ -819,6 +822,26 @@ class SaleCreateService
             ->orderBy('nombre')
             ->get();
 
+        // Tipo de comprobante permitidos según configuración de caja + instancia
+        $permitidos = ['sin', 'ncf', 'ecf'];
+        if ($sesion && $sesion->caja) {
+            $permitidos = $sesion->caja->allowed_comprobante_types ?? ['sin', 'ncf', 'ecf'];
+            if (Auth::check() && Auth::user()->business_instance_id) {
+                $instanceConfig = SystemSetting::where('clave', 'facturacion_config')->first();
+                if ($instanceConfig && !empty($instanceConfig->value)) {
+                    $configValue = is_string($instanceConfig->value) ? json_decode($instanceConfig->value, true) : $instanceConfig->value;
+                    if (is_array($configValue) && !empty($configValue['allowed_comprobante_types'])) {
+                        $permitidos = array_values(array_intersect($permitidos, $configValue['allowed_comprobante_types']));
+                    }
+                }
+            }
+        }
+
+        $plantillas = \App\Models\PlantillaImpresion::where('tenant_id', $tenantId)
+            ->where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
         return [
             'sesiones' => $sesiones,
             'sesion' => $sesion,
@@ -834,6 +857,9 @@ class SaleCreateService
             'clientesJs' => $clientesJs,
             'deliveryCompanies' => $deliveryCompanies,
             'deliveryDrivers' => $deliveryDrivers,
+            'plantillas' => $plantillas,
+            'permitidos' => $permitidos,
+            'productos' => $productos,
         ];
     }
 
@@ -1030,7 +1056,7 @@ class SaleCreateService
 
             return $ecf;
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Error al procesar e-CF de venta #'.$venta->id, [
+            \Illuminate\Support\Facades\Log::error('e-CF: no se pudo generar e-CF para la venta #'.$venta->id.' (quedó pendiente de reintento)', [
                 'venta_id' => $venta->id,
                 'error' => $e->getMessage(),
             ]);

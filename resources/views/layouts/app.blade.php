@@ -938,15 +938,41 @@ body.dark-mode .accordion-button:hover:not(.collapsed) {
            ============================================================ */
         window.UI = {
             confirm: {
-                delete: function(url, label) {
+                delete: function(form, label) {
+                    if (form && typeof form.closest === 'function') {
+                        form = form.closest('form');
+                    }
                     UI._fire({
                         title: '\u00bfEliminar registro?',
                         text: label ? 'Se eliminar\u00e1: "' + label + '"' : null,
-                        icon: 'error',
+                        icon: 'warning',
                         color: '#dc2626',
                         confirmText: 'S\u00ed, eliminar',
-                        url: url
+                        onSubmit: function() {
+                            if (form && form.submit) {
+                                form.submit();
+                            }
+                        }
                     });
+                    return false;
+                },
+                deleteForce: function(form, label) {
+                    if (form && typeof form.closest === 'function') {
+                        form = form.closest('form');
+                    }
+                    UI._fire({
+                        title: '\u00bfEliminar permanentemente?',
+                        text: label ? 'Se eliminar\u00e1 permanentemente: "' + label + '"' : null,
+                        icon: 'error',
+                        color: '#ef4444',
+                        confirmText: 'S\u00ed, eliminar para siempre',
+                        onSubmit: function() {
+                            if (form && form.submit) {
+                                form.submit();
+                            }
+                        }
+                    });
+                    return false;
                 },
                 deleteWithForm: function(formId, label) {
                     var form = document.getElementById(formId);

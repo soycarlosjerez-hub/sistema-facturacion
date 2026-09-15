@@ -8,15 +8,18 @@ use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthenticateApiKey
 {
+    private const CACHE_TTL = 300;
+
     public function handle(Request $request, Closure $next)
     {
         $token = $request->bearerToken();
 
-        if (!$token) {
+        if (! $token) {
             return response()->json(['message' => 'Token no proporcionado.'], 401);
         }
 
@@ -29,8 +32,9 @@ class AuthenticateApiKey
             ->first();
 
         if ($clientToken && $clientToken->cliente) {
-            if (!$clientToken->cliente->acceso_api) {
+            if (! $clientToken->cliente->acceso_api) {
                 $clientToken->delete();
+
                 return response()->json(['message' => 'Acceso API deshabilitado para esta cuenta.'], 403);
             }
             if ($clientToken->expires_at && $clientToken->expires_at->isPast()) {
@@ -38,7 +42,8 @@ class AuthenticateApiKey
             }
             $clientToken->update(['last_used_at' => now()]);
             $request->attributes->set('client_api_token', $clientToken);
-            $request->setUserResolver(fn() => $clientToken->cliente);
+            $request->setUserResolver(fn () => $clientToken->cliente);
+
             return $next($request);
         }
 
@@ -49,21 +54,25 @@ class AuthenticateApiKey
     {
         $hash = hash('sha256', $token);
 
-        $apiKey = InstanceApiKey::where('key', $hash)
+        $apiKey = Cache::remember("api_key_hash:{$hash}", self::CACHE_TTL, fn () => InstanceApiKey::where('key', $hash)
+            ->orWhere('key_raw', $token)
             ->where('is_active', true)
-            ->first();
+            ->first()
+        );
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return response()->json(['message' => 'API Key inválida o desactivada.'], 401);
         }
 
-        $apiKey->update(['last_used_at' => now()]);
+        InstanceApiKey::where('id', $apiKey->id)
+            ->where('is_active', true)
+            ->update(['last_used_at' => now()]);
 
         $user = User::where('business_instance_id', $apiKey->business_instance_id)
             ->orderBy('id')
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'No hay usuarios activos en la instancia.'], 401);
         }
 
@@ -76,7 +85,7 @@ class AuthenticateApiKey
     {
         $accessToken = PersonalAccessToken::findToken($token);
 
-        if (!$accessToken) {
+        if (! $accessToken) {
             return response()->json(['message' => 'Token inválido.'], 401);
         }
 
@@ -86,7 +95,7 @@ class AuthenticateApiKey
 
         $user = $accessToken->tokenable;
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Usuario no encontrado.'], 401);
         }
 
@@ -96,5 +105,4 @@ class AuthenticateApiKey
 
         return $next($request);
     }
-
 }

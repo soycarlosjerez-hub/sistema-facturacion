@@ -1,0 +1,2327 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mail\UserCreatedNotification;
+use App\Models\BusinessInstance;
+use App\Models\BusinessType;
+use App\Models\BusinessTypeModule;
+use App\Models\InstanceApiKey;
+use App\Models\InstanceErrorLog;
+use App\Models\InstanceNotificationSetting;
+use App\Models\InstanceRole;
+use App\Models\InstanceRoleModule;
+use App\Models\Modulo;
+use App\Models\PagoInstancia;
+use App\Models\SystemSetting;
+use App\Models\User;
+use App\Models\UserActivityLog;
+use App\Services\OwnerService;
+use App\Services\TenantCleanupService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Laravel\Sanctum\PersonalAccessToken;
+
+class OwnerController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('role:owner');
+    }
+
+    private function logOwnerAction(string $action, string $description, ?array $oldValues = null, ?array $newValues = null, ?Model $model = null): void
+    {
+        try {
+            \App\Models\AuditLog::create([
+                'user_id' => auth()->id(),
+                'action' => $action,
+                'model_type' => $model ? get_class($model) : null,
+                'model_id' => $model?->id,
+                'description' => $description,
+                'old_values' => $oldValues ? json_encode($oldValues) : null,
+                'new_values' => $newValues ? json_encode($newValues) : null,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'tenant_id' => null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to log owner action: '.$e->getMessage());
+        }
+    }
+
+    public function index()
+    {
+        $dashboardData = Cache::remember("owner_dashboard:{$this->currentUserId()}", 300, function () {
+            return $this->buildDashboardData();
+        });
+
+        return view('owner.dashboard', $dashboardData);
+    }
+
+    private function currentUserId(): int
+    {
+        return auth()->id();
+    }
+
+    /**
+     * Invalidar el cache del dashboard para un usuario específico.
+     */
+    public static function invalidateDashboardCache(int $userId): void
+    {
+        Cache::forget("owner_dashboard:{$userId}");
+    }
+
+    /**
+     * Invalidar TODos los caches de dashboard (usar con precaución).
+     */
+    public static function invalidateAllDashboardCaches(): void
+    {
+        $pattern = 'owner_dashboard:*';
+        foreach (Cache::store()->keys($pattern) as $key) {
+            Cache::store()->forget($key);
+        }
+    }
+
+    private function buildDashboardData(): array
+    {
+        $now = now();
+        $firstDayCurrentMonth = $now->copy()->startOfMonth();
+        $firstDayLastMonth = $now->copy()->subMonth()->startOfMonth();
+        $firstDayPrevMonth = $now->copy()->subMonths(2)->startOfMonth();
+
+        // ── Basic counts ──────────────────────────────────────────
+        $totalInstancias = BusinessInstance::withTrashed()->count();
+        $archivadas = BusinessInstance::onlyTrashed()->count();
+        $activas = BusinessInstance::where('activo', true)->count();
+        $bloqueadas = BusinessInstance::where('bloqueado', true)->count();
+        $vencidas = BusinessInstance::where('activo', true)
+            ->where('fecha_vencimiento', '<', $now)->count();
+        $porVencer = BusinessInstance::where('activo', true)
+            ->whereNotNull('fecha_vencimiento')
+            ->where('fecha_vencimiento', '>=', $now)
+            ->where('fecha_vencimiento', '<=', $now->copy()->addDays(30))->count();
+
+        $instanciasPorTipo = BusinessInstance::selectRaw('business_type_id, count(*) as cnt')
+            ->with('businessType')
+            ->groupBy('business_type_id')
+            ->get()
+            ->mapWithKeys(fn ($item) => [$item->businessType?->nombre ?? 'Sin tipo' => $item->cnt])
+            ->sortDesc();
+
+        // ── MRR / Financial ───────────────────────────────────────
+        $mrrPlanos = BusinessInstance::where('business_instances.activo', true)
+            ->whereNotNull('plan_id')
+            ->join('plans', 'business_instances.plan_id', '=', 'plans.id')
+            ->where('plans.activo', true)
+            ->sum('plans.precio_mensual');
+
+        $mrrSinPlan = BusinessInstance::where('activo', true)
+            ->whereNull('plan_id')
+            ->whereNotNull('costo_mensual')
+            ->sum('costo_mensual');
+
+        $mrr = ($mrrPlanos ?: 0) + ($mrrSinPlan ?: 0);
+        $arr = $mrr * 12;
+        $arpu = $activas > 0 ? $mrr / $activas : 0;
+
+        // Actual collected payments
+        $currentMonthCollected = PagoInstancia::where('estado_pago', 'completado')
+            ->whereMonth('fecha_pago', $firstDayCurrentMonth->month)
+            ->whereYear('fecha_pago', $firstDayCurrentMonth->year)
+            ->sum('monto');
+
+        $lastMonthCollected = PagoInstancia::where('estado_pago', 'completado')
+            ->whereMonth('fecha_pago', $firstDayLastMonth->month)
+            ->whereYear('fecha_pago', $firstDayLastMonth->year)
+            ->sum('monto');
+
+        $prevMonthCollected = PagoInstancia::where('estado_pago', 'completado')
+            ->whereMonth('fecha_pago', $firstDayPrevMonth->month)
+            ->whereYear('fecha_pago', $firstDayPrevMonth->year)
+            ->sum('monto');
+
+        $mrrGrowthRate = $lastMonthCollected > 0
+            ? round((($currentMonthCollected - $lastMonthCollected) / $lastMonthCollected) * 100, 1)
+            : ($currentMonthCollected > 0 ? 100 : 0);
+
+        $collectionRate = $mrr > 0
+            ? round(($currentMonthCollected / $mrr) * 100, 1)
+            : 100;
+
+        $ingresosEsperados = BusinessInstance::where('activo', true)->sum('costo_mensual');
+
+        // Overdue total (optimizado: sumar SQL directo en vez de N+1)
+        $deudaTotal = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->whereNotNull('costo_mensual')
+            ->sum('costo_mensual');
+
+        // 12-month MRR history for chart
+        $mrrHistory = PagoInstancia::selectRaw(
+            'DATE_FORMAT(fecha_pago, "%Y-%m") as month, SUM(monto) as total'
+        )
+            ->where('estado_pago', 'completado')
+            ->where('fecha_pago', '>=', $now->copy()->subMonths(12))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month');
+
+        $mrrChartLabels = [];
+        $mrrChartData = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $m = $now->copy()->subMonths($i);
+            $mrrChartLabels[] = $m->format('M y');
+            $mrrChartData[] = (float) ($mrrHistory->get($m->format('Y-m'), 0) ?? 0);
+        }
+
+        // 6-month revenue trend
+        $revenueTrend = PagoInstancia::selectRaw(
+            'DATE_FORMAT(fecha_pago, "%Y-%m") as month, SUM(monto) as total'
+        )
+            ->where('estado_pago', 'completado')
+            ->where('fecha_pago', '>=', $now->copy()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month');
+
+        $revenueChartLabels = [];
+        $revenueChartData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $m = $now->copy()->subMonths($i);
+            $revenueChartLabels[] = $m->format('M y');
+            $revenueChartData[] = (float) ($revenueTrend->get($m->format('Y-m'), 0) ?? 0);
+        }
+
+        // Plan distribution
+        $planDistribution = \App\Models\Plan::where('activo', true)
+            ->withCount(['businessInstances as active_instances' => fn ($q) => $q->where('activo', true)])
+            ->orderBy('orden')
+            ->get()
+            ->mapWithKeys(fn ($p) => [$p->nombre => $p->active_instances])
+            ->toArray();
+
+        // ── Business Health ───────────────────────────────────────
+        $enPrueba = BusinessInstance::where('activo', true)
+            ->whereNotNull('trial_started_at')
+            ->where('trial_ends_at', '>', $now)
+            ->whereNotIn('id', function ($q) {
+                $q->select('business_instance_id')
+                    ->from('pagos_instancia')
+                    ->whereNotNull('estado_pago')
+                    ->whereNotIn('estado_pago', ['cancelado', 'rechazado']);
+            })->count();
+
+        $pruebaPerdida = BusinessInstance::where('activo', true)
+            ->whereNotNull('trial_ends_at')
+            ->where('trial_ends_at', '<', $now)
+            ->whereNotIn('id', function ($q) {
+                $q->select('business_instance_id')
+                    ->from('pagos_instancia')
+                    ->whereNotNull('estado_pago')
+                    ->whereNotIn('estado_pago', ['cancelado', 'rechazado']);
+            })->count();
+
+        $churnRiskCount = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('fecha_vencimiento')
+                    ->orWhere('fecha_vencimiento', '<', $now);
+            })->count();
+
+        // ── Growth ────────────────────────────────────────────────
+        $nuevasEsteMes = BusinessInstance::whereMonth('created_at', $firstDayCurrentMonth->month)
+            ->whereYear('created_at', $firstDayCurrentMonth->year)->count();
+
+        $nuevasMesAnt = BusinessInstance::whereMonth('created_at', $firstDayLastMonth->month)
+            ->whereYear('created_at', $firstDayLastMonth->year)->count();
+
+        $growthRate = $nuevasMesAnt > 0
+            ? round((($nuevasEsteMes - $nuevasMesAnt) / $nuevasMesAnt) * 100, 1)
+            : ($nuevasEsteMes > 0 ? 100 : 0);
+
+        // ── Operational ───────────────────────────────────────────
+        $erroresNoResueltos7d = InstanceErrorLog::where('resolved', false)
+            ->where('created_at', '>=', $now->copy()->subDays(7))->count();
+
+        $erroresCriticos24h = InstanceErrorLog::whereIn('level', ['critical', 'error'])
+            ->where('created_at', '>=', $now->copy()->subDay())->count();
+
+        $totalSinResolver = InstanceErrorLog::where('resolved', false)->count();
+
+        $usuariosActivos24h = UserActivityLog::where('action', 'login')
+            ->where('created_at', '>=', $now->copy()->subDay())
+            ->distinct('user_id')->count('user_id');
+
+        $auditoriasHoy = \App\Models\AuditLog::whereDate('created_at', $now->copy()->startOfDay())
+            ->whereNull('tenant_id')->count();
+
+        // Error distribution (last 30d)
+        $errorDist = InstanceErrorLog::selectRaw('level, COUNT(*) as cnt')
+            ->where('created_at', '>=', $now->copy()->subDays(30))
+            ->groupBy('level')
+            ->pluck('cnt', 'level');
+
+        $errorLabels = ['critical', 'error', 'warning', 'info'];
+        $errorChartData = [];
+        foreach ($errorLabels as $l) {
+            $errorChartData[] = (int) ($errorDist->get($l, 0) ?? 0);
+        }
+
+        // ── Action items ─────────────────────────────────────────
+        $pendingApprovals = BusinessInstance::where('aprobado', false)->count();
+
+        $ownerActivity = \App\Models\AuditLog::whereNull('tenant_id')
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->limit(15)
+            ->get();
+
+        // Proximos vencimientos
+        $proximosVencimientos = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->whereNotNull('fecha_vencimiento')
+            ->where('fecha_vencimiento', '>=', $now)
+            ->where('fecha_vencimiento', '<=', $now->copy()->addDays(30))
+            ->with(['businessType', 'owner', 'ultimoPago'])
+            ->orderBy('fecha_vencimiento')
+            ->limit(10)
+            ->get();
+
+        // Instancias con atraso
+        $instanciasConAtrasoCount = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('fecha_vencimiento')
+                    ->orWhere('fecha_vencimiento', '<', $now);
+            })->count();
+
+        $instanciasConAtraso = BusinessInstance::where('activo', true)
+            ->where('bloqueado', false)
+            ->whereNotNull('fecha_vencimiento')
+            ->orderBy('fecha_vencimiento')
+            ->limit(10)
+            ->with(['businessType', 'owner', 'ultimoPago'])
+            ->get()
+            ->filter(fn ($i) => ! $i->estaAlDia());
+
+        // Instancias para tabla (limited load)
+        $instanciasIds = BusinessInstance::select('id')
+            ->orderByRaw('bloqueado DESC, activo DESC')
+            ->limit(50)
+            ->pluck('id');
+
+        $instancias = $instanciasIds->isNotEmpty()
+            ? BusinessInstance::with(['businessType', 'owner', 'ultimoPago'])
+                ->whereIn('id', $instanciasIds)
+                ->orderByRaw('bloqueado DESC, activo DESC')
+                ->get()
+            : collect();
+
+        $totalUsuarios = User::count();
+        $totalTipos = BusinessType::count();
+        $pendingCount = $pendingApprovals;
+        $ingresosRealesMes = $currentMonthCollected;
+        $systemMoneda = SystemSetting::get('moneda_simbolo', 'RD$');
+
+        $planes = \App\Models\Plan::where('activo', true)
+            ->orderBy('orden')
+            ->withCount('businessInstances')
+            ->get();
+
+        return compact(
+            // Basic
+            'totalInstancias', 'activas', 'bloqueadas', 'vencidas', 'porVencer', 'archivadas',
+            'instancias', 'instanciasPorTipo', 'instanciasConAtraso', 'instanciasConAtrasoCount',
+            'proximosVencimientos', 'totalTipos', 'totalUsuarios',
+
+            // Financial
+            'mrr', 'arr', 'arpu',
+            'currentMonthCollected', 'lastMonthCollected', 'prevMonthCollected',
+            'mrrGrowthRate', 'collectionRate',
+            'ingresosEsperados', 'ingresosRealesMes', 'deudaTotal',
+            'mrrChartLabels', 'mrrChartData',
+            'revenueChartLabels', 'revenueChartData',
+            'planDistribution',
+            'systemMoneda',
+
+            // Health
+            'enPrueba', 'pruebaPerdida', 'churnRiskCount',
+
+            // Growth
+            'nuevasEsteMes', 'nuevasMesAnt', 'growthRate',
+
+            // Operational
+            'erroresNoResueltos7d', 'erroresCriticos24h', 'totalSinResolver',
+            'usuariosActivos24h', 'auditoriasHoy',
+            'errorLabels', 'errorChartData',
+
+            // Action items
+            'pendingApprovals',
+            'ownerActivity',
+            'planes',
+            'pendingCount',
+        );
+    }
+
+    public function businessTypes()
+    {
+        $businessTypes = BusinessType::with('modules')
+            ->withCount([
+                'businessInstances',
+                'businessInstances as instancias_activas' => fn ($q) => $q->where('activo', true),
+                'usersAsociados',
+            ])
+            ->orderBy('orden')
+            ->get();
+
+        $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
+
+        $stats = [
+            'tipos' => $businessTypes->count(),
+            'instancias' => $businessTypes->sum('business_instances_count'),
+            'activas' => $businessTypes->sum('instancias_activas'),
+            'usuarios' => $businessTypes->sum('users_asociados_count'),
+            'modulos' => $allModules->count(),
+        ];
+
+        return view('owner.business-types.index', compact('businessTypes', 'allModules', 'stats'));
+    }
+
+    public function businessTypesCreate()
+    {
+        $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
+
+        return view('owner.business-types.create', compact('allModules'));
+    }
+
+    public function businessTypesStore(Request $request)
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'slug' => 'required|string|max:50|unique:business_types,slug',
+            'descripcion' => 'nullable|string|max:500',
+            'color' => 'nullable|string|max:50',
+            'icon' => 'nullable|string|max:100',
+            'activo' => 'boolean',
+            'orden' => 'integer|min:0',
+            'modules' => 'nullable|array',
+            'modules.*' => 'string',
+        ]);
+
+        $businessType = BusinessType::create([
+            'nombre' => $data['nombre'],
+            'slug' => $data['slug'],
+            'descripcion' => $data['descripcion'] ?? null,
+            'color' => $data['color'] ?? 'primary',
+            'icon' => $data['icon'] ?? 'bi-building',
+            'activo' => $request->boolean('activo', true),
+            'orden' => $data['orden'] ?? 0,
+        ]);
+
+        $selectedModules = $data['modules'] ?? [];
+        $allModules = Modulo::where('activo', true)->get();
+        foreach ($allModules as $modulo) {
+            BusinessTypeModule::create([
+                'business_type_id' => $businessType->id,
+                'modulo_key' => $modulo->key,
+                'visible' => in_array($modulo->key, $selectedModules),
+                'orden' => $modulo->orden ?? 0,
+            ]);
+        }
+
+        BusinessType::flush();
+
+        return redirect()->route('owner.business-types.index')
+            ->with('success', "Tipo de negocio \"{$businessType->nombre}\" creado correctamente.");
+    }
+
+    public function businessTypesDestroy($id)
+    {
+        $businessType = BusinessType::findOrFail($id);
+
+        $instancesCount = BusinessInstance::where('business_type_id', $id)->count();
+        if ($instancesCount > 0) {
+            return back()->with('error', "No se puede eliminar \"{$businessType->nombre}\" porque {$instancesCount} instancia(s) lo est&aacute;n usando.");
+        }
+
+        $businessType->modules()->delete();
+        $businessType->delete();
+        BusinessType::flush();
+
+        return redirect()->route('owner.business-types.index')
+            ->with('success', "Tipo de negocio \"{$businessType->nombre}\" eliminado.");
+    }
+
+    public function businessTypesEdit($id)
+    {
+        $businessType = BusinessType::with('modules')->findOrFail($id);
+        $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
+
+        return view('owner.business-types.edit', compact('businessType', 'allModules'));
+    }
+
+    public function businessTypesUpdate(Request $request, $id)
+    {
+        $businessType = BusinessType::findOrFail($id);
+
+        $data = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string|max:500',
+            'color' => 'nullable|string|max:50',
+            'icon' => 'nullable|string|max:100',
+            'activo' => 'boolean',
+            'orden' => 'integer|min:0',
+            'modules' => 'nullable|array',
+            'modules.*' => 'string',
+            'facturacion_modo' => 'nullable|string|in:productos,obras_arte,equipos,productos_y_servicios',
+        ]);
+
+        $businessType->update([
+            'nombre' => $data['nombre'],
+            'descripcion' => $data['descripcion'] ?? null,
+            'color' => $data['color'] ?? null,
+            'icon' => $data['icon'] ?? null,
+            'activo' => $request->boolean('activo', true),
+            'orden' => $data['orden'] ?? 0,
+            'config' => array_merge($businessType->config ?? [], [
+                'facturacion_modo' => $data['facturacion_modo'] ?? 'productos',
+            ]),
+        ]);
+
+        $selectedModules = $data['modules'] ?? [];
+        $allModules = Modulo::where('activo', true)->get();
+        foreach ($allModules as $modulo) {
+            BusinessTypeModule::updateOrCreate(
+                [
+                    'business_type_id' => $businessType->id,
+                    'modulo_key' => $modulo->key,
+                ],
+                [
+                    'visible' => in_array($modulo->key, $selectedModules),
+                    'orden' => $modulo->orden ?? 0,
+                ]
+            );
+        }
+
+        BusinessType::flush();
+
+        return redirect()->route('owner.business-types.index')
+            ->with('success', 'Tipo de negocio actualizado correctamente.');
+    }
+
+    // ─── Módulos CRUD ────────────────────────────────────────────────
+
+    public function modulesIndex()
+    {
+        $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+        $modulos = Modulo::orderBy('categoria')->orderBy('orden')->get();
+
+        return view('owner.modules.index', compact('modulos', 'categorias'));
+    }
+
+    public function modulesCreate()
+    {
+        $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+
+        return view('owner.modules.form', compact('categorias'));
+    }
+
+    public function modulesStore(Request $request)
+    {
+        $data = $request->validate([
+            'key' => 'required|string|max:50|unique:modulos,key',
+            'label' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:100',
+            'categoria' => 'required|string|max:50',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'boolean',
+        ]);
+
+        Modulo::create([
+            'key' => $data['key'],
+            'label' => $data['label'],
+            'icon' => $data['icon'] ?? 'bi-circle',
+            'categoria' => $data['categoria'],
+            'orden' => $data['orden'] ?? 0,
+            'activo' => $request->boolean('activo', true),
+        ]);
+
+        return redirect()->route('owner.modules.index')
+            ->with('success', "Módulo \"{$data['label']}\" creado correctamente.");
+    }
+
+    public function modulesEdit($id)
+    {
+        $modulo = Modulo::findOrFail($id);
+        $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+
+        return view('owner.modules.form', compact('modulo', 'categorias'));
+    }
+
+    public function modulesUpdate(Request $request, $id)
+    {
+        $modulo = Modulo::findOrFail($id);
+
+        $data = $request->validate([
+            'key' => 'required|string|max:50|unique:modulos,key,'.$modulo->id,
+            'label' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:100',
+            'categoria' => 'required|string|max:50',
+            'orden' => 'nullable|integer|min:0',
+            'activo' => 'boolean',
+        ]);
+
+        $modulo->update([
+            'key' => $data['key'],
+            'label' => $data['label'],
+            'icon' => $data['icon'] ?? 'bi-circle',
+            'categoria' => $data['categoria'],
+            'orden' => $data['orden'] ?? 0,
+            'activo' => $request->boolean('activo', true),
+        ]);
+
+        return redirect()->route('owner.modules.index')
+            ->with('success', "Módulo \"{$modulo->label}\" actualizado correctamente.");
+    }
+
+    public function modulesDestroy($id)
+    {
+        $modulo = Modulo::findOrFail($id);
+
+        $typesCount = BusinessTypeModule::where('modulo_key', $modulo->key)->count();
+        $instanceRolesCount = InstanceRoleModule::where('modulo_key', $modulo->key)->count();
+        $instanceOverrideCount = \App\Models\BusinessInstanceModule::where('modulo_key', $modulo->key)->count();
+
+        if ($typesCount > 0 || $instanceRolesCount > 0 || $instanceOverrideCount > 0) {
+            return back()->with('error', "No se puede eliminar \"{$modulo->label}\" porque está en uso por {$typesCount} tipo(s) de negocio, {$instanceRolesCount} role(s) de instancia y {$instanceOverrideCount} instancia(s). Desactívelo en su lugar.");
+        }
+
+        $modulo->delete();
+
+        return redirect()->route('owner.modules.index')
+            ->with('success', "Módulo \"{$modulo->label}\" eliminado.");
+    }
+
+    // ===================== PLANES (SaaS) =====================
+
+    public function plansIndex()
+    {
+        $planes = \App\Models\Plan::withCount('businessInstances')->orderBy('orden')->get();
+
+        return view('owner.planes.index', compact('planes'));
+    }
+
+    public function plansCreate()
+    {
+        $modulos = Modulo::allActive();
+        $businessTypes = BusinessType::where('activo', true)->orderBy('orden')->get();
+
+        return view('owner.planes.create', compact('modulos', 'businessTypes'));
+    }
+
+    public function plansStore(Request $request)
+    {
+        $data = $this->validatePlan($request);
+
+        \App\Models\Plan::create($data);
+
+        \App\Models\Plan::flush();
+
+        return redirect()->route('owner.plans.index')
+            ->with('success', 'Plan creado correctamente.');
+    }
+
+    public function plansEdit($id)
+    {
+        $plan = \App\Models\Plan::findOrFail($id);
+        $modulos = Modulo::allActive();
+        $businessTypes = BusinessType::where('activo', true)->orderBy('orden')->get();
+
+        // Pre-seleccionar business type si los módulos coinciden exactamente
+        $planModulos = $plan->modulos ?? [];
+        $preSelectedBusinessType = null;
+        if (! empty($planModulos)) {
+            foreach ($businessTypes as $bt) {
+                $btModulos = $bt->modules()->pluck('modulo_key')->toArray();
+                if (count($btModulos) === count($planModulos) && count(array_diff($btModulos, $planModulos)) === 0) {
+                    $preSelectedBusinessType = $bt->id;
+                    break;
+                }
+            }
+        }
+
+        return view('owner.planes.edit', compact('plan', 'modulos', 'businessTypes', 'preSelectedBusinessType'));
+    }
+
+    public function plansUpdate(Request $request, $id)
+    {
+        $plan = \App\Models\Plan::findOrFail($id);
+
+        $data = $this->validatePlan($request, $plan);
+
+        $plan->update($data);
+
+        \App\Models\Plan::flush();
+
+        return redirect()->route('owner.plans.index')
+            ->with('success', 'Plan actualizado correctamente.');
+    }
+
+    public function plansDestroy($id)
+    {
+        $plan = \App\Models\Plan::findOrFail($id);
+
+        $inUse = BusinessInstance::where('plan_id', $plan->id)->count();
+
+        if ($inUse > 0) {
+            return back()->with('error', "No se puede eliminar el plan \"{$plan->nombre}\" porque está asignado a {$inUse} instancia(s). Desactívelo en su lugar.");
+        }
+
+        $plan->delete();
+
+        \App\Models\Plan::flush();
+
+        return redirect()->route('owner.plans.index')
+            ->with('success', 'Plan eliminado correctamente.');
+    }
+
+    private function validatePlan(Request $request, ?\App\Models\Plan $plan = null): array
+    {
+        $slugRule = 'required|string|max:100|unique:plans,slug'.($plan ? ','.$plan->id : '');
+
+        return $request->validate([
+            'nombre' => 'required|string|max:255',
+            'slug' => $slugRule,
+            'descripcion' => 'nullable|string|max:500',
+            'precio_mensual' => 'required|numeric|min:0',
+            'precio_implementacion' => 'nullable|numeric|min:0',
+            'precio_lanzamiento' => 'nullable|numeric|min:0',
+            'max_usuarios' => 'nullable|integer|min:0',
+            'max_sucursales' => 'nullable|integer|min:0',
+            'max_empresas' => 'nullable|integer|min:0',
+            'features' => 'nullable|array',
+            'features.*' => 'string|max:255',
+            'modulos' => 'nullable|array',
+            'modulos.*' => 'string|max:100',
+            'activo' => 'boolean',
+            'recomendado' => 'boolean',
+            'orden' => 'nullable|integer|min:0',
+        ]) + [
+            'modulos' => $request->input('modulos', []),
+            'features' => $request->input('features', []),
+            'activo' => $request->boolean('activo', true),
+            'recomendado' => $request->boolean('recomendado', false),
+            'orden' => (int) $request->input('orden', 0),
+        ];
+    }
+
+    public function instances()
+    {
+        $query = BusinessInstance::with(['businessType', 'plan', 'owner', 'ultimoPago']);
+
+        if (request('show_trashed') === '1') {
+            $query->withTrashed();
+        }
+
+        $instances = $query
+            ->orderByRaw('bloqueado DESC, activo DESC')
+            ->latest()
+            ->paginate(15);
+
+        $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
+
+        return view('owner.instances.index', compact('instances', 'businessTypes'));
+    }
+
+    public function instancesCreate()
+    {
+        $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
+        $owners = OwnerService::getOwnerUsers();
+        $plans = \App\Models\Plan::active();
+
+        return view('owner.instances.create', compact('businessTypes', 'owners', 'plans'));
+    }
+
+    public function instancesStore(Request $request)
+    {
+        $rules = [
+            'nombre' => 'required|string|max:255',
+            'slug' => 'required|string|max:100|unique:business_instances,slug',
+            'rnc' => 'nullable|string|max:20|unique:business_instances,rnc',
+            'email' => 'nullable|email|max:255',
+            'telefono' => 'nullable|string|max:50',
+            'direccion' => 'nullable|string|max:500',
+            'business_type_id' => 'required|exists:business_types,id',
+            'plan_id' => 'nullable|exists:plans,id',
+            'owner_user_id' => 'nullable|exists:users,id',
+            'costo_mensual' => 'nullable|numeric|min:0',
+            'fecha_vencimiento' => 'nullable|date',
+            'activo' => 'boolean',
+            'crear_usuario' => 'boolean',
+        ];
+
+        if ($request->boolean('crear_usuario')) {
+            $allRoles = \Spatie\Permission\Models\Role::pluck('name')->toArray();
+            $rules['user_name'] = 'required|string|max:255';
+            $rules['user_email'] = 'required|email|max:255|unique:users,email';
+            $rules['user_password'] = 'required|string|min:12|confirmed';
+            $rules['user_role'] = ['required', 'string', Rule::in($allRoles)];
+        }
+
+        $data = $request->validate($rules);
+
+        $plan = $data['plan_id'] ? \App\Models\Plan::find($data['plan_id']) : null;
+
+        // Verificar límite de empresas del owner
+        if ($plan && $data['owner_user_id']) {
+            $instanciasActuales = BusinessInstance::where('owner_user_id', $data['owner_user_id'])
+                ->where('activo', true)
+                ->count();
+            $check = app(\App\Services\PlanLimitService::class)->verificarEmpresa($plan, $instanciasActuales);
+            if (! $check['ok']) {
+                return back()->withInput()->with('error', $check['mensaje']);
+            }
+        }
+
+        // Usar precio de lanzamiento para la primera factura si aplica
+        $costoMensual = $plan?->precio_mensual ?? $data['costo_mensual'] ?? null;
+        $esNuevaInstancia = true; // Primera creación
+        $primerPago = $plan?->costoImplementacionEfectivo(); // precio_lanzamiento o precio_implementacion
+
+        $instance = BusinessInstance::create([
+            'nombre' => $data['nombre'],
+            'slug' => Str::slug($data['slug']),
+            'rnc' => $data['rnc'] ?? null,
+            'email' => $data['email'] ?? null,
+            'telefono' => $data['telefono'] ?? null,
+            'direccion' => $data['direccion'] ?? null,
+            'business_type_id' => $data['business_type_id'],
+            'plan_id' => $plan?->id,
+            'owner_user_id' => $data['owner_user_id'] ?? auth()->id(),
+            'costo_mensual' => $costoMensual,
+            'fecha_vencimiento' => $data['fecha_vencimiento'] ?? now()->addMonth(),
+            'activo' => $request->boolean('activo', true),
+            'configuracion' => [],
+        ]);
+
+        // Registrar primer pago (implementación + primer mes) si hay plan
+        if ($plan && $primerPago > 0) {
+            \App\Models\PagoInstancia::create([
+                'business_instance_id' => $instance->id,
+                'plan_id' => $plan->id,
+                'monto' => $primerPago,
+                'mes_pagado' => now()->startOfMonth(),
+                'fecha_pago' => now(),
+                'metodo_pago' => 'transferencia',
+                'referencia_externa' => 'IMPLEMENTACION-LANZAMIENTO',
+                'estado_pago' => 'pagado',
+                'notas' => 'Implementación (oferta lanzamiento) + primer mes',
+                'registrado_por' => auth()->id(),
+            ]);
+
+            // El siguiente vencimiento es el mes siguiente al primer mes pagado
+            $instance->update(['fecha_vencimiento' => now()->addMonth()->startOfMonth()->addMonth()]);
+        }
+
+        if ($request->boolean('crear_usuario')) {
+            $businessType = BusinessType::find($data['business_type_id']);
+            $newUser = User::create([
+                'name' => $data['user_name'],
+                'email' => $data['user_email'],
+                'password' => Hash::make($data['user_password']),
+                'business_type_id' => $businessType?->id,
+                'business_instance_id' => $instance->id,
+                'sucursal_id' => null,
+            ]);
+            $newUser->assignRole($data['user_role']);
+        }
+
+        $this->logOwnerAction('INSTANCE_CREATE', "Instancia '{$instance->nombre}' creada", null, ['id' => $instance->id, 'slug' => $instance->slug], $instance);
+
+        // Invalidar cache del dashboard tras crear instancia
+        self::invalidateDashboardCache(auth()->id());
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Instancia creada correctamente.');
+    }
+
+    // ──────────────────────────────────────────────
+    // INSTANCIAS — Edición / Detalle / Actualización
+    // ──────────────────────────────────────────────
+
+    public function instancesShow($id)
+    {
+        $instance = BusinessInstance::withTrashed()->with(['businessType', 'plan', 'owner', 'ultimoPago'])
+            ->findOrFail($id);
+        // Only load a reasonable number of users, without loading all Sanctum tokens
+        // (tokens are massive and cause N+1 / memory issues)
+        $pagosRecientes = PagoInstancia::where('business_instance_id', $id)
+            ->with('registradoPor')
+            ->latest('mes_pagado')
+            ->take(5)
+            ->get();
+        $errorCount = InstanceErrorLog::where('tenant_id', $id)->recent(7)->count();
+        $recentErrors = InstanceErrorLog::where('tenant_id', $id)
+            ->with('user')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('owner.instances.show', compact('instance', 'pagosRecientes', 'errorCount', 'recentErrors'));
+    }
+
+    public function instancesEdit($id)
+    {
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
+        $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
+        $owners = OwnerService::getOwnerUsers();
+        $plans = \App\Models\Plan::active();
+
+        return view('owner.instances.edit', compact('instance', 'businessTypes', 'owners', 'plans'));
+    }
+
+    public function instancesUpdate(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'rnc' => 'nullable|string|max:20|unique:business_instances,rnc,'.$instance->id,
+            'email' => 'nullable|email|max:255',
+            'telefono' => 'nullable|string|max:50',
+            'direccion' => 'nullable|string|max:500',
+            'business_type_id' => 'required|exists:business_types,id',
+            'plan_id' => 'nullable|exists:plans,id',
+            'owner_user_id' => 'nullable|exists:users,id',
+            'costo_mensual' => 'nullable|numeric|min:0',
+            'fecha_vencimiento' => 'nullable|date',
+            'activo' => 'boolean',
+        ]);
+
+        $plan = $data['plan_id'] ? \App\Models\Plan::find($data['plan_id']) : null;
+
+        $oldData = $instance->getAttributes();
+        $instance->update([
+            'nombre' => $data['nombre'],
+            'rnc' => $data['rnc'] ?? null,
+            'email' => $data['email'] ?? null,
+            'telefono' => $data['telefono'] ?? null,
+            'direccion' => $data['direccion'] ?? null,
+            'business_type_id' => $data['business_type_id'],
+            'plan_id' => $plan?->id,
+            'owner_user_id' => $data['owner_user_id'] ?? $instance->owner_user_id,
+            'costo_mensual' => $plan?->precio_mensual ?? $data['costo_mensual'] ?? null,
+            'fecha_vencimiento' => $data['fecha_vencimiento'] ?? null,
+            'activo' => $request->boolean('activo', true),
+        ]);
+
+        $this->logOwnerAction('INSTANCE_UPDATE', "Instancia '{$instance->nombre}' actualizada", $oldData, $instance->getAttributes(), $instance);
+
+        // Invalidar cache del dashboard tras actualizar instancia
+        self::invalidateDashboardCache(auth()->id());
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Instancia actualizada correctamente.');
+    }
+
+    public function instancesDestroy($id)
+    {
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
+
+        if ($instance->trashed()) {
+            $instance->forceDelete();
+            $msg = 'Instancia eliminada permanentemente.';
+        } else {
+            $instance->delete();
+            $msg = 'Instancia archivada correctamente.';
+        }
+
+        // Invalidar cache del dashboard tras eliminar instancia
+        self::invalidateDashboardCache(auth()->id());
+
+        return redirect()->route('owner.instances.index')
+            ->with('success', $msg);
+    }
+
+    public function instancesConfig($id)
+    {
+        $instance = BusinessInstance::withTrashed()->with('businessType')->findOrFail($id);
+        $globalSettings = [
+            'nombre_empresa' => SystemSetting::get('nombre_empresa', ''),
+            'slogan' => SystemSetting::get('slogan', ''),
+            'moneda_simbolo' => SystemSetting::get('moneda_simbolo', 'RD$'),
+            'itbis_porcentaje' => SystemSetting::get('itbis_porcentaje', 18),
+            'prefijo_factura' => SystemSetting::get('prefijo_factura', 'FAC-'),
+            'prefijo_ncf' => SystemSetting::get('prefijo_ncf', ''),
+            'dias_credito' => SystemSetting::get('dias_credito', 30),
+            'impresora_papel_default' => SystemSetting::get('impresora_papel_default', '80mm'),
+        ];
+        $instanceConfig = $instance->configuracion ?? [];
+        $instanceNotifSettings = InstanceNotificationSetting::forInstance($instance);
+
+        return view('owner.instances.config', compact('instance', 'globalSettings', 'instanceConfig', 'instanceNotifSettings'));
+    }
+
+    public function instancesConfigUpdate(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'nombre_empresa' => 'nullable|string|max:255',
+            'slogan' => 'nullable|string|max:500',
+            'moneda_simbolo' => 'nullable|string|max:10',
+            'itbis_porcentaje' => 'nullable|numeric|min:0|max:100',
+            'prefijo_factura' => 'nullable|string|max:20',
+            'prefijo_ncf' => 'nullable|string|max:10',
+            'dias_credito' => 'nullable|integer|min:0|max:365',
+            'impresora_papel_default' => 'nullable|in:58mm,80mm',
+            'restaurante_valida_stock' => 'nullable|string',
+            'enabled' => 'nullable|boolean',
+            'sale_created' => 'nullable|boolean',
+            'sale_paid' => 'nullable|boolean',
+            'sale_cancelled' => 'nullable|boolean',
+            'order_confirmed' => 'nullable|boolean',
+            'order_ready' => 'nullable|boolean',
+            'order_shipped' => 'nullable|boolean',
+            'payment_received' => 'nullable|boolean',
+            'credit_overdue' => 'nullable|boolean',
+            'credit_abono' => 'nullable|boolean',
+            'stock_critical' => 'nullable|boolean',
+            'stock_restocked' => 'nullable|boolean',
+            'product_created' => 'nullable|boolean',
+            'shift_opened' => 'nullable|boolean',
+            'shift_closed' => 'nullable|boolean',
+            'cash_shortage' => 'nullable|boolean',
+            'daily_report' => 'nullable|boolean',
+            'ncff_expiring' => 'nullable|boolean',
+            'ecf_certificate_expiring' => 'nullable|boolean',
+            'backup_completed' => 'nullable|boolean',
+            'backup_failed' => 'nullable|boolean',
+            'user_registered' => 'nullable|boolean',
+            'subscription_expiring' => 'nullable|boolean',
+            'subscription_suspended' => 'nullable|boolean',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
+            'delete_logo' => 'nullable|boolean',
+        ]);
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            // Delete old logo
+            if ($instance->logo) {
+                Storage::disk('public')->delete($instance->logo);
+            }
+            // Store new logo
+            $logoPath = $request->file('logo')->store('logos', 'public');
+            $instance->update(['logo' => $logoPath]);
+        }
+
+        // Handle logo delete
+        if ($request->has('delete_logo') && $request->delete_logo == '1') {
+            if ($instance->logo) {
+                Storage::disk('public')->delete($instance->logo);
+                $instance->update(['logo' => null]);
+            }
+        }
+
+        $data['restaurante_valida_stock'] = $request->has('restaurante_valida_stock') ? '1' : '0';
+
+        $existingConfig = $instance->configuracion ?? [];
+        $mergedConfig = array_merge($existingConfig, array_filter($data, fn ($v) => ! is_null($v)));
+
+        $instance->update(['configuracion' => $mergedConfig]);
+
+        $notifData = collect($data)->only([
+            'enabled',
+            'sale_created', 'sale_paid', 'sale_cancelled',
+            'order_confirmed', 'order_ready', 'order_shipped',
+            'payment_received', 'credit_overdue', 'credit_abono',
+            'stock_critical', 'stock_restocked', 'product_created',
+            'shift_opened', 'shift_closed', 'cash_shortage', 'daily_report',
+            'ncff_expiring', 'ecf_certificate_expiring',
+            'backup_completed', 'backup_failed', 'user_registered',
+            'subscription_expiring', 'subscription_suspended',
+        ])->toArray();
+
+        InstanceNotificationSetting::updateOrCreate(
+            ['business_instance_id' => $instance->id],
+            $notifData
+        );
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Configuración de instancia actualizada correctamente.');
+    }
+
+    public function cleanInstance(Request $request, $id)
+    {
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
+
+        $request->validate([
+            'confirm_name' => 'required|string|in:'.$instance->nombre,
+        ]);
+
+        $tenantId = $instance->id;
+
+        $deletedCount = app(TenantCleanupService::class)->clearTenantData($tenantId);
+
+        \App\Models\BusinessInstance::where('id', $tenantId)->update([
+            'setup_completed' => false,
+        ]);
+
+        $this->logOwnerAction(
+            'INSTANCE_CLEAN',
+            "Datos operacionales de '{$instance->nombre}' eliminados completamente ({$deletedCount} filas)",
+            null,
+            ['tenant_id' => $tenantId, 'rows_deleted' => $deletedCount],
+            $instance
+        );
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', "Todos los datos operacionales de {$instance->nombre} han sido eliminados. El wizard de configuración se reiniciará en el próximo inicio de sesión.");
+
+    }
+
+    public function alternarBloqueo(Request $request, $id)
+    {
+        $instance = BusinessInstance::withTrashed()->findOrFail($id);
+
+        $data = $request->validate([
+            'bloqueado' => 'required|boolean',
+            'motivo_bloqueo' => 'required_if:bloqueado,1|string|max:500',
+        ]);
+
+        $oldBlockState = $instance->bloqueado;
+        $instance->update([
+            'bloqueado' => $data['bloqueado'],
+            'motivo_bloqueo' => $data['bloqueado'] ? $data['motivo_bloqueo'] : null,
+            'bloqueado_en' => $data['bloqueado'] ? now() : null,
+        ]);
+
+        $this->logOwnerAction(
+            $data['bloqueado'] ? 'INSTANCE_BLOCK' : 'INSTANCE_UNBLOCK',
+            "Instancia '{$instance->nombre}' ".($data['bloqueado'] ? 'bloqueada' : 'desbloqueada').($data['bloqueado'] && $data['motivo_bloqueo'] ? ': '.$data['motivo_bloqueo'] : ''),
+            ['bloqueado' => $oldBlockState],
+            ['bloqueado' => $data['bloqueado']],
+            $instance
+        );
+
+        $msg = $data['bloqueado']
+            ? 'Instancia bloqueada correctamente.'
+            : 'Instancia desbloqueada correctamente.';
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', $msg);
+    }
+
+    public function paymentHistory($id)
+    {
+        $instance = BusinessInstance::with('businessType')->findOrFail($id);
+        $pagos = PagoInstancia::where('business_instance_id', $id)
+            ->with('registradoPor')
+            ->latest('mes_pagado')
+            ->paginate(20);
+
+        return view('owner.instances.pagos.index', compact('instance', 'pagos'));
+    }
+
+    public function registerPayment($id)
+    {
+        $instance = BusinessInstance::with('ultimoPago')->findOrFail($id);
+        $mesesDisponibles = $this->getMesesDisponibles($instance);
+
+        return view('owner.instances.pagos.create', compact('instance', 'mesesDisponibles'));
+    }
+
+    public function storePayment(Request $request, $id)
+    {
+        $instance = BusinessInstance::with('plan')->findOrFail($id);
+
+        $data = $request->validate([
+            'monto' => 'required|numeric|min:0',
+            'mes_pagado' => 'required|date_format:Y-m-d',
+            'metodo_pago' => 'nullable|string|max:100',
+            'referencia_externa' => 'nullable|string|max:255',
+            'estado_pago' => 'nullable|string|max:50',
+            'notas' => 'nullable|string|max:500',
+        ]);
+
+        PagoInstancia::create([
+            'business_instance_id' => $instance->id,
+            'plan_id' => $instance->plan_id,
+            'monto' => $data['monto'],
+            'mes_pagado' => $data['mes_pagado'],
+            'fecha_pago' => now(),
+            'metodo_pago' => $data['metodo_pago'],
+            'referencia_externa' => $data['referencia_externa'] ?? null,
+            'estado_pago' => $data['estado_pago'] ?? 'completado',
+            'notas' => $data['notas'],
+            'registrado_por' => auth()->id(),
+        ]);
+
+        // Invalidar cache del dashboard tras registrar pago
+        self::invalidateDashboardCache(auth()->id());
+
+        // Desbloqueo automático cuando el pago cubre el período vigente
+        if ($instance->bloqueado && $instance->estaAlDia()) {
+            $instance->update([
+                'bloqueado' => false,
+                'motivo_bloqueo' => null,
+                'bloqueado_en' => null,
+            ]);
+
+            $this->logOwnerAction(
+                'INSTANCE_UNBLOCK',
+                "Instancia '{$instance->nombre}' desbloqueada automáticamente tras registrar pago.",
+                null,
+                ['bloqueado' => false],
+                $instance
+            );
+
+            return redirect()->route('owner.instances.show', $instance)
+                ->with('success', 'Pago registrado correctamente. La instancia fue desbloqueada.');
+        }
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Pago registrado correctamente.');
+    }
+
+    /**
+     * Confirma un pago reportado por el cliente desde el portal de suscripción.
+     */
+    public function confirmPayment($id, $pagoId)
+    {
+        $instance = BusinessInstance::with('plan')->findOrFail($id);
+
+        $pago = PagoInstancia::where('business_instance_id', $instance->id)
+            ->where('id', $pagoId)
+            ->where('estado_pago', 'pendiente')
+            ->firstOrFail();
+
+        $pago->update([
+            'estado_pago' => 'completado',
+            'fecha_pago' => now(),
+            'notas' => ($pago->notas ? $pago->notas.' | ' : '').'Pago confirmado por '.auth()->user()->name,
+            'registrado_por' => auth()->id(),
+        ]);
+
+        $nuevoVencimiento = $pago->mes_pagado?->startOfMonth()->addMonth() ?? now()->addMonth();
+        $unblocked = $instance->bloqueado;
+
+        $instance->update([
+            'fecha_vencimiento' => $nuevoVencimiento,
+            'bloqueado' => false,
+            'motivo_bloqueo' => null,
+            'bloqueado_en' => null,
+        ]);
+
+        $this->logOwnerAction(
+            'PAYMENT_CONFIRM',
+            'Pago de RD$ '.number_format($pago->monto, 2)." confirmado para la instancia '{$instance->nombre}' (mes ".$pago->mes_pagado?->format('m/Y').').',
+            null,
+            ['pago_id' => $pago->id, 'monto' => $pago->monto],
+            $instance
+        );
+
+        try {
+            app(\App\Services\BillingNotificationService::class)->pagoConfirmado($instance, $pago);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('confirmPayment: no se pudo notificar el pago: '.$e->getMessage());
+        }
+
+        return redirect()->route('owner.instances.pagos', $instance->id)
+            ->with('success', 'Pago confirmado correctamente.'.($unblocked ? ' La instancia fue desbloqueada.' : ''));
+    }
+
+    public function instanceUserCreate($id)
+    {
+        $instance = BusinessInstance::with('businessType')->findOrFail($id);
+        $instanceRoles = InstanceRole::where('business_instance_id', $instance->id)->orderBy('name')->get();
+
+        return view('owner.instances.users.create', compact('instance', 'instanceRoles'));
+    }
+
+    public function instanceUserStore(Request $request, $id)
+    {
+        $instance = BusinessInstance::with('businessType')->findOrFail($id);
+
+        $limitCheck = app(\App\Services\PlanLimitService::class)->verificar($instance, 'usuario');
+        if (! $limitCheck['ok']) {
+            return back()->withInput()->with('error', $limitCheck['mensaje']);
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:12|confirmed',
+            'instance_role_id' => 'nullable|exists:instance_roles,id',
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => 'admin-business',
+            'business_type_id' => $instance->businessType?->id,
+            'business_instance_id' => $instance->id,
+            'instance_role_id' => $data['instance_role_id'] ?? null,
+            'sucursal_id' => null,
+        ]);
+
+        $user->assignRole('admin-business');
+
+        // Do NOT send plaintext password. Create a reset token so the user can set their own password.
+        $token = Str::random(60);
+        \DB::table('password_reset_tokens')->insert([
+            'email' => $user->email,
+            'token' => Hash::make($token),
+            'created_at' => now(),
+        ]);
+
+        try {
+            Mail::to($user->email)->send(new UserCreatedNotification($user, $token));
+        } catch (\Exception $e) {
+            Log::warning('Failed to send welcome email, token stored', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'instance_id' => $instance->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        Log::info("Usuario {$user->name} creado, se envió enlace de bienvenida", [
+            'user_id' => $user->id,
+            'instance_id' => $instance->id,
+        ]);
+
+        $this->logOwnerAction('USER_CREATE', "Usuario '{$user->name}' creado para instancia '{$instance->nombre}'. Se envió enlace de bienvenida para establecer contraseña.", null, ['user_id' => $user->id], $instance);
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', "Usuario {$user->name} creado correctamente para {$instance->nombre}.");
+    }
+
+    public function instanceUserEdit($id, $userId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $user = User::where('business_instance_id', $instance->id)->findOrFail($userId);
+        $instanceRoles = InstanceRole::where('business_instance_id', $instance->id)->orderBy('name')->get();
+
+        return view('owner.instances.users.edit', compact('instance', 'user', 'instanceRoles'));
+    }
+
+    public function instanceUserUpdate(Request $request, $id, $userId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $user = User::where('business_instance_id', $instance->id)->findOrFail($userId);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
+            'password' => 'nullable|string|min:12|confirmed',
+            'instance_role_id' => 'nullable|exists:instance_roles,id',
+        ]);
+
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->instance_role_id = $data['instance_role_id'] ?? null;
+
+        $passwordChanged = false;
+        if (! empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
+            $passwordChanged = true;
+        }
+
+        $user->save();
+
+        if ($passwordChanged) {
+            // Do NOT email the plaintext password. Instead, suggest the user reset via the forgot-password flow.
+            try {
+                // Create a password reset token so the user can set a new password themselves
+                $token = Str::random(60);
+                \DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+                \DB::table('password_reset_tokens')->insert([
+                    'email' => $user->email,
+                    'token' => Hash::make($token),
+                    'created_at' => now(),
+                ]);
+                Mail::to($user->email)->send(new UserCreatedNotification($user, $token));
+            } catch (\Exception $e) {
+                Log::warning('Failed to send password reset email', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'instance_id' => $instance->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Usuario actualizado correctamente.');
+    }
+
+    public function instanceUserDestroy($id, $userId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $user = User::where('business_instance_id', $instance->id)->findOrFail($userId);
+
+        if ($user->hasRole('owner')) {
+            return redirect()->route('owner.instances.show', $instance)
+                ->with('error', 'No puedes eliminar al dueño del sistema desde aquí.');
+        }
+
+        $name = $user->name;
+        $this->logOwnerAction('USER_DELETE', "Usuario '{$name}' eliminado de instancia '{$instance->nombre}'", ['user_id' => $user->id, 'email' => $user->email], null, $instance);
+        \App\Models\AuditLog::where('user_id', $user->id)->delete();
+        $user->delete();
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', "Usuario {$name} eliminado de {$instance->nombre}.");
+    }
+
+    // ─── Instance Roles CRUD ─────────────────────────────────────────
+
+    public function instanceRoles($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $roles = InstanceRole::where('business_instance_id', $instance->id)
+            ->withCount('users')
+            ->orderBy('name')
+            ->get();
+
+        return view('owner.instances.roles.index', compact('instance', 'roles'));
+    }
+
+    public function instanceRolesCreate($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $modulos = Modulo::allActive()->groupBy('categoria');
+        $totalModulos = Modulo::allActive()->count();
+
+        return view('owner.instances.roles.create', compact('instance', 'modulos', 'totalModulos'));
+    }
+
+    public function instanceRolesStore(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'modulos' => 'nullable|array',
+            'modulos.*' => 'string|exists:modulos,key',
+        ]);
+
+        $existing = InstanceRole::where('business_instance_id', $instance->id)
+            ->where('name', $data['name'])->exists();
+        if ($existing) {
+            return back()->withInput()->with('error', 'Ya existe un rol con ese nombre en esta instancia.');
+        }
+
+        $role = InstanceRole::create([
+            'business_instance_id' => $instance->id,
+            'name' => $data['name'],
+        ]);
+
+        if (! empty($data['modulos'])) {
+            $role->syncModules($data['modulos']);
+        }
+
+        $this->logOwnerAction('ROLE_CREATE', "Rol '{$role->name}' creado para instancia '{$instance->nombre}'", null, ['role_id' => $role->id], $instance);
+
+        return redirect()->route('owner.instances.roles', $instance)
+            ->with('success', "Rol '{$role->name}' creado correctamente.");
+    }
+
+    public function instanceRolesEdit($id, $roleId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $role = InstanceRole::where('business_instance_id', $instance->id)
+            ->with('modules')->findOrFail($roleId);
+        $modulos = Modulo::allActive()->groupBy('categoria');
+
+        // Extraer módulos de contabilidad y crear categoría propia
+        $modsContabilidad = ['ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales', 'libros-ventas', 'libros-compras', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen', 'formulario-14-14'];
+        $contabilidadMods = collect();
+        foreach ($modsContabilidad as $key) {
+            $modulos->each(function ($items) use ($key, &$contabilidadMods) {
+                $found = $items->firstWhere('key', $key);
+                if ($found) {
+                    $contabilidadMods->push($found);
+                }
+            });
+        }
+        // Remover de categorías originales
+        $modulos = $modulos->map(function ($items) use ($modsContabilidad) {
+            return $items->reject(fn ($m) => in_array($m->key, $modsContabilidad));
+        })->filter(fn ($items) => $items->isNotEmpty());
+        if ($contabilidadMods->isNotEmpty()) {
+            $modulos->put('contabilidad', $contabilidadMods);
+        }
+
+        $totalModulos = Modulo::allActive()->count();
+        $selectedModulos = $role->modules->where('is_visible', true)->pluck('modulo_key')->toArray();
+
+        // Sort categories by defined priority order, with contabilidad always appearing early
+        // Uses Modulo::allActive()->pluck('categoria', 'categoria') to build a fresh dynamic list
+        // then applies the default priority map with fallback for unknown categories
+        $priorityMap = [
+            'core' => 0,
+            'operaciones' => 1,
+            'clientes' => 2,
+            'organizacion' => 3,
+            'lavadero' => 4,
+            'restaurante' => 5,
+            'alquileres' => 6,
+            'tattoo' => 7,
+            'climatizacion' => 8,
+            'tecnologia' => 9,
+            'arte' => 10,
+            'contabilidad' => 11,
+            'delivery' => 12,
+            'reportes' => 13,
+            'sistema' => 14,
+            'configuracion' => 15,
+        ];
+
+        $sorted = $modulos->sort(function ($itemsA, $itemsB) use ($priorityMap) {
+            $catA = $itemsA->first()?->categoria ?? 'z';
+            $catB = $itemsB->first()?->categoria ?? 'z';
+            $prioA = $priorityMap[$catA] ?? 20;
+            $prioB = $priorityMap[$catB] ?? 20;
+
+            return $prioA <=> $prioB;
+        });
+
+        $modulos = $sorted;
+
+        return view('owner.instances.roles.edit', compact('instance', 'role', 'modulos', 'totalModulos', 'selectedModulos'));
+    }
+
+    public function instanceRolesUpdate(Request $request, $id, $roleId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $role = InstanceRole::where('business_instance_id', $instance->id)
+            ->findOrFail($roleId);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'modulos' => 'nullable|array',
+            'modulos.*' => 'string|exists:modulos,key',
+        ]);
+
+        $existing = InstanceRole::where('business_instance_id', $instance->id)
+            ->where('name', $data['name'])
+            ->where('id', '!=', $role->id)->exists();
+        if ($existing) {
+            return back()->withInput()->with('error', 'Ya existe otro rol con ese nombre en esta instancia.');
+        }
+
+        $role->update(['name' => $data['name']]);
+
+        if (! empty($data['modulos'])) {
+            $role->syncModules($data['modulos']);
+        } else {
+            $role->modules()->delete();
+        }
+
+        return redirect()->route('owner.instances.roles', $instance)
+            ->with('success', "Rol '{$role->name}' actualizado correctamente.");
+    }
+
+    public function instanceRolesDestroy($id, $roleId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $role = InstanceRole::where('business_instance_id', $instance->id)
+            ->findOrFail($roleId);
+
+        if ($role->users()->count() > 0) {
+            return back()->with('error', 'No puedes eliminar un rol que tiene usuarios asignados.');
+        }
+
+        $name = $role->name;
+        $this->logOwnerAction('ROLE_DELETE', "Rol '{$name}' eliminado de instancia '{$instance->nombre}'", ['role_id' => $role->id], null, $instance);
+        $role->delete();
+
+        return redirect()->route('owner.instances.roles', $instance)
+            ->with('success', "Rol '{$name}' eliminado correctamente.");
+    }
+
+    /**
+     * List users for the current admin-business instance
+     */
+    public function instanceUsersIndex()
+    {
+        $user = auth()->user();
+        $instance = $user->businessInstance;
+
+        if (! $instance) {
+            abort(403, 'No tienes una instancia asignada.');
+        }
+
+        $users = User::where('business_instance_id', $instance->id)
+            ->whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'owner');
+            })
+            ->with('roles')
+            ->latest()
+            ->paginate(15);
+
+        return view('owner.instances.users.index', compact('instance', 'users'));
+    }
+
+    public function globalErrors()
+    {
+        $query = InstanceErrorLog::with('user', 'resolvedBy', 'tenant');
+
+        if ($instanceId = request('instance_id')) {
+            $query->where('tenant_id', $instanceId);
+        }
+        if ($level = request('level')) {
+            $query->ofLevel($level);
+        }
+        if ($source = request('source')) {
+            $query->ofSource($source);
+        }
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('message', 'like', "%{$search}%");
+            });
+        }
+        if ($desde = request('desde')) {
+            $query->whereDate('created_at', '>=', $desde);
+        }
+        if ($hasta = request('hasta')) {
+            $query->whereDate('created_at', '<=', $hasta);
+        }
+        if (request()->has('resolved') && request('resolved') !== '') {
+            $query->where('resolved', request('resolved'));
+        }
+
+        $errorLogs = $query->latest()->paginate(30)->withQueryString();
+
+        $instances = BusinessInstance::orderBy('nombre')->pluck('nombre', 'id');
+
+        $stats = [
+            'total' => InstanceErrorLog::count(),
+            'last_7d' => InstanceErrorLog::recent(7)->count(),
+            'errors' => InstanceErrorLog::ofLevel('error')->count(),
+            'warnings' => InstanceErrorLog::ofLevel('warning')->count(),
+            'criticals' => InstanceErrorLog::ofLevel('critical')->count(),
+        ];
+
+        return view('owner.errors.index', compact('errorLogs', 'stats', 'instances'));
+    }
+
+    public function instanceErrors($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $query = InstanceErrorLog::where('tenant_id', $id)->with('user', 'resolvedBy', 'tenant');
+
+        if ($level = request('level')) {
+            $query->ofLevel($level);
+        }
+        if ($source = request('source')) {
+            $query->ofSource($source);
+        }
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('message', 'like', "%{$search}%");
+            });
+        }
+        if ($desde = request('desde')) {
+            $query->whereDate('created_at', '>=', $desde);
+        }
+        if ($hasta = request('hasta')) {
+            $query->whereDate('created_at', '<=', $hasta);
+        }
+        if (request()->has('resolved') && request('resolved') !== '') {
+            $query->where('resolved', request('resolved'));
+        }
+
+        $errorLogs = $query->latest()->paginate(30)->withQueryString();
+
+        $stats = [
+            'total' => InstanceErrorLog::where('tenant_id', $id)->count(),
+            'last_7d' => InstanceErrorLog::where('tenant_id', $id)->recent(7)->count(),
+            'errors' => InstanceErrorLog::where('tenant_id', $id)->ofLevel('error')->count(),
+            'warnings' => InstanceErrorLog::where('tenant_id', $id)->ofLevel('warning')->count(),
+            'criticals' => InstanceErrorLog::where('tenant_id', $id)->ofLevel('critical')->count(),
+        ];
+
+        return view('owner.instances.errors', compact('instance', 'errorLogs', 'stats'));
+    }
+
+    public function clearErrors($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $deleted = InstanceErrorLog::where('tenant_id', $id)
+            ->where('created_at', '<', now()->subDays(30))
+            ->delete();
+
+        return back()->with('success', "Se eliminaron {$deleted} errores antiguos.");
+    }
+
+    public function resolveError($instanceId, InstanceErrorLog $errorLog)
+    {
+        $instance = BusinessInstance::findOrFail($instanceId);
+
+        if ($errorLog->tenant_id !== (int) $instanceId) {
+            abort(404);
+        }
+
+        $errorLog->update([
+            'resolved' => ! $errorLog->resolved,
+            'resolved_at' => $errorLog->resolved ? null : now(),
+            'resolved_by' => $errorLog->resolved ? null : auth()->id(),
+        ]);
+
+        $msg = $errorLog->resolved ? 'Error marcado como resuelto.' : 'Error reabierto.';
+
+        return back()->with('success', $msg);
+    }
+
+    private function getMesesDisponibles(BusinessInstance $instance): array
+    {
+        $ultimo = $instance->ultimoPagoConfirmado()->first();
+        $desde = $ultimo
+            ? $ultimo->mes_pagado->startOfMonth()->addMonth()
+            : ($instance->trial_ends_at ?? $instance->created_at)->startOfMonth();
+
+        $meses = [];
+        $actual = now()->startOfMonth();
+        $cursor = $desde->copy();
+
+        while ($cursor->lessThanOrEqualTo($actual)) {
+            $meses[$cursor->format('Y-m-d')] = $cursor->isoFormat('MMMM YYYY');
+            $cursor->addMonth();
+        }
+
+        return $meses;
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Usuarios Online
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Vista global: todos los usuarios online de todas las instancias.
+     */
+    public function onlineUsers(Request $request)
+    {
+        $threshold = now()->subMinutes(5);
+
+        $onlineUsers = User::with(['businessInstance', 'instanceRole'])
+            ->whereNotNull('last_seen_at')
+            ->where('last_seen_at', '>=', $threshold)
+            ->whereNotNull('business_instance_id')
+            ->orderByDesc('last_seen_at')
+            ->get();
+
+        // Agrupados por instancia
+        $byInstance = $onlineUsers->groupBy('business_instance_id');
+
+        $instancias = BusinessInstance::whereIn('id', $byInstance->keys())->get()->keyBy('id');
+
+        // Total de usuarios registrados en cada instancia (para contexto)
+        $totalByInstance = User::whereNotNull('business_instance_id')
+            ->selectRaw('business_instance_id, count(*) as total')
+            ->groupBy('business_instance_id')
+            ->pluck('total', 'business_instance_id');
+
+        if ($request->ajax() || $request->header('Accept') === 'application/json') {
+            $html = view('owner._online_users_partial', compact('onlineUsers', 'byInstance', 'instancias', 'totalByInstance'))->render();
+
+            return response()->json([
+                'online_count' => $onlineUsers->count(),
+                'html' => $html,
+            ]);
+        }
+
+        return view('owner.online', compact('onlineUsers', 'byInstance', 'instancias', 'totalByInstance'));
+    }
+
+    /**
+     * Vista por instancia: usuarios online de una instancia específica.
+     */
+    public function instanceOnlineUsers($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $threshold = now()->subMinutes(5);
+
+        $onlineUsers = User::with('instanceRole')
+            ->where('business_instance_id', $instance->id)
+            ->whereNotNull('last_seen_at')
+            ->where('last_seen_at', '>=', $threshold)
+            ->orderByDesc('last_seen_at')
+            ->get();
+
+        $totalUsers = User::where('business_instance_id', $instance->id)->count();
+
+        return view('owner.instances.online', compact('instance', 'onlineUsers', 'totalUsers'));
+    }
+
+    // ─── API Tokens CRUD ────────────────────────────────────────────
+
+    public function instanceTokensStore(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+        ]);
+
+        $user = User::where('business_instance_id', $instance->id)->findOrFail($data['user_id']);
+
+        $abilities = $request->input('abilities', ['instancia:*']);
+        $token = $user->createToken($data['name'], (array) $abilities);
+
+        $this->logOwnerAction('TOKEN_CREATE', "Token '{$data['name']}' creado para usuario '{$user->name}' en instancia '{$instance->nombre}'", null, ['token_id' => $token->accessToken->id], $instance);
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Token creado correctamente.')
+            ->with('new_token', $token->plainTextToken);
+    }
+
+    public function instanceTokensDestroy($id, $tokenId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $token = PersonalAccessToken::findOrFail($tokenId);
+
+        $user = User::where('business_instance_id', $instance->id)
+            ->findOrFail($token->tokenable_id);
+
+        $this->logOwnerAction('TOKEN_REVOKE', "Token revocado para usuario '{$user->name}' en instancia '{$instance->nombre}'", ['token_id' => $token->id], null, $instance);
+        $token->delete();
+
+        return redirect()->route('owner.instances.show', $instance)
+            ->with('success', 'Token revocado correctamente.');
+    }
+
+    // ─── Instance API Keys CRUD ──────────────────────────────────────
+
+    public function instanceApiKeys($id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $apiKeys = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->with('creator')
+            ->latest()
+            ->get();
+
+        return view('owner.instances.api-keys', compact('instance', 'apiKeys'));
+    }
+
+    public function instanceApiKeyGenerate(Request $request, $id)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $rawKey = 'iak_'.Str::random(40);
+
+        $apiKey = InstanceApiKey::create([
+            'business_instance_id' => $instance->id,
+            'name' => $data['name'],
+            'key' => hash('sha256', $rawKey),
+            'is_active' => true,
+            'created_by' => auth()->id(),
+        ]);
+
+        $this->logOwnerAction('API_KEY_CREATE', "API Key '{$apiKey->name}' creada para instancia '{$instance->nombre}'", null, ['api_key_id' => $apiKey->id], $instance);
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', 'API Key creada correctamente.')
+            ->with('new_api_key', $rawKey);
+    }
+
+    public function instanceApiKeyRegenerate($id, $apiKeyId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->findOrFail($apiKeyId);
+
+        $rawKey = 'iak_'.Str::random(40);
+        $apiKey->update(['key' => hash('sha256', $rawKey)]);
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', 'API Key regenerada correctamente.')
+            ->with('new_api_key', $rawKey);
+    }
+
+    public function instanceApiKeyToggle($id, $apiKeyId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->findOrFail($apiKeyId);
+
+        $apiKey->update(['is_active' => ! $apiKey->is_active]);
+        $status = $apiKey->is_active ? 'activada' : 'desactivada';
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', "API Key \"{$apiKey->name}\" {$status} correctamente.");
+    }
+
+    public function instanceApiKeyDestroy($id, $apiKeyId)
+    {
+        $instance = BusinessInstance::findOrFail($id);
+        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
+            ->findOrFail($apiKeyId);
+
+        $name = $apiKey->name;
+        $this->logOwnerAction('API_KEY_DELETE', "API Key '{$name}' eliminada de instancia '{$instance->nombre}'", ['api_key_id' => $apiKey->id], null, $instance);
+        $apiKey->delete();
+
+        return redirect()->route('owner.instances.api-keys', $instance)
+            ->with('success', "API Key \"{$name}\" eliminada permanentemente.");
+    }
+
+    // --- Cuentas Bancarias (Owner) ---
+
+    public function cuentasBancarias(Request $request)
+    {
+        $query = CuentaBancaria::query();
+
+        // Filtro por instancia
+        if ($instanceId = $request->input('instance_id')) {
+            $query->where('tenant_id', $instanceId);
+        }
+
+        // Busqueda
+        if ($buscar = $request->input('buscar')) {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre', 'like', '%'.$buscar.'%')
+                    ->orWhere('banco', 'like', '%'.$buscar.'%')
+                    ->orWhere('numero_cuenta', 'like', '%'.$buscar.'%')
+                    ->orWhere('titular', 'like', '%'.$buscar.'%');
+            });
+        }
+
+        // Incluir inactivas
+        if ($request->input('incluir_inactivos') !== '1') {
+            $query->activo();
+        }
+
+        $cuentas = $query->with('tenant')->latest()->paginate(15)->withQueryString();
+
+        $instances = BusinessInstance::orderBy('nombre')->get();
+
+        $stats = [
+            'total' => CuentaBancaria::count(),
+            'activas' => CuentaBancaria::activo()->count(),
+            'instancias_con_cuentas' => CuentaBancaria::distinct('tenant_id')->count(),
+        ];
+
+        return view('owner.cuentas-bancarias.index', compact('cuentas', 'instances', 'stats'));
+    }
+
+    // ─── SMTP Configuration (Owner Only) ─────────────────────────────
+
+    public function smtpSettings()
+    {
+        $settings = [
+            'mail_mailer' => SystemSetting::get('mail_mailer', 'smtp'),
+            'mail_host' => SystemSetting::get('mail_host', ''),
+            'mail_port' => SystemSetting::get('mail_port', '465'),
+            'mail_username' => SystemSetting::get('mail_username', ''),
+            'mail_password' => SystemSetting::get('mail_password', ''),
+            'mail_encryption' => SystemSetting::get('mail_encryption', 'ssl'),
+            'mail_from_address' => SystemSetting::get('mail_from_address', ''),
+            'mail_from_name' => SystemSetting::get('mail_from_name', ''),
+            'error_alert_email' => SystemSetting::get('error_alert_email', ''),
+        ];
+
+        return view('owner.smtp-settings', compact('settings'));
+    }
+
+    public function smtpSettingsUpdate(Request $request)
+    {
+        $data = $request->validate([
+            'mail_mailer' => 'nullable|string|in:smtp,log,mail,sendmail',
+            'mail_host' => 'nullable|string|max:255',
+            'mail_port' => 'nullable|string|max:10',
+            'mail_username' => 'nullable|string|max:255',
+            'mail_password' => 'nullable|string|max:255',
+            'mail_encryption' => 'nullable|string|in:tls,ssl,null|max:10',
+            'mail_from_address' => 'nullable|email|max:255',
+            'mail_from_name' => 'nullable|string|max:255',
+            'error_alert_email' => 'nullable|email|max:255',
+        ]);
+
+        $mailKeys = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'mail_from_address', 'mail_from_name'];
+
+        foreach ($mailKeys as $key) {
+            if (array_key_exists($key, $data)) {
+                $value = $data[$key];
+
+                // Skip password if left blank (keep existing)
+                if ($key === 'mail_password' && ($value === null || $value === '')) {
+                    continue;
+                }
+
+                // Encrypt password (same method as seeder and ErrorMailer)
+                if ($key === 'mail_password' && ! empty($value)) {
+                    $value = \Illuminate\Support\Facades\Crypt::encryptString($value);
+                }
+
+                // Convert null to empty string (value column is NOT NULL)
+                if ($value === null) {
+                    $value = '';
+                }
+
+                SystemSetting::updateOrCreate(
+                    ['key' => $key, 'tenant_id' => null],
+                    ['value' => $value]
+                );
+            }
+        }
+
+        // Save error_alert_email separately (not encrypted)
+        if (array_key_exists('error_alert_email', $data)) {
+            $value = $data['error_alert_email'];
+            if ($value === null) {
+                $value = '';
+            }
+            SystemSetting::updateOrCreate(
+                ['key' => 'error_alert_email', 'tenant_id' => null],
+                ['value' => $value]
+            );
+        }
+
+        Cache::forget('system_settings_all_global');
+
+        $this->logOwnerAction('SMTP_UPDATE', 'Configuración SMTP global actualizada');
+
+        return redirect()->route('owner.smtp-settings')
+            ->with('success', 'Configuración SMTP guardada correctamente.');
+    }
+
+    public function smtpSettingsTest(Request $request)
+    {
+        $request->validate([
+            'test_email' => 'required|email',
+        ]);
+
+        $testEmail = $request->input('test_email');
+
+        try {
+            // Safely decrypt password (may be plaintext if saved before encryption was added)
+            $rawPassword = SystemSetting::get('mail_password', '');
+            try {
+                $decryptedPassword = \Illuminate\Support\Facades\Crypt::decryptString($rawPassword);
+            } catch (\Exception $e) {
+                try {
+                    $decryptedPassword = decrypt($rawPassword);
+                } catch (\Exception $e2) {
+                    $decryptedPassword = $rawPassword;
+                }
+            }
+
+            // Temporarily override mail config
+            config([
+                'mail.default' => SystemSetting::get('mail_mailer', 'smtp'),
+                'mail.mailers.smtp.host' => SystemSetting::get('mail_host', ''),
+                'mail.mailers.smtp.port' => SystemSetting::get('mail_port', '465'),
+                'mail.mailers.smtp.username' => SystemSetting::get('mail_username', ''),
+                'mail.mailers.smtp.password' => $decryptedPassword,
+                'mail.mailers.smtp.encryption' => SystemSetting::get('mail_encryption', 'ssl'),
+                'mail.from.address' => SystemSetting::get('mail_from_address', ''),
+                'mail.from.name' => SystemSetting::get('mail_from_name', ''),
+            ]);
+
+            \Illuminate\Support\Facades\Mail::raw('Este es un correo de prueba desde el sistema.', function ($message) use ($testEmail) {
+                $message->to($testEmail)
+                    ->subject('Prueba de Configuración SMTP');
+            });
+
+            return redirect()->route('owner.smtp-settings')
+                ->with('success', "Correo de prueba enviado exitosamente a {$testEmail}.");
+        } catch (\Throwable $e) {
+            return redirect()->route('owner.smtp-settings')
+                ->with('error', 'Error al enviar correo de prueba: '.$e->getMessage());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  Historial de Actividad de Usuarios
+    // ─────────────────────────────────────────────────────────
+
+    public function activityHistory(Request $request)
+    {
+        $query = UserActivityLog::with('user.businessInstance', 'user.sucursal')
+            ->when($request->filled('start_date') && $request->filled('end_date'), function ($q) use ($request) {
+                $q->whereBetween('logged_at', [$request->start_date, $request->end_date.' 23:59:59']);
+            })
+            ->when($request->filled('action'), function ($q) use ($request) {
+                $q->where('action', $request->action);
+            })
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $q->whereHas('user', function ($q2) use ($request) {
+                    $q2->where('name', 'like', "%{$request->search}%")
+                        ->orWhere('email', 'like', "%{$request->search}%");
+                });
+            })
+            ->latest('logged_at');
+
+        $logs = $query->paginate(50)->withQueryString();
+
+        $todayStats = [
+            'logins_today' => UserActivityLog::today()->where('action', 'login')->count(),
+            'logouts_today' => UserActivityLog::today()->where('action', 'logout')->count(),
+            'views_today' => UserActivityLog::today()->where('action', 'page_view')->count(),
+            'unique_active' => UserActivityLog::today()
+                ->where('action', 'login')
+                ->distinct('user_id')
+                ->count('user_id'),
+        ];
+
+        return view('owner.activity-history', compact('logs', 'todayStats'));
+    }
+
+    public function activityHistoryJson(Request $request)
+    {
+        $request->validate([
+            'limit' => 'sometimes|integer|min:1|max:100',
+            'action' => 'sometimes|in:login,logout,page_view',
+            'since' => 'sometimes|date',
+        ]);
+
+        $limit = $request->input('limit', 20);
+
+        $query = UserActivityLog::with('user:name,email,business_instance_id,sucursal_id,instanceRole')
+            ->when($request->filled('action'), function ($q) use ($request) {
+                $q->where('action', $request->action);
+            })
+            ->when($request->filled('since'), function ($q) use ($request) {
+                $q->where('logged_at', '>=', $request->since);
+            })
+            ->latest('logged_at')
+            ->limit($limit);
+
+        $logs = $query->get()->map(function ($log) {
+            return [
+                'id' => $log->id,
+                'user_name' => $log->user->name,
+                'user_email' => $log->user->email,
+                'action' => $log->action,
+                'ip_address' => $log->ip_address,
+                'logged_at' => $log->logged_at->format('Y-m-d H:i:s'),
+                'logged_at_human' => $log->logged_at->diffForHumans(),
+                'instance' => $log->user->businessInstance?->nombre ?? 'N/A',
+                'sucursel' => $log->user->sucursal?->nombre ?? 'N/A',
+            ];
+        });
+
+        return response()->json(['data' => $logs]);
+    }
+
+    public function clearHistory(Request $request)
+    {
+        $request->validate(['days' => 'sometimes|integer|min:1|max:365']);
+        $days = $request->input('days', 30);
+
+        $count = UserActivityLog::where('logged_at', '<', now()->subDays($days))->delete();
+
+        $this->logOwnerAction('ACTIVITY_CLEAR', "Historial de actividad limpiado: {$count} registros eliminados (anteriores a {$days} días).");
+
+        return redirect()->route('owner.activity.history')
+            ->with('success', "Se eliminaron {$count} registros anteriores a {$days} días.");
+    }
+
+    // ─── Platform Owners Management ──────────────────────────────────
+
+    public function ownersIndex()
+    {
+        $owners = User::role('owner')
+            ->withCount(['businessInstances', 'assignedInstances'])
+            ->latest()
+            ->paginate(15);
+
+        $totalOwners = User::role('owner')->count();
+        $totalInstances = BusinessInstance::count();
+        $activeInstances = BusinessInstance::where('activo', true)->count();
+
+        return view('owner.owners.index', compact(
+            'owners',
+            'totalOwners',
+            'totalInstances',
+            'activeInstances'
+        ));
+    }
+
+    public function ownersCreate()
+    {
+        return view('owner.owners.create');
+    }
+
+    public function ownersStore(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:12|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => 'owner',
+        ]);
+
+        $user->assignRole('owner');
+
+        $this->logOwnerAction('OWNER_CREATE', "Nuevo dueño de plataforma creado: {$user->name}", null, ['user_id' => $user->id], $user);
+
+        return redirect()->route('owner.owners.index')
+            ->with('success', "Dueño de plataforma '{$user->name}' creado correctamente.");
+    }
+
+    public function ownersEdit($id)
+    {
+        $owner = User::role('owner')->findOrFail($id);
+
+        return view('owner.owners.edit', compact('owner'));
+    }
+
+    public function ownersUpdate(Request $request, $id)
+    {
+        $owner = User::role('owner')->findOrFail($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,'.$owner->id,
+            'password' => 'nullable|string|min:12|confirmed',
+        ]);
+
+        $oldData = $owner->getAttributes();
+        $owner->name = $data['name'];
+        $owner->email = $data['email'];
+
+        if (! empty($data['password'])) {
+            $owner->password = Hash::make($data['password']);
+        }
+
+        $owner->save();
+
+        $this->logOwnerAction('OWNER_UPDATE', "Dueño de plataforma actualizado: {$owner->name}", $oldData, $owner->getAttributes(), $owner);
+
+        return redirect()->route('owner.owners.index')
+            ->with('success', "Dueño de plataforma '{$owner->name}' actualizado correctamente.");
+    }
+
+    public function ownersDestroy($id)
+    {
+        $owner = User::role('owner')->findOrFail($id);
+
+        if ($owner->id === auth()->id()) {
+            return redirect()->route('owner.owners.index')
+                ->with('error', 'No puedes eliminar tu propio cuenta.');
+        }
+
+        $linkedInstances = BusinessInstance::where('owner_user_id', $owner->id)->count();
+
+        // Revoke all Sanctum tokens to prevent any API access with stale tokens
+        PersonalAccessToken::where('tokenable_type', get_class($owner))
+            ->where('tokenable_id', $owner->id)
+            ->delete();
+
+        // Remove the owner reference from linked instances to prevent orphaned references
+        if ($linkedInstances > 0) {
+            BusinessInstance::where('owner_user_id', $owner->id)->update(['owner_user_id' => null]);
+        }
+
+        $name = $owner->name;
+        $auditMsg = "Dueño de plataforma eliminado: {$name}";
+        if ($linkedInstances > 0) {
+            $auditMsg .= " ({$linkedInstances} instancia(s) desvinculadas)";
+        }
+        $this->logOwnerAction('OWNER_DELETE', $auditMsg, ['user_id' => $owner->id], ['linked_instances_before' => $linkedInstances], $owner);
+        $owner->delete();
+
+        return redirect()->route('owner.owners.index')
+            ->with('success', "Dueño de plataforma '{$name}' eliminado correctamente.");
+    }
+
+    // ──────────────────────────────────────────────
+    // AUDITORÍA — Registro de acciones del Owner
+    // ──────────────────────────────────────────────
+
+    public function auditLogsIndex(Request $request)
+    {
+        $query = \App\Models\AuditLog::with('user')
+            ->where(function ($q) {
+                // Owner ve TODO o solo sus propias acciones
+                $q->whereNull('tenant_id')
+                    ->orWhere('tenant_id', auth()->user()->businessInstance_id);
+            })
+            ->latest();
+
+        if ($request->filled('action')) {
+            $query->ofAction($request->action);
+        }
+        if ($request->filled('model')) {
+            $query->where('model_type', 'like', '%'.$request->model);
+        }
+        if ($request->filled('user_id')) {
+            $query->ofUser($request->user_id);
+        }
+        if ($request->filled('desde')) {
+            $query->whereDate('created_at', '>=', $request->desde);
+        }
+        if ($request->filled('hasta')) {
+            $query->whereDate('created_at', '<=', $request->hasta);
+        }
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where('description', 'like', "%{$s}%")
+                ->orWhere('action', 'like', "%{$s}%");
+        }
+
+        $logs = $query->paginate(50);
+        $actions = \App\Models\AuditLog::distinct('action')->pluck('action');
+        $models = \App\Models\AuditLog::distinct('model_type')->pluck('model_type')
+            ->map(fn ($m) => class_basename($m));
+        $users = User::whereHas('roles', fn ($q) => $q->whereIn('name', ['owner', 'admin-business', 'admin']))
+            ->get(['id', 'name']);
+
+        return view('owner.audit-logs.index', compact('logs', 'actions', 'models', 'users'));
+    }
+
+    public function auditLogsShow(\App\Models\AuditLog $auditLog)
+    {
+        $auditLog->load('user');
+
+        return view('owner.audit-logs.show', compact('auditLog'));
+    }
+
+    public function clearAuditLogs(Request $request)
+    {
+        $days = $request->input('days', 30);
+        $cutOff = now()->subDays($days);
+
+        $count = \App\Models\AuditLog::where('created_at', '<', $cutOff)
+            ->where(function ($q) {
+                $q->whereNull('tenant_id')
+                    ->orWhere('tenant_id', auth()->user()->businessInstance_id);
+            })
+            ->delete();
+
+        $this->logOwnerAction('AUDIT_LOG_CLEAR', "Historial de auditoría limpiado: {$count} registros eliminados (anteriores a {$days} días).");
+
+        return redirect()->route('owner.audit-logs.index')
+            ->with('success', "{$count} registros antiguos eliminados correctamente.");
+    }
+}

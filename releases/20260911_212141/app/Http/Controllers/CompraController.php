@@ -1,0 +1,291 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Exports\ComprasExport;
+use App\Http\Requests\StoreCompraRequest;
+use App\Http\Requests\UpdateCompraRequest;
+use App\Models\Almacen;
+use App\Models\BusinessInstance;
+use App\Models\Compra;
+use App\Models\DetalleCompra;
+use App\Models\Producto;
+use App\Models\Proveedor;
+use App\Models\TipoCompra;
+use App\Services\Ecf\EcfService;
+use App\Services\PlantillaPdfGenerator;
+use App\Services\PurchaseService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
+use Maatwebsite\Excel\Facades\Excel;
+
+class CompraController extends Controller
+{
+    protected PurchaseService $purchaseService;
+
+    public function __construct(PurchaseService $purchaseService)
+    {
+        $this->purchaseService = $purchaseService;
+    }
+
+    /**
+     * Obtiene el modo de facturación del negocio actual.
+     */
+    private function getFacturacionModo(): string
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $businessInstance = BusinessInstance::find($user->business_instance_id);
+
+        if (! $businessInstance) {
+            return 'productos';
+        }
+
+        // Prioridad: configuración del negocio sobre el tipo de negocio base
+        $config = $businessInstance->getDefaultConfig();
+
+        return $config['facturacion_modo'] ?? 'productos';
+    }
+
+    public function index(Request $request)
+    {
+        $query = Compra::with([
+            'proveedor:id,nombre,rnc,rnc_cedula',
+            'almacen:id,nombre',
+            'tipoCompra:id,nombre',
+            'detalles.producto:id,nombre',
+        ]);
+
+        if ($sucursalId = session('sucursal_id')) {
+            $query->where('sucursal_id', $sucursalId);
+        }
+
+        if ($request->filled('proveedor')) {
+            $termino = trim($request->proveedor);
+            $query->whereHas('proveedor', function ($q) use ($termino) {
+                $q->where('nombre', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc_cedula', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc', 'like', '%'.$termino.'%');
+            });
+        }
+
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha', '>=', $request->desde);
+        }
+
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha', '<=', $request->hasta);
+        }
+
+        $compras = $query
+            ->orderByDesc('fecha')
+            ->paginate(10)
+            ->appends($request->all());
+
+        return view('compras.index', compact('compras'));
+    }
+
+    public function create()
+    {
+        $facturacion_modo = $this->getFacturacionModo();
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        $productos = Producto::orderBy('nombre')->get();
+        $tiposCompra = TipoCompra::orderBy('nombre')->get();
+        $almacenes = $this->almacenesSegunSucursal();
+
+        return view('compras.create', compact('proveedores', 'productos', 'tiposCompra', 'almacenes', 'facturacion_modo'));
+    }
+
+    public function show(Compra $compra)
+    {
+        $compra->load(['detalles.producto', 'detalles.equipo', 'proveedor', 'almacen', 'tipoCompra', 'user']);
+
+        return view('compras.show', compact('compra'));
+    }
+
+    public function pdfIndividual($id)
+    {
+        $compra = Compra::with(['proveedor', 'detalles.producto', 'almacen', 'tipoCompra', 'user'])
+            ->where('tenant_id', Auth::user()->business_instance_id)
+            ->findOrFail($id);
+
+        $pdf = app(PlantillaPdfGenerator::class)->generarCompra($compra);
+
+        return $pdf->download('compra_'.$compra->id.'.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(
+            new ComprasExport(
+                $request->input('proveedor'),
+                $request->input('desde'),
+                $request->input('hasta'),
+                session('sucursal_id')
+            ),
+            'compras.xlsx'
+        );
+    }
+
+    public function pdf(Request $request)
+    {
+        $compras = $this->buildFilteredQuery($request)->get();
+        $pdf = Pdf::loadView('compras.all-pdf', compact('compras'))->setPaper('a4', 'landscape');
+
+        return $pdf->download('compras_reporte.pdf');
+    }
+
+    public function store(StoreCompraRequest $request)
+    {
+        try {
+            $facturacion_modo = $this->getFacturacionModo();
+            $compra = $this->purchaseService->createPurchase(
+                $request->validated(),
+                $request->validated('productos'),
+                $facturacion_modo
+            );
+            Event::dispatch(new \App\Events\PurchaseCreated($compra));
+            $message = $this->purchaseService->buildSuccessMessage($compra, 'registrada');
+
+            return redirect()->route('compras.show', $compra)->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Error al registrar la compra: '.$e->getMessage());
+        }
+    }
+
+    public function edit(Compra $compra)
+    {
+        $facturacion_modo = $this->getFacturacionModo();
+        $proveedores = Proveedor::orderBy('nombre')->get();
+        $productos = Producto::orderBy('nombre')->get();
+        $detalles = $compra->detalles()->with(['producto', 'equipo'])->get();
+        $tiposCompra = TipoCompra::orderBy('nombre')->get();
+        $almacenes = $this->almacenesSegunSucursal();
+
+        return view('compras.edit', compact('compra', 'proveedores', 'productos', 'detalles', 'tiposCompra', 'almacenes', 'facturacion_modo'));
+    }
+
+    public function update(UpdateCompraRequest $request, Compra $compra)
+    {
+        try {
+            $facturacion_modo = $this->getFacturacionModo();
+            $result = $this->purchaseService->updatePurchase(
+                $compra,
+                $request->validated(),
+                $request->validated('productos') ?? [],
+                $facturacion_modo
+            );
+
+            if ($result === null) {
+                return redirect()->route('compras.index')
+                    ->with('success', 'Compra eliminada porque no tiene productos.');
+            }
+
+            $message = $this->purchaseService->buildSuccessMessage($compra, 'actualizada');
+
+            return redirect()->route('compras.show', $compra)->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Error al actualizar la compra: '.$e->getMessage());
+        }
+    }
+
+    public function destroyDetalle(Compra $compra, DetalleCompra $detalle)
+    {
+        if ($detalle->compra_id !== $compra->id) {
+            return back()->with('error', 'El detalle no pertenece a esta compra.');
+        }
+
+        try {
+            $facturacion_modo = $this->getFacturacionModo();
+            $this->purchaseService->removeDetail($compra, $detalle, $facturacion_modo);
+
+            if (! $compra->detalles()->exists()) {
+                $compra->delete();
+
+                return redirect()->route('compras.index')
+                    ->with('success', 'Detalle eliminado. La compra se eliminó por no tener más productos.');
+            }
+
+            return redirect()->route('compras.edit', $compra)->with('success', 'Producto eliminado de la compra.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al eliminar el detalle: '.$e->getMessage());
+        }
+    }
+
+    public function destroy(Compra $compra)
+    {
+        try {
+            $facturacion_modo = $this->getFacturacionModo();
+            $this->purchaseService->deletePurchase($compra, $facturacion_modo);
+
+            return redirect()->route('compras.index')->with('success', 'Compra eliminada y stock revertido.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al eliminar la compra: '.$e->getMessage());
+        }
+    }
+
+    public function generarE41(Compra $compra)
+    {
+        if ($compra->ecf_documento_id) {
+            return back()->with('error', 'Esta compra ya tiene un e-CF E41 asociado.');
+        }
+        if (! $compra->puede_generar_ecf) {
+            return back()->with('error', 'El proveedor debe tener un RNC registrado para generar e-CF E41.');
+        }
+
+        try {
+            $ecfService = app(EcfService::class);
+            $ecf = $ecfService->generarE41($compra);
+
+            return redirect()->route('ecf.show', $ecf)
+                ->with('success', 'e-CF E41 generado exitosamente para la compra.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al generar e-CF: '.$e->getMessage());
+        }
+    }
+
+    private function almacenesSegunSucursal()
+    {
+        $query = Almacen::orderBy('nombre');
+        if ($sucursalId = session('sucursal_id')) {
+            $query->where('sucursal_id', $sucursalId);
+        }
+
+        return $query->get();
+    }
+
+    private function buildFilteredQuery(Request $request)
+    {
+        $query = Compra::with([
+            'proveedor:id,nombre,rnc,rnc_cedula',
+            'almacen:id,nombre',
+            'tipoCompra:id,nombre',
+            'detalles.producto:id,nombre',
+        ]);
+
+        if ($sucursalId = session('sucursal_id')) {
+            $query->where('sucursal_id', $sucursalId);
+        }
+
+        if ($request->filled('proveedor')) {
+            $termino = trim($request->proveedor);
+            $query->whereHas('proveedor', function ($q) use ($termino) {
+                $q->where('nombre', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc_cedula', 'like', '%'.$termino.'%')
+                    ->orWhere('rnc', 'like', '%'.$termino.'%');
+            });
+        }
+
+        if ($request->filled('desde')) {
+            $query->whereDate('fecha', '>=', $request->desde);
+        }
+
+        if ($request->filled('hasta')) {
+            $query->whereDate('fecha', '<=', $request->hasta);
+        }
+
+        return $query->orderByDesc('fecha');
+    }
+}

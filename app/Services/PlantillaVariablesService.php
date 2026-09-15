@@ -359,9 +359,12 @@ class PlantillaVariablesService
     {
         $sistema = \App\Models\SystemSetting::allCached();
 
-        $subtotal = $ventas->sum('subtotal');
-        $impuestos = $ventas->sum('impuestos');
-        $total = $ventas->sum('total');
+        // Ventas deben ser objetos para acceder a detalles, pagos, cliente, etc.
+        $collection = $ventas instanceof \Illuminate\Support\Collection ? $ventas : collect($ventas);
+
+        $subtotal = $collection->sum('subtotal');
+        $impuestos = $collection->sum('impuestos');
+        $total = $collection->sum('total');
 
         return [
             'empresa' => [
@@ -377,24 +380,9 @@ class PlantillaVariablesService
                 'desde' => $filtros['desde'] ?? '',
                 'hasta' => $filtros['hasta'] ?? '',
             ],
-            'ventas' => $ventas->map(function ($v) {
-                return [
-                    'id' => $v->id,
-                    'ncf' => $v->ncf ?? '',
-                    'cliente' => $v->cliente?->nombre ?? 'N/A',
-                    'usuario' => $v->usuario?->name ?? 'N/A',
-                    'sucursal' => $v->sucursal?->nombre ?? '',
-                    'tipo' => $v->tipoVenta?->nombre ?? 'N/A',
-                    'fecha' => $v->created_at->format('d/m/Y'),
-                    'hora' => $v->created_at->format('h:i A'),
-                    'subtotal' => number_format($v->subtotal, 2),
-                    'impuestos' => number_format($v->impuestos, 2),
-                    'total' => number_format($v->total, 2),
-                    'estado' => $v->estado ?? 'completada',
-                ];
-            }),
+            'ventas' => $collection,
             'resumen' => [
-                'cantidad' => $ventas->count(),
+                'cantidad' => $collection->count(),
                 'subtotal' => number_format($subtotal, 2),
                 'impuestos' => number_format($impuestos, 2),
                 'total' => number_format($total, 2),
@@ -404,24 +392,27 @@ class PlantillaVariablesService
 
     public function datosHistorial(): array
     {
+        $sistema = \App\Models\SystemSetting::allCached();
+        $empresa = [
+            'nombre' => \App\Models\SystemSetting::nombreEmpresaActual(),
+            'rnc' => $sistema['empresa_rnc'] ?? '',
+            'direccion' => $sistema['empresa_direccion'] ?? '',
+            'telefono' => $sistema['empresa_telefono'] ?? '',
+            'email' => $sistema['empresa_email'] ?? '',
+            'slogan' => $sistema['sistema_slogan'] ?? '',
+        ];
+
         return [
-            'empresa' => [
-                'nombre' => 'Mi Negocio Demo',
-                'rnc' => '130-12345-6',
-                'direccion' => 'Av. Winston Churchill, Santo Domingo',
-                'telefono' => '(809) 555-1234',
-                'email' => 'info@minegocio.do',
-                'slogan' => 'Tu solución de confianza',
-            ],
+            'empresa' => $empresa,
             'filtros' => [
                 'cliente' => '',
                 'desde' => date('d/m/Y', strtotime('-30 days')),
                 'hasta' => date('d/m/Y'),
             ],
             'ventas' => collect([
-                ['id' => 1, 'ncf' => 'B0100000001', 'cliente' => 'Juan Pérez', 'usuario' => 'Admin', 'sucursal' => 'Principal', 'tipo' => 'Contado', 'fecha' => '10/09/2026', 'hora' => '10:30 AM', 'subtotal' => '1,250.00', 'impuestos' => '225.00', 'total' => '1,475.00', 'estado' => 'completada'],
-                ['id' => 2, 'ncf' => 'B0100000002', 'cliente' => 'María López', 'usuario' => 'Cajero1', 'sucursal' => 'Principal', 'tipo' => 'Crédito', 'fecha' => '10/09/2026', 'hora' => '11:15 AM', 'subtotal' => '3,500.00', 'impuestos' => '630.00', 'total' => '4,130.00', 'estado' => 'completada'],
-                ['id' => 3, 'ncf' => 'B0100000003', 'cliente' => 'Pedro García', 'usuario' => 'Admin', 'sucursal' => 'Sucursal 2', 'tipo' => 'Contado', 'fecha' => '09/09/2026', 'hora' => '02:45 PM', 'subtotal' => '800.00', 'impuestos' => '144.00', 'total' => '944.00', 'estado' => 'completada'],
+                $this->_demoVenta(1, 'B0100000001', 'Juan Pérez', '402-1234567-8', 'Admin', 'Principal', 'Contado', '10/09/2026', '10:30 AM', 'completada'),
+                $this->_demoVenta(2, 'B0100000002', 'María López', '401-9876543-2', 'Cajero1', 'Principal', 'Crédito', '10/09/2026', '11:15 AM', 'completada'),
+                $this->_demoVenta(3, 'B0100000003', 'Pedro García', 'Céd. 001-0000000-0', 'Admin', 'Sucursal 2', 'Contado', '09/09/2026', '02:45 PM', 'completada'),
             ]),
             'resumen' => [
                 'cantidad' => 3,
@@ -430,5 +421,58 @@ class PlantillaVariablesService
                 'total' => '6,549.00',
             ],
         ];
+    }
+
+    private function _demoVenta(int $id, string $ncf, string $cliente, string $rnc, string $usuario, string $sucursal, string $tipo, string $fecha, string $hora, string $estado): \stdClass
+    {
+        $obj = new \stdClass;
+        $obj->id = $id;
+        $obj->ncf = $ncf;
+        $obj->ncf_tipo = 'B01';
+        $obj->tipo_comprobante = 'NCF';
+        $obj->encf = '';
+        $obj->estado = $estado;
+        $obj->subtotal = 0;
+        $obj->impuestos = 0;
+        $obj->total = 0;
+        $obj->descuento = 0;
+        $obj->propina = 0;
+        $obj->cargo_servicio = 0;
+        $obj->delivery_fee = 0;
+        $obj->notas = '';
+        $obj->created_at = \Carbon\Carbon::parse($fecha.' '.substr($hora, 0, 5));
+
+        // Cliente
+        $clienteObj = new \stdClass;
+        $clienteObj->nombre = $cliente;
+        $clienteObj->rnc_cedula = $rnc;
+        $clienteObj->documento = $rnc;
+        $obj->cliente = $clienteObj;
+
+        // Usuario
+        $userObj = new \stdClass;
+        $userObj->name = $usuario;
+        $obj->usuario = $userObj;
+
+        // Sucursal
+        $sucObj = new \stdClass;
+        $sucObj->nombre = $sucursal;
+        $obj->sucursal = $sucObj;
+
+        // Tipo venta
+        $tipoObj = new \stdClass;
+        $tipoObj->nombre = $tipo;
+        $obj->tipoVenta = $tipoObj;
+
+        // Pagos (un pago de ejemplo)
+        $pagoObj = new \stdClass;
+        $pagoObj->metodo_pago = 'efectivo';
+        $pagoObj->monto = 0;
+        $obj->pagos = collect([$pagoObj]);
+
+        // Detalles (productos)
+        $obj->detalles = collect();
+
+        return $obj;
     }
 }

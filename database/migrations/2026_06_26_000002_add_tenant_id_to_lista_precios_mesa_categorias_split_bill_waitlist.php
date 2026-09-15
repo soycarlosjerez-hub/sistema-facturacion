@@ -1,8 +1,9 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -29,12 +30,18 @@ return new class extends Migration
 
         // Parent-JOIN backfill
         if ($fallbackId) {
-            DB::table('lista_precio_items')->whereNull('tenant_id')
-                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(lp.tenant_id, ' . $fallbackId . ') FROM lista_precios lp WHERE lp.id = lista_precio_items.lista_precio_id)')]);
-            DB::table('split_bill_persons')->whereNull('tenant_id')
-                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(v.tenant_id, ' . $fallbackId . ') FROM ventas v WHERE v.id = split_bill_persons.venta_id)')]);
-            DB::table('waitlist_entries')->whereNull('tenant_id')
-                ->update(['tenant_id' => DB::raw('(SELECT COALESCE(s.tenant_id, ' . $fallbackId . ') FROM sucursales s WHERE s.id = waitlist_entries.sucursal_id)')]);
+            if (Schema::hasColumn('lista_precio_items', 'lista_precio_id') && Schema::hasColumn('lista_precios', 'tenant_id')) {
+                DB::table('lista_precio_items')->whereNull('tenant_id')
+                    ->update(['tenant_id' => DB::raw('(SELECT COALESCE(lp.tenant_id, '.$fallbackId.') FROM lista_precios lp WHERE lp.id = lista_precio_items.lista_precio_id)')]);
+            }
+            if (Schema::hasColumn('split_bill_persons', 'venta_id') && Schema::hasColumn('ventas', 'tenant_id')) {
+                DB::table('split_bill_persons')->whereNull('tenant_id')
+                    ->update(['tenant_id' => DB::raw('(SELECT COALESCE(v.tenant_id, '.$fallbackId.') FROM ventas v WHERE v.id = split_bill_persons.venta_id)')]);
+            }
+            if (Schema::hasColumn('waitlist_entries', 'sucursal_id') && Schema::hasColumn('sucursales', 'tenant_id')) {
+                DB::table('waitlist_entries')->whereNull('tenant_id')
+                    ->update(['tenant_id' => DB::raw('(SELECT COALESCE(s.tenant_id, '.$fallbackId.') FROM sucursales s WHERE s.id = waitlist_entries.sucursal_id)')]);
+            }
         }
 
         foreach (['lista_precios', 'mesa_categorias'] as $table) {
@@ -46,10 +53,10 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('lista_precios', fn(Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
-        Schema::table('lista_precio_items', fn(Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
-        Schema::table('mesa_categorias', fn(Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
-        Schema::table('split_bill_persons', fn(Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
-        Schema::table('waitlist_entries', fn(Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
+        Schema::table('lista_precios', fn (Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
+        Schema::table('lista_precio_items', fn (Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
+        Schema::table('mesa_categorias', fn (Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
+        Schema::table('split_bill_persons', fn (Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
+        Schema::table('waitlist_entries', fn (Blueprint $t) => $t->dropConstrainedForeignId('tenant_id'));
     }
 };

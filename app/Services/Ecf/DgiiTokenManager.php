@@ -2,9 +2,9 @@
 
 namespace App\Services\Ecf;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 class DgiiTokenManager
 {
@@ -12,40 +12,72 @@ class DgiiTokenManager
 
     private const TOKEN_TTL_MINUTES = 55;
 
-    public function getToken(string $ambiente = null): ?string
+    public function getToken(?string $ambiente = null): ?string
     {
-        $ambiente = $ambiente ?? config('dgii.ambiente', 'sandbox');
+        $ambiente = self::normalizarAmbiente($ambiente ?? config('dgii.ambiente', 'sandbox'));
 
         $cacheKey = sprintf(self::TOKEN_CACHE_KEY, md5($ambiente));
 
-        return Cache::remember($cacheKey, self::TOKEN_TTL_MINUTES * 60, function () use ($ambiente) {
-            return $this->obtenerTokenDesdeDgii($ambiente);
-        });
+        // No cachear nulls: un fallo de mTLS/token no debe envenenar el caché 55 min.
+        $cached = Cache::get($cacheKey);
+        if (is_string($cached) && $cached !== '') {
+            return $cached;
+        }
+
+        $token = $this->obtenerTokenDesdeDgii($ambiente);
+
+        if (is_string($token) && $token !== '') {
+            Cache::put($cacheKey, $token, self::TOKEN_TTL_MINUTES * 60);
+        }
+
+        return $token;
     }
 
-    public function refreshToken(string $ambiente = null): ?string
+    public function refreshToken(?string $ambiente = null): ?string
     {
-        $ambiente = $ambiente ?? config('dgii.ambiente', 'sandbox');
+        $ambiente = self::normalizarAmbiente($ambiente ?? config('dgii.ambiente', 'sandbox'));
         $cacheKey = sprintf(self::TOKEN_CACHE_KEY, md5($ambiente));
 
         Cache::forget($cacheKey);
 
-        return $this->obtenerTokenDesdeDgii($ambiente);
+        $token = $this->obtenerTokenDesdeDgii($ambiente);
+
+        if (is_string($token) && $token !== '') {
+            Cache::put($cacheKey, $token, self::TOKEN_TTL_MINUTES * 60);
+        }
+
+        return $token;
     }
 
-    public function invalidateToken(string $ambiente = null): void
+    public function invalidateToken(?string $ambiente = null): void
     {
-        $ambiente = $ambiente ?? config('dgii.ambiente', 'sandbox');
+        $ambiente = self::normalizarAmbiente($ambiente ?? config('dgii.ambiente', 'sandbox'));
         $cacheKey = sprintf(self::TOKEN_CACHE_KEY, md5($ambiente));
         Cache::forget($cacheKey);
+    }
+
+    /**
+     * Normaliza alias históricos ('prod' → 'produccion').
+     */
+    public static function normalizarAmbiente(string $ambiente): string
+    {
+        $ambiente = strtolower(trim($ambiente));
+
+        return match ($ambiente) {
+            'prod', 'production', 'produccion', 'producción' => 'produccion',
+            'qa', 'test', 'testing' => 'qa',
+            default => 'sandbox',
+        };
     }
 
     private function obtenerTokenDesdeDgii(string $ambiente): ?string
     {
-        $configAmbiente = config('dgii.ambientes.' . $ambiente);
+        $ambiente = self::normalizarAmbiente($ambiente);
+        $configAmbiente = config('dgii.ambientes.'.$ambiente);
 
-        if (!$configAmbiente) {
+        if (! $configAmbiente) {
             Log::error('e-CF: ambiente DGII no configurado', ['ambiente' => $ambiente]);
+
             return null;
         }
 
@@ -58,12 +90,13 @@ class DgiiTokenManager
 
     private function autenticacionMutua(string $ambiente, array $configAmbiente): ?string
     {
-        $certConfig = config('dgii.certificates.' . $ambiente, []);
+        $certConfig = config('dgii.certificates.'.$ambiente, []);
 
         if (empty($certConfig['client_cert_path']) || empty($certConfig['client_key_path'])) {
             Log::error('e-CF: credenciales mTLS no configuradas para autentificacion mutua', [
                 'ambiente' => $ambiente,
             ]);
+
             return null;
         }
 
@@ -71,19 +104,21 @@ class DgiiTokenManager
         $keyPath = $certConfig['client_key_path'];
         $keyPass = $certConfig['client_key_pass'] ?? '';
 
-        if (!file_exists($certPath) || !file_exists($keyPath)) {
+        if (! file_exists($certPath) || ! file_exists($keyPath)) {
             Log::error('e-CF: archivo de certificado mTLS no encontrado', [
                 'cert_path' => $certPath,
                 'key_path' => $keyPath,
             ]);
+
             return null;
         }
 
         $certContent = file_get_contents($certPath);
         $keyContent = file_get_contents($keyPath);
 
-        if (!$certContent || !$keyContent) {
+        if (! $certContent || ! $keyContent) {
             Log::error('e-CF: no se pudieron leer los archivos de certificado mTLS');
+
             return null;
         }
 
@@ -93,15 +128,16 @@ class DgiiTokenManager
                 ->withOptions([
                     'ssl_cert' => $certPath,
                     'ssl_key' => $keyPath,
-                    'verify' => config('dgii.ambientes.' . $ambiente . '.ca_bundle') ?? true,
+                    'verify' => config('dgii.ambientes.'.$ambiente.'.ca_bundle') ?? true,
                 ])
-                ->post($configAmbiente['api_url'] . '/auth/token');
+                ->post($configAmbiente['api_url'].'/auth/token');
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('e-CF: fallo autentificacion mutua DGII', [
                     'http_status' => $response->status(),
                     'response' => $response->body(),
                 ]);
+
                 return null;
             }
 
@@ -118,16 +154,18 @@ class DgiiTokenManager
                 'error' => $e->getMessage(),
                 'ambiente' => $ambiente,
             ]);
+
             return null;
         }
     }
 
     private function autenticacionApiKey(string $ambiente, array $configAmbiente): ?string
     {
-        $apiKey = config('dgii.api_key.' . $ambiente) ?? config('dgii.api_key.default');
+        $apiKey = config('dgii.api_key.'.$ambiente) ?? config('dgii.api_key.default');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             Log::warning('e-CF: API key no configurada, retornando token simulado', ['ambiente' => $ambiente]);
+
             return $this->generarTokenSimulado($ambiente);
         }
 
@@ -137,13 +175,14 @@ class DgiiTokenManager
                     'X-API-Key' => $apiKey,
                     'Content-Type' => 'application/json',
                 ])
-                ->post($configAmbiente['api_url'] . '/auth/token');
+                ->post($configAmbiente['api_url'].'/auth/token');
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('e-CF: fallo autentificacion API key DGII', [
                     'http_status' => $response->status(),
                     'response' => $response->body(),
                 ]);
+
                 return null;
             }
 
@@ -160,22 +199,23 @@ class DgiiTokenManager
                 'error' => $e->getMessage(),
                 'ambiente' => $ambiente,
             ]);
+
             return null;
         }
     }
 
     private function generarTokenSimulado(string $ambiente): string
     {
-        return 'SIM-TOKEN-' . strtoupper(bin2hex(random_bytes(16))) . '-' . $ambiente;
+        return 'SIM-TOKEN-'.strtoupper(bin2hex(random_bytes(16))).'-'.$ambiente;
     }
 
-    public function attachTokenToRequest($http, string $ambiente = null)
+    public function attachTokenToRequest($http, ?string $ambiente = null)
     {
         $token = $this->getToken($ambiente);
 
         if ($token) {
             return $http->withHeaders([
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer '.$token,
                 'X-DGII-Ambiente' => $ambiente ?? config('dgii.ambiente', 'sandbox'),
             ]);
         }
@@ -183,10 +223,10 @@ class DgiiTokenManager
         return $http;
     }
 
-    public function getAuthenticatedHttpClient(string $ambiente = null): \Illuminate\Http\Client\PendingRequest
+    public function getAuthenticatedHttpClient(?string $ambiente = null): \Illuminate\Http\Client\PendingRequest
     {
-        $ambiente = $ambiente ?? config('dgii.ambiente', 'sandbox');
-        $configAmbiente = config('dgii.ambientes.' . $ambiente);
+        $ambiente = self::normalizarAmbiente($ambiente ?? config('dgii.ambiente', 'sandbox'));
+        $configAmbiente = config('dgii.ambientes.'.$ambiente);
 
         $http = Http::timeout(30)
             ->withHeaders([
@@ -195,13 +235,13 @@ class DgiiTokenManager
             ]);
 
         if ($configAmbiente['cert_required'] ?? false) {
-            $certConfig = config('dgii.certificates.' . $ambiente, []);
-            if (!empty($certConfig['client_cert_path']) && !empty($certConfig['client_key_path'])) {
+            $certConfig = config('dgii.certificates.'.$ambiente, []);
+            if (! empty($certConfig['client_cert_path']) && ! empty($certConfig['client_key_path'])) {
                 $http = $http->withOptions([
                     'ssl_cert' => $certConfig['client_cert_path'],
                     'ssl_key' => $certConfig['client_key_path'],
                     'ssl_key_pass' => $certConfig['client_key_pass'] ?? '',
-                    'verify' => config('dgii.ambientes.' . $ambiente . '.ca_bundle') ?? true,
+                    'verify' => config('dgii.ambientes.'.$ambiente.'.ca_bundle') ?? true,
                 ]);
             }
         }
@@ -209,7 +249,7 @@ class DgiiTokenManager
         $token = $this->getToken($ambiente);
         if ($token) {
             $http = $http->withHeaders([
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer '.$token,
             ]);
         }
 

@@ -103,7 +103,7 @@ services:
       - ./docker/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf:ro
       - ./docker/mysql/conf.d:/etc/mysql/conf.d:ro
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     networks:
       - erpipos
     deploy:
@@ -239,22 +239,24 @@ services:
       - redis
       - app
 
-  # ─── PHPMyAdmin (solo si necesitas acceso) ──────────────────────────────
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: erpipos-phpmyadmin
-    restart: unless-stopped
-    environment:
-      - PMA_HOST=db
-      - PMA_PORT=3306
-      - UPLOAD_LIMIT=100M
-      - PMA_ARBITRARY=0
-    ports:
-      - "8080:80"
-    networks:
-      - erpipos
-    depends_on:
-      - db
+  # ─── PHPMyAdmin (solo entornos de desarrollo, NO en producción) ─────────
+  # Descomentar solo para desarrollo/testing. En producción, usar:
+  #   docker exec -it erpipos-db mysql -u root -p
+  # phpmyadmin:
+  #   image: phpmyadmin:latest
+  #   container_name: erpipos-phpmyadmin
+  #   restart: unless-stopped
+  #   environment:
+  #     - PMA_HOST=db
+  #     - PMA_PORT=3306
+  #     - UPLOAD_LIMIT=100M
+  #     - PMA_ARBITRARY=0
+  #   ports:
+  #     - "8080:80"
+  #   networks:
+  #     - erpipos
+  #   depends_on:
+  #     - db
 
 networks:
   erpipos:

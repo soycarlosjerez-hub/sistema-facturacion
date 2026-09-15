@@ -6,7 +6,6 @@ use App\Mail\UserCreatedNotification;
 use App\Models\BusinessInstance;
 use App\Models\BusinessType;
 use App\Models\BusinessTypeModule;
-use App\Models\InstanceApiKey;
 use App\Models\InstanceErrorLog;
 use App\Models\InstanceNotificationSetting;
 use App\Models\InstanceRole;
@@ -17,12 +16,10 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Models\UserActivityLog;
 use App\Services\OwnerService;
-use App\Services\PlanLimitService;
 use App\Services\TenantCleanupService;
-use App\Services\UserBusinessService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -30,7 +27,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Sanctum\PersonalAccessToken;
-use Illuminate\Database\Eloquent\Model;
 
 class OwnerController extends Controller
 {
@@ -56,7 +52,7 @@ class OwnerController extends Controller
                 'tenant_id' => null,
             ]);
         } catch (\Throwable $e) {
-            Log::error('Failed to log owner action: ' . $e->getMessage());
+            Log::error('Failed to log owner action: '.$e->getMessage());
         }
     }
 
@@ -116,7 +112,7 @@ class OwnerController extends Controller
             ->with('businessType')
             ->groupBy('business_type_id')
             ->get()
-            ->mapWithKeys(fn($item) => [$item->businessType?->nombre ?? 'Sin tipo' => $item->cnt])
+            ->mapWithKeys(fn ($item) => [$item->businessType?->nombre ?? 'Sin tipo' => $item->cnt])
             ->sortDesc();
 
         // ── MRR / Financial ───────────────────────────────────────
@@ -205,10 +201,10 @@ class OwnerController extends Controller
 
         // Plan distribution
         $planDistribution = \App\Models\Plan::where('activo', true)
-            ->withCount(['businessInstances as active_instances' => fn($q) => $q->where('activo', true)])
+            ->withCount(['businessInstances as active_instances' => fn ($q) => $q->where('activo', true)])
             ->orderBy('orden')
             ->get()
-            ->mapWithKeys(fn($p) => [$p->nombre => $p->active_instances])
+            ->mapWithKeys(fn ($p) => [$p->nombre => $p->active_instances])
             ->toArray();
 
         // ── Business Health ───────────────────────────────────────
@@ -236,7 +232,7 @@ class OwnerController extends Controller
             ->where('bloqueado', false)
             ->where(function ($q) use ($now) {
                 $q->whereNull('fecha_vencimiento')
-                  ->orWhere('fecha_vencimiento', '<', $now);
+                    ->orWhere('fecha_vencimiento', '<', $now);
             })->count();
 
         // ── Growth ────────────────────────────────────────────────
@@ -267,7 +263,7 @@ class OwnerController extends Controller
             ->whereNull('tenant_id')->count();
 
         // Error distribution (last 30d)
-        $errorDist = InstanceErrorLog::selectRaw("level, COUNT(*) as cnt")
+        $errorDist = InstanceErrorLog::selectRaw('level, COUNT(*) as cnt')
             ->where('created_at', '>=', $now->copy()->subDays(30))
             ->groupBy('level')
             ->pluck('cnt', 'level');
@@ -303,7 +299,7 @@ class OwnerController extends Controller
             ->where('bloqueado', false)
             ->where(function ($q) use ($now) {
                 $q->whereNull('fecha_vencimiento')
-                  ->orWhere('fecha_vencimiento', '<', $now);
+                    ->orWhere('fecha_vencimiento', '<', $now);
             })->count();
 
         $instanciasConAtraso = BusinessInstance::where('activo', true)
@@ -313,7 +309,7 @@ class OwnerController extends Controller
             ->limit(10)
             ->with(['businessType', 'owner', 'ultimoPago'])
             ->get()
-            ->filter(fn($i) => !$i->estaAlDia());
+            ->filter(fn ($i) => ! $i->estaAlDia());
 
         // Instancias para tabla (limited load)
         $instanciasIds = BusinessInstance::select('id')
@@ -388,11 +384,11 @@ class OwnerController extends Controller
         $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
 
         $stats = [
-            'tipos'       => $businessTypes->count(),
-            'instancias'  => $businessTypes->sum('business_instances_count'),
-            'activas'     => $businessTypes->sum('instancias_activas'),
-            'usuarios'    => $businessTypes->sum('users_asociados_count'),
-            'modulos'     => $allModules->count(),
+            'tipos' => $businessTypes->count(),
+            'instancias' => $businessTypes->sum('business_instances_count'),
+            'activas' => $businessTypes->sum('instancias_activas'),
+            'usuarios' => $businessTypes->sum('users_asociados_count'),
+            'modulos' => $allModules->count(),
         ];
 
         return view('owner.business-types.index', compact('businessTypes', 'allModules', 'stats'));
@@ -401,6 +397,7 @@ class OwnerController extends Controller
     public function businessTypesCreate()
     {
         $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
+
         return view('owner.business-types.create', compact('allModules'));
     }
 
@@ -466,6 +463,7 @@ class OwnerController extends Controller
     {
         $businessType = BusinessType::with('modules')->findOrFail($id);
         $allModules = Modulo::where('activo', true)->orderBy('orden')->get();
+
         return view('owner.business-types.edit', compact('businessType', 'allModules'));
     }
 
@@ -524,12 +522,14 @@ class OwnerController extends Controller
     {
         $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
         $modulos = Modulo::orderBy('categoria')->orderBy('orden')->get();
+
         return view('owner.modules.index', compact('modulos', 'categorias'));
     }
 
     public function modulesCreate()
     {
         $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+
         return view('owner.modules.form', compact('categorias'));
     }
 
@@ -561,6 +561,7 @@ class OwnerController extends Controller
     {
         $modulo = Modulo::findOrFail($id);
         $categorias = Modulo::select('categoria')->distinct()->orderBy('categoria')->pluck('categoria');
+
         return view('owner.modules.form', compact('modulo', 'categorias'));
     }
 
@@ -569,7 +570,7 @@ class OwnerController extends Controller
         $modulo = Modulo::findOrFail($id);
 
         $data = $request->validate([
-            'key' => 'required|string|max:50|unique:modulos,key,' . $modulo->id,
+            'key' => 'required|string|max:50|unique:modulos,key,'.$modulo->id,
             'label' => 'required|string|max:255',
             'icon' => 'nullable|string|max:100',
             'categoria' => 'required|string|max:50',
@@ -646,7 +647,7 @@ class OwnerController extends Controller
         // Pre-seleccionar business type si los módulos coinciden exactamente
         $planModulos = $plan->modulos ?? [];
         $preSelectedBusinessType = null;
-        if (!empty($planModulos)) {
+        if (! empty($planModulos)) {
             foreach ($businessTypes as $bt) {
                 $btModulos = $bt->modules()->pluck('modulo_key')->toArray();
                 if (count($btModulos) === count($planModulos) && count(array_diff($btModulos, $planModulos)) === 0) {
@@ -693,7 +694,7 @@ class OwnerController extends Controller
 
     private function validatePlan(Request $request, ?\App\Models\Plan $plan = null): array
     {
-        $slugRule = 'required|string|max:100|unique:plans,slug' . ($plan ? ',' . $plan->id : '');
+        $slugRule = 'required|string|max:100|unique:plans,slug'.($plan ? ','.$plan->id : '');
 
         return $request->validate([
             'nombre' => 'required|string|max:255',
@@ -724,7 +725,7 @@ class OwnerController extends Controller
     public function instances()
     {
         $query = BusinessInstance::with(['businessType', 'plan', 'owner', 'ultimoPago']);
-        
+
         if (request('show_trashed') === '1') {
             $query->withTrashed();
         }
@@ -744,6 +745,7 @@ class OwnerController extends Controller
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
         $owners = OwnerService::getOwnerUsers();
         $plans = \App\Models\Plan::active();
+
         return view('owner.instances.create', compact('businessTypes', 'owners', 'plans'));
     }
 
@@ -783,7 +785,7 @@ class OwnerController extends Controller
                 ->where('activo', true)
                 ->count();
             $check = app(\App\Services\PlanLimitService::class)->verificarEmpresa($plan, $instanciasActuales);
-            if (!$check['ok']) {
+            if (! $check['ok']) {
                 return back()->withInput()->with('error', $check['mensaje']);
             }
         }
@@ -871,6 +873,7 @@ class OwnerController extends Controller
             ->latest()
             ->take(5)
             ->get();
+
         return view('owner.instances.show', compact('instance', 'pagosRecientes', 'errorCount', 'recentErrors'));
     }
 
@@ -880,6 +883,7 @@ class OwnerController extends Controller
         $businessTypes = BusinessType::where('activo', true)->orderBy('nombre')->get();
         $owners = OwnerService::getOwnerUsers();
         $plans = \App\Models\Plan::active();
+
         return view('owner.instances.edit', compact('instance', 'businessTypes', 'owners', 'plans'));
     }
 
@@ -889,7 +893,7 @@ class OwnerController extends Controller
 
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
-            'rnc' => 'nullable|string|max:20|unique:business_instances,rnc,' . $instance->id,
+            'rnc' => 'nullable|string|max:20|unique:business_instances,rnc,'.$instance->id,
             'email' => 'nullable|email|max:255',
             'telefono' => 'nullable|string|max:50',
             'direccion' => 'nullable|string|max:500',
@@ -930,7 +934,7 @@ class OwnerController extends Controller
     public function instancesDestroy($id)
     {
         $instance = BusinessInstance::withTrashed()->findOrFail($id);
-        
+
         if ($instance->trashed()) {
             $instance->forceDelete();
             $msg = 'Instancia eliminada permanentemente.';
@@ -1029,7 +1033,7 @@ class OwnerController extends Controller
         $data['restaurante_valida_stock'] = $request->has('restaurante_valida_stock') ? '1' : '0';
 
         $existingConfig = $instance->configuracion ?? [];
-        $mergedConfig = array_merge($existingConfig, array_filter($data, fn($v) => !is_null($v)));
+        $mergedConfig = array_merge($existingConfig, array_filter($data, fn ($v) => ! is_null($v)));
 
         $instance->update(['configuracion' => $mergedConfig]);
 
@@ -1059,7 +1063,7 @@ class OwnerController extends Controller
         $instance = BusinessInstance::withTrashed()->findOrFail($id);
 
         $request->validate([
-            'confirm_name' => 'required|string|in:' . $instance->nombre,
+            'confirm_name' => 'required|string|in:'.$instance->nombre,
         ]);
 
         $tenantId = $instance->id;
@@ -1101,7 +1105,7 @@ class OwnerController extends Controller
 
         $this->logOwnerAction(
             $data['bloqueado'] ? 'INSTANCE_BLOCK' : 'INSTANCE_UNBLOCK',
-            "Instancia '{$instance->nombre}' " . ($data['bloqueado'] ? 'bloqueada' : 'desbloqueada') . ($data['bloqueado'] && $data['motivo_bloqueo'] ? ': ' . $data['motivo_bloqueo'] : ''),
+            "Instancia '{$instance->nombre}' ".($data['bloqueado'] ? 'bloqueada' : 'desbloqueada').($data['bloqueado'] && $data['motivo_bloqueo'] ? ': '.$data['motivo_bloqueo'] : ''),
             ['bloqueado' => $oldBlockState],
             ['bloqueado' => $data['bloqueado']],
             $instance
@@ -1130,6 +1134,7 @@ class OwnerController extends Controller
     {
         $instance = BusinessInstance::with('ultimoPago')->findOrFail($id);
         $mesesDisponibles = $this->getMesesDisponibles($instance);
+
         return view('owner.instances.pagos.create', compact('instance', 'mesesDisponibles'));
     }
 
@@ -1201,7 +1206,7 @@ class OwnerController extends Controller
         $pago->update([
             'estado_pago' => 'completado',
             'fecha_pago' => now(),
-            'notas' => ($pago->notas ? $pago->notas . ' | ' : '') . 'Pago confirmado por ' . auth()->user()->name,
+            'notas' => ($pago->notas ? $pago->notas.' | ' : '').'Pago confirmado por '.auth()->user()->name,
             'registrado_por' => auth()->id(),
         ]);
 
@@ -1217,7 +1222,7 @@ class OwnerController extends Controller
 
         $this->logOwnerAction(
             'PAYMENT_CONFIRM',
-            "Pago de RD$ " . number_format($pago->monto, 2) . " confirmado para la instancia '{$instance->nombre}' (mes " . $pago->mes_pagado?->format('m/Y') . ').',
+            'Pago de RD$ '.number_format($pago->monto, 2)." confirmado para la instancia '{$instance->nombre}' (mes ".$pago->mes_pagado?->format('m/Y').').',
             null,
             ['pago_id' => $pago->id, 'monto' => $pago->monto],
             $instance
@@ -1226,17 +1231,18 @@ class OwnerController extends Controller
         try {
             app(\App\Services\BillingNotificationService::class)->pagoConfirmado($instance, $pago);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('confirmPayment: no se pudo notificar el pago: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('confirmPayment: no se pudo notificar el pago: '.$e->getMessage());
         }
 
         return redirect()->route('owner.instances.pagos', $instance->id)
-            ->with('success', 'Pago confirmado correctamente.' . ($unblocked ? ' La instancia fue desbloqueada.' : ''));
+            ->with('success', 'Pago confirmado correctamente.'.($unblocked ? ' La instancia fue desbloqueada.' : ''));
     }
 
     public function instanceUserCreate($id)
     {
         $instance = BusinessInstance::with('businessType')->findOrFail($id);
         $instanceRoles = InstanceRole::where('business_instance_id', $instance->id)->orderBy('name')->get();
+
         return view('owner.instances.users.create', compact('instance', 'instanceRoles'));
     }
 
@@ -1315,7 +1321,7 @@ class OwnerController extends Controller
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:12|confirmed',
             'instance_role_id' => 'nullable|exists:instance_roles,id',
         ]);
@@ -1325,7 +1331,7 @@ class OwnerController extends Controller
         $user->instance_role_id = $data['instance_role_id'] ?? null;
 
         $passwordChanged = false;
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
             $passwordChanged = true;
         }
@@ -1386,6 +1392,7 @@ class OwnerController extends Controller
             ->withCount('users')
             ->orderBy('name')
             ->get();
+
         return view('owner.instances.roles.index', compact('instance', 'roles'));
     }
 
@@ -1394,6 +1401,7 @@ class OwnerController extends Controller
         $instance = BusinessInstance::findOrFail($id);
         $modulos = Modulo::allActive()->groupBy('categoria');
         $totalModulos = Modulo::allActive()->count();
+
         return view('owner.instances.roles.create', compact('instance', 'modulos', 'totalModulos'));
     }
 
@@ -1418,7 +1426,7 @@ class OwnerController extends Controller
             'name' => $data['name'],
         ]);
 
-        if (!empty($data['modulos'])) {
+        if (! empty($data['modulos'])) {
             $role->syncModules($data['modulos']);
         }
 
@@ -1436,7 +1444,7 @@ class OwnerController extends Controller
         $modulos = Modulo::allActive()->groupBy('categoria');
 
         // Extraer módulos de contabilidad y crear categoría propia
-        $modsContabilidad = ['ncf','ecf','secuencias-ecf','certificados-digitales','libros-ventas','libros-compras','reportes-retenciones','reportes-fiscales','reportes-resumen','formulario-14-14'];
+        $modsContabilidad = ['ncf', 'ecf', 'secuencias-ecf', 'certificados-digitales', 'libros-ventas', 'libros-compras', 'reportes-retenciones', 'reportes-fiscales', 'reportes-resumen', 'formulario-14-14'];
         $contabilidadMods = collect();
         foreach ($modsContabilidad as $key) {
             $modulos->each(function ($items) use ($key, &$contabilidadMods) {
@@ -1448,8 +1456,8 @@ class OwnerController extends Controller
         }
         // Remover de categorías originales
         $modulos = $modulos->map(function ($items) use ($modsContabilidad) {
-            return $items->reject(fn($m) => in_array($m->key, $modsContabilidad));
-        })->filter(fn($items) => $items->isNotEmpty());
+            return $items->reject(fn ($m) => in_array($m->key, $modsContabilidad));
+        })->filter(fn ($items) => $items->isNotEmpty());
         if ($contabilidadMods->isNotEmpty()) {
             $modulos->put('contabilidad', $contabilidadMods);
         }
@@ -1461,22 +1469,22 @@ class OwnerController extends Controller
         // Uses Modulo::allActive()->pluck('categoria', 'categoria') to build a fresh dynamic list
         // then applies the default priority map with fallback for unknown categories
         $priorityMap = [
-            'core'           =>  0,
-            'operaciones'    =>  1,
-            'clientes'       =>  2,
-            'organizacion'   =>  3,
-            'lavadero'       =>  4,
-            'restaurante'    =>  5,
-            'alquileres'     =>  6,
-            'tattoo'         =>  7,
-            'climatizacion'  =>  8,
-            'tecnologia'     =>  9,
-            'arte'           => 10,
-            'contabilidad'   => 11,
-            'delivery'       => 12,
-            'reportes'       => 13,
-            'sistema'        => 14,
-            'configuracion'  => 15,
+            'core' => 0,
+            'operaciones' => 1,
+            'clientes' => 2,
+            'organizacion' => 3,
+            'lavadero' => 4,
+            'restaurante' => 5,
+            'alquileres' => 6,
+            'tattoo' => 7,
+            'climatizacion' => 8,
+            'tecnologia' => 9,
+            'arte' => 10,
+            'contabilidad' => 11,
+            'delivery' => 12,
+            'reportes' => 13,
+            'sistema' => 14,
+            'configuracion' => 15,
         ];
 
         $sorted = $modulos->sort(function ($itemsA, $itemsB) use ($priorityMap) {
@@ -1484,6 +1492,7 @@ class OwnerController extends Controller
             $catB = $itemsB->first()?->categoria ?? 'z';
             $prioA = $priorityMap[$catA] ?? 20;
             $prioB = $priorityMap[$catB] ?? 20;
+
             return $prioA <=> $prioB;
         });
 
@@ -1513,7 +1522,7 @@ class OwnerController extends Controller
 
         $role->update(['name' => $data['name']]);
 
-        if (!empty($data['modulos'])) {
+        if (! empty($data['modulos'])) {
             $role->syncModules($data['modulos']);
         } else {
             $role->modules()->delete();
@@ -1548,11 +1557,11 @@ class OwnerController extends Controller
     {
         $user = auth()->user();
         $instance = $user->businessInstance;
-        
-        if (!$instance) {
+
+        if (! $instance) {
             abort(403, 'No tienes una instancia asignada.');
         }
-        
+
         $users = User::where('business_instance_id', $instance->id)
             ->whereDoesntHave('roles', function ($query) {
                 $query->where('name', 'owner');
@@ -1560,7 +1569,7 @@ class OwnerController extends Controller
             ->with('roles')
             ->latest()
             ->paginate(15);
-        
+
         return view('owner.instances.users.index', compact('instance', 'users'));
     }
 
@@ -1580,7 +1589,7 @@ class OwnerController extends Controller
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('message', 'like', "%{$search}%");
+                    ->orWhere('message', 'like', "%{$search}%");
             });
         }
         if ($desde = request('desde')) {
@@ -1623,7 +1632,7 @@ class OwnerController extends Controller
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('message', 'like', "%{$search}%");
+                    ->orWhere('message', 'like', "%{$search}%");
             });
         }
         if ($desde = request('desde')) {
@@ -1669,7 +1678,7 @@ class OwnerController extends Controller
         }
 
         $errorLog->update([
-            'resolved' => !$errorLog->resolved,
+            'resolved' => ! $errorLog->resolved,
             'resolved_at' => $errorLog->resolved ? null : now(),
             'resolved_by' => $errorLog->resolved ? null : auth()->id(),
         ]);
@@ -1729,6 +1738,7 @@ class OwnerController extends Controller
 
         if ($request->ajax() || $request->header('Accept') === 'application/json') {
             $html = view('owner._online_users_partial', compact('onlineUsers', 'byInstance', 'instancias', 'totalByInstance'))->render();
+
             return response()->json([
                 'online_count' => $onlineUsers->count(),
                 'html' => $html,
@@ -1797,87 +1807,6 @@ class OwnerController extends Controller
             ->with('success', 'Token revocado correctamente.');
     }
 
-    // ─── Instance API Keys CRUD ──────────────────────────────────────
-
-    public function instanceApiKeys($id)
-    {
-        $instance = BusinessInstance::findOrFail($id);
-
-        $apiKeys = InstanceApiKey::where('business_instance_id', $instance->id)
-            ->with('creator')
-            ->latest()
-            ->get();
-
-        return view('owner.instances.api-keys', compact('instance', 'apiKeys'));
-    }
-
-    public function instanceApiKeyGenerate(Request $request, $id)
-    {
-        $instance = BusinessInstance::findOrFail($id);
-
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
-        $rawKey = 'iak_' . Str::random(40);
-
-        $apiKey = InstanceApiKey::create([
-            'business_instance_id' => $instance->id,
-            'name' => $data['name'],
-            'key' => hash('sha256', $rawKey),
-            'is_active' => true,
-            'created_by' => auth()->id(),
-        ]);
-
-        $this->logOwnerAction('API_KEY_CREATE', "API Key '{$apiKey->name}' creada para instancia '{$instance->nombre}'", null, ['api_key_id' => $apiKey->id], $instance);
-
-        return redirect()->route('owner.instances.api-keys', $instance)
-            ->with('success', 'API Key creada correctamente.')
-            ->with('new_api_key', $rawKey);
-    }
-
-    public function instanceApiKeyRegenerate($id, $apiKeyId)
-    {
-        $instance = BusinessInstance::findOrFail($id);
-        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
-            ->findOrFail($apiKeyId);
-
-        $rawKey = 'iak_' . Str::random(40);
-        $apiKey->update(['key' => hash('sha256', $rawKey)]);
-
-        return redirect()->route('owner.instances.api-keys', $instance)
-            ->with('success', 'API Key regenerada correctamente.')
-            ->with('new_api_key', $rawKey);
-    }
-
-    public function instanceApiKeyToggle($id, $apiKeyId)
-    {
-        $instance = BusinessInstance::findOrFail($id);
-        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
-            ->findOrFail($apiKeyId);
-
-        $apiKey->update(['is_active' => !$apiKey->is_active]);
-        $status = $apiKey->is_active ? 'activada' : 'desactivada';
-
-        return redirect()->route('owner.instances.api-keys', $instance)
-            ->with('success', "API Key \"{$apiKey->name}\" {$status} correctamente.");
-    }
-
-    public function instanceApiKeyDestroy($id, $apiKeyId)
-    {
-        $instance = BusinessInstance::findOrFail($id);
-        $apiKey = InstanceApiKey::where('business_instance_id', $instance->id)
-            ->findOrFail($apiKeyId);
-
-        $name = $apiKey->name;
-        $this->logOwnerAction('API_KEY_DELETE', "API Key '{$name}' eliminada de instancia '{$instance->nombre}'", ['api_key_id' => $apiKey->id], null, $instance);
-        $apiKey->delete();
-
-        return redirect()->route('owner.instances.api-keys', $instance)
-            ->with('success', "API Key \"{$name}\" eliminada permanentemente.");
-    }
-
-
     // --- Cuentas Bancarias (Owner) ---
 
     public function cuentasBancarias(Request $request)
@@ -1922,14 +1851,14 @@ class OwnerController extends Controller
     public function smtpSettings()
     {
         $settings = [
-            'mail_mailer'       => SystemSetting::get('mail_mailer', 'smtp'),
-            'mail_host'         => SystemSetting::get('mail_host', ''),
-            'mail_port'         => SystemSetting::get('mail_port', '465'),
-            'mail_username'     => SystemSetting::get('mail_username', ''),
-            'mail_password'     => SystemSetting::get('mail_password', ''),
-            'mail_encryption'   => SystemSetting::get('mail_encryption', 'ssl'),
+            'mail_mailer' => SystemSetting::get('mail_mailer', 'smtp'),
+            'mail_host' => SystemSetting::get('mail_host', ''),
+            'mail_port' => SystemSetting::get('mail_port', '465'),
+            'mail_username' => SystemSetting::get('mail_username', ''),
+            'mail_password' => SystemSetting::get('mail_password', ''),
+            'mail_encryption' => SystemSetting::get('mail_encryption', 'ssl'),
             'mail_from_address' => SystemSetting::get('mail_from_address', ''),
-            'mail_from_name'    => SystemSetting::get('mail_from_name', ''),
+            'mail_from_name' => SystemSetting::get('mail_from_name', ''),
             'error_alert_email' => SystemSetting::get('error_alert_email', ''),
         ];
 
@@ -1939,14 +1868,14 @@ class OwnerController extends Controller
     public function smtpSettingsUpdate(Request $request)
     {
         $data = $request->validate([
-            'mail_mailer'       => 'nullable|string|in:smtp,log,mail,sendmail',
-            'mail_host'         => 'nullable|string|max:255',
-            'mail_port'         => 'nullable|string|max:10',
-            'mail_username'     => 'nullable|string|max:255',
-            'mail_password'     => 'nullable|string|max:255',
-            'mail_encryption'   => 'nullable|string|in:tls,ssl,null|max:10',
+            'mail_mailer' => 'nullable|string|in:smtp,log,mail,sendmail',
+            'mail_host' => 'nullable|string|max:255',
+            'mail_port' => 'nullable|string|max:10',
+            'mail_username' => 'nullable|string|max:255',
+            'mail_password' => 'nullable|string|max:255',
+            'mail_encryption' => 'nullable|string|in:tls,ssl,null|max:10',
             'mail_from_address' => 'nullable|email|max:255',
-            'mail_from_name'    => 'nullable|string|max:255',
+            'mail_from_name' => 'nullable|string|max:255',
             'error_alert_email' => 'nullable|email|max:255',
         ]);
 
@@ -1962,7 +1891,7 @@ class OwnerController extends Controller
                 }
 
                 // Encrypt password (same method as seeder and ErrorMailer)
-                if ($key === 'mail_password' && !empty($value)) {
+                if ($key === 'mail_password' && ! empty($value)) {
                     $value = \Illuminate\Support\Facades\Crypt::encryptString($value);
                 }
 
@@ -1972,8 +1901,8 @@ class OwnerController extends Controller
                 }
 
                 SystemSetting::updateOrCreate(
-                    ['key' => $key, 'tenant_id' => null],
-                    ['value' => $value]
+                    ['clave' => $key, 'tenant_id' => null],
+                    ['valor' => $value]
                 );
             }
         }
@@ -1985,8 +1914,8 @@ class OwnerController extends Controller
                 $value = '';
             }
             SystemSetting::updateOrCreate(
-                ['key' => 'error_alert_email', 'tenant_id' => null],
-                ['value' => $value]
+                ['clave' => 'error_alert_email', 'tenant_id' => null],
+                ['valor' => $value]
             );
         }
 
@@ -2040,7 +1969,7 @@ class OwnerController extends Controller
                 ->with('success', "Correo de prueba enviado exitosamente a {$testEmail}.");
         } catch (\Throwable $e) {
             return redirect()->route('owner.smtp-settings')
-                ->with('error', 'Error al enviar correo de prueba: ' . $e->getMessage());
+                ->with('error', 'Error al enviar correo de prueba: '.$e->getMessage());
         }
     }
 
@@ -2052,7 +1981,7 @@ class OwnerController extends Controller
     {
         $query = UserActivityLog::with('user.businessInstance', 'user.sucursal')
             ->when($request->filled('start_date') && $request->filled('end_date'), function ($q) use ($request) {
-                $q->whereBetween('logged_at', [$request->start_date, $request->end_date . ' 23:59:59']);
+                $q->whereBetween('logged_at', [$request->start_date, $request->end_date.' 23:59:59']);
             })
             ->when($request->filled('action'), function ($q) use ($request) {
                 $q->where('action', $request->action);
@@ -2182,6 +2111,7 @@ class OwnerController extends Controller
     public function ownersEdit($id)
     {
         $owner = User::role('owner')->findOrFail($id);
+
         return view('owner.owners.edit', compact('owner'));
     }
 
@@ -2191,7 +2121,7 @@ class OwnerController extends Controller
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $owner->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$owner->id,
             'password' => 'nullable|string|min:12|confirmed',
         ]);
 
@@ -2199,7 +2129,7 @@ class OwnerController extends Controller
         $owner->name = $data['name'];
         $owner->email = $data['email'];
 
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $owner->password = Hash::make($data['password']);
         }
 
@@ -2254,7 +2184,7 @@ class OwnerController extends Controller
             ->where(function ($q) {
                 // Owner ve TODO o solo sus propias acciones
                 $q->whereNull('tenant_id')
-                  ->orWhere('tenant_id', auth()->user()->businessInstance_id);
+                    ->orWhere('tenant_id', auth()->user()->businessInstance_id);
             })
             ->latest();
 
@@ -2262,7 +2192,7 @@ class OwnerController extends Controller
             $query->ofAction($request->action);
         }
         if ($request->filled('model')) {
-            $query->where('model_type', 'like', '%' . $request->model);
+            $query->where('model_type', 'like', '%'.$request->model);
         }
         if ($request->filled('user_id')) {
             $query->ofUser($request->user_id);
@@ -2276,15 +2206,15 @@ class OwnerController extends Controller
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where('description', 'like', "%{$s}%")
-                  ->orWhere('action', 'like', "%{$s}%");
+                ->orWhere('action', 'like', "%{$s}%");
         }
 
         $logs = $query->paginate(50);
         $actions = \App\Models\AuditLog::distinct('action')->pluck('action');
         $models = \App\Models\AuditLog::distinct('model_type')->pluck('model_type')
-                   ->map(fn($m) => class_basename($m));
-        $users = User::whereHas('roles', fn($q) => $q->whereIn('name', ['owner', 'admin-business', 'admin']))
-                     ->get(['id', 'name']);
+            ->map(fn ($m) => class_basename($m));
+        $users = User::whereHas('roles', fn ($q) => $q->whereIn('name', ['owner', 'admin-business', 'admin']))
+            ->get(['id', 'name']);
 
         return view('owner.audit-logs.index', compact('logs', 'actions', 'models', 'users'));
     }
@@ -2292,6 +2222,7 @@ class OwnerController extends Controller
     public function auditLogsShow(\App\Models\AuditLog $auditLog)
     {
         $auditLog->load('user');
+
         return view('owner.audit-logs.show', compact('auditLog'));
     }
 
@@ -2303,7 +2234,7 @@ class OwnerController extends Controller
         $count = \App\Models\AuditLog::where('created_at', '<', $cutOff)
             ->where(function ($q) {
                 $q->whereNull('tenant_id')
-                  ->orWhere('tenant_id', auth()->user()->businessInstance_id);
+                    ->orWhere('tenant_id', auth()->user()->businessInstance_id);
             })
             ->delete();
 

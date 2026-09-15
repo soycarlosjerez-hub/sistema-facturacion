@@ -1,0 +1,29 @@
+﻿
+  Dropping all tables .................................................................................. 751.56ms DONE
+
+   INFO  Preparing database.  
+
+  Creating migration table .............................................................................. 35.79ms DONE
+
+
+   ParseError 
+
+  syntax error, unexpected identifier "SHOW", expecting ")"
+
+  at database\migrations\2026_08_20_999999_fix_foreign_keys_order.php:29
+     25Γûò             }
+     26Γûò         }
+     27Γûò         
+     28Γûò         // Recreate foreign keys
+  Γ₧£  29Γûò         $tables = DB::select('SHOW TABLES');
+     30Γûò         foreach ($tables as $table) {
+     31Γûò             $tableName = array_values((array)$table)[0];
+     32Γûò             if ($tableName === 'migrations') continue;
+     33Γûò
+
+  1   vendor\laravel\framework\src\Illuminate\Filesystem\Filesystem.php:149
+      Illuminate\Filesystem\Filesystem::Illuminate\Filesystem\{closure}()
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Migrations\Migrator.php:595
+      Illuminate\Filesystem\Filesystem::requireOnce("C:\wamp64\www\sistema-facturacion\database\migrations/2026_08_20_999999_fix_foreign_keys_order.php")
+

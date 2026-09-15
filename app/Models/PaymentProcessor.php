@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
 class PaymentProcessor extends Model
 {
+    use TenantScope;
     protected $fillable = [
         'nombre', 'tipo', 'comision_porcentaje', 'comision_fija',
         'api_key', 'api_secret', 'api_endpoint', 'api_environment',
@@ -15,9 +17,9 @@ class PaymentProcessor extends Model
 
     protected $casts = [
         'comision_porcentaje' => 'decimal:2',
-        'comision_fija'       => 'decimal:2',
-        'activo'              => 'boolean',
-        'api_environment'     => 'string',
+        'comision_fija' => 'decimal:2',
+        'activo' => 'boolean',
+        'api_environment' => 'string',
     ];
 
     public function setApiSecretAttribute($value)

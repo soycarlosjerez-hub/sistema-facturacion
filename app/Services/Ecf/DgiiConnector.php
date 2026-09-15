@@ -3,7 +3,6 @@
 namespace App\Services\Ecf;
 
 use App\Models\EcfDocumento;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class DgiiConnector
@@ -22,7 +21,7 @@ class DgiiConnector
 
         try {
             $endpoint = $this->getEndpoint('recepcion');
-            $ambiente = config('dgii.ambiente');
+            $ambiente = \App\Services\Ecf\DgiiTokenManager::normalizarAmbiente((string) config('dgii.ambiente', 'sandbox'));
 
             $httpClient = $this->tokenManager->getAuthenticatedHttpClient($ambiente);
 
@@ -35,6 +34,20 @@ class DgiiConnector
                 ->withBody($ecf->xml_content, 'application/xml')
                 ->post($endpoint);
 
+            // Token expirado/inválido: invalidar, refrescar una vez y reintentar.
+            if ($response->status() === 401) {
+                $this->tokenManager->invalidateToken($ambiente);
+                $httpClient = $this->tokenManager->getAuthenticatedHttpClient($ambiente);
+                $response = $httpClient
+                    ->withHeaders([
+                        'Content-Type' => 'application/xml',
+                        'Accept' => 'application/json',
+                    ])
+                    ->timeout(30)
+                    ->withBody($ecf->xml_content, 'application/xml')
+                    ->post($endpoint);
+            }
+
             $duration = (int) ((microtime(true) - $start) * 1000);
             $body = $response->body();
             $data = $response->json() ?? [];
@@ -42,20 +55,22 @@ class DgiiConnector
             return [
                 'success' => $response->successful(),
                 'codigo_http' => $response->status(),
-                'track_id' => $data['trackId'] ?? null,
+                'track_id' => $data['trackId'] ?? $data['track_id'] ?? null,
                 'estado' => $data['estado'] ?? 'desconocido',
                 'mensaje' => $data['mensaje'] ?? 'Sin mensaje',
+                'codigoSeguridad' => $data['codigoSeguridad'] ?? $data['codigo_seguridad'] ?? $data['codigo'] ?? null,
                 'response' => $body,
                 'duracion_ms' => $duration,
             ];
         } catch (\Throwable $e) {
             Log::error('e-CF: error enviando a DGII', ['error' => $e->getMessage(), 'ecf_id' => $ecf->id]);
+
             return [
                 'success' => false,
                 'codigo_http' => 0,
                 'track_id' => null,
                 'estado' => 'error',
-                'mensaje' => 'Error de conexión: ' . $e->getMessage(),
+                'mensaje' => 'Error de conexión: '.$e->getMessage(),
                 'response' => null,
                 'duracion_ms' => (int) ((microtime(true) - $start) * 1000),
             ];
@@ -69,8 +84,8 @@ class DgiiConnector
         }
 
         try {
-            $endpoint = $this->getEndpoint('consulta') . '/' . $trackId;
-            $ambiente = config('dgii.ambiente');
+            $endpoint = $this->getEndpoint('consulta').'/'.$trackId;
+            $ambiente = \App\Services\Ecf\DgiiTokenManager::normalizarAmbiente((string) config('dgii.ambiente', 'sandbox'));
 
             $httpClient = $this->tokenManager->getAuthenticatedHttpClient($ambiente);
 
@@ -78,12 +93,21 @@ class DgiiConnector
                 ->timeout(20)
                 ->get($endpoint);
 
+            if ($response->status() === 401) {
+                $this->tokenManager->invalidateToken($ambiente);
+                $httpClient = $this->tokenManager->getAuthenticatedHttpClient($ambiente);
+                $response = $httpClient
+                    ->timeout(20)
+                    ->get($endpoint);
+            }
+
             $data = $response->json() ?? [];
 
             return [
                 'success' => $response->successful(),
                 'estado' => $data['estado'] ?? 'desconocido',
                 'mensaje' => $data['mensaje'] ?? '',
+                'codigoSeguridad' => $data['codigoSeguridad'] ?? $data['codigo_seguridad'] ?? null,
                 'codigo_http' => $response->status(),
             ];
         } catch (\Throwable $e) {
@@ -111,7 +135,7 @@ class DgiiConnector
             $payload = json_encode([
                 'fecha' => data_get($documentos, '0.fecha_emision', now()->format('Y-m-d')),
                 'empresa_rnc' => data_get($documentos, '0.rnc_emisor', ''),
-                'documentos' => collect($documentos)->map(fn($doc) => [
+                'documentos' => collect($documentos)->map(fn ($doc) => [
                     'encf' => $doc['encf'] ?? '',
                     'tipo_ecf' => $doc['tipo_ecf'] ?? '',
                     'fecha_emision' => $doc['fecha_emision'] ?? '',
@@ -143,12 +167,13 @@ class DgiiConnector
             Log::error('e-CF: error enviando informe diario a DGII', [
                 'error' => $e->getMessage(),
             ]);
+
             return [
                 'success' => false,
                 'codigo_http' => 0,
                 'track_id' => null,
                 'estado' => 'error',
-                'mensaje' => 'Error de conexión: ' . $e->getMessage(),
+                'mensaje' => 'Error de conexión: '.$e->getMessage(),
                 'response' => null,
                 'duracion_ms' => 0,
             ];
@@ -157,11 +182,12 @@ class DgiiConnector
 
     private function getEndpoint(string $tipo): string
     {
-        $base = rtrim(config('dgii.ambientes.' . config('dgii.ambiente') . '.api_url'), '/');
+        $base = rtrim(config('dgii.ambientes.'.config('dgii.ambiente').'.api_url'), '/');
+
         return match ($tipo) {
-            'recepcion' => $base . '/recepcion-ecf',
-            'consulta' => $base . '/consulta-estado',
-            'informe-diario' => $base . '/informe-diario',
+            'recepcion' => $base.'/recepcion-ecf',
+            'consulta' => $base.'/consulta-estado',
+            'informe-diario' => $base.'/informe-diario',
             default => $base,
         };
     }
@@ -170,7 +196,7 @@ class DgiiConnector
     {
         $prob = config('dgii.probabilidad_aprobacion_sim', 0.85);
         $approved = mt_rand() / mt_getrandmax() < $prob;
-        $trackId = 'TRK-' . strtoupper(bin2hex(random_bytes(8)));
+        $trackId = 'TRK-'.strtoupper(bin2hex(random_bytes(8)));
         $duration = mt_rand(150, 800);
 
         usleep(200000);
@@ -182,6 +208,7 @@ class DgiiConnector
                 'track_id' => $trackId,
                 'estado' => 'aprobado',
                 'mensaje' => 'e-CF recibido y aceptado por DGII (simulación)',
+                'codigoSeguridad' => $ecf->codigo_seguridad,
                 'response' => json_encode([
                     'trackId' => $trackId,
                     'estado' => 'ACEPTADO',
@@ -218,6 +245,7 @@ class DgiiConnector
     private function simularConsulta(string $trackId): array
     {
         usleep(100000);
+
         return [
             'success' => true,
             'estado' => 'aprobado',
@@ -230,14 +258,15 @@ class DgiiConnector
     private function simularEnvioInforme(array $documentos): array
     {
         $count = count($documentos);
+
         return [
             'success' => true,
             'codigo_http' => 200,
-            'track_id' => 'TRK-INFORME-' . strtoupper(bin2hex(random_bytes(8))),
+            'track_id' => 'TRK-INFORME-'.strtoupper(bin2hex(random_bytes(8))),
             'estado' => 'aceptado',
             'mensaje' => "Informe diario de {$count} documentos procesado (simulación)",
             'response' => json_encode([
-                'trackId' => 'TRK-INFORME-' . bin2hex(random_bytes(8)),
+                'trackId' => 'TRK-INFORME-'.bin2hex(random_bytes(8)),
                 'estado' => 'ACEPTADO',
                 'documentos_procesados' => $count,
             ]),

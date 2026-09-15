@@ -8,7 +8,7 @@
             <a href="<?php echo e(route('owner.instances.index')); ?>" class="text-decoration-none small fw-bold">Ver todos</a>
         </div>
 
-        <?php $__empty_0 = true; $__currentLoopData = $proximosVencimientos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+        <?php $__empty_1 = true; $__currentLoopData = $proximosVencimientos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="d-flex align-items-center justify-content-between mb-2 pb-2 <?php echo e($loop->last ? '' : 'border-bottom border-light'); ?>">
                 <div style="min-width:0;">
                     <a href="<?php echo e(route('owner.instances.show', $instance)); ?>" class="fw-bold text-decoration-none small d-block text-truncate" style="max-width:180px;">
@@ -25,7 +25,7 @@
                     <div class="text-muted" style="font-size:.65rem;"><?php echo e($instance->fecha_vencimiento->format('d/m/Y')); ?></div>
                 </div>
             </div>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="ui-empty-state">
                 <i class="bi bi-calendar-check" style="color:#10b981;"></i>
                 <p>Todo al día</p>

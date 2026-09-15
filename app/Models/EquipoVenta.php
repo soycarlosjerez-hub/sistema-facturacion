@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\Auditable;
 
 class EquipoVenta extends Model
 {
-    use Auditable;
+    use Auditable, TenantScope;
 
     protected $table = 'equipo_ventas';
 
@@ -40,17 +41,17 @@ class EquipoVenta extends Model
 
     public static function scopePorMarca($query, $marca)
     {
-        return $query->whereHas('equipo', fn($q) => $q->where('marca', 'like', "%{$marca}%"));
+        return $query->whereHas('equipo', fn ($q) => $q->where('marca', 'like', "%{$marca}%"));
     }
 
     public static function scopePorTipoDispositivo($query, $tipo)
     {
-        return $query->whereHas('equipo', fn($q) => $q->where('tipo_dispositivo', $tipo));
+        return $query->whereHas('equipo', fn ($q) => $q->where('tipo_dispositivo', $tipo));
     }
 
     public static function scopePorEstadoEquipo($query, $estado)
     {
-        return $query->whereHas('equipo', fn($q) => $q->where('estado', $estado));
+        return $query->whereHas('equipo', fn ($q) => $q->where('estado', $estado));
     }
 
     public static function totalIngresosPorTenant(int $tenantId): float

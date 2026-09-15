@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Producto;
-use App\Models\Cliente;
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\Promocion;
-use App\Models\PromocionUso;
+use App\Models\Cliente;
 use App\Models\LealtadCuenta;
 use App\Models\LealtadMovimiento;
+use App\Models\Pago;
+use App\Models\Producto;
+use App\Models\Promocion;
+use App\Models\PromocionUso;
 use App\Models\Venta;
 use App\Models\VentaDetalle;
-use App\Models\Pago;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +30,7 @@ use Illuminate\Support\Str;
 class EcommController extends Controller
 {
     private ?int $tenantId = null;
+
     private bool $tenantResolved = false;
 
     public function __construct()
@@ -76,12 +77,9 @@ class EcommController extends Controller
             return $clientToken->cliente->tenant_id;
         }
 
-        // 3. Fallback: explicit tenant_id from header, query, or body
-        $tenantId = request()->header('X-Tenant-ID')
-            ?? request()->query('tenant_id')
-            ?? request()->input('tenant_id');
-
-        return $tenantId ? (int) $tenantId : null;
+        // Sin tenant autenticado: null (ensureTenant hace abort 401).
+        // NUNCA aceptar tenant_id desde header/query/body (IDOR).
+        return null;
     }
 
     // ─── Helpers ───────────────────────────────────────────────
@@ -112,6 +110,7 @@ class EcommController extends Controller
 
         $uuid = Str::uuid()->toString();
         $this->storeMap($uuid, $modelName, $id);
+
         return $uuid;
     }
 
@@ -174,15 +173,15 @@ class EcommController extends Controller
         $query = Producto::where('tenant_id', $this->tenantId)
             ->where('activo', true)
             ->select('id', 'nombre', 'descripcion', 'precio', 'stock', 'codigo_barras',
-                     'marca', 'modelo', 'imagen', 'itbis_porcentaje', 'unidad_medida');
+                'marca', 'modelo', 'imagen', 'itbis_porcentaje', 'unidad_medida');
 
         if ($request->filled('search')) {
             $term = $request->search;
             $query->where(function ($q) use ($term) {
                 $q->where('nombre', 'like', "%{$term}%")
-                  ->orWhere('codigo_barras', 'like', "%{$term}%")
-                  ->orWhere('marca', 'like', "%{$term}%")
-                  ->orWhere('modelo', 'like', "%{$term}%");
+                    ->orWhere('codigo_barras', 'like', "%{$term}%")
+                    ->orWhere('marca', 'like', "%{$term}%")
+                    ->orWhere('modelo', 'like', "%{$term}%");
             });
         }
 
@@ -202,7 +201,7 @@ class EcommController extends Controller
                 'sku' => $p->codigo_barras,
                 'brand' => $p->marca,
                 'model' => $p->modelo,
-                'imageUrl' => $p->imagen ? asset('storage/' . $p->imagen) : null,
+                'imageUrl' => $p->imagen ? asset('storage/'.$p->imagen) : null,
                 'taxRate' => (float) $p->itbis_porcentaje,
                 'unitOfMeasure' => $p->unidad_medida ?? 'Unidad',
             ];
@@ -239,7 +238,7 @@ class EcommController extends Controller
             'sku' => $p->codigo_barras,
             'brand' => $p->marca,
             'model' => $p->modelo,
-            'imageUrl' => $p->imagen ? asset('storage/' . $p->imagen) : null,
+            'imageUrl' => $p->imagen ? asset('storage/'.$p->imagen) : null,
             'taxRate' => (float) $p->itbis_porcentaje,
             'unitOfMeasure' => $p->unidad_medida ?? 'Unidad',
             'active' => $p->activo,
@@ -257,9 +256,9 @@ class EcommController extends Controller
             $term = $request->search;
             $query->where(function ($q) use ($term) {
                 $q->where('nombre', 'like', "%{$term}%")
-                  ->orWhere('email', 'like', "%{$term}%")
-                  ->orWhere('telefono', 'like', "%{$term}%")
-                  ->orWhere('cedula', 'like', "%{$term}%");
+                    ->orWhere('email', 'like', "%{$term}%")
+                    ->orWhere('telefono', 'like', "%{$term}%")
+                    ->orWhere('cedula', 'like', "%{$term}%");
             });
         }
 
@@ -332,7 +331,7 @@ class EcommController extends Controller
         ]);
 
         $clienteId = null;
-        if (!empty($data['customerFlowId'])) {
+        if (! empty($data['customerFlowId'])) {
             $clienteId = $this->mapId($data['customerFlowId'], 'Cliente');
         }
 
@@ -487,11 +486,11 @@ class EcommController extends Controller
 
         // Resolve customer
         $clienteId = $cart->cliente_id;
-        if (!empty($data['customerFlowId'])) {
+        if (! empty($data['customerFlowId'])) {
             $clienteId = $this->mapId($data['customerFlowId'], 'Cliente') ?? $clienteId;
         }
 
-        if (!$clienteId) {
+        if (! $clienteId) {
             $cliente = Cliente::create([
                 'tenant_id' => $this->tenantId,
                 'nombre' => 'Cliente Walk-in',
@@ -642,7 +641,7 @@ class EcommController extends Controller
             ->activas()
             ->first();
 
-        if (!$promocion || !$promocion->estaVigente()) {
+        if (! $promocion || ! $promocion->estaVigente()) {
             return $this->error('Invalid or expired deal code.');
         }
 
@@ -687,7 +686,7 @@ class EcommController extends Controller
             ->where('cliente_id', $realIdInt)
             ->first();
 
-        if (!$cuenta) {
+        if (! $cuenta) {
             return $this->response([
                 'points' => 0,
                 'tier' => 'bronce',
@@ -740,12 +739,12 @@ class EcommController extends Controller
             $recompensa = ['costo' => 150, 'descuento' => 'envio_gratis', 'nombre' => 'Envío Gratis'];
         }
 
-        if (!$recompensa) {
+        if (! $recompensa) {
             return $this->error('Invalid reward.');
         }
 
-        if (!$cuenta->puedeCanjear($recompensa['costo'])) {
-            return $this->error('Insufficient points. Available: ' . $cuenta->puntosDisponibles());
+        if (! $cuenta->puedeCanjear($recompensa['costo'])) {
+            return $this->error('Insufficient points. Available: '.$cuenta->puntosDisponibles());
         }
 
         $cuenta->canjearPuntos($recompensa['costo']);
@@ -753,11 +752,11 @@ class EcommController extends Controller
             'cuenta_id' => $cuenta->id,
             'tipo' => 'canjear',
             'cantidad' => $recompensa['costo'],
-            'notas' => 'Flowhub reward: ' . $recompensa['nombre'],
+            'notas' => 'Flowhub reward: '.$recompensa['nombre'],
         ]);
 
         // Apply discount to cart if provided
-        if (!empty($data['cartId']) && is_numeric($recompensa['descuento'])) {
+        if (! empty($data['cartId']) && is_numeric($recompensa['descuento'])) {
             $realCartId = $this->mapId($data['cartId'], 'Cart') ?? $data['cartId'];
             $realCartIdInt = is_numeric($realCartId) ? (int) $realCartId : (int) $realCartId;
             $cart = Cart::where('tenant_id', $this->tenantId)->find($realCartIdInt);

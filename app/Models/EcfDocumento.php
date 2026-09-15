@@ -17,6 +17,7 @@ class EcfDocumento extends Model
 
     protected $fillable = [
         'venta_id',
+        'compra_id',
         'secuencia_ecf_id',
         'certificado_digital_id',
         'encf',
@@ -90,6 +91,11 @@ class EcfDocumento extends Model
     public function venta(): BelongsTo
     {
         return $this->belongsTo(Venta::class);
+    }
+
+    public function compra(): BelongsTo
+    {
+        return $this->belongsTo(Compra::class);
     }
 
     public function secuencia(): BelongsTo

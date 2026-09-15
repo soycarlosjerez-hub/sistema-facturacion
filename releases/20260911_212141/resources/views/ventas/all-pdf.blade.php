@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Listado de Ventas</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #333; padding: 5px; text-align: left; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+    @php $empresa = \App\Models\SystemSetting::allCached(); @endphp
+    <div style="text-align:center;margin-bottom:20px;">
+        @if($pdfLogoUrl)
+        <img src="{{ $pdfLogoUrl }}" style="max-width: 80px; max-height: 60px; object-fit: contain; margin-bottom: 5px;" alt="Logo">
+        @endif
+        <h2 style="margin:0;">{{ \App\Models\SystemSetting::nombreEmpresaActual() }}</h2>
+        @if(!empty($empresa['empresa_rnc']))
+        <small style="color:#666;">RNC: {{ $empresa['empresa_rnc'] }}</small>
+        @endif
+    </div>
+    <h3>Listado de Ventas</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Usuario</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($ventas as $venta)
+                <tr>
+                    <td>{{ $venta->id }}</td>
+                    <td>{{ $venta->cliente->nombre ?? 'N/A' }}</td>
+                    <td>{{ $venta->usuario->name ?? 'N/A' }}</td>
+                    <td>{{ $venta->tipoVenta->nombre ?? 'N/A' }}</td>
+                    <td>{{ $venta->created_at->format('d/m/Y') }}</td>
+                    <td>${{ number_format($venta->total, 2) }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</body>
+</html>

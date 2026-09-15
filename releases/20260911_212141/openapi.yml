@@ -1,0 +1,581 @@
+openapi: 3.0.3
+info:
+  title: Erpipos ERP API
+  description: |
+    API REST completa para el sistema ERP Erpipos multi-tenant.
+    Soporta facturación electrónica DGII, inventario, CRM, y 11 verticales de negocio.
+  version: 1.0.0
+  contact:
+    name: Soporte Erpipos
+    email: soporte@erpipos.com
+
+servers:
+  - url: https://your-domain.com/api
+    description: Producción
+  - url: http://localhost:8000/api
+    description: Desarrollo
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login de usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciales inválidas
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registro de usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Usuario registrado
+        '422':
+          description: Validación fallida
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Obtener usuario actual
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Usuario actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Listar categorías
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategories'
+    post:
+      tags: [Categories]
+      summary: Crear categoría
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '201':
+          description: Categoría creada
+
+  /products:
+    get:
+      tags: [Products]
+      summary: Listar productos
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProducts'
+    post:
+      tags: [Products]
+      summary: Crear producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      responses:
+        '201':
+          description: Producto creado
+
+  /sales:
+    get:
+      tags: [Sales]
+      summary: Listar ventas
+      responses:
+        '200':
+          description: Lista de ventas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSales'
+    post:
+      tags: [Sales]
+      summary: Crear venta (POS)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+      responses:
+        '201':
+          description: Venta creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+
+  /customers:
+    get:
+      tags: [Customers]
+      summary: Listar clientes
+      responses:
+        '200':
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCustomers'
+    post:
+      tags: [Customers]
+      summary: Crear cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '201':
+          description: Cliente creado
+
+  /purchases:
+    get:
+      tags: [Purchases]
+      summary: Listar compras
+      responses:
+        '200':
+          description: Lista de compras
+    post:
+      tags: [Purchases]
+      summary: Crear compra
+      responses:
+        '201':
+          description: Compra creada
+
+  /backups:
+    post:
+      tags: [Backups]
+      summary: Crear backup manual
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackupRequest'
+      responses:
+        '200':
+          description: Backup iniciado
+
+  /settings:
+    get:
+      tags: [Settings]
+      summary: Obtener configuraciones
+      responses:
+        '200':
+          description: Config del tenant
+    post:
+      tags: [Settings]
+      summary: Actualizar configuración
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingRequest'
+      responses:
+        '200':
+          description: Configuración actualizada
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@empresa.com
+        password:
+          type: string
+          format: password
+          example: secret123
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJ0eXAiOiJKV1Qi...
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 3600
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, owner, gerente, empleado, vendedor]
+        business_instance:
+          $ref: '#/components/schemas/BusinessInstance'
+        two_factor_enabled:
+          type: boolean
+
+    BusinessInstance:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        business_type:
+          type: string
+        config:
+          type: object
+
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        parent_id:
+          type: integer
+        is_active:
+          type: boolean
+
+    CategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        parent_id:
+          type: integer
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        sku:
+          type: string
+        category_id:
+          type: integer
+        price:
+          type: number
+          format: float
+        cost:
+          type: number
+          format: float
+        stock:
+          type: integer
+        min_stock:
+          type: integer
+        is_active:
+          type: boolean
+
+    ProductRequest:
+      type: object
+      required: [name, price]
+      properties:
+        name:
+          type: string
+        sku:
+          type: string
+        category_id:
+          type: integer
+        price:
+          type: number
+        cost:
+          type: number
+        stock:
+          type: integer
+        min_stock:
+          type: integer
+
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+        ncf:
+          type: string
+        cliente:
+          $ref: '#/components/schemas/Customer'
+        detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleDetail'
+        subtotal:
+          type: number
+        impuestos:
+          type: number
+        total:
+          type: number
+        metodo_pago:
+          type: string
+        estado:
+          type: string
+        fecha:
+          type: string
+          format: date-time
+
+    SaleDetail:
+      type: object
+      properties:
+        producto_id:
+          type: integer
+        cantidad:
+          type: integer
+        precio:
+          type: number
+        subtotal:
+          type: number
+
+    SaleRequest:
+      type: object
+      required: [detalles, metodo_pago]
+      properties:
+        cliente_id:
+          type: integer
+        detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleDetailRequest'
+        metodo_pago:
+          type: string
+          enum: [efectivo, tarjeta, transferencia, fiado, cuenta_abierta]
+        ncf:
+          type: string
+        tipo_comprobante:
+          type: string
+          enum: [ncf, ecf, sin]
+
+    SaleDetailRequest:
+      type: object
+      required: [producto_id, cantidad, precio]
+      properties:
+        producto_id:
+          type: integer
+        cantidad:
+          type: integer
+        precio:
+          type: number
+        descuento:
+          type: number
+          default: 0
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        cedula_rnc:
+          type: string
+        email:
+          type: string
+        telefono:
+          type: string
+        direccion:
+          type: string
+        tipo:
+          type: string
+          enum: [persona, empresa]
+
+    CustomerRequest:
+      type: object
+      required: [nombre]
+      properties:
+        nombre:
+          type: string
+        cedula_rnc:
+          type: string
+        email:
+          type: string
+        telefono:
+          type: string
+        direccion:
+          type: string
+
+    BackupRequest:
+      type: object
+      properties:
+        compress:
+          type: boolean
+          default: true
+        filename:
+          type: string
+
+    SettingRequest:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+          or
+          type: integer
+
+    PaginatedCategories:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+
+    PaginatedProducts:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+
+    PaginatedSales:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sale'
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+
+    PaginatedCustomers:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer

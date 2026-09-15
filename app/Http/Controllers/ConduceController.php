@@ -30,17 +30,19 @@ class ConduceController extends Controller
 
         try {
             $conduce = $this->conduceService->create($validated);
+
             return redirect()->route('conduces.show', $conduce)
                 ->with('success', "Conduce {$conduce->numero} creado correctamente.");
         } catch (\Throwable $e) {
             return back()->withInput()
-                ->with('error', 'Error al crear el conduce: ' . $e->getMessage());
+                ->with('error', 'Error al crear el conduce: '.$e->getMessage());
         }
     }
 
     public function show(Conduce $conduce)
     {
         $conduce->load(['cliente', 'user', 'items.producto', 'venta']);
+
         return view('conduces.show', compact('conduce'));
     }
 
@@ -55,11 +57,12 @@ class ConduceController extends Controller
 
         try {
             $this->conduceService->update($conduce, $validated);
+
             return redirect()->route('conduces.show', $conduce)
                 ->with('success', "Conduce {$conduce->numero} actualizado.");
         } catch (\Throwable $e) {
             return back()->withInput()
-                ->with('error', 'Error al actualizar: ' . $e->getMessage());
+                ->with('error', 'Error al actualizar: '.$e->getMessage());
         }
     }
 
@@ -68,6 +71,7 @@ class ConduceController extends Controller
         try {
             $numero = $conduce->numero;
             $this->conduceService->delete($conduce);
+
             return redirect()->route('conduces.index')
                 ->with('success', "Conduce {$numero} eliminado.");
         } catch (\Throwable $e) {
@@ -78,12 +82,13 @@ class ConduceController extends Controller
     public function cambiarEstado(Request $request, Conduce $conduce)
     {
         $validated = $request->validate([
-            'estado' => 'required|in:' . implode(',', array_keys(Conduce::ESTADOS)),
+            'estado' => 'required|in:'.implode(',', array_keys(Conduce::ESTADOS)),
         ]);
 
         try {
             $this->conduceService->cambiarEstado($conduce, $validated['estado']);
-            return back()->with('success', "Estado cambiado a: " . Conduce::ESTADOS[$validated['estado']]['label']);
+
+            return back()->with('success', 'Estado cambiado a: '.Conduce::ESTADOS[$validated['estado']]['label']);
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -92,10 +97,10 @@ class ConduceController extends Controller
     public function entregar(Request $request, Conduce $conduce)
     {
         $validated = $request->validate([
-            'recibido_por'         => 'required|string|max:255',
-            'recibido_cedula'      => 'nullable|string|max:20',
-            'items_recibidos'      => 'required|array',
-            'items_recibidos.*'    => 'nullable|numeric|min:0',
+            'recibido_por' => 'required|string|max:255',
+            'recibido_cedula' => 'nullable|string|max:20',
+            'items_recibidos' => 'required|array',
+            'items_recibidos.*' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -105,6 +110,7 @@ class ConduceController extends Controller
                 $validated['recibido_cedula'] ?? null,
                 $validated['items_recibidos']
             );
+
             return back()->with('success', "Entrega confirmada para el conduce {$conduce->numero}.");
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
@@ -115,6 +121,7 @@ class ConduceController extends Controller
     {
         $conduce->load(['cliente', 'user', 'items', 'venta']);
         $empresa = $request->attributes->get('empresa') ?? (object) config('app.empresa', []);
+
         return Pdf::loadView('conduces.pdf', compact('conduce', 'empresa'))
             ->setPaper('letter', 'portrait')
             ->stream("conduce-{$conduce->numero}.pdf");
@@ -123,15 +130,35 @@ class ConduceController extends Controller
     public function ticket(Conduce $conduce, Request $request)
     {
         $conduce->load(['cliente', 'items']);
-        $paper = (int) $request->get('paper', 80) === 58 ? 58 : 80;
+
+        // Buscar impresora configurada
+        $impresora = null;
+        if (auth()->check()) {
+            $impresora = \App\Models\Impresora::where('activo', true)
+                ->where('tenant_id', auth()->user()->business_instance_id)
+                ->where('auto_imprimir_conduces', true)
+                ->orderBy('orden')
+                ->first();
+        }
+
+        // Si no se especifica paper, usar la impresora
+        $paper = (int) $request->get('paper', 80);
+        if ($paper === 80 && $impresora && $impresora->papel_tamano) {
+            $paper = (int) preg_replace('/[^0-9]/', '', $impresora->papel_tamano);
+            $paper = in_array($paper, [58, 80, 210]) ? $paper : 80;
+        }
+
+        $paper = $paper === 58 ? 58 : 80;
         $empresa = (object) config('app.empresa', []);
-        return view('conduces.ticket', compact('conduce', 'paper', 'empresa'));
+
+        return view('conduces.ticket', compact('conduce', 'paper', 'empresa', 'impresora'));
     }
 
     public function ticketText(Conduce $conduce)
     {
         $conduce->load(['cliente', 'items']);
         $text = "Conduce #{$conduce->numero}\n\n";
+
         return response($text, 200)
             ->header('Content-Type', 'text/plain; charset=UTF-8')
             ->header('Content-Disposition', "inline; filename=conduce-{$conduce->numero}.txt");
@@ -145,34 +172,34 @@ class ConduceController extends Controller
     protected function validateConduce(Request $request): array
     {
         return $request->validate([
-            'cliente_id'              => 'required|exists:clientes,id',
-            'fecha'                   => 'required|date',
-            'fecha_entrega'           => 'nullable|date|after_or_equal:fecha',
-            'estado'                  => 'nullable|in:' . implode(',', array_keys(Conduce::ESTADOS)),
-            'direccion_entrega'       => 'required|string|max:500',
-            'referencia'              => 'nullable|string|max:255',
-            'contacto_entrega'        => 'nullable|string|max:255',
-            'telefono_entrega'        => 'nullable|string|max:30',
-            'transportista'           => 'nullable|string|max:255',
-            'vehiculo'                => 'nullable|string|max:100',
-            'placa'                   => 'nullable|string|max:20',
-            'chofer'                  => 'nullable|string|max:255',
-            'chofer_cedula'           => 'nullable|string|max:20',
-            'observaciones'           => 'nullable|string|max:2000',
-            'venta_id'                => 'nullable|exists:ventas,id',
-            'items'                   => 'required|array|min:1',
-            'items.*.producto_id'     => 'nullable|exists:productos,id',
-            'items.*.nombre'          => 'required|string|max:255',
-            'items.*.codigo'          => 'nullable|string|max:100',
-            'items.*.cantidad'        => 'required|numeric|min:0.01',
-            'items.*.unidad'          => 'nullable|string|max:20',
-            'items.*.peso'            => 'nullable|numeric|min:0',
+            'cliente_id' => 'required|exists:clientes,id',
+            'fecha' => 'required|date',
+            'fecha_entrega' => 'nullable|date|after_or_equal:fecha',
+            'estado' => 'nullable|in:'.implode(',', array_keys(Conduce::ESTADOS)),
+            'direccion_entrega' => 'required|string|max:500',
+            'referencia' => 'nullable|string|max:255',
+            'contacto_entrega' => 'nullable|string|max:255',
+            'telefono_entrega' => 'nullable|string|max:30',
+            'transportista' => 'nullable|string|max:255',
+            'vehiculo' => 'nullable|string|max:100',
+            'placa' => 'nullable|string|max:20',
+            'chofer' => 'nullable|string|max:255',
+            'chofer_cedula' => 'nullable|string|max:20',
+            'observaciones' => 'nullable|string|max:2000',
+            'venta_id' => 'nullable|exists:ventas,id',
+            'items' => 'required|array|min:1',
+            'items.*.producto_id' => 'nullable|exists:productos,id',
+            'items.*.nombre' => 'required|string|max:255',
+            'items.*.codigo' => 'nullable|string|max:100',
+            'items.*.cantidad' => 'required|numeric|min:0.01',
+            'items.*.unidad' => 'nullable|string|max:20',
+            'items.*.peso' => 'nullable|numeric|min:0',
         ], [
-            'cliente_id.required'       => 'Selecciona un cliente.',
+            'cliente_id.required' => 'Selecciona un cliente.',
             'direccion_entrega.required' => 'La dirección de entrega es obligatoria.',
-            'items.required'            => 'Agrega al menos un producto al conduce.',
-            'items.min'                 => 'Agrega al menos un producto al conduce.',
-            'items.*.cantidad.min'      => 'La cantidad debe ser mayor a 0.',
+            'items.required' => 'Agrega al menos un producto al conduce.',
+            'items.min' => 'Agrega al menos un producto al conduce.',
+            'items.*.cantidad.min' => 'La cantidad debe ser mayor a 0.',
         ]);
     }
 }

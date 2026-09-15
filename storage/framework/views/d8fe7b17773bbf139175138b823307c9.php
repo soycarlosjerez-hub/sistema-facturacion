@@ -177,7 +177,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $__empty_0 = true; $__currentLoopData = $instances; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+                    <?php $__empty_1 = true; $__currentLoopData = $instances; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <?php $subEstado = $instance->estadoSuscripcion(); ?>
                     <tr>
                         <td class="ps-4">
@@ -347,7 +347,7 @@
                             </div>
                         </td>
                     </tr>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr><td colspan="7" class="text-center text-muted py-5">
                         <div class="ui-empty-state">
                             <i class="bi bi-inbox"></i>
@@ -372,7 +372,7 @@
 
     
     <div class="d-md-none">
-        <?php $__empty_0 = true; $__currentLoopData = $instances; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+        <?php $__empty_1 = true; $__currentLoopData = $instances; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
         <?php $subEstado = $instance->estadoSuscripcion(); ?>
         <div class="ui-card mb-3" style="--delay:.<?php echo e($loop->index + 1); ?>s">
             <div class="ui-card-body p-3">
@@ -469,7 +469,7 @@
                 </div>
             </div>
         </div>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
         <div class="text-center text-muted py-5">
             <div class="ui-empty-state">
                 <i class="bi bi-inbox"></i>

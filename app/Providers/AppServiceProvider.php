@@ -4,12 +4,12 @@ namespace App\Providers;
 
 use App\Models\Almacen;
 use App\Models\BusinessInstance;
+use App\Models\Caja;
 use App\Models\Category;
 use App\Models\Cliente;
 use App\Models\Compra;
 use App\Models\Conduce;
 use App\Models\Cotizacion;
-use App\Models\Caja;
 use App\Models\Devolucion;
 use App\Models\Gasto;
 use App\Models\Mesa;
@@ -22,25 +22,23 @@ use App\Models\User;
 use App\Models\Venta;
 use App\Observers\PlanLimitObserver;
 use App\Policies\BusinessInstancePolicy;
-use App\Policies\BusinessTypePolicy;
 use App\Policies\CategoryPolicy;
-use App\Policies\TipoClimaPolicy;
-use App\Policies\InstalacionPolicy;
 use App\Policies\ContratoMantenimientoPolicy;
+use App\Policies\InstalacionPolicy;
 use App\Policies\MantenimientoPolicy;
-use App\Policies\TicketGarantiaPolicy;
 use App\Policies\OrdenEmergenciaPolicy;
+use App\Policies\TicketGarantiaPolicy;
+use App\Policies\TipoClimaPolicy;
 use App\View\Composers\DashboardComposer;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -57,9 +55,10 @@ class AppServiceProvider extends ServiceProvider
         // Route model binding: 'categoria' resolves to Categoria model (ERP)
         Route::bind('categoria', function ($value) {
             // Only resolve if it's a numeric ID
-            if (!is_numeric($value)) {
+            if (! is_numeric($value)) {
                 abort(404, "No query results for model [App\Models\Categoria] $value");
             }
+
             return \App\Models\Categoria::where('id', (int) $value)->first();
         });
 
@@ -97,7 +96,7 @@ class AppServiceProvider extends ServiceProvider
             return "<?php if (isset(\$modulosPermitidos) && (empty(\$modulosPermitidos) || in_array({$expression}, \$modulosPermitidos))): ?>";
         });
         \Illuminate\Support\Facades\Blade::directive('endcanModulo', function () {
-            return "<?php endif; ?>";
+            return '<?php endif; ?>';
         });
 
         // Blade directive for checking plan limit
@@ -105,7 +104,7 @@ class AppServiceProvider extends ServiceProvider
             return "<?php if (isset(\$planLimites) && (\$planLimites[{$expression}] ?? null) !== null): ?>";
         });
         \Illuminate\Support\Facades\Blade::directive('endplanLimit', function () {
-            return "<?php endif; ?>";
+            return '<?php endif; ?>';
         });
 
         Gate::policy(Category::class, CategoryPolicy::class);
@@ -126,18 +125,18 @@ class AppServiceProvider extends ServiceProvider
                         ->toArray();
                 });
 
-                if (!empty($settings['mail_host'])) {
+                if (! empty($settings['mail_host'])) {
                     $mailer = $settings['mail_mailer'] ?? 'smtp';
                     if ($mailer === 'log') {
                         $mailer = 'smtp';
                     }
                     config([
                         'mail.default' => $mailer,
-                        'mail.mailers.' . $mailer . '.host' => $settings['mail_host'],
-                        'mail.mailers.' . $mailer . '.port' => (int)($settings['mail_port'] ?? 587),
-                        'mail.mailers.' . $mailer . '.username' => $settings['mail_username'] ?? null,
-                        'mail.mailers.' . $mailer . '.password' => isset($settings['mail_password']) && $settings['mail_password'] ? Crypt::decryptString($settings['mail_password']) : null,
-                        'mail.mailers.' . $mailer . '.encryption' => ($settings['mail_encryption'] ?? 'null') !== 'null' ? $settings['mail_encryption'] : null,
+                        'mail.mailers.'.$mailer.'.host' => $settings['mail_host'],
+                        'mail.mailers.'.$mailer.'.port' => (int) ($settings['mail_port'] ?? 587),
+                        'mail.mailers.'.$mailer.'.username' => $settings['mail_username'] ?? null,
+                        'mail.mailers.'.$mailer.'.password' => isset($settings['mail_password']) && $settings['mail_password'] ? Crypt::decryptString($settings['mail_password']) : null,
+                        'mail.mailers.'.$mailer.'.encryption' => ($settings['mail_encryption'] ?? 'null') !== 'null' ? $settings['mail_encryption'] : null,
                         'mail.from.address' => $settings['mail_from_address'] ?? 'no-reply@facturacion.local',
                         'mail.from.name' => $settings['mail_from_name'] ?? config('app.name'),
                     ]);
@@ -190,16 +189,16 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
             $view->with([
-                'systemName'         => SystemSetting::empresaNombre(),
-                'systemSlogan'       => SystemSetting::empresaSlogan(),
-                'systemMoneda'       => SystemSetting::monedaSimbolo(),
-                'systemItbis'        => SystemSetting::itbisDefault(),
+                'systemName' => SystemSetting::empresaNombre(),
+                'systemSlogan' => SystemSetting::empresaSlogan(),
+                'systemMoneda' => SystemSetting::monedaSimbolo(),
+                'systemItbis' => SystemSetting::itbisDefault(),
                 'sesionesCajaGlobales' => $sesionesCajaGlobales,
-                'sucursales'         => $sucursales,
-                'sucursalActiva'     => $sucursalActiva,
-                'planLimites'        => $planLimites,
-                'modulosPermitidos'  => $modulosPermitidos,
-                'systemLogo'         => $systemLogo,
+                'sucursales' => $sucursales,
+                'sucursalActiva' => $sucursalActiva,
+                'planLimites' => $planLimites,
+                'modulosPermitidos' => $modulosPermitidos,
+                'systemLogo' => $systemLogo,
             ]);
         });
 
@@ -220,6 +219,13 @@ class AppServiceProvider extends ServiceProvider
             'formularios.14-14.pdf',
             'restaurante.ticket',
             'ventas.show',
+            'plantillas.pdf-render',
+            'plantillas.pdf-preview',
+            'plantillas.pdf-render-compra',
+            'plantillas.pdf-preview-compra',
+            'plantillas.pdf-render-historial',
+            'plantillas.pdf-render-ecf',
+            'plantillas.pdf-preview-ecf',
         ];
         View::composer($pdfViews, function ($view) {
             $pdfLogoUrl = null;
@@ -227,7 +233,7 @@ class AppServiceProvider extends ServiceProvider
             if ($user && $user->businessInstance) {
                 $logoPath = $user->businessInstance->logo;
                 if ($logoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath)) {
-                    $pdfLogoUrl = 'data:' . mime_content_type(\Illuminate\Support\Facades\Storage::disk('public')->path($logoPath)) . ';base64,' . base64_encode(\Illuminate\Support\Facades\Storage::disk('public')->get($logoPath));
+                    $pdfLogoUrl = 'data:'.mime_content_type(\Illuminate\Support\Facades\Storage::disk('public')->path($logoPath)).';base64,'.base64_encode(\Illuminate\Support\Facades\Storage::disk('public')->get($logoPath));
                 }
             }
             $view->with('pdfLogoUrl', $pdfLogoUrl);

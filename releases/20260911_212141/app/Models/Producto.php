@@ -1,0 +1,234 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Producto extends Model
+{
+    use Auditable, HasFactory, TenantScope;
+
+    protected $fillable = [
+        'categoria_id',
+        'category_subcategory_id',
+        'nombre',
+        'codigo_barras',
+        'codigo_referencia',
+        'descripcion',
+        'marca',
+        'modelo',
+        'capacidad_toneladas',
+        'capacidad_btu',
+        'tipo_equipo',
+        'eficiencia_seer',
+        'gas_refrigerante',
+        'voltaje',
+        'peso_kg',
+        'dimensiones',
+        'categoria_clima',
+        'precio',
+        'precio_compra',
+        'unidad_medida',
+        'itbis_porcentaje',
+        'stock',
+        'stock_minimo',
+        'activo',
+        'incluir_kds',
+        'imagen',
+        'tenant_id',
+        'tipo_producto',
+        'linea_negocio',
+        'requiere_serial',
+        'serial_imei',
+        'categoria_tecnica',
+        'garantia_dias',
+        'garantia_meses',
+        'garantia_terminos',
+        'es_licencia',
+        'tipo_licencia',
+        'licencia_max_usuarios',
+        'requires_setup',
+        'marca_tecnologica_id',
+        'tipo_servicio',
+        'especializacion',
+        'vendible_imei',
+        'requiere_imei',
+        'almacenamiento_gb',
+        'color',
+        'precio_servicio',
+        'duracion_servicio_horas',
+        'product_type',
+        'is_art_piece',
+    ];
+
+    protected $casts = [
+        'precio' => 'decimal:2',
+        'precio_compra' => 'decimal:2',
+        'itbis_porcentaje' => 'decimal:2',
+        'stock' => 'integer',
+        'stock_minimo' => 'integer',
+        'activo' => 'boolean',
+        'incluir_kds' => 'boolean',
+        'capacidad_toneladas' => 'decimal:2',
+        'capacidad_btu' => 'integer',
+        'eficiencia_seer' => 'decimal:1',
+        'peso_kg' => 'decimal:2',
+        'requiere_serial' => 'boolean',
+        'garantia_dias' => 'integer',
+        'garantia_meses' => 'integer',
+        'es_licencia' => 'boolean',
+        'licencia_max_usuarios' => 'integer',
+        'requires_setup' => 'boolean',
+        'vendible_imei' => 'boolean',
+        'requiere_imei' => 'boolean',
+        'precio_servicio' => 'decimal:2',
+        'duracion_servicio_horas' => 'integer',
+        'is_art_piece' => 'boolean',
+        'product_type' => 'string',
+    ];
+
+    public function scopeActivos($query)
+    {
+        return $query->where('activo', true);
+    }
+
+    protected $appends = ['ganancia', 'margen_porcentaje', 'estado_stock', 'imagen_url', 'tiene_imagen', 'can_delete'];
+
+    protected $attributes = [
+        'precio_compra' => 0,
+    ];
+
+    public function categoria()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function categorySubcategory()
+    {
+        return $this->belongsTo(CategorySubcategory::class, 'category_subcategory_id');
+    }
+
+    public function detallesCompras(): HasMany
+    {
+        return $this->hasMany(DetalleCompra::class, 'producto_id');
+    }
+
+    public function ventaDetalles(): HasMany
+    {
+        return $this->hasMany(VentaDetalle::class, 'producto_id');
+    }
+
+    public function movimientosAlmacen(): HasMany
+    {
+        return $this->hasMany(AlmacenMovimiento::class, 'producto_id');
+    }
+
+    public function getGananciaAttribute(): float
+    {
+        return (float) ($this->precio - ($this->precio_compra ?? 0));
+    }
+
+    public function getMargenPorcentajeAttribute(): float
+    {
+        $compra = (float) ($this->precio_compra ?? 0);
+        if ($compra <= 0) {
+            return 0.0;
+        }
+
+        return round((($this->precio - $compra) / $compra) * 100, 2);
+    }
+
+    public function getEstadoStockAttribute(): string
+    {
+        $stock = (int) $this->stock;
+        if ($stock <= 5) {
+            return 'critical';
+        }
+        if ($stock <= 15) {
+            return 'low';
+        }
+
+        return 'ok';
+    }
+
+    public function getActivoLabelAttribute(): string
+    {
+        return $this->activo ? 'Activo' : 'Inactivo';
+    }
+
+    public function getColorBadgeActivoAttribute(): string
+    {
+        return $this->activo ? 'success' : 'secondary';
+    }
+
+    public function getCanDeleteAttribute(): bool
+    {
+        if (isset($this->attributes['venta_detalles_count'])) {
+            return ($this->attributes['venta_detalles_count'] ?? 0) == 0
+                && ($this->attributes['detalles_compras_count'] ?? 0) == 0
+                && ($this->attributes['movimientos_almacen_count'] ?? 0) == 0
+                && ($this->attributes['ingredientes_count'] ?? 0) == 0
+                && ($this->attributes['instalacion_productos_count'] ?? 0) == 0;
+        }
+
+        return $this->ventaDetalles()->doesntExist()
+            && $this->detallesCompras()->doesntExist()
+            && $this->movimientosAlmacen()->doesntExist()
+            && $this->ingredientes()->doesntExist()
+            && $this->instalaciones()->doesntExist();
+    }
+
+    public function getTieneImagenAttribute(): bool
+    {
+        return ! empty($this->imagen) && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->imagen);
+    }
+
+    public function getImagenUrlAttribute(): string
+    {
+        if (! empty($this->imagen) && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->imagen)) {
+            return asset('storage/'.$this->imagen);
+        }
+
+        return asset('img/producto-placeholder.svg');
+    }
+
+    public function scopeStockCritico(Builder $query): Builder
+    {
+        return $query->where('stock', '<=', 5);
+    }
+
+    public function scopeStockBajo(Builder $query): Builder
+    {
+        return $query->whereBetween('stock', [6, 15]);
+    }
+
+    public function ingredientes(): BelongsToMany
+    {
+        return $this->belongsToMany(Ingrediente::class, 'producto_ingrediente')
+            ->withPivot('cantidad');
+    }
+
+    public function instalaciones(): BelongsToMany
+    {
+        return $this->belongsToMany(Instalacion::class, 'instalacion_productos')
+            ->withPivot('cantidad', 'precio_unitario')
+            ->withTimestamps();
+    }
+
+    public function marcaTecnologica(): BelongsTo
+    {
+        return $this->belongsTo(MarcaTecnologica::class);
+    }
+
+    public function especificaciones(): HasMany
+    {
+        return $this->hasMany(ProductoEspecificacion::class);
+    }
+}

@@ -35,6 +35,43 @@ trait TenantScope
                 $column = $model->getTenantIdColumn();
                 $table = $model->getTable().'.'.$column;
                 $builder->where($table, $tenantId);
+
+                return;
+            }
+
+            // Fail-closed para peticiones HTTP sin tenant resuelto:
+            // no devolver datos de ningún tenant (evita fuga cross-tenant).
+            // En consola/seeders/colas se permite sin filtro (sin request HTTP).
+            try {
+                if (app()->runningInConsole()) {
+                    return;
+                }
+                if (function_exists('request') && request()) {
+                    $model = $builder->getModel();
+                    $builder->whereRaw('1 = 0');
+                }
+            } catch (\Throwable $e) {
+                // Si no hay contexto de request, no filtrar (comandos, jobs boot).
+            }
+        });
+
+        // Asignación server-side del tenant en creación: nunca desde input.
+        static::creating(function ($model) {
+            try {
+                if (app()->runningInConsole()) {
+                    return;
+                }
+                $column = $model->getTenantIdColumn();
+                $current = $model->getAttribute($column);
+                if (! empty($current)) {
+                    return;
+                }
+                $tenantId = static::resolveTenantId();
+                if ($tenantId !== null) {
+                    $model->setAttribute($column, $tenantId);
+                }
+            } catch (\Throwable $e) {
+                // No bloquear creación en contextos sin auth (seeders/tests la fijan explícito).
             }
         });
     }
@@ -42,7 +79,7 @@ trait TenantScope
     /**
      * Resolve the tenant ID from the authenticated user (User or Cliente).
      * Handles both session auth (Auth::user()) and client token auth (request resolver).
-     * Falls back to explicit tenant_id from X-Tenant-ID header, query, or body.
+     * NUNCA acepta tenant_id desde header/query/body (IDOR).
      */
     private static function resolveTenantId(): ?int
     {
@@ -68,12 +105,8 @@ trait TenantScope
             return $clientToken->cliente->tenant_id;
         }
 
-        // 3. Fallback: explicit tenant_id from header, query, or body
-        $tenantId = request()->header('X-Tenant-ID')
-            ?? request()->query('tenant_id')
-            ?? request()->input('tenant_id');
-
-        return $tenantId ? (int) $tenantId : null;
+        // Sin tenant autenticado: null (el global scope hace fail-closed en HTTP).
+        return null;
     }
 
     /**

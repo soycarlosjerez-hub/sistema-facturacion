@@ -2,11 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\UserActivityLog;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use App\Models\UserActivityLog;
 
 class TrackLastSeen
 {
@@ -14,10 +14,16 @@ class TrackLastSeen
     {
         if (Auth::check()) {
             $user = Auth::user();
+
+            // No track last seen para Owner Bootstrap (no existe en BD)
+            if ($user instanceof \App\Auth\OwnerBootstrappedUser) {
+                return $next($request);
+            }
+
             $cacheKey = "last_seen_user_{$user->id}";
 
             // Actualizar cada 2 minutos
-            if (!Cache::has($cacheKey)) {
+            if (! Cache::has($cacheKey)) {
                 $user->timestamps = false;
                 $user->last_seen_at = now();
                 $user->save();
@@ -27,7 +33,7 @@ class TrackLastSeen
 
             // Log de actividad cada 5 minutos
             $logCacheKey = "activity_log_user_{$user->id}";
-            if (!Cache::has($logCacheKey)) {
+            if (! Cache::has($logCacheKey)) {
                 UserActivityLog::create([
                     'user_id' => $user->id,
                     'action' => 'page_view',

@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Duplicada: si la tabla ya existe (migración anterior), no recrear.
+        if (Schema::hasTable('redes_config')) {
+            return;
+        }
+
         Schema::create('redes_config', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cliente_id')->constrained('clientes');

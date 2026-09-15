@@ -3,7 +3,6 @@
 namespace App\Services\Ecf;
 
 use App\Models\EcfDocumento;
-use App\Models\EcfLogEnvio;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,26 +17,27 @@ class EcfRetryService
 
     public function obtenerDocumentosParaReenvio(): Collection
     {
-        $pendientes = EcfDocumento::whereIn('estado', ['rechazado', 'enviado'])
+        // Tres conjuntos disjuntos, agrupados explícitamente:
+        // A: listos para enviar (firmados con XML, o rechazados con XML).
+        // B: pendientes de firma (borrador/generado/rechazado sin XML).
+        // Los 'enviado' con track_id NO se reenvían: se sincronizan vía
+        // sincronizarEstadoConDgii() (reenviar duplicaría el envío).
+        return EcfDocumento::query()
             ->where('intentos_envio', '<', self::MAX_RETRIES)
-            ->whereNull('xml_content')
-            ->orWhere(function ($q) {
-                $q->where('estado', 'rechazado')
-                  ->where('intentos_envio', '<', self::MAX_RETRIES);
-            })
-            ->orWhere(function ($q) {
-                $q->where('estado', 'enviado')
-                  ->where('estado', '!=', 'aprobado')
-                  ->whereNotNull('track_id_dgii')
-                  ->where(function ($sq) {
-                      $sq->whereNull('fecha_aprobacion')
-                         ->orWhere('fecha_aprobacion', '<', now()->subMinutes(30));
-                  });
+            ->where(function ($q) {
+                $q->where(function ($sq) {
+                    $sq->where('estado', 'firmado')
+                        ->whereNotNull('xml_content');
+                })->orWhere(function ($sq) {
+                    $sq->where('estado', 'rechazado')
+                        ->whereNotNull('xml_content');
+                })->orWhere(function ($sq) {
+                    $sq->whereIn('estado', ['borrador', 'generado', 'rechazado'])
+                        ->whereNull('xml_content');
+                });
             })
             ->orderBy('created_at')
             ->get();
-
-        return $pendientes;
     }
 
     public function reenviarDocumento(EcfDocumento $ecf): array
@@ -45,6 +45,16 @@ class EcfRetryService
         DB::beginTransaction();
         try {
             if (empty($ecf->xml_content)) {
+                if (! $ecf->puedeTransicionarA('firmado')) {
+                    DB::rollBack();
+
+                    return [
+                        'success' => false,
+                        'estado' => $ecf->estado,
+                        'mensaje' => "El documento no admite firma desde '{$ecf->estado}'. Sincronice su estado con DGII.",
+                        'intentos_totales' => $ecf->intentos_envio,
+                    ];
+                }
                 $ecf = app(EcfService::class)->firmar($ecf);
             }
 
@@ -57,19 +67,18 @@ class EcfRetryService
                 ]);
             }
 
-            $ecf->increment('intentos_envio');
-            $ecf->transicionarA('enviado');
-            $ecf->save();
-
-            $resultado = app(EcfService::class)->enviar($ecf);
+            // enviar() ya gestiona firmar-si-falta, incremento de intentos y
+            // transiciones; no duplicar aquí (evita enviado→enviado inválido
+            // y doble conteo de intentos).
+            $resultado = app(EcfService::class)->enviar($ecf->fresh());
 
             DB::commit();
 
             return [
-                'success' => $resultado['success'],
-                'estado' => $ecf->estado,
-                'mensaje' => $resultado['mensaje'] ?? '',
-                'intentos_totales' => $ecf->intentos_envio,
+                'success' => $resultado->estado === 'aprobado',
+                'estado' => $resultado->estado,
+                'mensaje' => $resultado->mensaje_dgii ?? '',
+                'intentos_totales' => $resultado->intentos_envio,
             ];
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -81,7 +90,7 @@ class EcfRetryService
             return [
                 'success' => false,
                 'estado' => $ecf->estado,
-                'mensaje' => 'Error de reenvio: ' . $e->getMessage(),
+                'mensaje' => 'Error de reenvio: '.$e->getMessage(),
                 'intentos_totales' => $ecf->intentos_envio,
             ];
         }
@@ -94,8 +103,9 @@ class EcfRetryService
         $saltados = 0;
 
         foreach ($documentos as $doc) {
-            if (!$doc->puedeTransicionarA('enviado') && $doc->estado !== 'rechazado') {
+            if (! $doc->puedeTransicionarA('enviado') && $doc->estado !== 'rechazado') {
                 $saltados++;
+
                 continue;
             }
 
@@ -122,7 +132,7 @@ class EcfRetryService
             ->whereNotNull('track_id_dgii')
             ->where(function ($q) {
                 $q->whereNull('fecha_aprobacion')
-                  ->orWhere('fecha_aprobacion', '<', now()->subHours(1));
+                    ->orWhere('fecha_aprobacion', '<', now()->subHours(1));
             })
             ->get();
 
@@ -177,14 +187,14 @@ class EcfRetryService
             'total_con_track' => $locales->count(),
             'aprobados_locales' => $aprobadosLocales,
             'pendientes_verificacion' => $pendientesLocales,
-            'discrepancias' => $locales->filter(fn($d) => $d->estado !== 'aprobado' && $d->estado !== 'anulado')->pluck('encf')->toArray(),
+            'discrepancias' => $locales->filter(fn ($d) => $d->estado !== 'aprobado' && $d->estado !== 'anulado')->pluck('encf')->toArray(),
         ];
     }
 
     public function marcarComoFallidoDefinitivamente(EcfDocumento $ecf): void
     {
         $ecf->transicionarA('rechazado');
-        $ecf->mensaje_dgii = 'Maximo de reintentos alcanzado (' . self::MAX_RETRIES . ')';
+        $ecf->mensaje_dgii = 'Maximo de reintentos alcanzado ('.self::MAX_RETRIES.')';
         $ecf->save();
 
         Log::warning('e-CF: documento marcado como fallido definitivo', [
@@ -201,6 +211,7 @@ class EcfRetryService
         }
 
         $seconds = self::BACKOFF_BASE_SECONDS * pow(self::BACKOFF_MULTIPLIER, $intentosPrevios - 1);
+
         return min($seconds, 3600);
     }
 }

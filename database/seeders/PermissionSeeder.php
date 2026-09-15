@@ -120,6 +120,18 @@ class PermissionSeeder extends Seeder
                 'kardex.view',
                 'kardex.export',
             ],
+            'stock_adjustments' => [
+                'stock.adjustments.view',
+                'stock.adjustments.create',
+            ],
+            'stock_transfers' => [
+                'stock.transfers.view',
+                'stock.transfers.create',
+            ],
+            'pagos_compras' => [
+                'pagos-compras.view',
+                'pagos-compras.create',
+            ],
             'ncf' => [
                 'ncf.view',
                 'ncf.manage',
@@ -199,6 +211,18 @@ class PermissionSeeder extends Seeder
                 'backups.view',
                 'backups.create',
                 'backups.delete',
+            ],
+            'impresoras' => [
+                'impresoras.view',
+                'impresoras.create',
+                'impresoras.edit',
+                'impresoras.delete',
+            ],
+            'plantillas' => [
+                'plantillas.view',
+                'plantillas.create',
+                'plantillas.edit',
+                'plantillas.delete',
             ],
             'lavadero' => [
                 'lavadero.view',
@@ -539,6 +563,15 @@ class PermissionSeeder extends Seeder
                 'cuentas-bancarias.view',
                 'cuentas-bancarias.create',
                 'cuentas-bancarias.edit',
+
+                'impresoras.view',
+                'impresoras.create',
+                'impresoras.edit',
+                'impresoras.delete',
+                'plantillas.view',
+                'plantillas.create',
+                'plantillas.edit',
+                'plantillas.delete',
 
                 'usuarios.view',
                 'roles.view',
@@ -968,6 +1001,9 @@ class PermissionSeeder extends Seeder
                 'cuentas-bancarias.create',
                 'cuentas-bancarias.edit',
 
+                'impresoras.view',
+                'plantillas.view',
+
                 'usuarios.view',
                 'roles.view',
             ],
@@ -990,6 +1026,9 @@ class PermissionSeeder extends Seeder
                 'conduces.edit',
                 'conduces.print',
                 'conduces.deliver',
+
+                'impresoras.view',
+                'plantillas.view',
 
                 'devoluciones.view',
                 'devoluciones.create',
@@ -1101,6 +1140,13 @@ class PermissionSeeder extends Seeder
                 'plantilla-gastos.view',
                 'plantilla-gastos.create',
                 'plantilla-gastos.edit',
+
+                'stock.adjustments.view',
+                'stock.adjustments.create',
+                'stock.transfers.view',
+                'stock.transfers.create',
+
+                'pagos-compras.view',
             ],
 
             'almacen' => [
@@ -1130,6 +1176,16 @@ class PermissionSeeder extends Seeder
 
                 'kardex.view',
                 'kardex.export',
+
+                'stock.adjustments.view',
+                'stock.adjustments.create',
+                'stock.transfers.view',
+                'stock.transfers.create',
+
+                'pagos-compras.view',
+
+                'impresoras.view',
+                'plantillas.view',
             ],
 
             'contador' => [
@@ -1168,6 +1224,9 @@ class PermissionSeeder extends Seeder
 
                 'restaurante.view',
                 'restaurante.cajas',
+
+                'impresoras.view',
+                'plantillas.view',
             ],
 
             'mesero' => [
@@ -1216,6 +1275,9 @@ class PermissionSeeder extends Seeder
                 'ordenes.view',
                 'conduces.view',
                 'conduces.deliver',
+
+                'impresoras.view',
+                'plantillas.view',
             ],
 
             'cajero' => [
@@ -1242,6 +1304,265 @@ class PermissionSeeder extends Seeder
                 'conduces.view',
                 'conduces.create',
                 'conduces.deliver',
+            ],
+
+            // ─── Roles específicos por business type ───
+
+            'lavador' => [
+                'dashboard.view',
+
+                'lavadero.view',
+                'lavadero.servicios',
+                'lavadero.vehiculos',
+                'lavadero.citas',
+                'lavadero.lavadores',
+
+                'ventas.view.own',
+                'ventas.create',
+
+                'clientes.view',
+                'clientes.create',
+
+                'cajas.view',
+                'cajas.open',
+                'cajas.close',
+
+                'impresoras.view',
+                'plantillas.view',
+            ],
+
+            'tecnico' => [
+                'dashboard.view',
+
+                'tecnologia.view',
+                'equipos.view',
+                'equipos.create',
+                'equipos.edit',
+                'equipos.delete',
+
+                'tecnicas.view',
+                'tecnicas.create',
+                'tecnicas.edit',
+                'tecnicas.delete',
+
+                'tecnicos.view',
+                'tecnicos.create',
+                'tecnicos.edit',
+                'tecnicos.delete',
+
+                'domotica.view',
+                'domotica.create',
+                'domotica.edit',
+                'domotica.delete',
+
+                'garantias.view',
+                'garantias.create',
+                'garantias.edit',
+                'garantias.delete',
+
+                'garantias-config.view',
+
+                'tecnica-especialidades.view',
+                'tecnica-especialidades.create',
+                'tecnica-especialidades.edit',
+                'tecnica-especialidades.delete',
+
+                'clientes.view',
+                'clientes.create',
+            ],
+
+            'soporte-n1' => [
+                'dashboard.view',
+
+                'tecnologia.view',
+                'equipos.view',
+                'tecnicos.view',
+                'tecnicos.edit',
+
+                'garantias.view',
+                'garantias.create',
+                'garantias.edit',
+
+                'redes-config.view',
+                'redes-config.create',
+                'redes-config.edit',
+
+                'licencias-software.view',
+                'licencias-software.create',
+                'licencias-software.edit',
+
+                'clientes.view',
+                'clientes.create',
+            ],
+
+            'soporte-n2' => [
+                'dashboard.view',
+
+                'tecnologia.view',
+                'equipos.view',
+                'tecnicos.view',
+                'tecnicos.edit',
+
+                'garantias.view',
+                'garantias.create',
+                'garantias.edit',
+
+                'redes-config.view',
+                'redes-config.create',
+                'redes-config.edit',
+                'redes-config.delete',
+
+                'licencias-software.view',
+                'licencias-software.create',
+                'licencias-software.edit',
+                'licencias-software.delete',
+
+                'clientes.view',
+                'clientes.create',
+            ],
+
+            'vendedor-tecnico' => [
+                'dashboard.view',
+
+                'tecnologia.view',
+                'equipos.view',
+                'equipos.create',
+                'equipos.edit',
+
+                'presupuestos.view',
+                'presupuestos.create',
+                'presupuestos.edit',
+                'presupuestos.delete',
+
+                'ventas.view.own',
+                'ventas.create',
+
+                'clientes.view',
+                'clientes.create',
+
+                'cajas.view',
+                'cajas.open',
+                'cajas.close',
+            ],
+
+            'almacen-tech' => [
+                'dashboard.view',
+
+                'inventario.view',
+                'reportes-stock',
+
+                'compras.view',
+                'compras.create',
+                'compras.edit',
+
+                'proveedores.view',
+                'proveedores.create',
+                'proveedores.edit',
+
+                'almacenes.view',
+                'almacenes.create',
+                'almacenes.edit',
+                'almacenes.movements',
+
+                'kardex.view',
+                'kardex.export',
+
+                'marca-tecnologicas.view',
+                'marca-tecnologicas.create',
+                'marca-tecnologicas.edit',
+                'marca-tecnologicas.delete',
+            ],
+
+            'tecnico-redes' => [
+                'dashboard.view',
+
+                'tecnologia.view',
+                'equipos.view',
+
+                'redes-config.view',
+                'redes-config.create',
+                'redes-config.edit',
+                'redes-config.delete',
+
+                'licencias-software.view',
+                'licencias-software.create',
+                'licencias-software.edit',
+                'licencias-software.delete',
+
+                'clientes.view',
+                'clientes.create',
+            ],
+
+            'vendedor-galeria' => [
+                'dashboard.view',
+
+                'arte.view',
+                'arte.obras',
+                'arte.artistas',
+                'arte.colecciones',
+                'arte.exhibiciones',
+                'arte.consignaciones',
+
+                'ventas.view.own',
+                'ventas.create',
+
+                'clientes.view',
+                'clientes.create',
+            ],
+
+            'mecanico' => [
+                'dashboard.view',
+
+                'inventario.view',
+                'reportes-stock',
+                'reportes-compras',
+
+                'ventas.view',
+                'ventas.create',
+                'ventas.view.own',
+
+                'cotizaciones.view',
+                'cotizaciones.create',
+                'cotizaciones.edit',
+                'cotizaciones.convertir',
+
+                'conduces.view',
+                'conduces.create',
+                'conduces.edit',
+                'conduces.print',
+                'conduces.deliver',
+
+                'ordenes.view',
+                'ordenes.create',
+                'ordenes.update',
+                'ordenes.pay',
+                'ordenes.cancel',
+
+                'devoluciones.view',
+                'devoluciones.create',
+                'devoluciones.confirmar',
+
+                'productos.view',
+                'productos.create',
+                'productos.edit',
+                'productos.toggle',
+
+                'compras.view',
+                'compras.create',
+                'compras.edit',
+                'compras.export',
+
+                'proveedores.view',
+                'proveedores.create',
+                'proveedores.edit',
+
+                'almacenes.view',
+                'almacenes.create',
+                'almacenes.edit',
+                'almacenes.movements',
+
+                'kardex.view',
+                'kardex.export',
             ],
         ];
 

@@ -39,6 +39,9 @@
                     <a href="{{ route('owner.activity.history') }}" class="ui-btn ui-btn-ghost ui-btn-primary btn-sm">
                         <i class="bi bi-clock-history me-1"></i>Audit Log
                     </a>
+                    <a href="{{ route('owner.bootstrap.status') }}" class="ui-btn ui-btn-ghost ui-btn-primary btn-sm">
+                        <i class="bi bi-shield-lock me-1"></i>Owner Bootstrap
+                    </a>
                 </div>
             </div>
         </div>

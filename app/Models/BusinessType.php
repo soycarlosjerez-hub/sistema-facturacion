@@ -2,20 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphedByMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Facades\Cache;
 
 class BusinessType extends Model
 {
+    use HasFactory;
+
     protected $table = 'business_types';
-    
+
     protected $fillable = [
-        'key', 'slug', 'nombre', 'descripcion', 
+        'key', 'slug', 'nombre', 'descripcion',
         'color', 'color_default', 'icon', 'icono_default',
-        'activo', 'orden', 'campos_extra', 'config', 'soft_delete_default'
+        'activo', 'orden', 'campos_extra', 'config', 'soft_delete_default',
     ];
 
     protected $casts = [
@@ -89,6 +90,7 @@ class BusinessType extends Model
     public static function getActiveTypes(): array
     {
         $types = self::allCached();
+
         return array_map(function ($t) {
             return [
                 'key' => $t['key'],
@@ -112,7 +114,6 @@ class BusinessType extends Model
         return null;
     }
 
-
     public static function getModulosVisibles(?string $tipo = null): array
     {
         // Use the provided type slug or fallback to session value
@@ -122,7 +123,7 @@ class BusinessType extends Model
             return [];
         }
 
-       //dd(self::allCached());
+        // dd(self::allCached());
 
         // Get cached business types (keyed by the 'slug' column)
         $types = self::allCached();
@@ -150,6 +151,7 @@ class BusinessType extends Model
     public static function isModuloVisible(string $moduloKey, ?string $tipo = null): bool
     {
         $visibles = self::getModulosVisibles($tipo);
+
         return in_array($moduloKey, $visibles);
     }
 

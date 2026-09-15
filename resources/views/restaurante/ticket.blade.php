@@ -1,21 +1,55 @@
+<?php
+    $_printConfig = [
+        'fontSize' => 12,
+        'lineHeight' => 1.4,
+        'ticketPadding' => 8,
+        'copies' => 1,
+        'impresion' => 'normal',
+        'densidad' => 'normal',
+    ];
+
+    if (isset($impresora) && $impresora && $impresora->configuracion) {
+        $_cfg = (array) $impresora->configuracion;
+        if (!empty($_cfg['font_size'])) {
+            $_printConfig['fontSize'] = (int) $_cfg['font_size'];
+        }
+        if (!empty($_cfg['copias']) && $_cfg['copias'] > 1) {
+            $_printConfig['copies'] = (int) $_cfg['copias'];
+        }
+        if (!empty($_cfg['impresion'])) {
+            $_printConfig['impresion'] = $_cfg['impresion'];
+        }
+        if (!empty($_cfg['densidad'])) {
+            $_printConfig['densidad'] = $_cfg['densidad'];
+        }
+        if (!empty($_cfg['margenes']) && isset($_cfg['margenes']['top'])) {
+            $_printConfig['ticketPadding'] = (int) $_cfg['margenes']['top'];
+        }
+    }
+
+    $_lineHeight = $_printConfig['impresion'] === 'compacto' ? 1.1 : ($_printConfig['impresion'] === 'espaciado' ? 1.6 : 1.4);
+?>
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><title>Ticket Mesa {{ $mesa->numero }}</title>
 <style>
-body { font-family: 'Courier New', monospace; font-size: 12px; width: {{ $paper }}mm; margin: 0 auto; padding: 8px; }
+body { font-family: 'Courier New', monospace; font-size: {{ $_printConfig['fontSize'] }}px; width: {{ $paper }}mm; margin: 0 auto; padding: {{ $_printConfig['ticketPadding'] }}px; line-height: {{ $_lineHeight }}; }
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 2px 0; text-align: left; }
 .text-right { text-align: right; }
 .text-center { text-align: center; }
 .sep { border-top: 1px dashed #000; }
 .fw-bold { font-weight: bold; }
-.total-row td { border-top: 2px solid #000; font-weight: bold; font-size: 14px; }
-.mesa-info { background: #f0f0f0; padding: 4px 8px; border-radius: 4px; }
-@page { margin: 0; }
-@media print { body { margin: 0; padding: 4px; } }
+.total-row td { border-top: 2px solid #000; font-weight: bold; font-size: {{ $_printConfig['fontSize'] + 2 }}px; }
+.mesa-info { background: transparent; padding: 4px 8px; border-radius: 4px; }
+@media print {
+    body { margin: 0; padding: 4px; color: #000 !important; background: #fff !important; }
+    * { color: #000 !important; background-color: transparent !important; }
+    @page { margin: 0; size: {{ $paper }}mm auto; }
+}
 </style>
 </head>
-<body>
+<body style="font-family: 'Courier New', monospace; font-size: {{ $_printConfig['fontSize'] }}px; width: {{ $paper }}mm; margin: 0 auto; padding: {{ $_printConfig['ticketPadding'] }}px; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
     @if($pdfLogoUrl)
     <div class="text-center mb-2">
         <img src="{{ $pdfLogoUrl }}" style="max-width: 60px; max-height: 40px; object-fit: contain;" alt="Logo">
@@ -69,6 +103,24 @@ th, td { padding: 2px 0; text-align: left; }
     <div class="text-center">Gracias por su visita</div>
     <script>
         window.addEventListener('load', function() {
+            var copies = {{ $_printConfig['copies'] ?? 1 }};
+            var densidad = '{{ $_printConfig['densidad'] ?? 'normal' }}';
+
+            if (densidad === 'alta') {
+                document.querySelectorAll('body').forEach(function(el) {
+                    el.style.filter = 'brightness(1.15) contrast(1.1)';
+                });
+            } else if (densidad === 'baja') {
+                document.querySelectorAll('body').forEach(function(el) {
+                    el.style.filter = 'brightness(0.85) contrast(0.9)';
+                });
+            }
+
+            if (copies > 1) {
+                for (var i = 1; i < copies; i++) {
+                    setTimeout(function() { window.print(); }, i * 2000);
+                }
+            }
             setTimeout(function() { window.print(); }, 300);
         });
     </script>

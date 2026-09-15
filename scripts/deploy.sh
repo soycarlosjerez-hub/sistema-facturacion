@@ -62,7 +62,8 @@ else
     cp .env.staging .env 2>/dev/null || cp .env.example .env
 fi
 
-php artisan key:generate --force 2>/dev/null || true
+# APP_KEY ya definida en .env (production) — no regenerar
+# php artisan key:generate --force 2>/dev/null || true
 
 log_info "Ejecutando migraciones..."
 php artisan migrate --force 2>/dev/null || log_warn "Migraciones fallaron (puede ser normal)"

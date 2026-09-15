@@ -9,7 +9,7 @@
         </div>
 
         <div class="activity-timeline">
-            <?php $__empty_0 = true; $__currentLoopData = $ownerActivity; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+            <?php $__empty_1 = true; $__currentLoopData = $ownerActivity; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $log): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <?php
                     $actionIcons = [
                         'INSTANCE_CREATE' => ['bi-plus-circle', '#10b981', 'rgba(16,185,129,.12)'],
@@ -45,7 +45,7 @@
                         </div>
                     </div>
                 </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <div class="ui-empty-state">
                     <i class="bi bi-clock-history"></i>
                     <p>Sin actividad reciente</p>

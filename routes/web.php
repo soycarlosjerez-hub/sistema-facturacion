@@ -22,6 +22,7 @@ use App\Http\Controllers\Formulario1414Controller;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImpresoraController;
+use App\Http\Controllers\InstanceApiKeyController;
 use App\Http\Controllers\KardexController;
 use App\Http\Controllers\KdsController;
 use App\Http\Controllers\LavaderoController;
@@ -52,7 +53,10 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SecuenciaEcfController;
 use App\Http\Controllers\SolicitudPendienteController;
+use App\Http\Controllers\StockAdjustmentController;
+use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\PagoCompraController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoTipoController;
 use App\Http\Controllers\VentaController;
@@ -442,12 +446,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/productos/ajax', [ProductoController::class, 'indexAjax'])->name('productos.ajax');
         Route::get('/productos/create', [ProductoController::class, 'create'])->name('productos.create');
         Route::post('/productos', [ProductoController::class, 'store'])->name('productos.store');
-        Route::get('/productos/import', [ProductoController::class, 'showImportForm'])->name('productos.import');
-        Route::post('/productos/import/preview', [ProductoController::class, 'uploadPreview'])->name('productos.import.preview');
-        Route::post('/productos/import/process', [ProductoController::class, 'processImport'])->name('productos.import.process');
-        Route::get('/productos/exportar', [ProductoController::class, 'exportExcel'])->name('productos.exportar');
-        Route::get('/productos/pdf', [ProductoController::class, 'exportPdf'])->name('productos.pdf');
-        Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show');
+        Route::get('/productos/import', [ProductoController::class, 'showImportForm'])->name('productos.import')->middleware('permission:productos.import');
+        Route::post('/productos/import/preview', [ProductoController::class, 'uploadPreview'])->name('productos.import.preview')->middleware('permission:productos.import');
+        Route::post('/productos/import/process', [ProductoController::class, 'processImport'])->name('productos.import.process')->middleware('permission:productos.import');
+        Route::get('/productos/exportar', [ProductoController::class, 'exportExcel'])->name('productos.exportar')->middleware('permission:productos.exportar');
+        Route::get('/productos/pdf', [ProductoController::class, 'exportPdf'])->name('productos.pdf')->middleware('permission:productos.pdf');
+        Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('productos.show')->middleware('permission:productos.view');
         Route::get('/productos/{producto}/edit', [ProductoController::class, 'edit'])->name('productos.edit');
         Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
         Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
@@ -612,6 +616,42 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/almacenes/inventario-almacen', [AlmacenController::class, 'inventarioAlmacen'])->name('almacenes.inventario');
     });
 
+    // Stock Adjustments
+    Route::middleware('permission:stock.adjustments.view')->group(function () {
+        Route::get('/ajustes-stock', [StockAdjustmentController::class, 'index'])->name('stock-adjustments.index');
+        Route::get('/ajustes-stock/{stockAdjustment}', [StockAdjustmentController::class, 'show'])->name('stock-adjustments.show');
+    });
+
+    Route::middleware('permission:stock.adjustments.create')->group(function () {
+        Route::get('/ajustes-stock/create', [StockAdjustmentController::class, 'create'])->name('stock-adjustments.create');
+        Route::post('/ajustes-stock', [StockAdjustmentController::class, 'store'])->name('stock-adjustments.store');
+    });
+
+    // Stock Transfers
+    Route::middleware('permission:stock.transfers.view')->group(function () {
+        Route::get('/transferencias-stock', [StockTransferController::class, 'index'])->name('stock-transfers.index');
+        Route::get('/transferencias-stock/{stockTransfer}', [StockTransferController::class, 'show'])->name('stock-transfers.show');
+    });
+
+    Route::middleware('permission:stock.transfers.create')->group(function () {
+        Route::get('/transferencias-stock/create', [StockTransferController::class, 'create'])->name('stock-transfers.create');
+        Route::post('/transferencias-stock', [StockTransferController::class, 'store'])->name('stock-transfers.store');
+        Route::post('/transferencias-stock/{stockTransfer}/enviar', [StockTransferController::class, 'enviar'])->name('stock-transfers.enviar');
+        Route::post('/transferencias-stock/{stockTransfer}/recibir', [StockTransferController::class, 'recibir'])->name('stock-transfers.recibir');
+    });
+
+    // Purchase Payments (Cuenta por Pagar)
+    Route::middleware('permission:pagos-compras.view')->group(function () {
+        Route::get('/pagos-compras', [PagoCompraController::class, 'index'])->name('pagos-compras.index');
+        Route::get('/pagos-compras/{pagoCompra}', [PagoCompraController::class, 'show'])->name('pagos-compras.show');
+    });
+
+    Route::middleware('permission:pagos-compras.create')->group(function () {
+        Route::post('/compras/{compra}/pagar', [PagoCompraController::class, 'store'])->name('pagos-compras.store');
+        Route::post('/compras/{compra}/pagos/{pagoCompra}/cancelar', [PagoCompraController::class, 'cancelar'])->name('pagos-compras.cancelar');
+    });
+
+
     // Kardex
     Route::middleware('permission:kardex.view')->group(function () {
         Route::get('/kardex', [KardexController::class, 'index'])->name('kardex.index');
@@ -734,6 +774,10 @@ Route::middleware(['auth'])->group(function () {
         // Retenciones
         Route::get('/reportes/retenciones', [ReporteController::class, 'retenciones'])->name('reportes.retenciones');
         Route::get('/reportes/retenciones/csv', [ReporteController::class, 'retencionesCsv'])->name('reportes.retenciones.csv');
+
+        // Accounts Receivable Aging
+        Route::get('/reportes/cuentas-cobrar-aging', [ReporteController::class, 'cuentasCobrarAging'])->name('reportes.ar.aging');
+        Route::get('/reportes/cuentas-cobrar-aging/pdf', [ReporteController::class, 'cuentasCobrarAgingPdf'])->name('reportes.ar.aging.pdf');
 
         // Libros Fiscales (DGII)
         Route::middleware('permission:reportes.view')->group(function () {
@@ -1004,11 +1048,27 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::delete('/instances/{instance}/tokens/{token}', [\App\Http\Controllers\OwnerController::class, 'instanceTokensDestroy'])->name('instances.tokens.destroy');
 
     // Instance API Keys
-    Route::get('/instances/{instance}/api-keys', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeys'])->name('instances.api-keys');
-    Route::post('/instances/{instance}/api-keys', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyGenerate'])->name('instances.api-keys.generate');
-    Route::post('/instances/{instance}/api-keys/{apiKey}/regenerate', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyRegenerate'])->name('instances.api-keys.regenerate');
-    Route::post('/instances/{instance}/api-keys/{apiKey}/toggle', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyToggle'])->name('instances.api-keys.toggle');
-    Route::delete('/instances/{instance}/api-keys/{apiKey}', [\App\Http\Controllers\OwnerController::class, 'instanceApiKeyDestroy'])->name('instances.api-keys.destroy');
+    Route::get('/instances/{instance}/api-keys', [InstanceApiKeyController::class, 'index'])
+        ->name('instances.api-keys')
+        ->middleware('throttle:20,1');
+    Route::post('/instances/{instance}/api-keys', [InstanceApiKeyController::class, 'store'])
+        ->name('instances.api-keys.generate')
+        ->middleware('throttle:5,1');
+    Route::post('/instances/{instance}/api-keys/{apiKey}/regenerate', [InstanceApiKeyController::class, 'regenerate'])
+        ->name('instances.api-keys.regenerate')
+        ->middleware('throttle:10,1');
+    Route::post('/instances/{instance}/api-keys/{apiKey}/toggle', [InstanceApiKeyController::class, 'toggle'])
+        ->name('instances.api-keys.toggle')
+        ->middleware('throttle:10,1');
+    Route::delete('/instances/{instance}/api-keys/force', [InstanceApiKeyController::class, 'forceDestroy'])
+        ->name('instances.api-keys.force')
+        ->middleware('throttle:5,1');
+    Route::delete('/instances/{instance}/api-keys/{apiKey}', [InstanceApiKeyController::class, 'destroy'])
+        ->name('instances.api-keys.destroy')
+        ->middleware('throttle:5,1');
+    Route::get('/instances/{instance}/api-keys/{apiKey}/reveal', [InstanceApiKeyController::class, 'reveal'])
+        ->name('instances.api-keys.reveal')
+        ->middleware('throttle:5,1');
 
     // Cuentas Bancarias (Owner)
     Route::get('/cuentas-bancarias', [\App\Http\Controllers\OwnerController::class, 'cuentasBancarias'])->name('cuentas-bancarias.index');
@@ -1019,6 +1079,11 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::post('/solicitudes/{instance}/rechazar', [\App\Http\Controllers\OwnerSolicitudController::class, 'rechazar'])->name('solicitudes.rechazar');
     // SMTP Configuration (Owner Only)
     Route::get('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettings'])->name('smtp-settings');
+    Route::get('/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [\App\Http\Controllers\OwnerSettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings/changes', [\App\Http\Controllers\OwnerSettingsController::class, 'getChanges'])->name('settings.changes');
+    Route::post('/settings/restore', [\App\Http\Controllers\OwnerSettingsController::class, 'restoreBackup'])->name('settings.restore');
+    Route::get('/settings/backups', [\App\Http\Controllers\OwnerSettingsController::class, 'getBackups'])->name('settings.backups');
     Route::post('/smtp-settings', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsUpdate'])->name('smtp-settings.update');
     Route::post('/smtp-settings/test', [\App\Http\Controllers\OwnerController::class, 'smtpSettingsTest'])->name('smtp-settings.test');
     // Error Alerts Testing (Owner Only)
@@ -1049,6 +1114,15 @@ Route::middleware(['auth', 'role:owner'])->prefix('owner')->name('owner.')->grou
     Route::get('/backups/{backup}/download', [OwnerBackupController::class, 'download'])->name('backups.download');
     Route::post('/backups/{backup}/restore', [OwnerBackupController::class, 'restore'])->middleware('owner.dangerous:3,15')->name('backups.restore');
     Route::delete('/backups/{backup}', [OwnerBackupController::class, 'destroy'])->name('backups.destroy');
+
+    // Owner Bootstrap / Recovery
+    Route::get('/bootstrap-status', [\App\Http\Controllers\OwnerBootstrapController::class, 'status'])->name('bootstrap.status');
+    Route::post('/bootstrap/recover', [\App\Http\Controllers\OwnerBootstrapController::class, 'recover'])
+        ->middleware('owner.dangerous:3,60')
+        ->name('bootstrap.recover');
+    Route::post('/bootstrap/change-password', [\App\Http\Controllers\OwnerBootstrapController::class, 'changePassword'])
+        ->middleware('owner.dangerous:3,60')
+        ->name('bootstrap.change-password');
 });
 
 // Devoluciones
@@ -1200,30 +1274,6 @@ Route::middleware(['auth', 'permission:delivery-earnings.view'])->group(function
     Route::post('/driver-earnings/calcular', [\App\Http\Controllers\DriverEarningsController::class, 'calcularGanancias'])->name('driver-earnings.calcular');
     Route::get('/driver-earnings/exportar', [\App\Http\Controllers\DriverEarningsController::class, 'exportCsv'])->name('driver-earnings.exportar');
 });
-
-// DEBUG - diagnostic route for reservations
-Route::middleware(['auth', 'role:admin'])->get('/_debug-reservaciones', function () {
-    $query = \App\Models\Reservacion::with('mesa', 'user')->deSucursal();
-    $results = $query->get();
-
-    return [
-        'user' => [
-            'id' => Auth::id(),
-            'business_instance_id' => Auth::user()?->business_instance_id,
-            'roles' => Auth::user()?->roles->pluck('name'),
-        ],
-        'session' => [
-            'sucursal_id' => session('sucursal_id'),
-        ],
-        'sql' => $query->toSql(),
-        'bindings' => $query->getBindings(),
-        'total_with_scopes' => \App\Models\Reservacion::count(),
-        'total_without_scopes' => \App\Models\Reservacion::withoutGlobalScopes()->count(),
-        'reservacion_2' => \App\Models\Reservacion::withoutGlobalScopes()->find(2),
-        'results_count' => $results->count(),
-        'results' => $results->toArray(),
-    ];
-})->name('_debug.reservaciones');
 
 // Restaurante (Terminal de Mesas)
 Route::middleware(['auth'])->group(function () {
@@ -1465,6 +1515,17 @@ Route::middleware(['auth'])->prefix('arte')->name('arte.')->group(function () {
 Route::get('/instancia-bloqueada', function () {
     return view('errors.instancia-bloqueada');
 })->name('instancia-bloqueada');
+
+Route::get('/logout', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/login')
+        ->withCookie(\Illuminate\Support\Facades\Cookie::forget('laravel_session'))
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate')
+        ->header('Pragma', 'no-cache');
+})->name('guest.logout');
 
 Route::middleware('auth')->get('/solicitud-pendiente', [SolicitudPendienteController::class, 'index'])->name('solicitud.pendiente');
 
@@ -2035,30 +2096,7 @@ Route::middleware(['auth'])->group(function () {
 //
 require __DIR__.'/auth.php';
 
-// =============================================
-// Two-Factor Authentication (2FA) Routes
-// =============================================
-Route::middleware(['auth', '2fa.verify'])->prefix('two-factor')->name('two-factor.')->group(function () {
-    // Dashboard de gestion 2FA
-    Route::get('/', [\App\Http\Controllers\Auth\TwoFactorController::class, 'index'])->name('index');
-
-    // Generar QR y secreto (AJAX)
-    Route::post('/enable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'enable'])->name('enable');
-
-    // Confirmar codigo TOTP
-    Route::post('/confirm', [\App\Http\Controllers\Auth\TwoFactorController::class, 'confirmEnable'])->name('confirm');
-
-    // Desactivar 2FA
-    Route::post('/disable', [\App\Http\Controllers\Auth\TwoFactorController::class, 'disable'])->name('disable');
-
-    // Ver / regenerar codigos de recuperacion (AJAX)
-    Route::post('/recovery', [\App\Http\Controllers\Auth\TwoFactorController::class, 'showRecovery'])->name('recovery');
-    Route::post('/recovery/regenerate', [\App\Http\Controllers\Auth\TwoFactorController::class, 'regenerateRecovery'])->name('recovery.regenerate');
-});
-
-// Pantalla de verificacion 2FA (accedida tras login con 2FA activado)
-Route::middleware('auth')->prefix('two-factor')->name('two-factor.')->group(function () {
-    Route::get('/verify', [\App\Http\Controllers\Auth\TwoFactorVerifyController::class, 'show'])->name('verify');
-    Route::post('/verify', [\App\Http\Controllers\Auth\TwoFactorVerifyController::class, 'verify'])->name('verify.submit');
-    Route::post('/logout', [\App\Http\Controllers\Auth\TwoFactorVerifyController::class, 'logout'])->name('logout');
-});
+// Landing pages (sin auth)
+Route::get('/precios', fn () => view('precios'))->name('precios');
+Route::get('/terminos', fn () => view('terminos'))->name('terminos');
+Route::get('/privacidad', fn () => view('privacidad'))->name('privacidad');

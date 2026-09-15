@@ -8,6 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Duplicada con 2025_06_06_000001 (+ alters intermedios que agregan
+        // itbis/tenant/equipo): si la tabla ya existe, no recrear.
+        if (Schema::hasTable('compra_detalles')) {
+            return;
+        }
+
         Schema::create('compra_detalles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('compra_id')->constrained('compras');

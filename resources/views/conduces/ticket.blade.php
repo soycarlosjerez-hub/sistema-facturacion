@@ -1,18 +1,55 @@
+<?php
+    $_printConfig = [
+        'fontSize' => 11,
+        'lineHeight' => 1.4,
+        'ticketPadding' => 4,
+        'copies' => 1,
+        'impresion' => 'normal',
+        'densidad' => 'normal',
+    ];
+
+    if ($paper === 58) {
+        $_printConfig['fontSize'] = 9;
+    }
+
+    if (isset($impresora) && $impresora && $impresora->configuracion) {
+        $_cfg = (array) $impresora->configuracion;
+        if (!empty($_cfg['font_size'])) {
+            $_printConfig['fontSize'] = (int) $_cfg['font_size'];
+        }
+        if (!empty($_cfg['copias']) && $_cfg['copias'] > 1) {
+            $_printConfig['copies'] = (int) $_cfg['copias'];
+        }
+        if (!empty($_cfg['impresion'])) {
+            $_printConfig['impresion'] = $_cfg['impresion'];
+        }
+        if (!empty($_cfg['densidad'])) {
+            $_printConfig['densidad'] = $_cfg['densidad'];
+        }
+        if (!empty($_cfg['margenes']) && isset($_cfg['margenes']['top'])) {
+            $_printConfig['ticketPadding'] = (int) $_cfg['margenes']['top'];
+        }
+    }
+
+    $_lineHeight = $_printConfig['impresion'] === 'compacto' ? 1.1 : ($_printConfig['impresion'] === 'espaciado' ? 1.6 : 1.4);
+?>
 <style>
-    body { font-family: 'Courier New', monospace; }
-    .ticket { max-width: {{ $paper === 58 ? '58mm' : '80mm' }}; margin: 0 auto; padding: 4mm; }
+    body { font-family: 'Courier New', monospace; font-size: {{ $_printConfig['fontSize'] }}px; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; line-height: {{ $_lineHeight }}; }
+    .ticket { max-width: {{ $paper === 58 ? '58mm' : '80mm' }}; margin: 0 auto; padding: {{ $_printConfig['ticketPadding'] }}mm; }
     .ticket h1, .ticket h2, .ticket h3 { margin: 0; text-align: center; }
     .ticket .center { text-align: center; }
     .ticket .right { text-align: right; }
     .ticket .hr { border-top: 1px dashed #000; margin: 4px 0; }
-    .ticket table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .ticket table { width: 100%; border-collapse: collapse; font-size: {{ $_printConfig['fontSize'] }}px; }
     .ticket table th, .ticket table td { padding: 1px 0; }
     .ticket table .qty { width: 40px; text-align: right; }
     .ticket table .name { text-align: left; }
     @media print {
-        body { margin: 0; padding: 0; }
-        .no-print { display: none; }
+        body { margin: 0; padding: 0; color: #000 !important; background: #fff !important; }
+        .no-print { display: none !important; }
         .ticket { padding: 2mm; }
+        * { color: #000 !important; background-color: transparent !important; }
+        @page { margin: 0; size: {{ $paper === 58 ? '58mm' : '80mm' }} auto; }
     }
 </style>
 

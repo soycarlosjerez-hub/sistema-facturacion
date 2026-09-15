@@ -19,7 +19,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $__empty_0 = true; $__currentLoopData = $instancias->take(8); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+                    <?php $__empty_1 = true; $__currentLoopData = $instancias->take(8); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $instance): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr>
                         <td class="fw-bold">
                             <a href="<?php echo e(route('owner.instances.show', $instance)); ?>" class="text-decoration-none"><?php echo e($instance->nombre); ?></a>
@@ -53,7 +53,7 @@
                             </a>
                         </td>
                     </tr>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                     <tr>
                         <td colspan="5" class="text-center text-muted py-4">No hay instancias registradas.</td>
                     </tr>

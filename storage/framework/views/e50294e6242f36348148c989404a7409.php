@@ -123,7 +123,7 @@ tr:hover .avatar-circle { transform: scale(1.1); }
                         </tr>
                     </thead>
                     <tbody id="clientes-tbody">
-                        <?php $__empty_0 = true; $__currentLoopData = $clientes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+                        <?php $__empty_1 = true; $__currentLoopData = $clientes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $c): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr>
                                 <td class="ps-4">
                                     <?php
@@ -232,7 +232,7 @@ tr:hover .avatar-circle { transform: scale(1.1); }
                                     <?php endif; ?>
                                 </td>
                             </tr>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
                                 <td colspan="10">
                                     <div class="ui-empty-state">

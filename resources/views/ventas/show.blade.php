@@ -74,12 +74,9 @@ body.dark-mode .pagos-table tbody td {
             </div>
             <div class="ui-header-actions">
                 <div class="d-flex gap-2">
-                    <a href="{{ route('ventas.pdf', $venta->id) }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
-                        <i class="bi bi-file-pdf me-1"></i>PDF
+                    <a href="{{ route('ventas.ticket', $venta->id) }}" target="_blank" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
+                        <i class="bi bi-receipt me-1"></i>Ticket
                     </a>
-                    <button onclick="window.print()" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
-                        <i class="bi bi-printer me-1"></i>Imprimir
-                    </button>
                     <a href="{{ route('ventas.index') }}" class="ui-btn ui-btn-primary ui-btn-sm rounded-pill">
                         <i class="bi bi-arrow-left me-1"></i>Volver
                     </a>

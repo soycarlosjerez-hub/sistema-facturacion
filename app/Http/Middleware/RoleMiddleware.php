@@ -10,22 +10,15 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(401);
         }
 
         $user = Auth::user();
 
         foreach ($roles as $rol) {
-            if ($user->role === $rol) {
+            if ($user->hasRole($rol)) {
                 return $next($request);
-            }
-            try {
-                if ($user->hasRole($rol)) {
-                    return $next($request);
-                }
-            } catch (\Throwable $e) {
-                report($e);
             }
         }
 

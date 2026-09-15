@@ -5,7 +5,7 @@
             <canvas id="planDistributionChart"></canvas>
         </div>
         <div class="mt-3">
-            <?php $__empty_0 = true; $__currentLoopData = $planDistribution; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $planName => $count): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+            <?php $__empty_1 = true; $__currentLoopData = $planDistribution; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $planName => $count): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <?php
                     $total = array_sum($planDistribution);
                     $pct = $total > 0 ? round($count / $total * 100) : 0;
@@ -23,7 +23,7 @@
                         <span class="small fw-bold"><?php echo e($count); ?></span>
                     </div>
                 </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <div class="text-center py-3 text-muted">
                     <i class="bi bi-inbox"></i>
                     <small>Sin planes configurados</small>

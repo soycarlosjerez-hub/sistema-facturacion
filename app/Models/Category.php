@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class Category extends Model
 {
-    use SoftDeletes, Auditable, \App\Traits\TenantScope;
+    use \App\Traits\TenantScope, Auditable, HasFactory, SoftDeletes;
 
     protected $table = 'categorias';
 
@@ -94,6 +94,7 @@ class Category extends Model
         $pivot = $this->businessTypes()->where('business_types.slug', $typeSlug)->first();
         $global = $this->configuracion ?? [];
         $typeConfig = $pivot?->pivot->configuracion ?? [];
+
         return array_merge($global, $typeConfig);
     }
 
@@ -101,6 +102,7 @@ class Category extends Model
     public function hasSoftDeleteForType(string $typeSlug): bool
     {
         $pivot = $this->businessTypes()->where('business_types.slug', $typeSlug)->first();
+
         return $pivot?->pivot->soft_delete_enabled ?? true;
     }
 
@@ -108,10 +110,15 @@ class Category extends Model
     public function getColorForType(string $typeSlug): string
     {
         $config = $this->getConfigForType($typeSlug);
-        if (isset($config['color'])) return $config['color'];
-        if ($this->color) return $this->color;
+        if (isset($config['color'])) {
+            return $config['color'];
+        }
+        if ($this->color) {
+            return $this->color;
+        }
 
         $type = BusinessType::where('slug', $typeSlug)->first();
+
         return $type?->color_default ?? $type?->color ?? '#3b82f6';
     }
 
@@ -119,10 +126,15 @@ class Category extends Model
     public function getIconForType(string $typeSlug): string
     {
         $config = $this->getConfigForType($typeSlug);
-        if (isset($config['icono'])) return $config['icono'];
-        if ($this->icono) return $this->icono;
+        if (isset($config['icono'])) {
+            return $config['icono'];
+        }
+        if ($this->icono) {
+            return $this->icono;
+        }
 
         $type = BusinessType::where('slug', $typeSlug)->first();
+
         return $type?->icono_default ?? $type?->icon ?? 'bi-grid';
     }
 
@@ -130,10 +142,15 @@ class Category extends Model
     public function getOrdenForType(string $typeSlug): int
     {
         $config = $this->getConfigForType($typeSlug);
-        if (isset($config['orden'])) return (int) $config['orden'];
-        if (isset($this->orden)) return $this->orden;
+        if (isset($config['orden'])) {
+            return (int) $config['orden'];
+        }
+        if (isset($this->orden)) {
+            return $this->orden;
+        }
 
         $pivot = $this->businessTypes()->where('business_types.slug', $typeSlug)->first();
+
         return $pivot?->pivot->orden ?? $this->orden ?? 0;
     }
 }

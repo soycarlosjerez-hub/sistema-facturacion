@@ -357,7 +357,7 @@
             <?php
                 $instanceRoles = \App\Models\InstanceRole::where('business_instance_id', $instance->id)->withCount('users')->orderBy('name')->get();
             ?>
-            <?php $__empty_0 = true; $__currentLoopData = $instanceRoles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+            <?php $__empty_1 = true; $__currentLoopData = $instanceRoles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
@@ -372,7 +372,7 @@
                     <i class="bi bi-pencil"></i>
                 </a>
             </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="text-center py-3 text-muted">
                 <i class="bi bi-inbox fs-1"></i>
                 <p class="mt-2 mb-0">No hay roles definidos para esta instancia.</p>
@@ -399,7 +399,7 @@
             </div>
         </div>
         <div class="card-body p-4 pt-0">
-            <?php $__empty_0 = true; $__currentLoopData = $instance->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_0 = false; ?>
+            <?php $__empty_1 = true; $__currentLoopData = $instance->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
             <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light">
                 <div class="d-flex align-items-center gap-3">
                     <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
@@ -425,7 +425,7 @@
                     </form>
                 </div>
             </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_0): ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-inbox fs-1"></i>
                 <p class="mt-2 mb-0">No hay usuarios asignados a esta instancia.</p>

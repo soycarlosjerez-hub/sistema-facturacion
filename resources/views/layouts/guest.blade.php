@@ -9,7 +9,7 @@
     </head>
     <body class="bg-light">
         <div class="container py-5">
-            {{ $slot }}
+            @yield('content')
         </div>
     </body>
 </html>

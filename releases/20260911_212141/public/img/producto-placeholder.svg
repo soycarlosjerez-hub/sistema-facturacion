@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+  <rect width="200" height="150" fill="#f1f5f9" rx="8"/>
+  <g transform="translate(100,75)" fill="#94a3b8" text-anchor="middle" font-family="system-ui,sans-serif">
+    <path d="M20 10 Q20-10 40-10 L60-10 Q80-10 80 10 L80 30 Q80 50 60 50 L40 50 Q20 50 20 30Z" fill="none" stroke="#94a3b8" stroke-width="3" transform="translate(-50,-25)"/>
+    <path d="M-20 15L-5 15M10 15L25 15" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" transform="translate(-3,15)"/>
+    <path d="M-8-8L8 8M-8 8L8-8" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" transform="translate(32,-20)"/>
+    <text y="48" font-size="13" font-weight="500">Plato</text>
+  </g>
+</svg>

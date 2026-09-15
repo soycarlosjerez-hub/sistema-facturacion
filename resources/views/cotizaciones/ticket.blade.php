@@ -4,19 +4,74 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket {{ $cotizacion->numero }}</title>
+    <?php
+        $_paperWidth = (int) $paperWidth;
+        $_printConfig = [
+            'fontSize' => 11,
+            'bodyFontSize' => 12,
+            'headerFontSize' => 14,
+            'lineFontSize' => 10,
+            'totalsFontSize' => 10,
+            'grandFontSize' => 13,
+            'footerFontSize' => 9,
+            'ticketPadding' => 5,
+            'copies' => 1,
+            'impresion' => 'normal',
+            'densidad' => 'normal',
+        ];
+
+        if ($_paperWidth === 58) {
+            $_printConfig['fontSize'] = 9;
+            $_printConfig['bodyFontSize'] = 10;
+            $_printConfig['headerFontSize'] = 11;
+            $_printConfig['lineFontSize'] = 9;
+            $_printConfig['totalsFontSize'] = 9;
+            $_printConfig['grandFontSize'] = 12;
+            $_printConfig['footerFontSize'] = 8;
+        }
+
+        if ($impresora && $impresora->configuracion) {
+            $_cfg = (array) $impresora->configuracion;
+            if (!empty($_cfg['font_size'])) {
+                $_printConfig['fontSize'] = (int) $_cfg['font_size'];
+                $_printConfig['bodyFontSize'] = (int) $_cfg['font_size'];
+                $_printConfig['headerFontSize'] = (int) $_cfg['font_size'] + 2;
+                $_printConfig['lineFontSize'] = (int) $_cfg['font_size'] - 1;
+                $_printConfig['totalsFontSize'] = (int) $_cfg['font_size'];
+                $_printConfig['grandFontSize'] = (int) $_cfg['font_size'] + 2;
+                $_printConfig['footerFontSize'] = (int) $_cfg['font_size'] - 2;
+            }
+            if (!empty($_cfg['copias']) && $_cfg['copias'] > 1) {
+                $_printConfig['copies'] = (int) $_cfg['copias'];
+            }
+            if (!empty($_cfg['impresion'])) {
+                $_printConfig['impresion'] = $_cfg['impresion'];
+            }
+            if (!empty($_cfg['densidad'])) {
+                $_printConfig['densidad'] = $_cfg['densidad'];
+            }
+            if (!empty($_cfg['margenes'])) {
+                if (isset($_cfg['margenes']['top'])) {
+                    $_printConfig['ticketPadding'] = (int) $_cfg['margenes']['top'];
+                }
+            }
+        }
+    ?>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Courier New', Courier, monospace;
-            font-size: {{ $paperWidth == 58 ? '11px' : '13px' }};
-            line-height: 1.3;
+            font-size: {{ $_printConfig['bodyFontSize'] }}px;
+            line-height: {{ $_printConfig['impresion'] === 'compacto' ? 1.1 : ($_printConfig['impresion'] === 'espaciado' ? 1.6 : 1.3) }};
             color: #000;
             background: #f0f0f0;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         .ticket-container {
-            width: {{ $paperWidth }}mm;
+            width: {{ $_paperWidth }}mm;
             margin: 10px auto;
-            padding: 5mm;
+            padding: {{ $_printConfig['ticketPadding'] }}mm;
             background: #fff;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
@@ -83,7 +138,6 @@
             display: flex;
             justify-content: space-between;
             font-size: 0.9em;
-            color: #444;
         }
         .totals {
             margin: 8px 0;
@@ -135,13 +189,14 @@
             font-size: 0.85em;
         }
         @media print {
-            body { background: #fff; }
+            body { background: #fff !important; color: #000 !important; }
             .ticket-container {
                 box-shadow: none;
                 margin: 0;
                 padding: 2mm;
             }
             .actions { display: none !important; }
+            * { color: #000 !important; background-color: transparent !important; }
             @page {
                 margin: 0;
                 size: {{ $paperWidth }}mm auto;
@@ -202,7 +257,7 @@
                 <div><strong>Tel:</strong> {{ $cotizacion->cliente->telefono }}</div>
             @endif
             @if($cotizacion->cliente?->email)
-                <div class="text-muted">{{ $cotizacion->cliente->email }}</div>
+                <div>{{ $cotizacion->cliente->email }}</div>
             @endif
         </section>
 
@@ -287,11 +342,30 @@
         </div>
 
         <script>
-            // Auto-imprimir al cargar
             window.addEventListener('load', function() {
-                setTimeout(function() {
+                var copies = {{ $_printConfig['copies'] ?? 1 }};
+                var densidad = '{{ $_printConfig['densidad'] ?? 'normal' }}';
+
+                if (densidad === 'alta') {
+                    document.querySelectorAll('.ticket-container').forEach(function(el) {
+                        el.style.filter = 'brightness(1.15) contrast(1.1)';
+                    });
+                } else if (densidad === 'baja') {
+                    document.querySelectorAll('.ticket-container').forEach(function(el) {
+                        el.style.filter = 'brightness(0.85) contrast(0.9)';
+                    });
+                }
+
+                function doPrint() {
                     window.print();
-                }, 500);
+                }
+
+                if (copies > 1) {
+                    for (var i = 1; i < copies; i++) {
+                        setTimeout(function() { window.print(); }, i * 2000);
+                    }
+                }
+                setTimeout(doPrint, 500);
             });
         </script>
     @endif

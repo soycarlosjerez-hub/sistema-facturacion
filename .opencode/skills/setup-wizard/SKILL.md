@@ -1,61 +1,25 @@
 # Setup Wizard Skill
 
 ## Triggers
-Load this skill automatically when the user mentions ANY of:
-- "crear módulo", "nuevo módulo", "module:create"
-- "registrar módulo", "agregar módulo"
-- "crear entidad", "nueva entidad" (en contexto de módulo)
-- "php artisan module:create"
+"crear modulo", "nuevo modulo", "module:create", "registrar modulo", "php artisan module:create"
 
-## Architecture
+## Arquitectura
+- `wizard_steps` — config de pasos (key, module_key, label, icon, required, skipable, entity_class, orden)
+- `business_instances.setup_completed` — flag por instancia
+- Middleware `CheckSetupWizard` — redirige a `/setup/wizard` si `setup_completed === false`
 
-### Tables
-- `wizard_steps` — config for each wizard step (key, module_key, label, icon, required, skipable, entity_class, orden)
-- `business_instances.setup_completed` — per-instance flag
+## Comandos
+- `php artisan module:create` — interactivo (modelo, migracion, controlador, vistas, rutas, seeders, permisos, wizard)
+- `php artisan wizard:sync` — sincroniza pasos desde config/wizard.php
 
-### Models with wizard steps (in `config/wizard.php`)
-- `Sucursal`, `Caja`, `Almacen`, `Producto`, `NcfSequence`
-- `MesaUbicacion`, `MesaCategoria`, `Mesa` (restaurante)
-- `LavaderoServicio`, `Lavador` (lavadero)
+## Crear nuevo modulo con wizard
+1. Crear modelo con `HasWizardStep` + `wizardStepConfig()`
+2. Agregar a `config/wizard.php`
+3. `php artisan wizard:sync`
 
-### Filter
-Steps shown = intersection of:
-- `Module keys in admin's InstanceRole (visibleModules)`
-- `Module keys in BusinessType (getModulosVisibles)` OR system modules (ncf)
-
-### Middleware `CheckSetupWizard`
-- Runs on every web request (appended to `web` group)
-- Redirects to `GET /setup/wizard` if:
-  - User is NOT owner/root
-  - Route is NOT setup.* or logout
-  - `businessInstance->setup_completed === false`
-  - `instanceRole->name === 'admin'`
-
-## How to create a new module with wizard step
-
-### Method 1: Interactive command (recommended)
-```
-php artisan module:create
-```
-Follow the prompts. It automatically:
-- Creates model, migration, controller, views, routes
-- Adds to `ModuloSeeder`, `PermissionSeeder`
-- Adds to `config/wizard.php`
-- Runs `php artisan wizard:sync`
-
-### Method 2: Manual
-1. Create model with `HasWizardStep` trait
-2. Implement `wizardStepConfig()` on the model
-3. Add model class to `config/wizard.php`
-4. Run `php artisan wizard:sync`
-
-### After creating
+## After creating
 ```
 php artisan migrate
 php artisan db:seed --class=ModuloSeeder
 php artisan db:seed --class=PermissionSeeder
 ```
-
-## Commands reference
-- `php artisan module:create` — interactive module creator
-- `php artisan wizard:sync` — sync wizard steps from config/wizard.php

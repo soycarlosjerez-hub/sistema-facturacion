@@ -74,8 +74,7 @@ class VentaController extends Controller
     {
         $sesionId = $request->input('sesion_caja_id');
 
-        $isElevated = in_array(Auth::user()->role, ['admin', 'owner', 'admin-business', 'root'])
-            || Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
+        $isElevated = Auth::user()->hasAnyRole(['admin', 'owner', 'admin-business', 'root']);
 
         if ($sesionId) {
             $sesion = SesionCaja::where('id', $sesionId)
@@ -104,6 +103,12 @@ class VentaController extends Controller
             $venta = $this->saleService->createSale($request->validated(), $sesion);
             $msg = 'Venta registrada en '.$sesion->caja->nombre;
 
+            $ecfPendiente = ($request->input('tipo_comprobante', 'sin') === 'ecf')
+                && empty($venta->fresh()->encf);
+            if ($ecfPendiente) {
+                $msg .= '. ATENCIÓN: el e-CF no pudo emitirse y quedó pendiente — reintente desde el módulo ECF.';
+            }
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
@@ -112,10 +117,12 @@ class VentaController extends Controller
                     'cliente' => $venta->cliente->nombre ?? 'Consumidor Final',
                     'metodo_pago' => $request->input('metodo_pago', 'efectivo'),
                     'tipo_comprobante' => $request->input('tipo_comprobante', 'sin'),
+                    'ecf_pendiente' => $ecfPendiente,
                 ]);
             }
 
-            return redirect()->route('ventas.show', $venta->id)->with('success', $msg);
+            return redirect()->route('ventas.show', $venta->id)
+                ->with($ecfPendiente ? 'warning' : 'success', $msg);
         } catch (\Exception $e) {
             report($e);
             if ($request->wantsJson()) {
@@ -374,23 +381,44 @@ class VentaController extends Controller
     {
         $venta = Venta::with(['cliente', 'usuario', 'detalles.producto', 'detalles.obra', 'caja', 'sucursal', 'pagos'])->findOrFail($id);
 
-        $impresora = null;
+        // Buscar impresora para la sucursal de la venta (activa o no, para aplicar config de papel)
+        $impresoraDefault = null;
         if ($venta->sucursal_id) {
-            $impresora = \App\Models\Impresora::where('activo', true)
+            $impresoraDefault = \App\Models\Impresora::where('activo', true)
+                ->where('sucursal_id', $venta->sucursal_id)
+                ->orderBy('orden')
+                ->first();
+        }
+
+        if (! $impresoraDefault && auth()->check()) {
+            $impresoraDefault = \App\Models\Impresora::where('activo', true)
+                ->where('tenant_id', auth()->user()->business_instance_id)
+                ->whereNull('sucursal_id')
+                ->orderBy('orden')
+                ->first();
+        }
+
+        // Si hay auto_imprimir, priorizar esa impresora sobre la default
+        $impresoraAuto = null;
+        if ($venta->sucursal_id) {
+            $impresoraAuto = \App\Models\Impresora::where('activo', true)
                 ->where('sucursal_id', $venta->sucursal_id)
                 ->where('auto_imprimir_ventas', true)
                 ->orderBy('orden')
                 ->first();
         }
 
-        if (! $impresora && auth()->check()) {
-            $impresora = \App\Models\Impresora::where('activo', true)
+        if (! $impresoraAuto && auth()->check()) {
+            $impresoraAuto = \App\Models\Impresora::where('activo', true)
                 ->where('tenant_id', auth()->user()->business_instance_id)
                 ->where('auto_imprimir_ventas', true)
                 ->whereNull('sucursal_id')
                 ->orderBy('orden')
                 ->first();
         }
+
+        // Usar auto impresora si existe, sino la default
+        $impresora = $impresoraAuto ?? $impresoraDefault;
 
         return view('ventas.ticket', [
             'venta' => $venta,

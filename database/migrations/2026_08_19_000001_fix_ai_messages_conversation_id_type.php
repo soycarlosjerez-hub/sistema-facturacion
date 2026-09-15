@@ -2,12 +2,17 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Check if column is still bigint (needs migration)
         $colInfo = Schema::getConnection()->select("
             SELECT COLUMN_TYPE FROM information_schema.COLUMNS 
@@ -15,7 +20,7 @@ return new class extends Migration
             AND TABLE_NAME = 'ai_messages' 
             AND COLUMN_NAME = 'conversation_id'
         ");
-        
+
         if (isset($colInfo[0]) && $colInfo[0]->COLUMN_TYPE === 'bigint unsigned') {
             // Try to drop FK, continue even if it fails (idempotent)
             try {

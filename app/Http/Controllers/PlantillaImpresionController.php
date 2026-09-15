@@ -178,6 +178,7 @@ class PlantillaImpresionController extends Controller
     public function update(UpdatePlantillaImpresionRequest $request, PlantillaImpresion $plantilla)
     {
         $data = $request->validated();
+        unset($data['codigo']);
 
         if ($request->hasFile('logo')) {
             if ($plantilla->logo_path) {

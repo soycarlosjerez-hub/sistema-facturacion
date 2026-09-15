@@ -11,6 +11,7 @@ use App\Models\Reservacion;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class ReservacionController extends Controller
 {
@@ -27,12 +28,13 @@ class ReservacionController extends Controller
 
     public function store(Request $request)
     {
+        $tenantId = auth()->user()->business_instance_id ?? null;
         $validated = $request->validate([
             'cliente_nombre' => 'required|string|max:200',
-            'cliente_id' => 'nullable|exists:clientes,id',
+            'cliente_id' => ['nullable', $tenantId ? Rule::exists('clientes', 'id')->where('tenant_id', $tenantId) : 'exists:clientes,id'],
             'cliente_telefono' => 'nullable|string|max:30',
             'cliente_email' => 'nullable|email|max:200',
-            'mesa_id' => 'required|exists:mesas,id',
+            'mesa_id' => ['required', $tenantId ? Rule::exists('mesas', 'id')->where('tenant_id', $tenantId) : 'exists:mesas,id'],
             'fecha_hora' => 'required|date',
             'personas' => 'required|integer|min:1',
             'estado' => 'required|string|max:20',
@@ -42,26 +44,28 @@ class ReservacionController extends Controller
         $validated['user_id'] = auth()->id();
         $validated['tenant_id'] = auth()->user()->business_instance_id ?? null;
 
-        if (empty($validated['cliente_telefono']) && !empty($validated['cliente_id'])) {
-            $cliente = \App\Models\Cliente::find($validated['cliente_id']);
+        if (empty($validated['cliente_telefono']) && ! empty($validated['cliente_id'])) {
+            $cliente = \App\Models\Cliente::where('id', $validated['cliente_id'])
+                ->where('tenant_id', $validated['tenant_id'])
+                ->first();
             $validated['cliente_telefono'] = $cliente?->telefono;
         }
 
         $reservacion = Reservacion::create($validated);
 
-        if (!empty($validated['cliente_id'])) {
+        if (! empty($validated['cliente_id'])) {
             $updates = [];
-            if (!empty($validated['cliente_nombre'])) {
+            if (! empty($validated['cliente_nombre'])) {
                 $updates['nombre'] = $validated['cliente_nombre'];
             }
-            if (!empty($validated['cliente_email'])) {
+            if (! empty($validated['cliente_email'])) {
                 $updates['email'] = $validated['cliente_email'];
             }
-            if (!empty($validated['cliente_telefono'])) {
+            if (! empty($validated['cliente_telefono'])) {
                 $updates['telefono'] = $validated['cliente_telefono'];
             }
 
-            if (!empty($updates)) {
+            if (! empty($updates)) {
                 \App\Models\Cliente::where('id', $validated['cliente_id'])
                     ->where('tenant_id', $validated['tenant_id'])
                     ->update($updates);
@@ -69,7 +73,7 @@ class ReservacionController extends Controller
         }
 
         $email = $validated['cliente_email'] ?? $reservacion->cliente?->email;
-        if (!empty($email)) {
+        if (! empty($email)) {
             $cc = SystemSetting::get('mail_from_address');
             Mail::to($email)
                 ->cc($cc ?: null)
@@ -86,12 +90,13 @@ class ReservacionController extends Controller
 
     public function update(Request $request, Reservacion $reservacion)
     {
+        $tenantId = $reservacion->tenant_id;
         $validated = $request->validate([
             'cliente_nombre' => 'sometimes|string|max:200',
-            'cliente_id' => 'nullable|exists:clientes,id',
+            'cliente_id' => ['nullable', $tenantId ? Rule::exists('clientes', 'id')->where('tenant_id', $tenantId) : 'exists:clientes,id'],
             'cliente_telefono' => 'nullable|string|max:30',
             'cliente_email' => 'nullable|email|max:200',
-            'mesa_id' => 'sometimes|exists:mesas,id',
+            'mesa_id' => ['sometimes', $tenantId ? Rule::exists('mesas', 'id')->where('tenant_id', $tenantId) : 'exists:mesas,id'],
             'fecha_hora' => 'sometimes|date',
             'personas' => 'sometimes|integer|min:1',
             'estado' => 'sometimes|string|max:20',
@@ -101,19 +106,19 @@ class ReservacionController extends Controller
         $estadoAnterior = $reservacion->estado;
         $reservacion->update($validated);
 
-        if (!empty($validated['cliente_id'])) {
+        if (! empty($validated['cliente_id'])) {
             $updates = [];
-            if (!empty($validated['cliente_nombre'])) {
+            if (! empty($validated['cliente_nombre'])) {
                 $updates['nombre'] = $validated['cliente_nombre'];
             }
-            if (!empty($validated['cliente_email'])) {
+            if (! empty($validated['cliente_email'])) {
                 $updates['email'] = $validated['cliente_email'];
             }
-            if (!empty($validated['cliente_telefono'])) {
+            if (! empty($validated['cliente_telefono'])) {
                 $updates['telefono'] = $validated['cliente_telefono'];
             }
 
-            if (!empty($updates)) {
+            if (! empty($updates)) {
                 \App\Models\Cliente::where('id', $validated['cliente_id'])
                     ->where('tenant_id', $reservacion->tenant_id)
                     ->update($updates);
@@ -124,7 +129,7 @@ class ReservacionController extends Controller
         $email = $reservacion->cliente_email ?? $reservacion->cliente?->email;
         $cc = SystemSetting::get('mail_from_address');
 
-        if (!empty($email)) {
+        if (! empty($email)) {
             $nuevoEstado = $validated['estado'] ?? null;
             if ($nuevoEstado === 'confirmada' && $nuevoEstado !== $estadoAnterior) {
                 Mail::to($email)
@@ -143,6 +148,7 @@ class ReservacionController extends Controller
     public function destroy(Reservacion $reservacion)
     {
         $reservacion->delete();
+
         return response()->json(['message' => 'Reservación eliminada.']);
     }
 }

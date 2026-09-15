@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\Auditable;
 
 class EquipoMovimiento extends Model
 {
-    use HasFactory;
-    use Auditable;
+    use Auditable, HasFactory, TenantScope;
 
     protected $table = 'equipo_movimientos';
 
@@ -72,13 +72,13 @@ class EquipoMovimiento extends Model
     public function getTipoMovimientoLabelAttribute(): ?string
     {
         return match ($this->tipo_movimiento) {
-            'entrada'      => 'Entrada',
-            'salida'       => 'Salida',
+            'entrada' => 'Entrada',
+            'salida' => 'Salida',
             'transferencia' => 'Transferencia',
-            'ajuste'       => 'Ajuste de Inventario',
-            'devolucion'   => 'Devolución',
-            'merma'        => 'Merma',
-            default        => null,
+            'ajuste' => 'Ajuste de Inventario',
+            'devolucion' => 'Devolución',
+            'merma' => 'Merma',
+            default => null,
         };
     }
 
@@ -93,11 +93,11 @@ class EquipoMovimiento extends Model
         int $tenantId
     ): EquipoMovimiento {
         return static::create([
-            'equipo_id'       => $equipoId,
+            'equipo_id' => $equipoId,
             'tipo_movimiento' => $tipoMovimiento,
-            'cantidad'        => $cantidad,
-            'motivo'          => $motivo,
-            'tenant_id'       => $tenantId,
+            'cantidad' => $cantidad,
+            'motivo' => $motivo,
+            'tenant_id' => $tenantId,
         ]);
     }
 }

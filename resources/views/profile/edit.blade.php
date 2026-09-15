@@ -221,34 +221,6 @@ body.dark-mode .ui-btn-outline-warning:hover {
                 </div>
             </div>
 
-            <div class="ui-card mb-4" style="--delay:.25s;">
-                <div class="ui-card-accent" style="background: linear-gradient(90deg, #6366f1, rgba(99,102,241,.3));"></div>
-                <div class="ui-card-title">
-                    <i class="bi bi-shield-check" style="color:#6366f1;"></i>
-                    Autenticación de Dos Factores (2FA)
-                </div>
-                <div class="ui-card-subtitle">Protege tu cuenta con un código temporal desde Google Authenticator</div>
-                <div class="card-body p-4">
-                    @if(auth()->user()->two_factor_secret)
-                        <div class="alert alert-success border-0 mb-3 rounded-4">
-                            <i class="bi bi-check-circle me-2"></i>
-                            <strong>2FA activado</strong> — Tu cuenta está protegida.
-                        </div>
-                    @else
-                        <div class="alert alert-warning border-0 mb-3 rounded-4">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            <strong>2FA desactivado</strong> — Tu cuenta solo usa contraseña.
-                        </div>
-                    @endif
-                    <div class="d-grid">
-                        <a href="{{ route('two-factor.index') }}" class="ui-btn {{ auth()->user()->two_factor_secret ? 'ui-btn-ghost' : 'ui-btn-solid' }} fw-semibold">
-                            <i class="bi bi-shield-fill-check me-2"></i>
-                            {{ auth()->user()->two_factor_secret ? 'Administrar 2FA' : 'Activar 2FA' }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-
             <div class="ui-card" style="--delay:.3s;">
                 <div class="ui-card-accent" style="background: linear-gradient(90deg, #ef4444, rgba(239,68,68,.3));"></div>
                 <div class="ui-card-title">

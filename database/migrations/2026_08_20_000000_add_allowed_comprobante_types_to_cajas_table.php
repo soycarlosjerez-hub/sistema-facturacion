@@ -17,9 +17,15 @@ return new class extends Migration
 
         // JSON columns can't have a DEFAULT constraint in MySQL 5.7+.
         // Set defaults for all existing rows via raw update.
-        DB::connection()->table('cajas')->whereNull('allowed_comprobante_types')->update([
-            'allowed_comprobante_types' => DB::raw('JSON_ARRAY("sin","ncf","ecf")'),
-        ]);
+        if (DB::getDriverName() === 'mysql') {
+            DB::connection()->table('cajas')->whereNull('allowed_comprobante_types')->update([
+                'allowed_comprobante_types' => DB::raw('JSON_ARRAY("sin","ncf","ecf")'),
+            ]);
+        } else {
+            DB::connection()->table('cajas')->whereNull('allowed_comprobante_types')->update([
+                'allowed_comprobante_types' => '["sin","ncf","ecf"]',
+            ]);
+        }
     }
 
     public function down(): void

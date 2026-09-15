@@ -209,8 +209,8 @@ body.dark-mode .ventas-table tbody td {
                                         <a href="{{ route('pagos.realizar', $v->id) }}" class="ui-action ui-action-edit" title="Cobrar / Abono">
                                             <i class="bi bi-cash-coin"></i>
                                         </a>
-                                        <a href="{{ route('venta.pdf', $v->id) }}" class="ui-action ui-action-edit" title="Reimprimir">
-                                            <i class="bi bi-printer"></i>
+                                        <a href="{{ route('ventas.ticket', $v->id) }}" class="ui-action ui-action-edit" title="Imprimir Ticket">
+                                            <i class="bi bi-receipt"></i>
                                         </a>
                                         <form action="{{ route('ventas.destroy', $v->id) }}" method="POST" class="d-inline form-anular" data-venta-id="{{ $v->id }}" data-venta-label="#{{ str_pad($v->id, 5, '0', STR_PAD_LEFT) }}">
                                             @csrf @method('DELETE')

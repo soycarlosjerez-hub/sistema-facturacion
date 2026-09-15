@@ -34,14 +34,42 @@ class EcfQrGenerator
     {
         $base = config('dgii.qr_endpoint');
         $query = $this->buildQueryString($ecf);
-        return $base . '?' . $query;
+
+        return $base.'?'.$query;
     }
 
+    /**
+     * Código de seguridad PROVISIONAL para previsualización local.
+     * El código válido es el que devuelve DGII en el acuse de recibo:
+     * ver actualizarDesdeAcuse(). Nunca imprimir fiscal sin acuse.
+     */
     public function generarCodigoSeguridad(EcfDocumento $ecf): string
     {
-        $seed = $ecf->encf . '|' . $ecf->fecha_emision->format('Y-m-d') . '|' . $ecf->monto_total;
+        if (! empty($ecf->codigo_seguridad)) {
+            return $ecf->codigo_seguridad;
+        }
+
+        $seed = $ecf->encf.'|'.$ecf->fecha_emision->format('Y-m-d').'|'.$ecf->monto_total;
         $hash = hash_hmac('sha256', $seed, config('app.key'));
+
         return strtoupper(substr($hash, 0, 6));
+    }
+
+    /**
+     * Persiste el Código de Seguridad oficial del acuse DGII y regenera el QR.
+     */
+    public function actualizarDesdeAcuse(EcfDocumento $ecf, array $acuse): EcfDocumento
+    {
+        $codigo = $acuse['codigoSeguridad'] ?? $acuse['codigo_seguridad']
+            ?? $acuse['codigo'] ?? null;
+
+        if (is_string($codigo) && $codigo !== '') {
+            $ecf->codigo_seguridad = $codigo;
+            $ecf->save();
+            $this->saveLocalQr($ecf->fresh());
+        }
+
+        return $ecf->fresh();
     }
 
     public function generateLocalQr(EcfDocumento $ecf, int $size = 300): ?string
@@ -63,32 +91,49 @@ class EcfQrGenerator
     {
         $svg = $this->generateLocalQr($ecf, $size);
 
-        if (!$svg) {
+        if (! $svg) {
             return null;
         }
 
-        $directory = "ecf/qr/" . $ecf->fecha_emision->format('Y/m');
-        if (!Storage::disk('public')->exists($directory)) {
+        $directory = 'ecf/qr/'.$ecf->fecha_emision->format('Y/m');
+        if (! Storage::disk('public')->exists($directory)) {
             Storage::disk('public')->makeDirectory($directory, 0755, true);
         }
 
-        $filename = $ecf->encf . '.svg';
-        $path = $directory . DIRECTORY_SEPARATOR . $filename;
+        $filename = $ecf->encf.'.svg';
+        $path = $directory.DIRECTORY_SEPARATOR.$filename;
 
         Storage::disk('public')->put($path, $svg);
 
         return $path;
     }
 
+    /**
+     * URL del QR generado LOCALMENTE (sin dependencias externas).
+     * Antes apuntaba a api.qrserver.com; ahora usa el SVG almacenado en
+     * storage público para operar offline y en producción.
+     */
     public function toQrApiUrl(EcfDocumento $ecf, int $size = 200): string
     {
-        $url = $this->buildUrl($ecf);
-        return "https://api.qrserver.com/v1/create-qr-code/?size={$size}x{$size}&data=" . urlencode($url);
+        try {
+            $path = $this->saveLocalQr($ecf, $size);
+            if ($path) {
+                return Storage::disk('public')->url($path);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('e-CF: no se pudo generar QR local', [
+                'encf' => $ecf->encf,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Último recurso: URL de verificación DGII sin imagen.
+        return $this->buildUrl($ecf);
     }
 
     public function toSvgQr(EcfDocumento $ecf, int $size = 200): ?string
     {
-        if (!class_exists('\SimpleSoftwareIO\QrCode\Facades\QrCode') && !class_exists('\BaconQrCode\Writer')) {
+        if (! class_exists('\SimpleSoftwareIO\QrCode\Facades\QrCode') && ! class_exists('\BaconQrCode\Writer')) {
             return null;
         }
 
@@ -104,17 +149,18 @@ class EcfQrGenerator
     private function generateWithBacon(string $url, int $size): ?string
     {
         try {
-            $writer = new \BaconQrCode\Writer();
+            $writer = new \BaconQrCode\Writer;
             $rendererStyle = new \BaconQrCode\Renderer\RendererStyle\RendererStyle($size);
             $renderer = new \BaconQrCode\Renderer\Image\SvgImageRenderer($rendererStyle);
 
-            $matrix = (new \BaconQrCode\Encoder())->encode($url, \BaconQrCode\Common\CharacterSetEci::getInstance(
+            $matrix = (new \BaconQrCode\Encoder)->encode($url, \BaconQrCode\Common\CharacterSetEci::getInstance(
                 \BaconQrCode\Common\Charset::UTF_8
             ));
 
             return $writer->writeString($matrix, 'utf-8');
         } catch (\Throwable $e) {
             Log::warning('e-CF: error generando QR con Bacon', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -152,9 +198,10 @@ class EcfQrGenerator
             $pngData = ob_get_clean();
             imagedestroy($image);
 
-            return 'data:image/png;base64,' . base64_encode($pngData);
+            return 'data:image/png;base64,'.base64_encode($pngData);
         } catch (\Throwable $e) {
             Log::warning('e-CF: error generando QR puro PHP', ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -328,7 +375,7 @@ class EcfQrGenerator
                     }
                 }
             }
-            $upward = !$upward;
+            $upward = ! $upward;
         }
     }
 
@@ -344,14 +391,22 @@ class EcfQrGenerator
 
                 $shouldFlip = false;
                 switch ($maskPattern) {
-                    case 0: $shouldFlip = ($y + $x) % 2 === 0; break;
-                    case 1: $shouldFlip = $y % 2 === 0; break;
-                    case 2: $shouldFlip = $x % 3 === 0; break;
-                    case 3: $shouldFlip = ($y + $x) % 3 === 0; break;
-                    case 4: $shouldFlip = (intdiv($y, 2) + intdiv($x, 3)) % 2 === 0; break;
-                    case 5: $shouldFlip = (($y * $x) % 2) + (($y * $x) % 3) === 0; break;
-                    case 6: $shouldFlip = (($y * $x) % 2) + (($y * $x) % 3) % 2 === 0; break;
-                    case 7: $shouldFlip = (($y + $x) % 2) + (($y * $x) % 3) % 2 === 0; break;
+                    case 0: $shouldFlip = ($y + $x) % 2 === 0;
+                        break;
+                    case 1: $shouldFlip = $y % 2 === 0;
+                        break;
+                    case 2: $shouldFlip = $x % 3 === 0;
+                        break;
+                    case 3: $shouldFlip = ($y + $x) % 3 === 0;
+                        break;
+                    case 4: $shouldFlip = (intdiv($y, 2) + intdiv($x, 3)) % 2 === 0;
+                        break;
+                    case 5: $shouldFlip = (($y * $x) % 2) + (($y * $x) % 3) === 0;
+                        break;
+                    case 6: $shouldFlip = (($y * $x) % 2) + (($y * $x) % 3) % 2 === 0;
+                        break;
+                    case 7: $shouldFlip = (($y + $x) % 2) + (($y * $x) % 3) % 2 === 0;
+                        break;
                 }
 
                 $matrix[$y][$x] = $shouldFlip ? 1 - $matrix[$y][$x] : $matrix[$y][$x];
@@ -394,12 +449,14 @@ class EcfQrGenerator
                 return true;
             }
         }
+
         return false;
     }
 
     private function getQrCapacity(int $version): int
     {
         $capacities = [288, 404, 556, 708, 888, 1060, 1244, 1412, 1596, 1780];
+
         return $capacities[$version - 1] ?? 288;
     }
 
@@ -408,12 +465,14 @@ class EcfQrGenerator
         if ($version <= 9) {
             return 8;
         }
+
         return 16;
     }
 
     private function getTotalDataBits(int $version): int
     {
         $totalBits = [2304, 3248, 4296, 5344, 6520, 7704, 8888, 10064, 11272, 12512];
+
         return $totalBits[$version - 1] ?? 2304;
     }
 
@@ -431,6 +490,7 @@ class EcfQrGenerator
             9 => [6, 26, 46],
             10 => [6, 28, 50],
         ];
+
         return $positions[$version] ?? [6];
     }
 }

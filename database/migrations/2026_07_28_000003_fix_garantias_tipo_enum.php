@@ -1,35 +1,17 @@
 <?php
 
+use App\Support\SafeAlterTable;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        if (DB::getDriverName() !== 'mysql') {
-            return;
-        }
-
-        // Expand tipo enum with additional values
-        DB::statement("ALTER TABLE garantias MODIFY COLUMN tipo ENUM('fabrica','extendida','servicio','reparacion','pieza') NOT NULL");
+        SafeAlterTable::alter("ALTER TABLE garantias MODIFY COLUMN tipo ENUM('fabrica','extendida','servicio','reparacion','pieza') NOT NULL");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        if (DB::getDriverName() !== 'mysql') {
-            return;
-        }
-
-        // Revert to original values
-        DB::statement("ALTER TABLE garantias MODIFY COLUMN tipo ENUM('fabrica','extendida','servicio') NOT NULL");
+        SafeAlterTable::alter("ALTER TABLE garantias MODIFY COLUMN tipo ENUM('fabrica','extendida','servicio') NOT NULL");
     }
 };

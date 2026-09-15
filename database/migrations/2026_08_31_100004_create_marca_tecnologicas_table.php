@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Duplicada con 2026_08_20_200010: si la tabla ya existe, no recrear.
+        if (Schema::hasTable('marca_tecnologicas')) {
+            return;
+        }
+
         Schema::create('marca_tecnologicas', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 255);

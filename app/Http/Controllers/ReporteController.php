@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Caja;
-use App\Models\Sucursal;
 use App\Services\ReporteService;
+use App\Services\AccountsReceivableService;
 use Illuminate\Http\Request;
 
 class ReporteController extends Controller
 {
     public function __construct(
-        protected ReporteService $reporteService
+        protected ReporteService $reporteService,
+        protected AccountsReceivableService $arService
     ) {}
 
     public function index()
@@ -24,6 +24,7 @@ class ReporteController extends Controller
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return view('reportes.ventas', $data);
     }
 
@@ -60,6 +61,7 @@ class ReporteController extends Controller
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return $this->exportPdf('reportes.ventas-pdf', $data, "ventas_{$data['desde']}_{$data['hasta']}.pdf");
     }
 
@@ -70,6 +72,7 @@ class ReporteController extends Controller
             $request->input('hasta', today()->format('Y-m-d')),
             $request->input('categoria')
         );
+
         return view('reportes.gastos', $data);
     }
 
@@ -108,6 +111,7 @@ class ReporteController extends Controller
             $request->input('hasta', today()->format('Y-m-d')),
             $request->input('categoria')
         );
+
         return $this->exportPdf('reportes.gastos-pdf', $data, "gastos_{$data['desde']}_{$data['hasta']}.pdf");
     }
 
@@ -117,6 +121,7 @@ class ReporteController extends Controller
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return view('reportes.compras', $data);
     }
 
@@ -152,6 +157,7 @@ class ReporteController extends Controller
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return $this->exportPdf('reportes.compras-pdf', $data, "compras_{$data['desde']}_{$data['hasta']}.pdf");
     }
 
@@ -161,6 +167,7 @@ class ReporteController extends Controller
             $request->input('filtro', 'todos'),
             $request->input('buscar')
         );
+
         return view('reportes.stock', $data);
     }
 
@@ -172,7 +179,7 @@ class ReporteController extends Controller
         );
 
         return $this->reporteService->exportCsv(
-            ['filename' => "inventario_" . now()->format('Ymd') . ".csv"],
+            ['filename' => 'inventario_'.now()->format('Ymd').'.csv'],
             ['Código', 'Nombre', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Costo', 'Precio Venta', 'Valor Inventario', 'Estado'],
             function ($output) use ($data) {
                 foreach ($data['productos'] as $p) {
@@ -196,7 +203,8 @@ class ReporteController extends Controller
             $request->input('filtro', 'todos'),
             $request->input('buscar')
         );
-        return $this->exportPdf('reportes.stock-pdf', $data, "inventario_" . now()->format('Ymd') . ".pdf");
+
+        return $this->exportPdf('reportes.stock-pdf', $data, 'inventario_'.now()->format('Ymd').'.pdf');
     }
 
     public function caja(Request $request)
@@ -206,6 +214,7 @@ class ReporteController extends Controller
             $request->input('hasta', today()->format('Y-m-d')),
             $request->input('caja_id')
         );
+
         return view('reportes.caja', $data);
     }
 
@@ -217,6 +226,7 @@ class ReporteController extends Controller
             $request->input('caja_id')
         );
         $filename = "caja_{$data['desde']}_{$data['hasta']}.pdf";
+
         return $this->exportPdf('reportes.caja-pdf', $data, $filename);
     }
 
@@ -256,6 +266,7 @@ class ReporteController extends Controller
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return view('reportes.utilidades', $data);
     }
 
@@ -291,6 +302,7 @@ class ReporteController extends Controller
             (int) $request->input('anio', now()->year),
             $request->input('tipo', 'compras')
         );
+
         return view('reportes.retenciones', $data);
     }
 
@@ -311,7 +323,7 @@ class ReporteController extends Controller
                     foreach ($data['compras'] as $c) {
                         fputcsv($output, [
                             'Compra', $c->proveedor?->nombre ?? 'N/A', $c->proveedor?->rnc ?? '',
-                            $c->folio ?? '#' . $c->id, $c->fecha?->format('d/m/Y') ?? '',
+                            $c->folio ?? '#'.$c->id, $c->fecha?->format('d/m/Y') ?? '',
                             number_format($c->total, 2, '.', ''),
                             number_format($c->retencion_isr ?? 0, 2, '.', ''),
                             number_format($c->retencion_itbis ?? 0, 2, '.', ''),
@@ -320,12 +332,14 @@ class ReporteController extends Controller
                     }
                 }
                 if (in_array($data['tipo'], ['ventas', 'ambos'])) {
-                    if ($data['tipo'] === 'ambos') fputcsv($output, []);
+                    if ($data['tipo'] === 'ambos') {
+                        fputcsv($output, []);
+                    }
                     fputcsv($output, ['Tipo', 'Cliente', 'RNC', 'Documento', 'Fecha', 'Total', 'Ret ISR', 'Ret ITBIS', 'Total Retenido']);
                     foreach ($data['ventas'] as $v) {
                         fputcsv($output, [
                             'Venta', $v->cliente?->nombre ?? 'N/A', $v->cliente?->rnc_cedula ?? '',
-                            '#' . str_pad($v->id, 5, '0', STR_PAD_LEFT), $v->created_at->format('d/m/Y'),
+                            '#'.str_pad($v->id, 5, '0', STR_PAD_LEFT), $v->created_at->format('d/m/Y'),
                             number_format($v->total, 2, '.', ''),
                             number_format($v->retencion_isr ?? 0, 2, '.', ''),
                             number_format($v->retencion_itbis ?? 0, 2, '.', ''),
@@ -337,12 +351,39 @@ class ReporteController extends Controller
         );
     }
 
+    public function cuentasCobrarAging(Request $request)
+    {
+        $data = $this->arService->getAging();
+        return view('reportes.ar_aging', [
+            'aging' => $data['by_client'],
+            'summary' => $data['buckets'],
+            'totalAmount' => $data['total_amount'],
+            'totalCount' => $data['total_count'],
+            'desde' => $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            'hasta' => $request->input('hasta', today()->format('Y-m-d')),
+        ]);
+    }
+
+    public function cuentasCobrarAgingPdf(Request $request)
+    {
+        $data = $this->arService->getAging();
+        return $this->arService->exportAgingPdf([
+            'aging' => $data['by_client'],
+            'summary' => $data['buckets'],
+            'totalAmount' => $data['total_amount'],
+            'totalCount' => $data['total_count'],
+            'desde' => $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
+            'hasta' => $request->input('hasta', today()->format('Y-m-d')),
+        ]);
+    }
+
     public function restaurante(Request $request)
     {
         $data = $this->reporteService->restaurante(
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return view('reportes.restaurante', $data);
     }
 
@@ -352,6 +393,7 @@ class ReporteController extends Controller
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return view('reportes.propinas', $data);
     }
 
@@ -361,6 +403,7 @@ class ReporteController extends Controller
             $request->input('desde', today()->startOfMonth()->format('Y-m-d')),
             $request->input('hasta', today()->format('Y-m-d'))
         );
+
         return view('reportes.delivery-comisiones', $data);
     }
 
@@ -371,6 +414,7 @@ class ReporteController extends Controller
             $request->input('hasta', today()->format('Y-m-d')),
             $request->input('porcentaje')
         );
+
         return view('reportes.comisiones-vendedores', $data);
     }
 
@@ -408,6 +452,7 @@ class ReporteController extends Controller
             $request->input('hasta', today()->format('Y-m-d')),
             $request->input('porcentaje')
         );
+
         return $this->exportPdf('reportes.comisiones-vendedores-pdf', $data, "comisiones_vendedores_{$data['desde']}_{$data['hasta']}.pdf");
     }
 
@@ -417,6 +462,7 @@ class ReporteController extends Controller
         $pdf = app()->make('dompdf.wrapper');
         $pdf->loadHTML($html);
         $pdf->setPaper('letter', 'landscape');
+
         return $pdf->stream($filename);
     }
 }

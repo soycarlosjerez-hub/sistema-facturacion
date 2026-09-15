@@ -20,7 +20,9 @@ abstract class TestCase extends BaseTestCase
     protected function actingAsAdmin(?User $user = null, $guard = null): User
     {
         $user = $user ?? User::factory()->create(['role' => 'admin']);
-        Auth::login($user);
+        $this->darRolSpatie($user, 'owner');
+        Auth::login($user, $guard);
+
         return $user;
     }
 
@@ -28,6 +30,7 @@ abstract class TestCase extends BaseTestCase
     {
         $user = $user ?? User::factory()->create(['role' => 'gerente']);
         Auth::login($user);
+
         return $user;
     }
 
@@ -35,6 +38,7 @@ abstract class TestCase extends BaseTestCase
     {
         $user = $user ?? User::factory()->create(['role' => 'empleado']);
         Auth::login($user);
+
         return $user;
     }
 
@@ -46,6 +50,9 @@ abstract class TestCase extends BaseTestCase
             'business_instance_id' => $businessInstance->id,
             'role' => 'admin',
         ]);
+        // Los seeders de producción asignan roles Spatie; los tests deben
+        // reflejarlo (el middleware solo reconoce Spatie, no users.role).
+        $this->darRolSpatie($user, 'owner');
 
         Auth::login($user);
 
@@ -79,13 +86,13 @@ abstract class TestCase extends BaseTestCase
         ]);
 
         \App\Models\AlmacenMovimiento::create([
-            'tenant_id'   => $businessInstance->id,
+            'tenant_id' => $businessInstance->id,
             'producto_id' => $producto->id,
-            'almacen_id'  => $almacen->id,
-            'tipo'        => 'entrada',
-            'cantidad'    => 100,
-            'nota'        => 'Stock inicial (test)',
-            'user_id'     => $user->id,
+            'almacen_id' => $almacen->id,
+            'tipo' => 'entrada',
+            'cantidad' => 100,
+            'nota' => 'Stock inicial (test)',
+            'user_id' => $user->id,
         ]);
 
         $tipoVenta = \App\Models\TipoVenta::factory()->create();
@@ -114,5 +121,25 @@ abstract class TestCase extends BaseTestCase
     protected function loginAs(User $user): void
     {
         Auth::login($user);
+    }
+
+    /**
+     * Asigna un rol Spatie al usuario (los seeders de producción usan
+     * syncRoles; la autorización solo evalúa Spatie, nunca users.role).
+     */
+    protected function darRolSpatie(User $user, string $rol): User
+    {
+        $spatie = \Spatie\Permission\Models\Role::firstOrCreate([
+            'name' => $rol,
+            'guard_name' => 'web',
+        ]);
+
+        if (! $user->hasRole($rol)) {
+            $user->assignRole($spatie);
+        }
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        return $user->fresh();
     }
 }

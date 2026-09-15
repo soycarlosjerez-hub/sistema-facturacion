@@ -325,7 +325,7 @@ class PlantillaPdfGenerator
             [$width, $height] = $sizes['a4'];
         }
 
-        $pdf = Pdf::loadView('plantillas.pdf-render-historial', compact('template', 'variables', 'templateConfig'))
+        $pdf = Pdf::loadView('plantillas.pdf-render-historial', compact('variables', 'templateConfig'))
             ->setPaper($paper, $orientation);
 
         if ($paper === 'ticket_80' || $paper === 'ticket_58') {
@@ -365,7 +365,7 @@ class PlantillaPdfGenerator
             [$width, $height] = $sizes['a4'];
         }
 
-        $pdf = Pdf::loadView('plantillas.pdf-render-historial', compact('template', 'variables', 'templateConfig'))
+        $pdf = Pdf::loadView('plantillas.pdf-render-historial', compact('variables', 'templateConfig', 'pdfLogoUrl'))
             ->setPaper($paper, $orientation);
 
         if ($paper === 'ticket_80' || $paper === 'ticket_58') {

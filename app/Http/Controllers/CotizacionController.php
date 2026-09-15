@@ -25,6 +25,7 @@ class CotizacionController extends Controller
     public function index(Request $request)
     {
         $data = $this->cotizacionService->list($request->all());
+
         return view('cotizaciones.index', $data);
     }
 
@@ -37,16 +38,18 @@ class CotizacionController extends Controller
     {
         try {
             $cotizacion = $this->cotizacionService->create($request->validated());
+
             return redirect()->route('cotizaciones.show', $cotizacion)
                 ->with('success', "Cotización {$cotizacion->numero} creada exitosamente");
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error al crear la cotización: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error al crear la cotización: '.$e->getMessage());
         }
     }
 
     public function show(Cotizacion $cotizacione)
     {
         $cotizacione->load(['cliente', 'user', 'items.producto', 'venta']);
+
         return view('cotizaciones.show', ['cotizacion' => $cotizacione]);
     }
 
@@ -59,10 +62,11 @@ class CotizacionController extends Controller
     {
         try {
             $this->cotizacionService->update($cotizacione, $request->validated());
+
             return redirect()->route('cotizaciones.show', $cotizacione)
                 ->with('success', 'Cotización actualizada');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error: '.$e->getMessage());
         }
     }
 
@@ -71,10 +75,11 @@ class CotizacionController extends Controller
         try {
             $numero = $cotizacione->numero;
             $this->cotizacionService->delete($cotizacione);
+
             return redirect()->route('cotizaciones.index')
                 ->with('success', "Cotización {$numero} eliminada");
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al eliminar: ' . $e->getMessage());
+            return back()->with('error', 'Error al eliminar: '.$e->getMessage());
         }
     }
 
@@ -96,8 +101,8 @@ class CotizacionController extends Controller
     {
         $request->validate([
             'email_destino' => 'nullable|email',
-            'mensaje'       => 'nullable|string|max:1000',
-            'incluir_pdf'   => 'nullable|boolean',
+            'mensaje' => 'nullable|string|max:1000',
+            'incluir_pdf' => 'nullable|boolean',
         ]);
 
         $resultado = $this->emailService->enviar(
@@ -110,21 +115,22 @@ class CotizacionController extends Controller
         if ($resultado['success']) {
             return back()->with('success',
                 "Cotización enviada por email a {$resultado['destinatario']}"
-                . (isset($resultado['mail_id']) && $resultado['mail_id'] ? " (ID: {$resultado['mail_id']})" : '')
+                .(isset($resultado['mail_id']) && $resultado['mail_id'] ? " (ID: {$resultado['mail_id']})" : '')
             );
         }
 
-        return back()->with('error', 'Error al enviar email: ' . $resultado['error']);
+        return back()->with('error', 'Error al enviar email: '.$resultado['error']);
     }
 
     public function convertirAVenta(Request $request, Cotizacion $cotizacione)
     {
         try {
             $venta = $this->cotizacionService->convertirAVenta($cotizacione);
+
             return redirect()->route('ventas.show', $venta)
                 ->with('success', "Cotización convertida a venta #{$venta->id}");
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al convertir: ' . $e->getMessage());
+            return back()->with('error', 'Error al convertir: '.$e->getMessage());
         }
     }
 
@@ -133,16 +139,40 @@ class CotizacionController extends Controller
         $cotizacione->load(['cliente', 'user', 'items']);
         $cotizacione->calcularTotales();
         $pdf = \PDF::loadView('cotizaciones.pdf', compact('cotizacione'));
+
         return $pdf->stream("cotizacion-{$cotizacione->numero}.pdf");
     }
 
     public function ticket(Request $request, Cotizacion $cotizacione)
     {
         $cotizacione->load(['cliente', 'user', 'items']);
+
+        // Buscar impresora configurada
+        $impresora = null;
+        if (auth()->check()) {
+            $impresora = \App\Models\Impresora::where('activo', true)
+                ->where('tenant_id', auth()->user()->business_instance_id)
+                ->where('auto_imprimir_cotizaciones', true)
+                ->orderBy('orden')
+                ->first();
+        }
+
+        // Si no se especifica paper, buscar impresora configurada
+        $paperWidth = (int) $request->input('paper', 80);
+        if ($paperWidth === 80 && $impresora && $impresora->papel_tamano) {
+            $paperWidth = (int) preg_replace('/[^0-9]/', '', $impresora->papel_tamano);
+        }
+
+        $autoPrint = $request->boolean('autoprint', true);
+        if ($autoPrint && ! $request->input('paper') && ! $impresora) {
+            $autoPrint = false;
+        }
+
         return view('cotizaciones.ticket', [
             'cotizacion' => $cotizacione,
-            'paperWidth' => (int) $request->input('paper', 80),
-            'autoPrint'  => $request->boolean('autoprint', true),
+            'paperWidth' => $paperWidth,
+            'autoPrint' => $autoPrint,
+            'impresora' => $impresora,
         ]);
     }
 
@@ -154,8 +184,8 @@ class CotizacionController extends Controller
 
         $charsPerLine = $paperWidth === 58 ? 32 : 42;
         $content = '';
-        $content .= str_pad(mb_strimwidth($cotizacione->user?->empresa?->nombre ?? \App\Models\SystemSetting::nombreActual(), '', 42), 42, ' ', STR_PAD_BOTH) . "\n";
-        $content .= str_repeat("-", 42) . "\n";
+        $content .= str_pad(mb_strimwidth($cotizacione->user?->empresa?->nombre ?? \App\Models\SystemSetting::nombreActual(), '', 42), 42, ' ', STR_PAD_BOTH)."\n";
+        $content .= str_repeat('-', 42)."\n";
 
         if ($format === 'escpos') {
             $filename = "cotizacion-{$cotizacione->numero}.bin";

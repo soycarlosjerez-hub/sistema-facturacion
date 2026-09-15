@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\BusinessInstance;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +19,13 @@ class TenantMiddleware
                 return $next($request);
             }
 
-            return response()->json(['message' => 'No autenticado.'], 401);
+            // Guest (login/register/welcome): dejar pasar, el scope hace fail-closed.
+            // En API responder 401 JSON, en web dejar que 'auth' redirija.
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => 'No autenticado.'], 401);
+            }
+
+            return $next($request);
         }
 
         try {
@@ -32,22 +37,30 @@ class TenantMiddleware
         }
 
         if (! $user->business_instance_id) {
-            // Allow if explicit tenant_id is provided via header or query
-            $explicitTenantId = $request->header('X-Tenant-ID')
-                ?? $request->query('tenant_id');
-
-            if ($explicitTenantId && BusinessInstance::where('id', (int) $explicitTenantId)->exists()) {
-                $request->attributes->set('resolved_tenant_id', (int) $explicitTenantId);
-
-                return $next($request);
+            // Sin instancia asignada: en API se deniega (401); en web se deja
+            // pasar y el TenantScope fail-closed garantiza aislamiento
+            // (no ve datos de ningún tenant). NUNCA aceptar tenant por header/query.
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => 'El usuario no tiene una instancia asignada.'], 401);
             }
 
-            return response()->json(['message' => 'El usuario no tiene una instancia asignada.'], 401);
+            return $next($request);
         }
 
         $instance = $user->businessInstance;
 
         if ($instance && $instance->bloqueado) {
+            // Las rutas de suscripción y la pantalla de bloqueo siempre accesibles
+            // (coherente con CheckInstanceBlocked).
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                if ($request->routeIs('suscripcion.*') || $request->routeIs('instancia-bloqueada') || $request->is('logout')) {
+                    return $next($request);
+                }
+
+                return redirect()->route('instancia-bloqueada')
+                    ->with('error', 'Esta instancia ha sido bloqueada. '.($instance->motivo_bloqueo ?? ''));
+            }
+
             return response()->json([
                 'message' => 'Esta instancia ha sido bloqueada.',
                 'motivo' => $instance->motivo_bloqueo ?? 'Sin especificar',

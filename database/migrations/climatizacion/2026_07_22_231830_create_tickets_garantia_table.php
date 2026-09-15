@@ -8,6 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Duplicada: si la tabla ya existe (migración anterior), no recrear.
+        if (Schema::hasTable('tickets_garantia')) {
+            return;
+        }
+
         Schema::create('tickets_garantia', function (Blueprint $table) {
             $table->id();
             $table->string('codigo')->unique();

@@ -1,2 +1,0 @@
-<a <?php echo e($attributes->merge(['class' => 'd-block w-100 px-4 py-2 text-start fs-6 leading-5 text-dark bg-light focus:outline-none focus:bg-light transition duration-150 ease-in-out'])); ?>><?php echo e($slot); ?></a>
-<?php /**PATH /var/www/html/sistema-facturacion/resources/views/components/dropdown-link.blade.php ENDPATH**/ ?>
