@@ -46,7 +46,7 @@
                         <td>{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->costo_mensual ?? 0, 2) }}</td>
                         <td class="fw-bold text-danger">{{ $systemMoneda ?? 'RD$' }} {{ number_format($instance->deudaEstimada(), 2) }}</td>
                         <td>
-                            @php $ultimo = $instance->ultimoPago->first(); @endphp
+                            @php $ultimo = $instance->ultimoPago()->first(); @endphp
                             @if($ultimo)
                                 {{ $ultimo->mes_pagado->isoFormat('MMM YYYY') }}
                             @else

@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\DevolucionController;
 use App\Http\Controllers\Api\EcommCartController;
 use App\Http\Controllers\Api\EcommCheckoutController;
 use App\Http\Controllers\Api\EcommController;
+use App\Http\Controllers\Api\EcommOrderController;
 use App\Http\Controllers\Api\LealtadController;
 use App\Http\Controllers\Api\ListaPrecioController;
 use App\Http\Controllers\Api\MesaController;
@@ -123,6 +124,12 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger', 'api.version'])->
             ->names('api.customers')
             ->except(['edit', 'create']);
 
+        Route::get('customers/{id}', [ClienteController::class, 'showById'])
+            ->name('api.customers.show-by-id');
+
+        Route::put('customers/{id}', [ClienteController::class, 'updateById'])
+            ->name('api.customers.update-by-id');
+
         // Purchases
         Route::apiResource('purchases', CompraController::class)
             ->names('api.purchases')
@@ -218,6 +225,8 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger', 'api.version'])->
             Route::get('/inventario', [TiendaApiController::class, 'inventario']);
             Route::post('/inventario/ajuste', [TiendaApiController::class, 'ajusteInventario']);
             Route::get('/kardex/{productoId}', [TiendaApiController::class, 'kardex']);
+            Route::get('/config', [TiendaApiController::class, 'tiendaConfig'])
+                ->name('api.tienda.config');
         });
 
         // Printers removed - now using thermal ticket system
@@ -425,6 +434,10 @@ Route::middleware(['api-auth', 'tenant', 'api.request.logger', 'api.version'])->
         Route::post('carts/{cartId}/checkout', [EcommCheckoutController::class, 'submit']);
         Route::post('checkout/guest', [EcommCheckoutController::class, 'submitGuest']);
 
+        // Pedidos/Ordenes ecomm
+        Route::get('orders', [EcommOrderController::class, 'index'])
+            ->name('api.ecomm.orders');
+
         // Promociones
         Route::get('promociones', [PromocionController::class, 'index']);
         Route::post('promociones/validar', [PromocionController::class, 'validar']);
@@ -489,4 +502,12 @@ Route::prefix('ecomm')->middleware('throttle:10,1')->group(function () {
     Route::post('reset-password', [ClienteAuthController::class, 'resetPassword'])->name('ecomm.reset-password');
     Route::post('resend-verification', [ClienteAuthController::class, 'resendVerification'])->name('ecomm.resend-verification');
     Route::get('verify-email/{id}/{hash}', [ClienteAuthController::class, 'verifyEmail'])->name('ecomm.verify-email');
+});
+
+// ──────────────────────────────────────────────────────────────
+// Ecomm Tienda Config — Ruta publica para plugin WordPress
+// (autenticacion via api_key query param o Bearer token)
+// ──────────────────────────────────────────────────────────────
+Route::prefix('ecomm')->middleware('throttle:30,1')->group(function () {
+    Route::get('/tienda/config', [TiendaApiController::class, 'config'])->name('ecomm.tienda.config');
 });

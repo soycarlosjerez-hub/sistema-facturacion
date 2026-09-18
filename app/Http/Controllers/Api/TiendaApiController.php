@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AlmacenMovimiento;
+use App\Models\BusinessInstance;
 use App\Models\Category;
 use App\Models\CategorySubcategory;
+use App\Models\InstanceApiKey;
 use App\Models\Producto;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
@@ -46,6 +48,49 @@ class TiendaApiController extends Controller
         // Filtrar por stock disponible
         if ($request->boolean('in_stock')) {
             $query->where('stock', '>', 0);
+        }
+
+        if ($request->filled('limit') || $request->filled('page')) {
+            $limit = $request->integer('limit', 15);
+            $page = $request->integer('page', 1);
+
+            $paginated = $query->select('id', 'categoria_id', 'category_subcategory_id', 'nombre', 'codigo_barras', 'descripcion',
+                'precio', 'stock', 'stock_minimo', 'linea_negocio', 'imagen', 'activo')
+                ->orderBy('nombre')
+                ->paginate($limit, ['*'], 'page', $page);
+
+            $data = $paginated->items();
+
+            $mapped = [];
+            foreach ($data as $p) {
+                $mapped[] = [
+                    'id' => $p->id,
+                    'nombre' => $p->nombre,
+                    'codigo_barras' => $p->codigo_barras,
+                    'precio' => $p->precio,
+                    'stock' => $p->stock,
+                    'imagen' => $p->imagen_url,
+                    'linea_negocio' => $p->linea_negocio,
+                    'categoria' => $p->categoria ? [
+                        'id' => $p->categoria->id,
+                        'nombre' => $p->categoria->nombre,
+                    ] : null,
+                    'subcategoria' => $p->categorySubcategory ? [
+                        'id' => $p->categorySubcategory->id,
+                        'nombre' => $p->categorySubcategory->nombre,
+                    ] : null,
+                ];
+            }
+
+            return response()->json([
+                'productos' => $mapped,
+                'meta' => [
+                    'total' => $paginated->total(),
+                    'per_page' => $paginated->perPage(),
+                    'current_page' => $paginated->currentPage(),
+                    'last_page' => $paginated->lastPage(),
+                ],
+            ]);
         }
 
         $productos = $query->select('id', 'categoria_id', 'category_subcategory_id', 'nombre', 'codigo_barras', 'descripcion',
@@ -266,6 +311,98 @@ class TiendaApiController extends Controller
     }
 
     /**
+     * GET /api/ecomm/tienda/config — Config publica del negocio (FlowApi).
+     * Autenticacion: ?api_key=iak_... o Authorization: Bearer iak_...
+     * Retorna el contrato de datos para el plugin WordPress ERP Connector.
+     */
+    public function config(Request $request)
+    {
+        $apiKey = $this->resolveApiKeyPublic($request);
+
+        if (! $apiKey) {
+            return response()->json([
+                'status' => 'error',
+                'data'   => null,
+                'errors' => [['code' => 'INVALID_API_KEY', 'message' => 'API Key inválida o desactivada.']],
+                'message' => 'API Key invalida',
+            ], 401);
+        }
+
+        $instance = $apiKey->instance;
+
+        if (! $instance || ! $instance->activo) {
+            return response()->json([
+                'status' => 'error',
+                'data'   => null,
+                'errors' => [['code' => 'INSTANCE_BLOCKED', 'message' => 'Instancia bloqueada o inactiva.']],
+                'message' => 'Instancia bloqueada',
+            ], 403);
+        }
+
+        $config = $instance->configuracion ?? [];
+
+        $brand = [
+            'name'          => $instance->nombre,
+            'logo'          => $instance->logo ? asset('storage/'.$instance->logo) : null,
+            'favicon'       => $config['favicon'] ?? null,
+            'tagline'       => $config['tagline'] ?? SystemSetting::get('sistema_slogan', 'Tu tienda de confianza'),
+            'color_primary' => $config['color_primary'] ?? '#1a73e8',
+            'color_secondary' => $config['color_secondary'] ?? '#34a853',
+        ];
+
+        $monedaSimbolo = $config['moneda_simbolo'] ?? SystemSetting::monedaSimbolo();
+
+        $currency = [
+            'code'     => 'DOP',
+            'symbol'   => $monedaSimbolo,
+            'position' => 'before',
+        ];
+
+        $contact = [
+            'email'     => $instance->email ?? '',
+            'phone'     => $instance->telefono ?? '',
+            'address'   => $instance->direccion ?? '',
+            'whatsapp'  => SystemSetting::get('contact_whatsapp', ''),
+            'facebook'  => SystemSetting::get('social_facebook', ''),
+            'instagram' => SystemSetting::get('social_instagram', ''),
+        ];
+
+        $policies = [
+            'terminos'     => $config['terminos_url'] ?? SystemSetting::get('policy_terminos', ''),
+            'privacidad'   => SystemSetting::get('policy_privacidad', ''),
+            'devoluciones' => $config['devoluciones_text'] ?? SystemSetting::get('policy_devoluciones', ''),
+            'envios'       => SystemSetting::get('policy_envios', ''),
+        ];
+
+        $pluginContract = [
+            'tenant_id' => $instance->id,
+            'name'      => $instance->nombre,
+            'brand'     => $brand,
+            'currency'  => $currency,
+            'contact'   => $contact,
+            'policies'  => $policies,
+        ];
+
+        $flowapiCompat = [
+            'modulo'       => 'tienda',
+            'instance_id'  => $instance->id,
+            'instance_slug' => $instance->slug,
+            'nombre'       => $instance->nombre,
+            'slogan'       => $brand['tagline'],
+            'moneda'       => $currency['symbol'],
+            'activo'       => $instance->activo,
+            'business_type' => $instance->businessType?->nombre ?? null,
+        ];
+
+        return response()->json([
+            'status'  => 'success',
+            'data'    => array_merge($pluginContract, ['_flowapi_compat' => $flowapiCompat]),
+            'errors'  => [],
+            'message' => 'Configuracion del negocio obtenida exitosamente.',
+        ]);
+    }
+
+    /**
      * GET /api/tienda/kardex/{productoId}?desde=2026-01-01&hasta=2026-01-31
      */
     public function kardex($productoId)
@@ -341,5 +478,122 @@ class TiendaApiController extends Controller
             'movimientos' => $kardexOrdenado,
             'total_movimientos' => $movimientos->count(),
         ]);
+    }
+
+    /**
+     * GET /api/tienda/config — Config publica del negocio (tienda API).
+     * Autenticacion: api_key via api-auth middleware (Bearer iak_...).
+     */
+    public function tiendaConfig(Request $request)
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'No autenticado.',
+            ], 401);
+        }
+
+        $instanceId = $user->business_instance_id ?? null;
+
+        if (! $instanceId) {
+            return response()->json([
+                'message' => 'No se pudo determinar la instancia del negocio.',
+            ], 400);
+        }
+
+        $instance = BusinessInstance::with('businessType')->find($instanceId);
+
+        if (! $instance || ! $instance->activo) {
+            return response()->json([
+                'status' => 'error',
+                'data'   => null,
+                'errors' => [['code' => 'INSTANCE_BLOCKED', 'message' => 'Instancia bloqueada o inactiva.']],
+                'message' => 'Instancia bloqueada',
+            ], 403);
+        }
+
+        $config = $instance->configuracion ?? [];
+
+        $brand = [
+            'logo'          => $instance->logo ? asset('storage/'.$instance->logo) : null,
+            'favicon'       => $config['favicon'] ?? null,
+            'tagline'       => $config['tagline'] ?? SystemSetting::get('sistema_slogan', 'Tu tienda de confianza'),
+            'color_primary' => $config['color_primary'] ?? '#1a73e8',
+            'color_secondary' => $config['color_secondary'] ?? '#34a853',
+        ];
+
+        $contact = [
+            'email'     => $instance->email ?? '',
+            'phone'     => $instance->telefono ?? '',
+            'whatsapp'  => SystemSetting::get('contact_whatsapp', ''),
+            'address'   => $instance->direccion ?? '',
+            'facebook'  => SystemSetting::get('social_facebook', ''),
+            'instagram' => SystemSetting::get('social_instagram', ''),
+        ];
+
+        $policies = [
+            'terminos'     => SystemSetting::get('policy_terminos', $config['terminos_url'] ?? ''),
+            'privacidad'   => SystemSetting::get('policy_privacidad', ''),
+            'devoluciones' => SystemSetting::get('policy_devoluciones', $config['devoluciones_text'] ?? ''),
+            'envios'       => SystemSetting::get('policy_envios', ''),
+        ];
+
+        $seo = [
+            'title'       => SystemSetting::get('seo_title', $instance->nombre),
+            'description' => SystemSetting::get('seo_description', $instance->nombre),
+        ];
+
+        $paymentMethods = SystemSetting::get('payment_methods', null);
+
+        $paymentMethodsData = $paymentMethods ? json_decode($paymentMethods, true) : [
+            [
+                'id'         => 'efectivo',
+                'label'      => 'Efectivo',
+                'instructions' => 'Pague con billetes o monedas en la tienda.',
+                'online'     => false,
+            ],
+        ];
+
+        return response()->json([
+            'tenant_id'       => $instance->id,
+            'name'            => $instance->nombre,
+            'brand'           => $brand,
+            'currency'        => [
+                'code'     => 'DOP',
+                'symbol'   => SystemSetting::monedaSimbolo(),
+                'position' => 'before',
+            ],
+            'payment_methods' => $paymentMethodsData,
+            'contact'         => $contact,
+            'policies'        => $policies,
+            'seo'             => $seo,
+        ]);
+    }
+
+    /**
+     * Resolve api_key from query param or bearer token (public endpoint).
+     */
+    private function resolveApiKeyPublic(Request $request): ?InstanceApiKey
+    {
+        $token = $request->query('api_key')
+            ?? $request->bearerToken();
+
+        if (! $token || ! str_starts_with($token, 'iak_')) {
+            return null;
+        }
+
+        $hash = hash('sha256', $token);
+        $apiKeyTTL = 300;
+
+        return \Illuminate\Support\Facades\Cache::remember(
+            "api_key_hash:{$hash}",
+            $apiKeyTTL,
+            fn () => InstanceApiKey::where('key', $hash)
+                ->orWhere('key_raw', $token)
+                ->where('is_active', true)
+                ->with('instance.businessType')
+                ->first()
+        );
     }
 }

@@ -1541,12 +1541,139 @@ Procesa una venta mixta desde el terminal POS.
 
 ---
 
-## Notas
+## Endpoint Config Tienda (Plugin WordPress)
 
-- **Autenticación**: Todas las endpoints usan Instance API Key (`iak_*`). Cada instancia solo accede a sus propios datos.
-- **Multi-tenant**: Los datos están aislados por `business_instance_id` de la API key.
-- **FlowHub UUIDs**: La API de Erpipos v3 usa UUIDs para compatibilidad con FlowHub. Los IDs internos (BIGINT) también son aceptados.
-- **Moneda**: Erpipos v3 usa centavos (ej: 3500000 = RD$35,000.00). Ecomm/Tienda/POS usan decimales.
-- **NCF**: El checkout genera automáticamente NCF tipo B01 si la secuencia está configurada.
-- **Lealtad**: Los puntos se generan automáticamente al completar checkout (1 punto por RD$1).
-- **Rate Limiting**: 60 requests por minuto por IP.
+Obtiene la configuración publica del negocio para el plugin WordPress ERP Connector.
+Permite sincronizar datos de marca, moneda y contacto entre el ERP y la tienda online.
+
+**`GET /api/ecomm/tienda/config`**
+
+**Autenticacion:**
+
+Requiere `api_key` como parametro query o como Bearer token. Se resuelve la Instance API Key (`iak_*`) y retorna los datos de la instancia asociada.
+
+**Parámetros de Consulta (Query Parameters):**
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| api_key | string | Sí | Instance API Key (`iak_...`). Se puede pasar como query param o como `Authorization: Bearer` header |
+
+**Ejemplo de Solicitud:**
+
+```bash
+# Opcion A: Query param (recomendado para plugin WP)
+curl "https://tudominio.com/api/ecomm/tienda/config?api_key=iak_abc123def456"
+
+# Opcion B: Header Authorization
+curl -X GET "https://tudominio.com/api/ecomm/tienda/config" \
+  -H "Authorization: Bearer iak_abc123def456"
+```
+
+**Rate Limiting:**
+
+`throttle:30,1` — 30 requests por minuto (mas ligero que el resto de la API).
+
+**Response `200 OK`:**
+
+```json
+{
+  "status": "success",
+  "data": {
+    "tenant_id": 10,
+    "name": "MaganTech",
+    "brand": {
+      "name": "MaganTech",
+      "logo": "https://tudominio.com/storage/logos/magantech.png",
+      "favicon": "https://tudominio.com/storage/favicons/favicon.ico",
+      "tagline": "Tu tienda de confianza",
+      "color_primary": "#1a73e8",
+      "color_secondary": "#34a853"
+    },
+    "currency": {
+      "code": "DOP",
+      "symbol": "RD$",
+      "position": "before"
+    },
+    "contact": {
+      "email": "soporte@magantech.com.do",
+      "phone": "809-000-0000",
+      "address": "Santo Domingo, RD"
+    },
+    "policies": {
+      "terminos": "https://magantech.com.do/terminos",
+      "devoluciones": "Devoluciones en 7 dias con factura."
+    }
+  },
+  "errors": [],
+  "message": "Configuracion del negocio obtenida exitosamente."
+}
+```
+
+**Response `401 Unauthorized`:**
+
+```json
+{
+  "status": "error",
+  "data": null,
+  "errors": [
+    {"code": "MISSING_API_KEY", "message": "api_key es requerida."}
+  ],
+  "message": "Falta API Key"
+}
+```
+
+**Response `403 Forbidden`:**
+
+```json
+{
+  "status": "error",
+  "data": null,
+  "errors": [
+    {"code": "INSTANCE_BLOCKED", "message": "Instancia bloqueada o inactiva."}
+  ],
+  "message": "Instancia bloqueada"
+}
+```
+
+**Campos:**
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `tenant_id` | integer | Sí | ID de la instancia de negocio (`business_instances.id`) |
+| `name` | string | Sí | Nombre del negocio (`business_instances.nombre`) |
+| `brand.name` | string | Sí | Nombre de la marca |
+| `brand.logo` | URL | No | URL del logo (`asset('storage/'.$logo)`) |
+| `brand.favicon` | URL | No | URL del favicon (`configuracion.favicon`) |
+| `brand.tagline` | string | No | Eslogan de la marca (`configuracion.tagline` o `sistema_slogan`) |
+| `brand.color_primary` | hex | No | Color primario de la marca (default: `#1a73e8`) |
+| `brand.color_secondary` | hex | No | Color secundario (default: `#34a853`) |
+| `currency.code` | string | Sí | Codigo de moneda (fijo: `DOP`) |
+| `currency.symbol` | string | Sí | Simbolo de moneda (`system_settings.moneda_simbolo` o `RD$`) |
+| `currency.position` | string | Sí | Posicion del simbolo: `before` o `after` |
+| `contact.email` | string | No | Email de contacto (`business_instances.email`) |
+| `contact.phone` | string | No | Telefono de contacto (`business_instances.telefono`) |
+| `contact.address` | string | No | Direccion (`business_instances.direccion`) |
+| `policies.terminos` | URL | No | URL de terminos (`configuracion.terminos_url`) |
+| `policies.devoluciones` | string | No | Texto de devoluciones (`configuracion.devuciones_text`) |
+
+**Configuracion en el ERP:**
+
+Para configurar los datos que recibe el plugin:
+
+1. Ir a **Configuracion > Instancia > Personalizacion**
+2. En `configuracion` JSON, agregar los campos:
+
+```json
+{
+  "favicon": "/storage/favicons/favicon.ico",
+  "tagline": "Tu tienda de confianza",
+  "color_primary": "#1a73e8",
+  "color_secondary": "#34a853",
+  "terminos_url": "https://tudominio.com/terminos",
+  "devoluciones_text": "Devoluciones en 7 dias con factura."
+}
+```
+
+3. El logo principal se sube en el campo `logo` de la instancia.
+4. Generar una API Key en **Configuracion > API > Nueva API Key** y copiar el valor `iak_...`
+5. Pegar el valor en los Ajustes del plugin WordPress: `Admin -> ERP Connector -> API Key`

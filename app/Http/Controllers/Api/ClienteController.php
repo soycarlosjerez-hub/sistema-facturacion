@@ -19,7 +19,8 @@ class ClienteController extends Controller
                     ->orWhere('email', 'like', '%'.$request->search.'%');
             }))
             ->when($request->tipo_cliente, fn ($q) => $q->where('tipo_cliente', $request->tipo_cliente))
-            ->when($request->has_credit_balance, fn ($q) => $q->where('balance_pendiente', '>', 0));
+            ->when($request->has_credit_balance, fn ($q) => $q->where('balance_pendiente', '>', 0))
+            ->when($request->filled('email'), fn ($q) => $q->whereRaw('LOWER(email) = LOWER(?)', [$request->email]));
 
         return ClienteResource::collection($query->orderBy('nombre')->paginate(15));
     }
@@ -76,9 +77,74 @@ class ClienteController extends Controller
         return new ClienteResource($cliente->load(['ventas', 'cotizaciones']));
     }
 
+    public function showById(int $id)
+    {
+        $tenantId = auth()->user()->business_instance_id ?? null;
+
+        if (! $tenantId) {
+            return response()->json(['message' => 'No se pudo determinar la instancia del negocio.'], 400);
+        }
+
+        $cliente = Cliente::withoutGlobalScope('tenant')
+            ->where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
+
+        return new ClienteResource($cliente->load(['ventas', 'cotizaciones']));
+    }
+
     public function update(Request $request, Cliente $cliente)
     {
         $this->ensureTenantAccess($cliente);
+
+        $validated = $request->validate([
+            'nombre' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|max:255',
+            'telefono' => 'nullable|string|max:20',
+            'whatsapp' => 'nullable|string|max:20',
+            'direccion' => 'nullable|string|max:500',
+            'ciudad' => 'nullable|string|max:100',
+            'provincia' => 'nullable|string|max:100',
+            'codigo_postal' => 'nullable|string|max:10',
+            'rnc_cedula' => 'sometimes|string|max:20',
+            'rnc' => 'sometimes|string|max:20',
+            'tipo_documento' => 'nullable|string|max:20',
+            'tipo_cliente' => 'nullable|string|max:20',
+            'limite_credito' => 'sometimes|numeric|min:0',
+            'plazo_pago_dias' => 'nullable|integer|min:0|max:365',
+            'tasa_descuento_pct' => 'nullable|numeric|min:0|max:100',
+            'moneda' => 'nullable|in:RD,USD,EUR',
+            'auto_bloquear_credito' => 'boolean',
+            'notas_internas' => 'nullable|string',
+            'regimen_mensual' => 'boolean',
+            'nit' => 'nullable|string|max:30',
+            'persona_contacto' => 'nullable|string|max:150',
+            'cargo_contacto' => 'nullable|string|max:100',
+            'segmento' => 'nullable|in:micro,pequeno,mediano,grande,gobierno',
+            'origen_cliente' => 'nullable|in:referencia,web,walkin,publicidad,otro',
+            'sector_actividad' => 'nullable|string|max:100',
+        ]);
+
+        $validated['auto_bloquear_credito'] = $request->boolean('auto_bloquear_credito');
+        $validated['regimen_mensual'] = $request->boolean('regimen_mensual');
+
+        $cliente->update($validated);
+
+        return new ClienteResource($cliente->load(['ventas', 'cotizaciones']));
+    }
+
+    public function updateById(Request $request, int $id)
+    {
+        $tenantId = auth()->user()->business_instance_id ?? null;
+
+        if (! $tenantId) {
+            return response()->json(['message' => 'No se pudo determinar la instancia del negocio.'], 400);
+        }
+
+        $cliente = Cliente::withoutGlobalScope('tenant')
+            ->where('id', $id)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
 
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:255',

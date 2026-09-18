@@ -197,35 +197,60 @@ class EcommCheckoutController extends Controller
 
     public function submitGuest(Request $request): JsonResponse
     {
+        $customerData = $request->input('customer');
+
         $data = $request->validate([
             'cart_id' => 'required|exists:carts,id',
-            'customer_email' => 'required|email',
-            'customer_phone' => 'required|string',
-            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'nullable|email',
+            'customer_phone' => 'nullable|string',
+            'customer_name' => 'nullable|string|max:255',
             'customer_address' => 'nullable|string',
             'delivery_zone_id' => 'nullable|exists:delivery_zones,id',
             'payment_method' => 'sometimes|in:efectivo,tarjeta,transferencia,mixto',
             'redirect_url' => 'nullable|url',
         ]);
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $customerData) {
             $cart = Cart::where('id', $data['cart_id'])
                 ->where('tenant_id', $this->tenant())
                 ->where('estado', 'active')
                 ->firstOrFail();
 
+            // Soporte para customer{} nested (estándar FlowAPI) o campos flat (legacy).
+            // Prioridad: customer{}, luego flat fields, luego cart email.
+            $customerEmail = null;
+            $customerPhone = null;
+            $customerName = null;
+            $customerAddress = null;
+
+            if ($customerData && is_array($customerData)) {
+                $customerEmail = $customerData['email'] ?? null;
+                $customerPhone = $customerData['phone'] ?? null;
+                $customerName = $customerData['name'] ?? null;
+                $customerAddress = $customerData['address'] ?? null;
+            }
+
+            $customerEmail = $customerEmail ?? $data['customer_email'] ?? $cart->email ?? null;
+            $customerPhone = $customerPhone ?? $data['customer_phone'] ?? null;
+            $customerName = $customerName ?? $data['customer_name'] ?? null;
+            $customerAddress = $customerAddress ?? $data['customer_address'] ?? null;
+
+            if (! $customerEmail) {
+                return $this->error('Customer email required for guest checkout.', 'missing_customer_email');
+            }
+
             // Detect existing customer by email before creating a new one
-            $cliente = Cliente::where('email', $data['customer_email'])
+            $cliente = Cliente::where('email', $customerEmail)
                 ->where('tenant_id', $this->tenant())
                 ->first();
 
             if (! $cliente) {
                 $cliente = Cliente::create([
                     'tenant_id' => $this->tenant(),
-                    'nombre' => $data['customer_name'],
-                    'email' => $data['customer_email'],
-                    'telefono' => $data['customer_phone'],
-                    'direccion' => $data['customer_address'] ?? null,
+                    'nombre' => $customerName ?? explode('@', $customerEmail)[0],
+                    'email' => $customerEmail,
+                    'telefono' => $customerPhone,
+                    'direccion' => $customerAddress,
                     'tipo_cliente' => 'consumo',
                     'origen_cliente' => 'web',
                     'activo' => true,
@@ -237,11 +262,88 @@ class EcommCheckoutController extends Controller
 
             $cart->update([
                 'cliente_id' => $cliente->id,
-                'email' => $data['customer_email'],
+                'email' => $customerEmail,
+                'order_type' => 'pickup',
                 'estado' => 'checked-out',
             ]);
 
-            return $this->success(['cliente_id' => $cliente->id], 'Guest customer created.');
+            // Crear venta usando SaleCreateService
+            $sesion = $this->getSessionCaja();
+
+            $itemData = [];
+            foreach ($cart->items as $item) {
+                $itemData[] = [
+                    'producto_id' => $item->producto_id,
+                    'cantidad' => $item->cantidad,
+                    'precio' => $item->precio_unitario,
+                    'subtotal' => $item->subtotal,
+                    'descuento' => $item->descuento,
+                    'descuento_tipo' => 'monto',
+                    'itbis_porcentaje' => $item->itbis_porcentaje,
+                    'sin_itbis' => $item->sin_itbis,
+                    'notas' => $item->notas ?? '',
+                ];
+            }
+
+            $metodoPago = $data['payment_method'] ?? 'efectivo';
+            $estado = match ($metodoPago) {
+                'fiado' => 'pendiente',
+                'cuenta_abierta' => 'cuenta_abierta',
+                default => 'completada',
+            };
+
+            $ventaData = [
+                'producto_id' => array_column($itemData, 'producto_id'),
+                'cantidad' => array_column($itemData, 'cantidad'),
+                'precio' => array_column($itemData, 'precio'),
+                'descuento' => array_column($itemData, 'descuento'),
+                'descuento_tipo' => array_column($itemData, 'descuento_tipo'),
+                'itbis_porcentaje' => array_column($itemData, 'itbis_porcentaje'),
+                'sin_itbis' => array_column($itemData, 'sin_itbis'),
+                'subtotal_final' => $cart->subtotal,
+                'metodo_pago' => $metodoPago,
+                'cliente_id' => $cliente->id,
+                'estado' => $estado,
+                'notas' => 'Checkout e-commerce guest (cart #' . $cart->id . ')',
+                'order_type' => 'pickup',
+                'delivery_zone_id' => $data['delivery_zone_id'] ?? null,
+                'delivery_company_id' => null,
+            ];
+
+            $saleService = app(SaleCreateService::class);
+            $venta = $saleService->createSale($ventaData, $sesion);
+
+            // Registrar pagos
+            if (in_array($metodoPago, ['efectivo', 'tarjeta', 'transferencia'])) {
+                \App\Models\Pago::create([
+                    'tenant_id' => $this->tenant(),
+                    'venta_id' => $venta->id,
+                    'caja_id' => $sesion->caja_id,
+                    'sesion_caja_id' => $sesion->id,
+                    'monto' => (float) $venta->total,
+                    'metodo_pago' => $metodoPago,
+                    'nota' => 'Pago e-commerce guest cart #' . $cart->id,
+                    'fecha_pago' => now(),
+                ]);
+            }
+
+            // Generar NCF si aplica
+            if ($venta->tipo_comprobante === 'ncf' && empty($venta->ncf)) {
+                $venta->update([
+                    'ncf_tipo' => 'B01',
+                    'ncf' => $this->generateNCF(),
+                ]);
+            }
+
+            return $this->success([
+                'cliente_id' => $cliente->id,
+                'order' => [
+                    'id' => $venta->id,
+                    'numero' => $venta->ncf ?? 'V-' . $venta->id,
+                    'estado' => $venta->estado,
+                    'total' => (float) $venta->total,
+                ],
+            ], 'Guest customer created and order placed.');
         });
     }
 

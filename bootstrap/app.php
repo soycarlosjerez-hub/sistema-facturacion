@@ -69,6 +69,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->view('errors.403', ['message' => $e->getMessage()], 403);
             }
             if ($e->getStatusCode() === 404) {
+                if ($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json([
+                        'message' => $e->getMessage() ?? 'Recurso no encontrado.',
+                        'errors' => [['message' => $e->getMessage() ?? 'Not found']],
+                    ], 404);
+                }
+
                 return response()->view('errors.404', ['message' => $e->getMessage()], 404);
             }
         });
